@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use App\Location\City;
+use App\Models\Location\City;
 
 class GetCities extends Command
 {
@@ -46,12 +46,16 @@ class GetCities extends Command
     {
         $counter = 0;
         $response = Http::get('Samanpl.ir/api/api/srvtownShipList?Date=16747');
+        $bar = $this->output->createProgressBar(count($response['results']));
+        $bar->start();
         foreach($response['results'] as $resault){
             if(!in_array($resault['townshipCode'], $this->townshipCodes)){
                 City::create($resault);
                 $counter += 1;
             }
+            $bar->advance();
         }
-        print("$counter new cities added!");
+        $bar->finish();
+        print("\n$counter new cities added!");
     }
 }

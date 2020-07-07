@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use App\Location\State;
+use App\Models\Location\State;
 
 class GetStates extends Command
 {
@@ -30,7 +30,6 @@ class GetStates extends Command
     public function __construct()
     {
         parent::__construct();
-        parent::__construct();
         $this->states = State::all()->toArray();
         foreach($this->states as $state){
             array_push($this->stateCodes, $state['stateCode']);
@@ -46,12 +45,17 @@ class GetStates extends Command
     {
         $counter = 0;
         $response = Http::get('Samanpl.ir/api/api/srvStateList?Date=16747');
+        $bar = $this->output->createProgressBar(count($response['results']));
+        $bar->start();
         foreach($response['results'] as $resault){
             if(!in_array($resault['stateCode'], $this->stateCodes)){
                 State::create($resault);
                 $counter += 1;
             }
+            $bar->advance();
         }
-        print("$counter new states added!");
+        $bar->finish();
+        print("\n$counter new cities added!");
+        
     }
 }
