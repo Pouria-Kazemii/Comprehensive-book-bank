@@ -55,7 +55,7 @@ class GetStates extends Command
             $bar->advance();
         }
         $bar->finish();
-        print("\n$counter new cities added!");
+        print("\n$counter new states added!");
         
     }
 }
