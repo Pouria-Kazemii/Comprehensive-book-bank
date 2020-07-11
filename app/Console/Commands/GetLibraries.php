@@ -51,6 +51,7 @@ class GetLibraries extends Command
                 },
                 ARRAY_FILTER_USE_KEY
             );
+            $filtered['all'] = $result;
             Library::firstOrCreate($filtered);
             $bar->advance();
         }

@@ -15,6 +15,7 @@ class CreateLibrariesTable extends Migration
     {
         Schema::create('libraries', function (Blueprint $table) {
             $table->id();
+            $table->json('all')->nullable();
             $table->integer('stateCode')->nullable();
             $table->integer('libraryCode');
             $table->string('libraryName')->nullable();

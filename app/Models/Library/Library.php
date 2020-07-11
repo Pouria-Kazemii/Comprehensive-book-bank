@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Library extends Model
 {
-    protected $fillable = ['stateCode','libraryCode','libraryName','townshipCode','partCode','cityCode','villageCode','address','phone','libTypeCode','postCode'];
+    protected $fillable = ['all','stateCode','libraryCode','libraryName','townshipCode','partCode','cityCode','villageCode','address','phone','libTypeCode','postCode'];
     
     public function city()
 
@@ -25,6 +25,10 @@ class Library extends Model
     public function books()
     {
         return $this->belongsToMany(Book::class);
+    }
+    public function setAllAttribute($value)
+    {
+        $this->attributes['all'] = json_encode($value);
     }
 
 }

@@ -30,10 +30,10 @@ class GetCities extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->cities = City::all()->toArray();
-        foreach($this->cities as $city){
-            array_push($this->townshipCodes, $city['townshipCode']);
-        }
+        // $this->cities = City::all()->toArray();
+        // foreach($this->cities as $city){
+        //     array_push($this->townshipCodes, $city['townshipCode']);
+        // }
 
     }
 
@@ -48,11 +48,12 @@ class GetCities extends Command
         $response = Http::get('Samanpl.ir/api/api/srvtownShipList?Date=16747');
         $bar = $this->output->createProgressBar(count($response['results']));
         $bar->start();
-        foreach($response['results'] as $resault){
-            if(!in_array($resault['townshipCode'], $this->townshipCodes)){
-                City::create($resault);
-                $counter += 1;
-            }
+        foreach ($response['results'] as $resault) {
+            // if(!in_array($resault['townshipCode'], $this->townshipCodes)){
+            $resault['all'] = $resault;
+            City::firstOrCreate($resault);
+            $counter += 1;
+            // }
             $bar->advance();
         }
         $bar->finish();

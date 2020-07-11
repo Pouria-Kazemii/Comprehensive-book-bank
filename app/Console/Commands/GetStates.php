@@ -13,7 +13,7 @@ class GetStates extends Command
      *
      * @var string
      */
-    protected $signature = 'get:states' , $states = array(), $stateCodes = array();
+    protected $signature = 'get:states', $states = array(), $stateCodes = array();
 
     /**
      * The console command description.
@@ -30,10 +30,10 @@ class GetStates extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->states = State::all()->toArray();
-        foreach($this->states as $state){
-            array_push($this->stateCodes, $state['stateCode']);
-        }
+        // $this->states = State::all()->toArray();
+        // foreach($this->states as $state){
+        //     array_push($this->stateCodes, $state['stateCode']);
+        // }
     }
 
     /**
@@ -47,15 +47,15 @@ class GetStates extends Command
         $response = Http::get('Samanpl.ir/api/api/srvStateList?Date=16747');
         $bar = $this->output->createProgressBar(count($response['results']));
         $bar->start();
-        foreach($response['results'] as $resault){
-            if(!in_array($resault['stateCode'], $this->stateCodes)){
-                State::create($resault);
-                $counter += 1;
-            }
+        foreach ($response['results'] as $resault) {
+            // if(!in_array($resault['stateCode'], $this->stateCodes)){
+            $resault['all'] = $resault;
+            State::firstOrCreate($resault);
+            $counter += 1;
+            // }
             $bar->advance();
         }
         $bar->finish();
         print("\n$counter new states added!");
-        
     }
 }
