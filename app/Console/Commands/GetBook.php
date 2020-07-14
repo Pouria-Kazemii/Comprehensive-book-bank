@@ -66,7 +66,7 @@ class GetBook extends Command
                     ARRAY_FILTER_USE_KEY
                 );
                 $filtered['all'] = $response['Results'][0];
-                $filtered['recordNumber'] = $x;
+                $filtered['recordNumber'] = $lastGotBook + $countWalker;
                 Book::firstOrCreate($filtered);
                 $itemGotten ++;
                 $bar->advance();
