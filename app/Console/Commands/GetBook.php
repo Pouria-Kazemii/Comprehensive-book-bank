@@ -14,7 +14,7 @@ class GetBook extends Command
      *
      * @var string
      */
-    protected $signature = 'get:book {start} {end}';
+    protected $signature = 'get:book {count}';
 
     /**
      * The console command description.
@@ -40,7 +40,8 @@ class GetBook extends Command
      */
     public function handle()
     {
-        $bar = $this->output->createProgressBar($this->argument('start')-$this->argument('end'));
+        BOOK::getLastBook();
+        $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
         for ($x = $this->argument('start'); $x <= $this->argument('end'); $x++) {
             try {
