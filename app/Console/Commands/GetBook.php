@@ -40,10 +40,10 @@ class GetBook extends Command
      */
     public function handle()
     {
-        BOOK::getLastBook();
+        $lastGotBook = BOOK::getLastBook();
         $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
-        for ($x = $this->argument('start'); $x <= $this->argument('end'); $x++) {
+        for ($x = $lastGotBook; $x < ($lastGotBook + $this->argument('count')); $x++) {
             try {
                 $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
