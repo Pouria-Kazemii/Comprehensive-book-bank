@@ -40,14 +40,17 @@ class GetBook extends Command
      */
     public function handle()
     {
-        $lastGotBook = BOOK::getLastBook();
+        $lastGotBook = BOOK::getLastBookRecordNumber();
         $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
-        for ($x = $lastGotBook; $x < ($lastGotBook + $this->argument('count')); $x++) {
+        $itemGotten = 1;
+        $countWalker = 1;
+
+        while ($itemGotten <= $this->argument('count')){
             try {
                 $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
-                    'recordNumber' => $x,
+                    'recordNumber' => $lastGotBook + $countWalker,
                 ]);
             } catch (\Exception $e) {
                 $response = null;
@@ -65,9 +68,37 @@ class GetBook extends Command
                 $filtered['all'] = $response['Results'][0];
                 $filtered['recordNumber'] = $x;
                 Book::firstOrCreate($filtered);
+                $itemGotten ++;
+                $bar->advance();
             }
-            $bar->advance();
+            $countWalker ++;
         }
+
+//        for ($x = $lastGotBook+1; $x < ($lastGotBook + $this->argument('count')); $x++) {
+//            try {
+//                $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
+//                    'materialId' => 1,
+//                    'recordNumber' => $x,
+//                ]);
+//            } catch (\Exception $e) {
+//                $response = null;
+//            }
+//            if($response) {
+//                $result = $response['Results'][0];
+//                $allowed = ['Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
+//                $filtered = array_filter(
+//                    $result,
+//                    function ($key) use ($allowed) {
+//                        return in_array($key, $allowed);
+//                    },
+//                    ARRAY_FILTER_USE_KEY
+//                );
+//                $filtered['all'] = $response['Results'][0];
+//                $filtered['recordNumber'] = $x;
+//                Book::firstOrCreate($filtered);
+//            }
+//            $bar->advance();
+//        }
         $bar->finish();
     }
 }
