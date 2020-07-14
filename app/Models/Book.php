@@ -29,7 +29,7 @@ class Book extends Model
     static public function getLastBookRecordNumber()
     {
         $lastBook = Book::orderBy('id', 'desc')->first();
-        return (is_null($lastBook->recordNumber))?0:$lastBook->recordNumber;
+        return (is_null($lastBook))?0:$lastBook->recordNumber;
     }
 
 }
