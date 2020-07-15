@@ -17,6 +17,9 @@ class Book extends Model
     // {
     //     $this->attributes['lstMozoeEsm'] = json_encode($value);
     // }
+    public function authors() {
+        return $this->hasMany(Author::class);
+    }
     public function setAllAttribute($value)
     {
         $this->attributes['all'] = json_encode($value);
