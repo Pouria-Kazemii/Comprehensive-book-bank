@@ -74,31 +74,6 @@ class GetBook extends Command
             $countWalker ++;
         }
 
-//        for ($x = $lastGotBook+1; $x < ($lastGotBook + $this->argument('count')); $x++) {
-//            try {
-//                $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
-//                    'materialId' => 1,
-//                    'recordNumber' => $x,
-//                ]);
-//            } catch (\Exception $e) {
-//                $response = null;
-//            }
-//            if($response) {
-//                $result = $response['Results'][0];
-//                $allowed = ['Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
-//                $filtered = array_filter(
-//                    $result,
-//                    function ($key) use ($allowed) {
-//                        return in_array($key, $allowed);
-//                    },
-//                    ARRAY_FILTER_USE_KEY
-//                );
-//                $filtered['all'] = $response['Results'][0];
-//                $filtered['recordNumber'] = $x;
-//                Book::firstOrCreate($filtered);
-//            }
-//            $bar->advance();
-//        }
         $bar->finish();
     }
 }
