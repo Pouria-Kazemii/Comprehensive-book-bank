@@ -162,12 +162,13 @@ class Author extends Model
                     foreach($tempArray as $temp){
                         Log::info('specialCharFilterArray : '.$temp."===".$char);
                        $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
+                       $existArray = array_merge($existArray, $temp2Array);
                     }
                 }else{
                     $ntFound ++;
                 }
             }
             if($ntFound == count($specialChars)) $tempArray[]=$Str . "--PLUS STR--";
-            return array_merge($existArray, $tempArray, $temp2Array);
+            return array_merge($existArray,$tempArray);
     }
 }
