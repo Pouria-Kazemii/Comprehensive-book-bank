@@ -154,14 +154,18 @@ class Author extends Model
 
             $tempArray = array();
             $temp2Array = array();
+            $ntFound = 0 ;
             foreach($specialChars as $key => $char){
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
-                       $temp2Array =  Author::specialCharFilterArray($temp, $tempArray) + "--$temp-$char--";
+                       $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
                     }
+                }else{
+                    $ntFound ++;
                 }
             }
+            if($ntFound == count($specialChars)) $tempArray[]=$Str;
             return array_merge($existArray, $tempArray, $temp2Array);
     }
 }
