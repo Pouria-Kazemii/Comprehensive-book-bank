@@ -15,7 +15,7 @@ class GetBook extends Command
      *
      * @var string
      */
-    protected $signature = 'get:book {count} {recordNumber}';
+    protected $signature = 'get:book {count} {recordNumber?}';
 
     /**
      * The console command description.
