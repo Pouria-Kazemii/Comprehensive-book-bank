@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 class Author extends Model
 {
     protected $fillable = ['f_name','l_name','d_name', 'country'];
-    protected $specialChars = array("؛", ",", "T", ";", "-", "،");
+    static protected $specialChars = array("؛", ",", "T", ";", "-", "،");
 
     public function setAllAttribute($value)
     {
@@ -153,24 +153,29 @@ class Author extends Model
     }
     static public function specialCharFilterArray($Str, $existArray){
 
-
             $tempArray = array();
             $temp2Array = array();
-            $ntFound = 0 ;
             foreach(self::$specialChars  as $key => $char){
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
-                        Log::info('specialCharFilterArray : '.$temp."===".$char);
                        $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
                        $existArray = array_merge($existArray, $temp2Array);
                     }
-
-                }else{
-                    $ntFound ++;
                 }
             }
-            //if($ntFound == count($specialChars)) $tempArray[]=$Str . "--PLUS STR--";
             return array_merge($existArray,$tempArray);
+    }
+    static public function specialCharCleanerArray($dirtyArray){
+        foreach($dirtyArray  as  $key=> &$dirty){
+            $dirty = trim($dirty);
+            foreach(self::$specialChars  as  $char){
+                if(strpos($dirty, $char)){
+                    unset($dirtyArray[$key]);
+                    break;
+                }
+            }
+        }
+        return $dirtyArray;
     }
 }
