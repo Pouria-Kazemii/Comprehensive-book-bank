@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Models\Book;
+use App\Models\Author;
 
 
 class GetBook extends Command
@@ -50,7 +51,8 @@ class GetBook extends Command
             try {
                 $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
-                    'recordNumber' => $lastGotBook + $countWalker,
+                    // 'recordNumber' => $lastGotBook + $countWalker,
+                    'recordNumber' => '1340962' ,
                 ]);
             } catch (\Exception $e) {
                 $response = null;
@@ -65,6 +67,7 @@ class GetBook extends Command
                     },
                     ARRAY_FILTER_USE_KEY
                 );
+                print_r(Author::authorSeprator($filtered['Creator']));
                 $filtered['all'] = $response['Results'][0];
                 $filtered['recordNumber'] = $lastGotBook + $countWalker;
                 Book::firstOrCreate($filtered);
