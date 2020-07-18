@@ -67,7 +67,7 @@ class GetBook extends Command
                     },
                     ARRAY_FILTER_USE_KEY
                 );
-                print_r(Author::authorSeprator($filtered['Creator']));
+                print_r(Author::authorSeprator($filtered['Creator']));exit;
                 $filtered['all'] = $response['Results'][0];
                 $filtered['recordNumber'] = $lastGotBook + $countWalker;
                 Book::firstOrCreate($filtered);
