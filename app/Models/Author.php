@@ -18,14 +18,37 @@ class Author extends Model
         return $this->belongsToMany(BOOK::class);
     }
     static public function authorSeprator($authorStr){
-        $authArray = explode("؛", $authorStr);
-        foreach($authArray as &$auth){
-            if(strpos($auth, "،")){
-                $authNames = explode("،" , $auth);
-                $auth = $authNames[1]." ".$authNames[0];
+        $authArray = array();
+        if(strpos($auth, "؛")){
+            $authArray = explode("؛", $authorStr);
+
+            $traslatorArray = array();
+
+            foreach($authArray as $auth){
+                if(strpos($auth, "T")){
+                    $traslatorArray = explode("T", $authorStr);
+                }
             }
-            $auth = trim($auth);
+            array_push($authArray, $traslatorArray);
+
+            foreach($authArray as &$auth){
+                if(strpos($auth, "،")){
+                    $authNames = explode("،" , $auth);
+                    $auth = $authNames[1]." ".$authNames[0];
+                }
+
+                $auth = preg_replace('/[0-9]+/', ' ', $auth);
+                $auth = str_replace("به اهتمام", ' ', $auth);
+                $auth = str_replace("ترجمه", ' ', $auth);
+                $auth = str_replace("تالیف", ' ', $auth);
+                $auth = str_replace("نگارش", ' ', $auth);
+                $auth = str_replace("مترجم", ' ', $auth);
+
+                $auth = trim($auth);
+            }
         }
+
+
         return array_unique($authArray);
     }
 }
