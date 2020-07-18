@@ -29,7 +29,7 @@ class Author extends Model
                     $traslatorArray = explode("T", $authorStr);
                 }
             }
-            array_push($authArray, $traslatorArray);
+            $authArray = array_merge($authArray, $traslatorArray);
 
             foreach($authArray as &$auth){
                 if(strpos($auth, "،")){
