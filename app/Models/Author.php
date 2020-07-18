@@ -33,7 +33,6 @@ class Author extends Model
         $authArray = Author::specialCharFilterArray($authorStr, $authArray);
         $authArray = Author::specialCharCleanerArray($authArray);
 
-
         return array_unique($authArray);
     }
     static public function specialCharFilterArray($Str, $existArray){
@@ -53,6 +52,12 @@ class Author extends Model
     }
     static public function specialCharCleanerArray($dirtyArray){
         foreach($dirtyArray  as  $key=> &$dirty){
+
+            if(strpos($dirty, "،")){
+                $authNames = explode("،" , $dirty);
+                $dirty = $authNames[1]." ".$authNames[0];
+            }
+
             $dirty = trim($dirty);
             foreach(self::$specialChars  as  $char){
                 if(strpos($dirty, $char)){
@@ -60,6 +65,7 @@ class Author extends Model
                     break;
                 }
             }
+
         }
         return $dirtyArray;
     }
