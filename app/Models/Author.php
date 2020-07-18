@@ -29,13 +29,16 @@ class Author extends Model
 
         $authArray = array();
         $encharsepArray = array();
+        $envcharsepArray = array();
         $traslatorArray = array();
         $encharsepArray2 = array();
+        $envcharsepArray2 = array();
         $traslatorArray2 = array();
 
-        if(strpos($authorStr, "؛") || strpos($authorStr, ";") || strpos($authorStr, "T")){
+        if(strpos($authorStr, "؛") || strpos($authorStr, ";") || strpos($authorStr, "T") || strpos($authorStr, ",")){
             $authArray = explode("؛", $authorStr);
             $encharsepArray = explode(";", $authorStr);
+            $envcharsepArray = explode(",", $authorStr);
             $traslatorArray = explode("T", $authorStr);
 
 
@@ -48,12 +51,19 @@ class Author extends Model
                     $traslatorArray2 = explode("T", $auth);
                     unset($authArray[$authKey]);
                 }
+                if(strpos($auth, ",")){
+                    $envcharsepArray2 = explode(",", $auth);
+                    unset($authArray[$authKey]);
+                }
             }
             foreach($traslatorArray as $authKey =>&$auth){
                 if(strpos($auth, ";")){
                     unset($traslatorArray[$authKey]);
                 }
                 if(strpos($auth, "T")){
+                    unset($traslatorArray[$authKey]);
+                }
+                if(strpos($auth, ",")){
                     unset($traslatorArray[$authKey]);
                 }
             }
@@ -64,9 +74,23 @@ class Author extends Model
                 if(strpos($auth, "T")){
                     unset($encharsepArray[$authKey]);
                 }
+                if(strpos($auth, ",")){
+                    unset($encharsepArray[$authKey]);
+                }
+            }
+            foreach($envcharsepArray as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($envcharsepArray[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($envcharsepArray[$authKey]);
+                }
+                if(strpos($auth, ",")){
+                    unset($envcharsepArray[$authKey]);
+                }
             }
 
-            $authArray = array_merge($authArray, $traslatorArray, $encharsepArray, $traslatorArray2, $encharsepArray2);
+            $authArray = array_merge($authArray, $traslatorArray, $encharsepArray, $traslatorArray2, $encharsepArray2, $envcharsepArray2);
 
             foreach($authArray as &$auth){
                 if(strpos($auth, "،")){
