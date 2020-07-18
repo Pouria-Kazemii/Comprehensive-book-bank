@@ -61,10 +61,8 @@ class Author extends Model
             $dirty = trim($dirty);
             if($dirty != ""){
                 foreach(self::$specialChars  as  $char){
-                    echo "\n".$dirty." : $char --->";
                     if(mb_strpos($dirty, $char) !== false){
                         unset($dirtyArray[$key]);
-                        echo "yes * ";
                     }
                 }
             }else{
