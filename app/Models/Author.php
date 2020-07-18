@@ -157,7 +157,7 @@ class Author extends Model
             $tempArray = array();
             $temp2Array = array();
             $ntFound = 0 ;
-            foreach($this->specialChars as $key => $char){
+            foreach(self::$specialChars  as $key => $char){
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
