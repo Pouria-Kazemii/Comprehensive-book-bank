@@ -28,18 +28,27 @@ class Author extends Model
         $authorStr = str_replace("مترجم", ' ', $authorStr);
 
         $authArray = array();
-        if(strpos($authorStr, "؛") || strpos($authorStr, ";")){
+        $encharsepArray = array();
+        $traslatorArray = array();
+        $encharsepArray2 = array();
+        $traslatorArray2 = array();
+
+        if(strpos($authorStr, "؛") || strpos($authorStr, ";") || strpos($authorStr, "T")){
             $authArray = explode("؛", $authorStr);
-            if (!count($authArray)) $authArray = explode(";", $authorStr);
+            $encharsepArray = explode(";", $authorStr);
+            $traslatorArray = explode("T", $authorStr);
 
-            $traslatorArray = array();
-
-            foreach($authArray as $auth){
-                if(strpos($auth, "T")){
-                    $traslatorArray = explode("T", $authorStr);
+            foreach($authArray as &$auth){
+                if(strpos($auth, ";")){
+                    $encharsepArray2 = explode(";", $auth);
                 }
             }
-            $authArray = array_merge($authArray, $traslatorArray);
+            foreach($authArray as &$auth){
+                if(strpos($auth, "T")){
+                    $traslatorArray2 = explode("T", $auth);
+                }
+            }
+            $authArray = array_merge($authArray, $traslatorArray, $encharsepArray, $traslatorArray2, $encharsepArray2);
 
             foreach($authArray as &$auth){
                 if(strpos($auth, "،")){
