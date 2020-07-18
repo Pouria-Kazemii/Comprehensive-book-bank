@@ -9,14 +9,6 @@ class Book extends Model
 {
     protected $fillable = ['all','recordNumber','Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
 
-    // public function setLstYaddashtsAttribute($value)
-    // {
-    //     $this->attributes['lstYaddashts'] = json_encode($value);
-    // }
-    // public function setLstMozoeEsmAttribute($value)
-    // {
-    //     $this->attributes['lstMozoeEsm'] = json_encode($value);
-    // }
     public function authors() {
         return $this->hasMany(Author::class);
     }
@@ -26,7 +18,7 @@ class Book extends Model
     }
     public function libraries()
     {
-        return $this->belongsToMany(Library::class);
+        return $this->hasMany(Library::class);
     }
 
     static public function getLastBookRecordNumber()
