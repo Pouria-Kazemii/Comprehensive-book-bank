@@ -24,6 +24,7 @@ class Author extends Model
                 $authNames = explode("،" , $auth);
                 $auth = $authNames[1]." ".$authNames[0];
             }
+            $auth = trim($auth);
         }
         return array_unique($authArray);
     }
