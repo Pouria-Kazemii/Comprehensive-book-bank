@@ -18,6 +18,15 @@ class Author extends Model
         return $this->belongsToMany(BOOK::class);
     }
     static public function authorSeprator($authorStr){
+
+        // initial filter
+        $authorStr = preg_replace('/[0-9]+/', ' ', $authorStr);
+        $authorStr = str_replace("به اهتمام", ' ', $authorStr);
+        $authorStr = str_replace("ترجمه", ' ', $authorStr);
+        $authorStr = str_replace("تالیف", ' ', $authorStr);
+        $authorStr = str_replace("نگارش", ' ', $authorStr);
+        $authorStr = str_replace("مترجم", ' ', $authorStr);
+
         $authArray = array();
         if(strpos($authorStr, "؛") || strpos($authorStr, ";")){
             $authArray = explode("؛", $authorStr);
@@ -37,13 +46,6 @@ class Author extends Model
                     $authNames = explode("،" , $auth);
                     $auth = $authNames[1]." ".$authNames[0];
                 }
-
-                $auth = preg_replace('/[0-9]+/', ' ', $auth);
-                $auth = str_replace("به اهتمام", ' ', $auth);
-                $auth = str_replace("ترجمه", ' ', $auth);
-                $auth = str_replace("تالیف", ' ', $auth);
-                $auth = str_replace("نگارش", ' ', $auth);
-                $auth = str_replace("مترجم", ' ', $auth);
 
                 $auth = trim($auth);
             }
