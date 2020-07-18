@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class Author extends Model
 {
     protected $fillable = ['f_name','l_name','d_name', 'country'];
+    protected $specialChars = array("؛", ",", "T", ";", "-", "،");
 
     public function setAllAttribute($value)
     {
@@ -151,12 +152,12 @@ class Author extends Model
         return array_unique($authArray);
     }
     static public function specialCharFilterArray($Str, $existArray){
-            $specialChars = array("؛", ",", "T", ";", "-", "،");
+
 
             $tempArray = array();
             $temp2Array = array();
             $ntFound = 0 ;
-            foreach($specialChars as $key => $char){
+            foreach($this->specialChars as $key => $char){
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
