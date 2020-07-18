@@ -38,18 +38,34 @@ class Author extends Model
             $encharsepArray = explode(";", $authorStr);
             $traslatorArray = explode("T", $authorStr);
 
-            foreach($authArray as &$auth){
+
+            foreach($authArray as $authKey =>&$auth){
                 if(strpos($auth, ";")){
                     $encharsepArray2 = explode(";", $auth);
-                    unset($auth);
+                    unset($authArray[$authKey]);
                 }
-            }
-            foreach($authArray as &$auth){
                 if(strpos($auth, "T")){
                     $traslatorArray2 = explode("T", $auth);
-                    unset($auth);
+                    unset($authArray[$authKey]);
                 }
             }
+            foreach($traslatorArray as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($traslatorArray[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($traslatorArray[$authKey]);
+                }
+            }
+            foreach($encharsepArray as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($encharsepArray[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($encharsepArray[$authKey]);
+                }
+            }
+
             $authArray = array_merge($authArray, $traslatorArray, $encharsepArray, $traslatorArray2, $encharsepArray2);
 
             foreach($authArray as &$auth){
