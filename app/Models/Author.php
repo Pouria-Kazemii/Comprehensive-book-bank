@@ -167,7 +167,7 @@ class Author extends Model
                     $ntFound ++;
                 }
             }
-            if($ntFound == count($specialChars)) $tempArray[]=$Str;
+            if($ntFound == count($specialChars)) $tempArray[]=$Str . "--PLUS STR--";
             return array_merge($existArray, $tempArray, $temp2Array);
     }
 }
