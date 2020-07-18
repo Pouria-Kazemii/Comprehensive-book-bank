@@ -153,6 +153,7 @@ class Author extends Model
             $specialChars = array("؛", ",", "T", ";", "-", "،");
 
             $tempArray = array();
+            $temp2Array = array();
             foreach($specialChars as $key => $char){
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
