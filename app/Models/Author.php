@@ -94,6 +94,43 @@ class Author extends Model
                 $auth.="-D-";
             }
 
+            foreach($traslatorArray2 as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($traslatorArray2[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($traslatorArray2[$authKey]);
+                }
+                if(strpos($auth, ",")){
+                    unset($traslatorArray2[$authKey]);
+                }
+                $auth.="-E-";
+            }
+            foreach($encharsepArray2 as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($encharsepArray2[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($encharsepArray2[$authKey]);
+                }
+                if(strpos($auth, ",")){
+                    unset($encharsepArray2[$authKey]);
+                }
+                $auth.="-F-";
+            }
+            foreach($envcharsepArray2 as $authKey =>&$auth){
+                if(strpos($auth, ";")){
+                    unset($envcharsepArray2[$authKey]);
+                }
+                if(strpos($auth, "T")){
+                    unset($envcharsepArray2[$authKey]);
+                }
+                if(strpos($auth, ",")){
+                    unset($envcharsepArray2[$authKey]);
+                }
+                $auth.="-G-";
+            }
+
             $authArray = array_merge($authArray, $traslatorArray, $encharsepArray, $traslatorArray2, $encharsepArray2, $envcharsepArray2);
 
             foreach($authArray as &$auth){
