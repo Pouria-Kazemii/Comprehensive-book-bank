@@ -19,8 +19,9 @@ class Author extends Model
     }
     static public function authorSeprator($authorStr){
         $authArray = array();
-        if(strpos($authorStr, "؛")){
+        if(strpos($authorStr, "؛") || strpos($authorStr, ";")){
             $authArray = explode("؛", $authorStr);
+            if (!count($authArray)) $authArray = explode(";", $authorStr);
 
             $traslatorArray = array();
 
