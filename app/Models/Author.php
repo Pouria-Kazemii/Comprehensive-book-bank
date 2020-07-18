@@ -158,7 +158,7 @@ class Author extends Model
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
-                       $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
+                       $temp2Array =  Author::specialCharFilterArray($temp, $tempArray) + "--$temp-$char--";
                     }
                 }
             }
