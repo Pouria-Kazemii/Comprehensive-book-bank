@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Library\Library;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class Author extends Model
 {
@@ -159,6 +160,7 @@ class Author extends Model
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
+                        Log::info('specialCharFilterArray : '.$temp."===".$char);
                        $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
                     }
                 }else{
