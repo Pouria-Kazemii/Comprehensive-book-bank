@@ -10,7 +10,7 @@ class Author extends Model
 {
     protected $fillable = ['f_name','l_name','d_name', 'country'];
 
-    static protected $specialChars = array("؛", ",", "T", ";", "-", "،");
+    static protected $specialChars = array("؛", ",", "T", ";", "-");
     static protected $ignorWords = array("به اهتمام", "ترجمه", "تالیف", "نگارش", "مترجم");
 
     public function setAllAttribute($value)
