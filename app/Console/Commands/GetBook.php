@@ -15,7 +15,7 @@ class GetBook extends Command
      *
      * @var string
      */
-    protected $signature = 'get:book {count}';
+    protected $signature = 'get:book {count} {recordNumber}';
 
     /**
      * The console command description.
@@ -52,7 +52,7 @@ class GetBook extends Command
                 $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
                     // 'recordNumber' => $lastGotBook + $countWalker,
-                    'recordNumber' => '1340962' ,
+                    'recordNumber' => ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker) ,
                 ]);
             } catch (\Exception $e) {
                 $response = null;
