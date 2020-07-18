@@ -17,7 +17,7 @@ class Author extends Model
     {
         return $this->belongsToMany(BOOK::class);
     }
-    public function authorSeprator($authorStr){
+    static public function authorSeprator($authorStr){
         $authArray = explode("؛", $authorStr);
         foreach($authArray as &$auth){
             if(strpos($auth, "،")){
