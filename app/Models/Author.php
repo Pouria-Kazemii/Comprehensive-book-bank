@@ -28,7 +28,7 @@ class Author extends Model
         $authorStr = str_replace("مترجم", ' ', $authorStr);
 
         $authArray = array();
-        return $this->specialCharFilterArray($authorStr, $authArray);
+        return Author::specialCharFilterArray($authorStr, $authArray);
 
 
         $encharsepArray = array();
@@ -149,7 +149,7 @@ class Author extends Model
 
         return array_unique($authArray);
     }
-    public function specialCharFilterArray($Str, $existArray){
+    static public function specialCharFilterArray($Str, $existArray){
             $specialChars = array("؛", ",", "T", ";", "-", "،");
 
             $tempArray = array();
@@ -157,7 +157,7 @@ class Author extends Model
                 if(strpos($Str, $char)){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
-                       $temp2Array = $this->specialCharFilterArray($temp, $tempArray);
+                       $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
                     }
                 }
             }
