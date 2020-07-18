@@ -40,7 +40,7 @@ class Author extends Model
             $tempArray = array();
             $temp2Array = array();
             foreach(self::$specialChars  as $key => $char){
-                if(mb_strpos($Str, $char)){
+                if(mb_strpos($Str, $char) !== false){
                     $tempArray = explode($char, $Str);
                     foreach($tempArray as $temp){
                        $temp2Array =  Author::specialCharFilterArray($temp, $tempArray);
@@ -53,7 +53,7 @@ class Author extends Model
     static public function specialCharCleanerArray($dirtyArray){
         foreach($dirtyArray  as  $key=> &$dirty){
 
-            if(mb_strpos($dirty, "،")){
+            if(mb_strpos($dirty, "،")!== false){
                 $authNames = explode("،" , $dirty);
                 $dirty = $authNames[1]." ".$authNames[0];
             }
@@ -62,7 +62,7 @@ class Author extends Model
             if($dirty != ""){
                 foreach(self::$specialChars  as  $char){
                     echo "\n".$dirty." : $char --->";
-                    if(mb_strpos($dirty, $char)){
+                    if(mb_strpos($dirty, $char) !== false){
                         unset($dirtyArray[$key]);
                         echo "yes * ";
                     }
