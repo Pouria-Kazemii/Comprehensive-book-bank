@@ -10,8 +10,8 @@ class Author extends Model
 {
     protected $fillable = ['f_name','l_name','d_name', 'country'];
 
-    static protected $specialChars = array("؛", ",", "T", ";", "-");
-    static protected $ignorWords = array("به اهتمام", "ترجمه", "تالیف", "نگارش", "مترجم");
+    static protected $specialChars = array(",", "T", ";", "-");
+    static protected $ignorWords = array("به اهتمام", "ترجمه", "تاًلیف" ,"تالیف", "نگارش", "مترجم");
 
     public function setAllAttribute($value)
     {
@@ -53,16 +53,17 @@ class Author extends Model
     }
     static public function specialCharCleanerArray($dirtyArray){
         $oldDirty = "";
+        $dirtyArray = array_unique($dirtyArray);
         foreach($dirtyArray  as  $key=> &$dirty){
 
             // handle family, name string
-            if(mb_strpos($dirty, "،")!== false){
-                $authNames = explode("،" , $dirty);
+            if(mb_strpos($dirty, ",")!== false){
+                $authNames = explode("," , $dirty);
                 $dirty = $authNames[1]." ".$authNames[0];
             }
 
 
-
+            // Clean From ignor Char
             $dirty = trim($dirty);
             if($dirty != ""){
                 foreach(self::$specialChars  as  $char){
