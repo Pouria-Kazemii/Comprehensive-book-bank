@@ -73,10 +73,12 @@ class GetBook extends Command
                 $book = Book::firstOrCreate($filtered);
 
                 $authorsArray=Author::authorSeprator($filtered['Creator']);
+                $authorObjectArray = array();
                 foreach($authorsArray as $author){
                     $authorObject = Author::firstOrCreate(array("d_name" => $author));
-                    $book->authors()->save($authorObject);
+                    $authorObjectArray[] = $authorObject;
                 }
+                $book->authors()->saveMany($authorObject);
 
                 $itemGotten ++;
                 $bar->advance();
