@@ -76,7 +76,7 @@ class GetBook extends Command
                 $authorObjectArray = array();
                 foreach($authorsArray as $author){
                     $authorObject = Author::firstOrCreate(array("d_name" => $author));
-                    $authorObjectArray[] = $authorObject;
+                    $authorObjectArray[] = $authorObject->id;
                 }
                 //$book->authors()->saveMany($authorObjectArray);
                 $book->authors()->attach($authorObjectArray);
