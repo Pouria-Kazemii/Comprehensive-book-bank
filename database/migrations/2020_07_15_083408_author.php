@@ -20,7 +20,7 @@ class Author extends Migration
             $table->longText("d_name");  // Display Name
             $table->longText("country")->nullable(); // From
             $table->unsignedInteger("book_id");
-            $table->foreign("book_id")->references('id')->on('book'); // From
+            $table->foreign("book_id")->references('id')->on('books'); // From
             $table->timestamps();
         });
     }
