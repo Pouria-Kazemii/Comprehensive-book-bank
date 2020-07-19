@@ -161,6 +161,8 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
+        /* Add Custome Helper Provider */
+        browner12\helpers\HelperServiceProvider::class,
 
         /*
          * Package Service Providers...
