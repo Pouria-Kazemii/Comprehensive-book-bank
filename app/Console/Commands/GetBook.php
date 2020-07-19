@@ -75,8 +75,7 @@ class GetBook extends Command
                 $authorsArray=Author::authorSeprator($filtered['Creator']);
                 foreach($authorsArray as $author){
                     $authorObject = Author::firstOrCreate(array("d_name" => $author));
-                    $book->authors()->attach(array($authorObject->id));
-                    //$book->setRelation('authors', $authorObject);
+                    $book->authors()->save($authorObject);
                 }
 
                 $itemGotten ++;
