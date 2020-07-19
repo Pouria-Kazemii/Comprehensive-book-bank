@@ -10,7 +10,7 @@ class Book extends Model
     protected $fillable = ['all','recordNumber','Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
 
     public function authors() {
-        return $this->hasMany(Author::class);
+        return $this->belongsToMany(Author::class);
     }
     public function setAllAttribute($value)
     {
@@ -18,7 +18,7 @@ class Book extends Model
     }
     public function libraries()
     {
-        return $this->hasMany(Library::class);
+        return $this->belongsToMany(Library::class);
     }
 
     static public function getLastBookRecordNumber()
