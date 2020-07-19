@@ -14,7 +14,7 @@ class Author extends Migration
     public function up()
     {
         Schema::create('author', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->longText("f_name")->nullable();  // First Name
             $table->longText("l_name")->nullable();  // Last Name
             $table->longText("d_name");  // Display Name
