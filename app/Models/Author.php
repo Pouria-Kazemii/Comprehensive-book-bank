@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Models\Library\Library;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
+
 
 class Author extends Model
 {
+    protected $table = 'author';
     protected $fillable = ['f_name','l_name','d_name', 'country'];
 
     static protected $specialChars = array("T", ";", "-");
