@@ -52,11 +52,32 @@ class Author extends Model
             return array_merge($existArray,$tempArray);
     }
     static public function specialCharCleanerArray($dirtyArray){
+        $oldDirty = "";
         foreach($dirtyArray  as  $key=> &$dirty){
 
+            // handle family, name string
             if(mb_strpos($dirty, "،")!== false){
                 $authNames = explode("،" , $dirty);
                 $dirty = $authNames[1]." ".$authNames[0];
+            }
+
+            // handle family name == name family string
+            if($oldDirty != ""){
+                $spaceArrayDirty = explode(" " , $dirty);
+                $spaceArrayOldDirty = explode(" " , $oldDirty);
+                if(count($spaceArrayDirty) == count($spaceArrayOldDirty)){
+                    $dumplicatCounter = 0 ;
+                    foreach($spaceArrayDirty as $spacePart){
+                        if(in_array($spacePart, $spaceArrayOldDirty))$dumplicatCounter++;
+                    }
+                    if($dumplicatCounter == count($spaceArrayDirty)){
+                        unset($dirtyArray[$key]);
+                        $dirty ="";
+                        break;
+                    }
+                }
+            }else{
+                $oldDirty = $dirty;
             }
 
             $dirty = trim($dirty);
