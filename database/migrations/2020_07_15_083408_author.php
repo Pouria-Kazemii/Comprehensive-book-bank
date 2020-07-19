@@ -19,7 +19,7 @@ class Author extends Migration
             $table->longText("l_name")->nullable();  // Last Name
             $table->longText("d_name");  // Display Name
             $table->longText("country")->nullable(); // From
-            $table->id("book_id"); // From
+            $table->integer("book_id"); // From
             $table->timestamps();
         });
     }
