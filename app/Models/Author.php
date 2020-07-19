@@ -61,8 +61,21 @@ class Author extends Model
                 $dirty = $authNames[1]." ".$authNames[0];
             }
 
+
+
+            $dirty = trim($dirty);
+            if($dirty != ""){
+                foreach(self::$specialChars  as  $char){
+                    if(mb_strpos($dirty, $char) !== false){
+                        unset($dirtyArray[$key]);
+                    }
+                }
+            }else{
+                unset($dirtyArray[$key]);
+            }
+
             // handle family name == name family string
-            if($oldDirty != ""){
+            if($oldDirty != "" && $dirty!=""){
                 $spaceArrayDirty = explode(" " , $dirty);
                 $spaceArrayOldDirty = explode(" " , $oldDirty);
                 if(count($spaceArrayDirty) == count($spaceArrayOldDirty)){
@@ -78,17 +91,6 @@ class Author extends Model
                 }
             }else{
                 $oldDirty = $dirty;
-            }
-
-            $dirty = trim($dirty);
-            if($dirty != ""){
-                foreach(self::$specialChars  as  $char){
-                    if(mb_strpos($dirty, $char) !== false){
-                        unset($dirtyArray[$key]);
-                    }
-                }
-            }else{
-                unset($dirtyArray[$key]);
             }
         }
         return $dirtyArray;
