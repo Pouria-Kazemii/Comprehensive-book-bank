@@ -24,6 +24,7 @@ class Author extends Model
     static public function authorSeprator($authorStr){
 
         // initial filter
+        $authorStr = faCharToEN($authorStr);
         $authorStr = preg_replace('/[0-9]+/', ' ', $authorStr);
         foreach(self::$ignorWords as $ignor){
             $authorStr = str_replace($ignor, ' ', $authorStr);
