@@ -19,6 +19,7 @@ class Author extends Migration
             $table->longText("l_name")->nullable();  // Last Name
             $table->longText("d_name");  // Display Name
             $table->longText("country")->nullable(); // From
+            $table->unsignedInteger("book_id");
             $table->foreign("book_id")->references('id')->on('book'); // From
             $table->timestamps();
         });
