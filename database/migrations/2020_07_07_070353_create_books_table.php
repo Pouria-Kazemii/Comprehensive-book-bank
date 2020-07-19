@@ -27,7 +27,7 @@ class CreateBooksTable extends Migration
             $table->boolean('EjazeReserv')->nullable();
             $table->boolean('EjazeAmanat')->nullable();
             $table->longText('shabak')->nullable();
-            $table->unsignedInteger('author_id');
+            $table->unsignedInteger('author_id')->nullable();
             $table->timestamps();
         });
     }
