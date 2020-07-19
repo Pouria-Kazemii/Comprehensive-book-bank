@@ -69,10 +69,12 @@ class Author extends Model
                 foreach(self::$specialChars  as  $char){
                     if(mb_strpos($dirty, $char) !== false){
                         unset($dirtyArray[$key]);
+                        $dirty = "";
                     }
                 }
             }else{
                 unset($dirtyArray[$key]);
+                $dirty = "";
             }
 
             // handle family name == name family string
@@ -87,7 +89,6 @@ class Author extends Model
                     if($dumplicatCounter == count($spaceArrayDirty)){
                         unset($dirtyArray[$key]);
                         $dirty ="";
-                        break;
                     }
                 }
             }else{
