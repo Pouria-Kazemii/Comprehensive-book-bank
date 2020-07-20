@@ -79,3 +79,21 @@ if (!function_exists('faCharToEN')) {
         return $faStr;
     }
 }
+if (!function_exists('cleanFaAlphabet')) {
+
+    /**
+     * Change Fa String to EN
+     *
+     * @param string $faStr
+     * @return string $cleanedStr
+     */
+    function cleanFaAlphabet($faStr)
+    {
+        $faAlphabet = explode(' ', 'ا ب پ ت ث ج چ ح خ د ذ ر ز ژ ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی');
+        $faStr = arCharToFA($faStr);
+        foreach($faAlphabet as $fa){
+            $faStr = str_replace($fa, "", $faStr);
+        }
+        return $faStr;
+    }
+}
