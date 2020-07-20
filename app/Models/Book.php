@@ -38,7 +38,7 @@ class Book extends Model
             }
         }
         if(count($shabakArray)==0)$shabakArray[]=$shabakStr;
-        return $shabakArray;
+        return array_map('trim', $shabakArray);
     }
 
 }
