@@ -34,12 +34,12 @@ class Book extends Model
         foreach (self::$shabakSeparator as $sep){
             if(mb_strpos($shabakStr, $sep) !== false){
                 $shabakArray = explode($sep,$shabakStr);
-                $shabakArray = array_filter($shabakArray, function($v, $k) {$v=trim(str_replace(" ", '', $v));return $v;}, ARRAY_FILTER_USE_BOTH);
+                $shabakArray = array_filter($shabakArray, function($v, $k) {$v=(int)(trim(str_replace(" ", '', $v)));return $v;}, ARRAY_FILTER_USE_BOTH);
                 break;
             }
         }
-        if(count($shabakArray)==0)$shabakArray[]=$shabakStr;
-        return array_map('trim', $shabakArray);
+        if(count($shabakArray)==0)$shabakArray[]=(int)($shabakStr);
+        return $shabakArray;
     }
 
 }
