@@ -48,11 +48,12 @@ class GetBook extends Command
         $countWalker = 1;
 
         while ($itemGotten <= $this->argument('count')){
+            $recordNumber = ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker);
             try {
+
                 $response = Http::retry(5, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
-                    // 'recordNumber' => $lastGotBook + $countWalker,
-                    'recordNumber' => ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker) ,
+                    'recordNumber' => $recordNumber ,
                 ]);
             } catch (\Exception $e) {
                 $response = null;
@@ -62,13 +63,19 @@ class GetBook extends Command
                 $allowed = ['Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
                 $filtered = array_filter(
                     $result,
-                    function ($key) use ($allowed) {
+                    function ($val, $key) use ($allowed) {
                         return in_array($key, $allowed);
                     },
-                    ARRAY_FILTER_USE_KEY
+                    ARRAY_FILTER_USE_BOTH
                 );
 
                 $filtered['all'] = $response['Results'][0];
+                $filtered['recordNumber'] = $recordNumber;
+
+                // filter textvalue
+                $filtered['TedadSafhe'] = (int)(faCharToEN($filtered['TedadSafhe']));
+                $filtered['saleNashr'] = (int)(faCharToEN($filtered['saleNashr']));
+
 
                 $authorObjectArray = array();
                 if($filtered['Creator'] !=""){
