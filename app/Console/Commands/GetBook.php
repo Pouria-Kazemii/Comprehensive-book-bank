@@ -69,7 +69,12 @@ class GetBook extends Command
                 );
 
                 $filtered['all'] = $response['Results'][0];
-                $filtered['recordNumber'] = $lastGotBook + $countWalker;
+                //$filtered['recordNumber'] = $lastGotBook + $countWalker;
+
+                $shabakArray = Book::getShabakArray($filtered['shabak']);
+                print_r($shabakArray);exit;
+
+
                 $book = Book::firstOrCreate($filtered);
 
                 $authorsArray=Author::authorSeprator($filtered['Creator']);

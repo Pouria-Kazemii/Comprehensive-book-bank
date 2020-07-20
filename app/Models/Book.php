@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Book extends Model
 {
     protected $fillable = ['all','recordNumber','Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
+    static protected $shabakSeparator = array(",", " ");
 
     public function authors() {
         return $this->belongsToMany(Author::class);
@@ -25,6 +26,19 @@ class Book extends Model
     {
         $lastBook = Book::orderBy('id', 'desc')->first();
         return (is_null($lastBook))?0:$lastBook->recordNumber;
+    }
+    static public function getShabakArray($shabakStr){
+        $shabakStr = faCharToEN($shabakStr);
+        $shabakArray=array();
+        $shabakStr = trim(str_replace("-", '', $shabakStr));
+        foreach (self::$shabakSeparator as $sep){
+            if(mb_strpos($shabakStr, $char) !== false){
+                $shabakArray = explode($sep,$shabakStr);
+                break;
+            }
+        }
+        if(count($shabakArray)==0)$shabakArray[]=$shabakStr;
+        return $shabakArray;
     }
 
 }
