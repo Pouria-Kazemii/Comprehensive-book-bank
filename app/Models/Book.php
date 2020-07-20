@@ -34,9 +34,7 @@ class Book extends Model
         foreach (self::$shabakSeparator as $sep){
             if(mb_strpos($shabakStr, $sep) !== false){
                 $shabakArray = explode($sep,$shabakStr);
-                foreach($shabakArray as $shabak){
-                    $shabak = (int)(trim(str_replace(" ", '', $shabak)));
-                }
+                $shabakArray = array_filter($shabakArray, function($var) {$var=(int)(trim(str_replace(" ", '', $var)));return $var;});
                 break;
             }
         }
