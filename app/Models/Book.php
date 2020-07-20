@@ -32,7 +32,7 @@ class Book extends Model
         $shabakArray=array();
         $shabakStr = trim(str_replace("-", '', $shabakStr));
         foreach (self::$shabakSeparator as $sep){
-            if(mb_strpos($shabakStr, $char) !== false){
+            if(mb_strpos($shabakStr, $sep) !== false){
                 $shabakArray = explode($sep,$shabakStr);
                 break;
             }
