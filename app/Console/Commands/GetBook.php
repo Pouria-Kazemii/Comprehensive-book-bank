@@ -49,7 +49,7 @@ class GetBook extends Command
 
         while ($itemGotten <= $this->argument('count')){
             try {
-                $response = Http::retry(10, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
+                $response = Http::retry(5, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
                     // 'recordNumber' => $lastGotBook + $countWalker,
                     'recordNumber' => ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker) ,
@@ -69,22 +69,36 @@ class GetBook extends Command
                 );
 
                 $filtered['all'] = $response['Results'][0];
-                //$filtered['recordNumber'] = $lastGotBook + $countWalker;
 
-                $shabakArray = Book::getShabakArray($filtered['shabak']);
-                print_r($shabakArray);exit;
-
-
-                $book = Book::firstOrCreate($filtered);
-
-                $authorsArray=Author::authorSeprator($filtered['Creator']);
                 $authorObjectArray = array();
-                foreach($authorsArray as $author){
-                    $authorObject = Author::firstOrCreate(array("d_name" => $author));
-                    $authorObjectArray[] = $authorObject->id;
+                if($filtered['Creator'] !=""){
+                    $authorsArray=Author::authorSeprator($filtered['Creator']);
+
+                    foreach($authorsArray as $author){
+                        $authorObject = Author::firstOrCreate(array("d_name" => $author));
+                        $authorObjectArray[] = $authorObject->id;
+                    }
                 }
-                //$book->authors()->saveMany($authorObjectArray);
-                $book->authors()->attach($authorObjectArray);
+
+
+                if(trim($filtered['shabak']) != ""){
+                    $shabakArray = Book::getShabakArray($filtered['shabak']);
+                    foreach($shabakArray as $shabak){
+                        if(! Book::where('shabak',$shabak)->first()){
+                            $filtered['shabak'] = $shabak;
+                            $book = Book::firstOrCreate($filtered);
+                            if(count($authorObjectArray)>0){
+                                $book->authors()->attach($authorObjectArray);
+                            }
+                        }
+                    }
+                }else{
+                    $book = Book::firstOrCreate($filtered);
+                    if(count($authorObjectArray)>0){
+                        $book->authors()->attach($authorObjectArray);
+                    }
+                }
+
 
                 $itemGotten ++;
                 $bar->advance();
