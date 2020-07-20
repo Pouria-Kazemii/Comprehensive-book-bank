@@ -73,8 +73,8 @@ class GetBook extends Command
                 $filtered['recordNumber'] = $recordNumber;
 
                 // filter textvalue
-                $filtered['TedadSafhe'] = (int)(cleanFaAlphabet(faCharToEN($filtered['TedadSafhe'])));
-                $filtered['saleNashr'] = (int)(cleanFaAlphabet(faCharToEN($filtered['saleNashr'])));
+                $filtered['TedadSafhe'] = cleanFaAlphabet(faCharToEN($filtered['TedadSafhe']));
+                $filtered['saleNashr'] = cleanFaAlphabet(faCharToEN($filtered['saleNashr']));
 
 
                 $authorObjectArray = array();

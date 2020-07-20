@@ -94,6 +94,7 @@ if (!function_exists('cleanFaAlphabet')) {
         foreach($faAlphabet as $fa){
             $faStr = str_replace($fa, "", $faStr);
         }
+        $faStr=preg_replace('/^[\pZ\pC]+|[\pZ\pC]+$/u','',trim($faStr));
         return $faStr;
     }
 }
