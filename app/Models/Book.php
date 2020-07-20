@@ -39,7 +39,7 @@ class Book extends Model
             }
         }
         if(count($shabakArray)==0)$shabakArray[]=(int)($shabakStr);
-        return $shabakArray;
+        return array_unique($shabakArray);
     }
 
 }
