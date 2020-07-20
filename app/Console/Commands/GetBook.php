@@ -63,10 +63,10 @@ class GetBook extends Command
                 $allowed = ['Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
                 $filtered = array_filter(
                     $result,
-                    function ($val, $key) use ($allowed) {
+                    function ($key) use ($allowed) {
                         return in_array($key, $allowed);
                     },
-                    ARRAY_FILTER_USE_BOTH
+                    ARRAY_FILTER_USE_KEY
                 );
 
                 $filtered['all'] = $response['Results'][0];
