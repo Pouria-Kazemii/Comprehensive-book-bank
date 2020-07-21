@@ -82,7 +82,7 @@ if (!function_exists('faCharToEN')) {
 if (!function_exists('cleanFaAlphabet')) {
 
     /**
-     * Change Fa String to EN
+     * Clean Fa Alphabet and character
      *
      * @param string $faStr
      * @return string $cleanedStr
@@ -96,5 +96,27 @@ if (!function_exists('cleanFaAlphabet')) {
         }
         $faStr=preg_replace('/^[\pZ\pC]+|[\pZ\pC]+$/u','',trim($faStr));
         return $faStr;
+    }
+}
+if (!function_exists('faAlphabetKeep')) {
+
+    /**
+     * Change fa alphabet only
+     *
+     * @param string $faStr
+     * @return string $cleanedStr
+     */
+    function faAlphabetKeep($faStr)
+    {
+        $faAlphabet = explode(' ', 'ا ب پ ت ث ج چ ح خ د ذ ر ز ژ س ش ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی ئ ء');
+        $faStr = arCharToFA($faStr);
+        $strLen = strlen($faStr);
+        for($i=0;$i<$strLen;$i++){
+            if(in_array($faStr[$i], $faAlphabet) === FALSE){
+                $faStr[$i] = " ";
+            }
+        }
+
+        return trim($faStr);
     }
 }
