@@ -41,8 +41,6 @@ class FindBook extends Command
     public function handle()
     {
         $bar = $this->output->createProgressBar($this->argument('count'));
-        //$bar->setOverwrite(false);
-        $bar->setMessage('Starting...');
         $bar->start();
 
         $books = Book::doesntHave('libraries')->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
