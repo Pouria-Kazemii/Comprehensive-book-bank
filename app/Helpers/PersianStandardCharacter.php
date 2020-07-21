@@ -110,10 +110,11 @@ if (!function_exists('faAlphabetKeep')) {
     {
         $faAlphabet = explode(' ', 'ا ب پ ت ث ج چ ح خ د ذ ر ز ژ س ش ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی ئ ء');
         $faStr = arCharToFA($faStr);
-        $strLen = strlen($faStr);
-        for($i=0;$i<$strLen;$i++){
-            if(in_array($faStr[$i], $faAlphabet) === FALSE){
-                $faStr[$i] = " ";
+        $pointer = 0;
+        while(isset($faStr[$pointer])){
+            $char=mb_substr($faStr, $pointer++, 1, 'UTF-8');
+            if(in_array($char, $faAlphabet) === FALSE){
+                $faStr = str_replace($char, " ", $faStr);
             }
         }
 
