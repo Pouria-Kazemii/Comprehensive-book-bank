@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Models\Book;
 use App\Models\Library\Library;
+use Carbon\Carbon;
+
 
 class FindBook extends Command
 {
@@ -43,7 +45,7 @@ class FindBook extends Command
         $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
 
-        $books = Book::doesntHave('libraries')->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
+        $books = Book::doesntHave('libraries')->where('lastCheckLibraries',null)->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
         foreach($books as $book){
             $this->info(" \n ---------- Find BOOK ".$book->id."           ---------- ");
             try {
@@ -70,6 +72,9 @@ class FindBook extends Command
             $this->info("---------- Found BOOK IN ".count($libraryIds)." Libraries ---------- ");
                 $book->libraries()->detach();
                 $book->libraries()->attach($libraryIds);
+                $book->lastCheckLibraries = Carbon::now()->timestamp;
+                $book->save();
+
             $bar->advance();
         }
         $bar->finish();
