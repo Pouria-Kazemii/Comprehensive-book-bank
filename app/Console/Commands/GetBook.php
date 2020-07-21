@@ -86,7 +86,7 @@ class GetBook extends Command
                     $authorsArray=Author::authorSeprator($filtered['Creator']);
 
                     foreach($authorsArray as $author){
-                        $authorObject = Author::firstOrCreate(array("d_name" => $author));
+                        $authorObject = Author::firstOrCreate(array("d_name" => faAlphabetKeep($author)));
                         $authorObjectArray[] = $authorObject->id;
                     }
                 }
