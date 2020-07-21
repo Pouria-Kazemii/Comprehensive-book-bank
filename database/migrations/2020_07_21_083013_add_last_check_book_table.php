@@ -15,7 +15,7 @@ class AddLastCheckBookTable extends Migration
     {
         //
         Schema::table('books', function($table) {
-            $table->timestamps("lastCheckLibraries")->nullable()->default(null);
+            $table->timestamp("lastCheckLibraries")->nullable()->default(null);
         });
 
     }
