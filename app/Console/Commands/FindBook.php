@@ -41,7 +41,7 @@ class FindBook extends Command
     public function handle()
     {
         $bar = $this->output->createProgressBar($this->argument('count'));
-        $bar->setOverwrite(false);
+        //$bar->setOverwrite(false);
         $bar->setMessage('Starting...');
         $bar->start();
 
