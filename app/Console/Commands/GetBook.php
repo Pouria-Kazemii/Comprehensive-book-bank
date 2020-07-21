@@ -76,6 +76,7 @@ class GetBook extends Command
                 $filtered['TedadSafhe'] = cleanFaAlphabet(faCharToEN($filtered['TedadSafhe']));
                 $filtered['saleNashr'] = cleanFaAlphabet(faCharToEN($filtered['saleNashr']));
                 $filtered['MahalNashr'] = faAlphabetKeep(faCharToEN($filtered['MahalNashr']));
+                $filtered['Nasher'] = faAlphabetKeep(faCharToEN($filtered['Nasher']));
 
                 // Filter no image book Image_Address
                 if(strpos($filtered['Image_Address'], 'no-picture')!==FALSE)unset($filtered['Image_Address']);
