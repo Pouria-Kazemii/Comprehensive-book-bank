@@ -14,14 +14,14 @@ class FindBook extends Command
      *
      * @var string
      */
-    protected $signature = 'find:book {start} {end}';
+    protected $signature = 'find:book {count}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Commands description';
+    protected $description = 'Find Book in Libraries';
 
     /**
      * Create a new command instance.
@@ -40,13 +40,15 @@ class FindBook extends Command
      */
     public function handle()
     {
-        $bar = $this->output->createProgressBar($this->argument('start') - $this->argument('end'));
+        $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
-        for ($x = $this->argument('start'); $x <= $this->argument('end'); $x++) {
+
+        $books = Book::doesntHave('libraries')->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
+        foreach($books as $book){
             try {
-                $response = Http::retry(10, 100)->get('http://www.samanpl.ir/api/SearchAD/Libs_Show/', [
+                $response = Http::retry(5, 100)->get('http://www.samanpl.ir/api/SearchAD/Libs_Show/', [
                     'materialId' => 1,
-                    'recordnumber' => $x,
+                    'recordnumber' => $book->recordNumber,
                     'OrgIdOstan' => 0,
                     'OrgIdShahr' => 0,
                 ]);
@@ -65,13 +67,11 @@ class FindBook extends Command
                     }
                 }
             }
-            $book = Book::where('recordNumber', $x)->first();
-            if ($book) {
                 $book->libraries()->detach();
                 $book->libraries()->attach($libraryIds);
-            }
             $bar->advance();
         }
         $bar->finish();
+
     }
 }
