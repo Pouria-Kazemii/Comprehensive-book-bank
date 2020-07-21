@@ -47,7 +47,7 @@ class FindBook extends Command
 
         $books = Book::doesntHave('libraries')->where('lastCheckLibraries',null)->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
         foreach($books as $book){
-            $this->info(" \n ---------- Find BOOK ".$book->id."           ---------- ");
+            $this->info(" \n ---------- Find BOOK ".$book->id."              ---------- ");
             try {
                 $response = Http::retry(5, 100)->get('http://www.samanpl.ir/api/SearchAD/Libs_Show/', [
                     'materialId' => 1,
