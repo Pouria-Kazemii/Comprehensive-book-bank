@@ -89,7 +89,7 @@ if (!function_exists('cleanFaAlphabet')) {
      */
     function cleanFaAlphabet($faStr)
     {
-        $faAlphabet = explode(' ', 'ا ب پ ت ث ج چ ح خ د ذ ر ز ژ ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی');
+        $faAlphabet = explode(' ', 'ا ب پ ت ث ج چ ح خ د ذ ر ز ژ ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی [ ] { } . , ; . ، |');
         $faStr = arCharToFA($faStr);
         foreach($faAlphabet as $fa){
             $faStr = str_replace($fa, "", $faStr);
