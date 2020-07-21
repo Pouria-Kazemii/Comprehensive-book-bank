@@ -72,7 +72,7 @@ class FindBook extends Command
             $this->info("---------- Found BOOK IN ".count($libraryIds)." Libraries ---------- ");
                 $book->libraries()->detach();
                 $book->libraries()->attach($libraryIds);
-                $book->lastCheckLibraries = Carbon::now()->timestamp;
+                $book->lastCheckLibraries = Carbon::now()->toDateTimeString();
                 $book->save();
 
             $bar->advance();
