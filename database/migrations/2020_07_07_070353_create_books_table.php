@@ -15,19 +15,27 @@ class CreateBooksTable extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->increments('id');
-            $table->json('all')->nullable();
             $table->integer('recordNumber')->index();
-            $table->longText('Creator')->nullable();
-            $table->longText('MahalNashr')->nullable();
+            $table->longText('shabak')->nullable();
             $table->longText('Title')->nullable();
             $table->longText('mozoe')->nullable();
+            $table->longText('Nasher')->nullable();
+            $table->longText('barcode')->nullable();
+            $table->longText('matName')->nullable();
+            $table->longText('langName')->nullable();
+            $table->longText('RadeAsliD')->nullable();
+            $table->longText('RadeFareiD')->nullable();
+            $table->longText('ShomareKaterD')->nullable();
+            $table->longText('PishRade')->nullable();
+            $table->longText('MahalNashr')->nullable();
             $table->longText('Yaddasht')->nullable();
             $table->longText('TedadSafhe')->nullable();
             $table->longText('saleNashr')->nullable();
             $table->boolean('EjazeReserv')->nullable();
             $table->boolean('EjazeAmanat')->nullable();
-            $table->longText('shabak')->nullable();
-            $table->unsignedInteger('author_id')->nullable();
+            $table->longText('Creator')->nullable();
+            $table->longText('Image_Address')->nullable();
+            $table->json('all')->nullable();
             $table->timestamps();
         });
     }
