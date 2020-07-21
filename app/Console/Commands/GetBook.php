@@ -60,7 +60,7 @@ class GetBook extends Command
             }
             if($response) {
                 $result = $response['Results'][0];
-                $allowed = ['Creator', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak'];
+                $allowed = ['Creator','barcode', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak', 'Nasher', 'matName', 'langName', 'RadeAsliD', 'RadeFareiD','ShomareKaterD','PishRade','Image_Address'];
                 $filtered = array_filter(
                     $result,
                     function ($key) use ($allowed) {
@@ -76,6 +76,8 @@ class GetBook extends Command
                 $filtered['TedadSafhe'] = cleanFaAlphabet(faCharToEN($filtered['TedadSafhe']));
                 $filtered['saleNashr'] = cleanFaAlphabet(faCharToEN($filtered['saleNashr']));
 
+                // Filter no image book Image_Address
+                if(strpos($filtered['Image_Address'], 'no-picture')!==FALSE)unset($filtered['Image_Address']);
 
                 $authorObjectArray = array();
                 if($filtered['Creator'] !=""){
