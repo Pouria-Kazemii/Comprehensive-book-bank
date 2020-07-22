@@ -45,7 +45,7 @@ class FindBook extends Command
         $bar = $this->output->createProgressBar($this->argument('count'));
         $bar->start();
 
-        $books = Book::doesntHave('libraries')->where('lastCheckLibraries',null)->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
+        $books = Book::where('lastCheckLibraries',null)->orderBy('created_at', 'desc')->take($this->argument('count'))->get();
         foreach($books as $book){
             $this->info(" \n ---------- Find BOOK ".$book->id."              ---------- ");
             try {
