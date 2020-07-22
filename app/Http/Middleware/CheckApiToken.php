@@ -16,7 +16,6 @@ class CheckApiToken
      */
     public function handle($request, Closure $next)
     {
-        echo "----".$request->ip()." + ".$request->input('token')." + ".$request->path();
         $gainerObj = Gainer::where('token',$request->input('token'))->first();
         if(is_object($gainerObj)){
             if($gainerObj->ip =="*" || $gainerObj->ip==$request->ip()){
