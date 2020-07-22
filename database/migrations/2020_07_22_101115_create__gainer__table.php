@@ -17,6 +17,7 @@ class CreateGainerTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('ip');
+            $table->string('token');
             $table->string('access_path')->nullable();
             $table->boolean('block')->default(0);
             $table->timestamps();
