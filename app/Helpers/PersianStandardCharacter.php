@@ -101,7 +101,7 @@ if (!function_exists('cleanFaAlphabet')) {
 if (!function_exists('faAlphabetKeep')) {
 
     /**
-     * Change fa alphabet only
+     * Keep fa alphabet only
      *
      * @param string $faStr
      * @return string $cleanedStr
