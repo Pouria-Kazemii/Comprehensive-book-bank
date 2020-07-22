@@ -51,7 +51,7 @@ class GetBook extends Command
             $recordNumber = ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker);
             try {
 
-                $response = Http::retry(5, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
+                $response = Http::retry(3, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
                     'recordNumber' => $recordNumber ,
                 ]);
