@@ -27,7 +27,7 @@ class CheckApiToken
                 }
             }
         }
-        return response()->json(['error'=>'Unauthorised'], 401);
+        return response()->json(['error'=>'Unauthorised','error_code'=>'1001'], 401);
 
     }
 }
