@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+Route::middleware(['CheckToken'])->group(function () {
+    Route::post('/api/v1/find/book','API\Book@find');
+    Route::post('/api/v1/find/library','API\Library@find');
 });
