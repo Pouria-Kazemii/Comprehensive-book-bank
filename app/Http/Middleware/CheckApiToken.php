@@ -24,6 +24,7 @@ class CheckApiToken
                 }else{
                     $access_path_array = unserialize($gainerObj->access_path);
                     if(in_array($request->path(), $access_path_array))return $next($request);
+                    else return response()->json(['error'=>'Unauthorised','error_code'=>'1002'], 401);
                 }
             }
         }
