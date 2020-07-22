@@ -15,6 +15,7 @@ class CheckToken
      */
     public function handle($request, Closure $next)
     {
+        echo "----".$request->ip()." + ".$request->input('token')." + ".$request->path();
         return $next($request);
     }
 }
