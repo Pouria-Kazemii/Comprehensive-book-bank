@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Models\Book as BookM;
 
 class Book extends Controller
@@ -54,13 +55,13 @@ class Book extends Controller
                 $temp['authors'][] = $author->d_name;
             }
             foreach($book->libraries as $key=>$library){
-                $temp['authors'][$key]['code']      = $library->libraryCode;
-                $temp['authors'][$key]['name']      = $library->libraryName;
-                $temp['authors'][$key]['address']   = $library->address;
-                $temp['authors'][$key]['postcode']  = $library->postCode;
-                $temp['authors'][$key]['phone']     = $library->phone;
-                $temp['authors'][$key]['state']     = $library->state();
-                $temp['authors'][$key]['city']      = $library->city();
+                $temp['libraries'][$key]['code']      = $library->libraryCode;
+                $temp['libraries'][$key]['name']      = $library->libraryName;
+                $temp['libraries'][$key]['address']   = $library->address;
+                $temp['libraries'][$key]['postcode']  = $library->postCode;
+                $temp['libraries'][$key]['phone']     = $library->phone;
+                $temp['libraries'][$key]['state']     = $library->state();
+                $temp['libraries'][$key]['city']      = $library->city();
             }
 
 
