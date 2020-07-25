@@ -16,11 +16,11 @@ class Book extends Controller
         if ($request->input('shabak','') == '' && $request->input('title','') == ''){
             return response()->json(['error'=>'BAD REQUEST','error_code'=>'2002','result_count'=>0 , 'result'=>''], 400);
         }
-
+        $books='';
         if ($request->input('shabak','') != ''){
             $books = BookM::where('shabak',$request->input('shabak'))->first();
         }
-        if(!isset($books) && !is_object($books)){
+        if(!is_object($books)){
             if($request->input('title','')!=''){
                 $qBooks = BookM::with(['authors', 'libraries'])->where('Title','LIKE','%'.$request->input('title').'%');
             }
