@@ -50,13 +50,10 @@ class Book extends Controller
             $temp['katerD'] = $book->ShomareKaterD;
             $temp['pishrade'] = $book->PishRade;
 
-            print_r($book->authors);//print_r($book->libraries());
-            exit;
-
-            foreach($book->authors() as $author){
+            foreach($book->authors as $author){
                 $temp['authors'][] = $author->d_name;
             }
-            foreach($book->libraries() as $key=>$library){
+            foreach($book->libraries as $key=>$library){
                 $temp['authors'][$key]['code']      = $library->libraryCode;
                 $temp['authors'][$key]['name']      = $library->libraryName;
                 $temp['authors'][$key]['address']   = $library->address;
