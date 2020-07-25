@@ -22,7 +22,7 @@ class Book extends Controller
         }
         if(!is_array($books)){
             if($request->input('title','')!=''){
-                $qBooks = BookM::with(['authors', 'libraries'])->where('Title','LIKE','%'.$request->input('title').'%');
+                 $qBooks = BookM::with(['authors', 'libraries'])->where('Title','LIKE','%'.$request->input('title').'%');
             }
             if($request->input('nasher','')!=''){
                 $qBooks->Where('nasher','LIKE','%'.$request->input('nasher').'%');
@@ -37,7 +37,7 @@ class Book extends Controller
                 $qBooks->Where('TedadSafhe','LIKE','%'.$request->input('tedadsafe').'%');
             }
             if($request->input('nevisande','')!=''){
-                $qBooks->authors->Where('d_name','LIKE','%'.$request->input('nevisande').'%');
+                $qBooks->Where('d_name','LIKE','%'.$request->input('nevisande').'%');
             }
 
             $books= $qBooks->orderBy('lastCheckLibraries', 'desc')->take(10)->get();
