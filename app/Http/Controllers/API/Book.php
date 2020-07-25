@@ -13,6 +13,10 @@ class Book extends Controller
     //
     public function find(Request $request){
 
+        if ($request->input('shabak','') == '' && $request->input('title','') == ''){
+            return response()->json(['error'=>'BAD REQUEST','error_code'=>'2002','result_count'=>0 , 'result'=>''], 400);
+        }
+
         if ($request->input('shabak','') != ''){
             $books = BookM::where('shabak',$request->input('shabak'))->first();
         }
