@@ -18,16 +18,16 @@ class Book extends Controller
             $qBooks = BookM::where('Title','LIKE','%'.$request->input('title').'%');
         }
         if($request->input('nasher','')!=''){
-            $qBooks->orWhere('nasher','LIKE','%'.$request->input('nasher').'%');
+            $qBooks->Where('nasher','LIKE','%'.$request->input('nasher').'%');
         }
         if($request->input('mahalenashr','')!=''){
-            $qBooks->orWhere('MahalNashr','LIKE','%'.$request->input('mahalenashr').'%');
+            $qBooks->Where('MahalNashr','LIKE','%'.$request->input('mahalenashr').'%');
         }
         if($request->input('salenashr','')!=''){
-            $qBooks->orWhere('saleNashr','LIKE','%'.$request->input('salenashr').'%');
+            $qBooks->Where('saleNashr','LIKE','%'.$request->input('salenashr').'%');
         }
         if($request->input('tedadsafe','')!=''){
-            $qBooks->orWhere('TedadSafhe','LIKE','%'.$request->input('tedadsafe').'%');
+            $qBooks->Where('TedadSafhe','LIKE','%'.$request->input('tedadsafe').'%');
         }
 
         print_r($qBooks->orderBy('lastCheckLibraries', 'desc')->take(10)->get());
