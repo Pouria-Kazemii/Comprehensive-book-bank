@@ -36,6 +36,9 @@ class Book extends Controller
             if($request->input('tedadsafe','')!=''){
                 $qBooks->Where('TedadSafhe','LIKE','%'.$request->input('tedadsafe').'%');
             }
+            if($request->input('nevisande','')!=''){
+                $qBooks->authors->Where('d_name','LIKE','%'.$request->input('nevisande').'%');
+            }
 
             $books= $qBooks->orderBy('lastCheckLibraries', 'desc')->take(10)->get();
         }
