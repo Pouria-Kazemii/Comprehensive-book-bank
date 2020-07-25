@@ -15,7 +15,8 @@ class Book extends Controller
 
         if ($request->input('shabak','') != ''){
             $books = BookM::where('shabak',$request->input('shabak'))->first();
-        }else{
+        }
+        if(!is_object($books)){
             if($request->input('title','')!=''){
                 $qBooks = BookM::with(['authors', 'libraries'])->where('Title','LIKE','%'.$request->input('title').'%');
             }
