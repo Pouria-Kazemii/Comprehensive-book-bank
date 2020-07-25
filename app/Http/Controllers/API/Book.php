@@ -35,7 +35,7 @@ class Book extends Controller
             $books= $qBooks->orderBy('lastCheckLibraries', 'desc')->take(10)->get();
         }
         $resultArray = array();
-        if(IsObject($books)){
+        if(is_object($books)){
             foreach($books as $book){
                 $temp['title'] = $book->Title;
                 $temp['nasher'] = $book->Nasher;
@@ -75,9 +75,9 @@ class Book extends Controller
 
         $resultCount = count($resultArray);
         if($resultCount == 0){
-            response()->json(['error'=>'NOT FOUND','error_code'=>'2001','result_count'=>0 , 'result'=>''], 404);
+            return response()->json(['error'=>'NOT FOUND','error_code'=>'2001','result_count'=>0 , 'result'=>''], 404);
         }else{
-            response()->json(['error'=>'','result_count'=>$resultCount ,'results'=>$resultArray]);
+            return response()->json(['error'=>'','result_count'=>$resultCount ,'results'=>$resultArray]);
         }
 
     }
