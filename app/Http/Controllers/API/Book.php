@@ -40,7 +40,7 @@ class Book extends Controller
             $books= $qBooks->orderBy('lastCheckLibraries', 'desc')->take(10)->get();
         }
         $resultArray = array();
-        if(is_object($books)){
+        if($books != ''){
             foreach($books as $book){
                 $temp['title'] = $book->Title;
                 $temp['nasher'] = $book->Nasher;
