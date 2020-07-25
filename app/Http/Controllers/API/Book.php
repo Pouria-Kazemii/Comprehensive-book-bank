@@ -61,8 +61,8 @@ class Book extends Controller
                     $temp['libraries'][$key]['address']   = $library->address;
                     $temp['libraries'][$key]['postcode']  = $library->postCode;
                     $temp['libraries'][$key]['phone']     = $library->phone;
-                    $temp['libraries'][$key]['state']     = $library->state();
-                    $temp['libraries'][$key]['city']      = $library->city();
+                    $temp['libraries'][$key]['state']     = $library->state->townshipName;
+                    $temp['libraries'][$key]['city']      = $library->city->stateName;
                 }
 
 
