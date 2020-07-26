@@ -50,13 +50,14 @@ class GetBook extends Command
         while ($itemGotten <= $this->argument('count')){
             $recordNumber = ($this->argument('recordNumber'))?$this->argument('recordNumber'):($lastGotBook + $countWalker);
             try {
-
+                $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
                 $response = Http::retry(3, 100)->get('www.samanpl.ir/api/SearchAD/Details', [
                     'materialId' => 1,
                     'recordNumber' => $recordNumber ,
                 ]);
             } catch (\Exception $e) {
                 $response = null;
+                $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
             }
             if($response) {
                 $result = $response['Results'][0];
@@ -71,6 +72,8 @@ class GetBook extends Command
 
                 $filtered['all'] = $response['Results'][0];
                 $filtered['recordNumber'] = $recordNumber;
+
+                $this->info(" \n ---------- Create Book   ".$recordNumber."              ---------- ");
 
                 // filter textvalue
                 $filtered['TedadSafhe'] = cleanFaAlphabet(faCharToEN($filtered['TedadSafhe']));
@@ -90,7 +93,7 @@ class GetBook extends Command
                         $authorObjectArray[] = $authorObject->id;
                     }
                 }
-
+                $this->info(" \n ---------- Author Book   ".$recordNumber."              ---------- ");
 
                 if(trim($filtered['shabak']) != ""){
                     $shabakArray = Book::getShabakArray($filtered['shabak']);
@@ -98,15 +101,19 @@ class GetBook extends Command
                         if(! Book::where('shabak',$shabak)->first()){
                             $filtered['shabak'] = $shabak;
                             $book = Book::firstOrCreate($filtered);
+                            $this->info(" \n ---------- Inserted Book   ".$recordNumber."  =   $shabak         ---------- ");
                             if(count($authorObjectArray)>0){
                                 $book->authors()->attach($authorObjectArray);
+                                $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
                             }
                         }
                     }
                 }else{
                     $book = Book::firstOrCreate($filtered);
+                    $this->info(" \n ---------- Inserted Book   ".$recordNumber."          ---------- ");
                     if(count($authorObjectArray)>0){
                         $book->authors()->attach($authorObjectArray);
+                        $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
                     }
                 }
 
