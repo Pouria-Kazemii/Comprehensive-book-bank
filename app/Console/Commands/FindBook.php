@@ -49,7 +49,7 @@ class FindBook extends Command
         foreach($books as $book){
             $this->info(" \n ---------- Find BOOK ".$book->id."              ---------- ");
             try {
-                $response = Http::retry(3, 100)->get('http://www.samanpl.ir/api/SearchAD/Libs_Show/', [
+                $response = Http::retry(3, 100)->timeout(10)->get('http://www.samanpl.ir/api/SearchAD/Libs_Show/', [
                     'materialId' => 1,
                     'recordnumber' => $book->recordNumber,
                     'OrgIdOstan' => 0,
