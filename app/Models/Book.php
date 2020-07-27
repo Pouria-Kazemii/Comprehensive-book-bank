@@ -24,7 +24,7 @@ class Book extends Model
 
     static public function getLastBookRecordNumber()
     {
-        $lastBook = Book::where('recordNumber', '<', 1000000)->orderBy('id', 'desc')->first();
+        $lastBook = Book::where('recordNumber', '<', 1000000)->orderBy('recordNumber', 'desc')->first();
         return (is_null($lastBook))?0:$lastBook->recordNumber;
     }
     static public function getShabakArray($shabakStr){
