@@ -50,7 +50,6 @@ class GetBookMulti extends Command
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
             $newCrawler = Crawler::firstOrCreate(array('name'=>'Crawler-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>0));
         }catch (\Exception $e){
-            $response = null;
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
         }
 
