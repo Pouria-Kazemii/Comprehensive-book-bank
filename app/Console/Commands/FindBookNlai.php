@@ -41,8 +41,11 @@ class FindBookNlai extends Command
 
                 $z = yaz_connect($host);
 
-                $isbn = 9786000421021;
-                yaz_search($z, 'rpn', '@attr 1=7 "' .$isbn. '"');
+                // $isbn = 9786000421021;
+                // yaz_search($z, 'rpn', '@attr 1=7 "' .$isbn. '"');
+
+                $name = 'نادربرادرم حسین';
+                yaz_search($z, 'rpn', '@attr 1=4 "' .$name. '"');
 
                 yaz_wait();
                 $error = yaz_error($z);
