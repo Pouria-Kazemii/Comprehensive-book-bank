@@ -11,14 +11,14 @@ class FindBookNlai extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'find:booknlai';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Find book data in nlai api';
 
     /**
      * Create a new command instance.
