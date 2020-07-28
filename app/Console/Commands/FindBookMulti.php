@@ -56,7 +56,7 @@ class FindBookMulti extends Command
         $bar = $this->output->createProgressBar(Crawler::$crawlerSize);
         $bar->start();
 
-        $books = Book::where('lastCheckLibraries',null)->where('recordNumber', '>=', $startC)->where('recordNumber', '=<', $endC)->orderBy('id')->get();
+        $books = Book::where('lastCheckLibraries',null)->where('recordNumber', '>', $startC-1)->where('recordNumber', '<', $endC+1)->orderBy('id')->get();
         foreach($books as $book){
             $this->info(" \n ---------- Find BOOK ".$book->id."              ---------- ");
             try {
