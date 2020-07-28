@@ -41,7 +41,7 @@ class FindBookNlai extends Command
 
                 $z = yaz_connect($host);
 
-                $isbn = $_GET['isbn'];
+                $isbn = 9786000421021;
                 yaz_search($z, 'rpn', '@attr 1=7 "' .$isbn. '"');
 
                 yaz_wait();
