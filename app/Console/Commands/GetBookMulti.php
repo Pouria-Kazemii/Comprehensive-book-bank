@@ -43,12 +43,12 @@ class GetBookMulti extends Command
     {
 
         try{
-            $lastCrawler = Crawler::orderBy('end', 'desc')->first();
+            $lastCrawler = Crawler::where('type',0)->orderBy('end', 'desc')->first();
             if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
             else $startC=1000000;
             $endC   = $startC + Crawler::$crawlerSize;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-            $newCrawler = Crawler::firstOrCreate(array('name'=>'Crawler-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1));
+            $newCrawler = Crawler::firstOrCreate(array('name'=>'Crawler-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>0));
         }catch (\Exception $e){
             $response = null;
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
