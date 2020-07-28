@@ -44,7 +44,7 @@ class FindBookNlai extends Command
                 // $isbn = 9786000421021;
                 // yaz_search($z, 'rpn', '@attr 1=7 "' .$isbn. '"');
 
-                $name = 'نادر برادرم حسین';
+                $name = 'تاریخ امراء مدینه منوره';
                 yaz_search($z, 'rpn', '@attr 1=4 "' .$name. '"');
 
                 yaz_wait();
