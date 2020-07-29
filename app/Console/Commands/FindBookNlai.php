@@ -11,7 +11,7 @@ class FindBookNlai extends Command
      *
      * @var string
      */
-    protected $signature = 'find:booknlai';
+    protected $signature = 'find:booknlai {txt?}';
 
     /**
      * The console command description.
@@ -47,7 +47,7 @@ class FindBookNlai extends Command
                 // $name = 'تاریخ امرا';
                 // yaz_search($z, 'rpn', '@attr 1=4 "' .$name. '"');
 
-                $name = 'تاریخ امرا';
+                $name =$this->argument('txt');
                 yaz_search($z, 'rpn', '@attr 1=4 @and @attr 5=21  ' .$name);
 
                 yaz_wait();
