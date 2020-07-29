@@ -85,8 +85,8 @@ class GetBookMulti extends Command
                 $this->info(" \n ---------- Create Book   ".$recordNumber."              ---------- ");
 
                 // filter textvalue
-                $filtered['TedadSafhe'] = cleanFaAlphabet(faCharToEN($filtered['TedadSafhe']));
-                $filtered['saleNashr'] = cleanFaAlphabet(faCharToEN($filtered['saleNashr']));
+                $filtered['TedadSafhe'] = enNumberKeepOnly(faCharToEN($filtered['TedadSafhe']));
+                $filtered['saleNashr'] = enNumberKeepOnly(faCharToEN($filtered['saleNashr']));
                 $filtered['MahalNashr'] = faAlphabetKeep(faCharToEN($filtered['MahalNashr']));
                 $filtered['Nasher'] = faAlphabetKeep(faCharToEN($filtered['Nasher']));
 
