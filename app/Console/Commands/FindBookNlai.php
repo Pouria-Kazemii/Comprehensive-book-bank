@@ -138,7 +138,7 @@ class FindBookNlai extends Command
                     }
                     //----------------isbn----------------/
                     //----------------عنوان----------------/
-                    if (strpos($val, '200 1 ') !== false) {
+                    if (strpos($val, '200 ') !== false) {
                         $temp = explode("$", $val);
                         foreach($temp as $key2 => $val2){
                             if (strpos($val2, 'a ') !== false) {
