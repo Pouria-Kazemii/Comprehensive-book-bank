@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\Book;
 
 class FindBookNlai extends Command
 {
@@ -47,8 +48,9 @@ class FindBookNlai extends Command
                 // $name = 'تاریخ امرا';
                 // yaz_search($z, 'rpn', '@attr 1=4 "' .$name. '"');
 
-                $name =$this->argument('txt');
-                yaz_search($z, 'rpn', '@attr 1=4 @and @attr 5=21  ' .$name);
+                $book = Book::orderBy('created_at', 'desc')->first();
+                $this->info(" \n ---------- Get Book Nlai  ".$book->id." === ".$book->Title."        ---------=-- \n ");
+                yaz_search($z, 'rpn', '@attr 1=4 @and @attr 5=21  ' .$book->Title);
 
                 yaz_wait();
                 $error = yaz_error($z);
