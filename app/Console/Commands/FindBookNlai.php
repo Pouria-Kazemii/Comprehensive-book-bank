@@ -49,7 +49,7 @@ class FindBookNlai extends Command
                 // yaz_search($z, 'rpn', '@attr 1=4 "' .$name. '"');
 
                 //$book = Book::orderBy('created_at', 'desc')->first();
-                $book = find(1330584);
+                $book = Book::find(1330584);
                 $this->info(" \n ---------- Get Book Nlai  ".$book->id." === ".$book->Title."        ---------=-- \n ");
                 yaz_search($z, 'rpn', '@attr 1=4 "' .$book->Title.'"');
 
