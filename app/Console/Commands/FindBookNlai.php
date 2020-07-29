@@ -75,6 +75,7 @@ class FindBookNlai extends Command
                     }
                 }
 
+                print_r($list);
                 $subjects = array();
                 $creators = array();
                 $publishers = array();
