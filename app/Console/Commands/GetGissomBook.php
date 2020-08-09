@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 
+
 class GetGissomBook extends Command
 {
     /**
@@ -62,7 +63,7 @@ class GetGissomBook extends Command
                 $filtered['tarjome'] = true;
 
             }
-            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مؤلف:') !== false ){
+            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
                 foreach($col->filter('a') as $author){
                     $autors[] = $author->text();
                 }
@@ -100,7 +101,11 @@ class GetGissomBook extends Command
 
 
         }
-        $filtered['image'] = $crawler->filter('body img.cls3')->image();
+        $pauthers = $crawler->filter('body div.bookinfocol div.col a')->link();
+        print_r($pauthers);
+
+
+        $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
 
 
