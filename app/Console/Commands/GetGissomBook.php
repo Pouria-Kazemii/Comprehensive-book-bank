@@ -42,7 +42,8 @@ class GetGissomBook extends Command
     public function handle()
     {
         $client = new Client(HttpClient::create(['timeout' => 30]));
-        $crawler = $client->request('GET', 'https://www.gisoom.com/book/'.$this->argument('rn'));
+        $recordNumber = $this->argument('rn');
+        $crawler = $client->request('GET', 'https://www.gisoom.com/book/'.$recordNumber);
 
         // title $crawler->filter('body div.bookinfocol div h1 a')[0]->textContent)
         // all data $crawler->filter('body div.bookinfocol div.col'))
