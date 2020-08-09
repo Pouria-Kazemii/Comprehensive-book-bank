@@ -102,9 +102,9 @@ class GetGissomBook extends Command
 
         }
         $pauthers = $crawler->filter('body div.bookinfocol div.s6 a')->link();
-
-        print_r($pauthers);
-
+        foreach ($crawler->filter('body div.bookinfocol div.s6 a')->link() as $link){
+            print_r($link);
+        }
 
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
