@@ -101,7 +101,8 @@ class GetGissomBook extends Command
 
 
         }
-        $pauthers = $crawler->filter('body div.bookinfocol div.col a')->link();
+        $pauthers = $crawler->filter('body div.bookinfocol div.s6 a')->link();
+
         print_r($pauthers);
 
 
