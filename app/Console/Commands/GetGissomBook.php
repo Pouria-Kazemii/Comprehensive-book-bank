@@ -104,7 +104,8 @@ class GetGissomBook extends Command
         }
         foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
             $clink = new Crawler($link);
-           echo "links : "; print_r($clink->link()->getUri());
+           echo "\n links : "; print_r($clink->link());
+           echo "\n href : "; print($clink->link()->getUri());
         }
 
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
