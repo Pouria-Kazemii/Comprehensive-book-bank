@@ -68,8 +68,7 @@ class GetGissomBook extends Command
                 $colc = new Crawler($col);
                 foreach($colc->filter('a') as $link){
                     $clink = new Crawler($link);
-                    echo "\n links : "; print_r($clink->link());
-                    echo "\n href : "; print($clink->link()->getUri());
+                    $authors[]=$clink->link()->textContent;
                 }
             }
             if(strpos($col->textContent, 'زبان:') !== false){
@@ -114,8 +113,8 @@ class GetGissomBook extends Command
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
 
-
-        print_r($recordNumber);
+        print_r($authors);
+        print_r($filtered);
         exit;
     }
 }
