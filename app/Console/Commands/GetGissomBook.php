@@ -71,7 +71,6 @@ class GetGissomBook extends Command
                     echo "\n links : "; print_r($clink->link());
                     echo "\n href : "; print($clink->link()->getUri());
                 }
-
             }
             if(strpos($col->textContent, 'زبان:') !== false){
                 $filtered['lang'] = str_replace('زبان:','',$col->textContent);
