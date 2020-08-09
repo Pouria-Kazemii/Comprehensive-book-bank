@@ -15,7 +15,7 @@ class GetGissomBook extends Command
      *
      * @var string
      */
-    protected $signature = 'get:gissomBook';
+    protected $signature = 'get:gissomBook {rn?}';
 
     /**
      * The console command description.
@@ -42,8 +42,7 @@ class GetGissomBook extends Command
     public function handle()
     {
         $client = new Client(HttpClient::create(['timeout' => 30]));
-        $recordNumber = 11000000;
-        $crawler = $client->request('GET', 'https://www.gisoom.com/book/11000000/');
+        $crawler = $client->request('GET', 'https://www.gisoom.com/book/'.$this->argument('rn'));
 
         // title $crawler->filter('body div.bookinfocol div h1 a')[0]->textContent)
         // all data $crawler->filter('body div.bookinfocol div.col'))
