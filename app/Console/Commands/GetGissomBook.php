@@ -15,7 +15,7 @@ class GetGissomBook extends Command
      *
      * @var string
      */
-    protected $signature = 'get:gissomBook {rn?}';
+    protected $signature = 'get:gissomBook {rn}';
 
     /**
      * The console command description.
