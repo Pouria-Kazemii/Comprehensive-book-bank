@@ -101,7 +101,7 @@ class GetGissomBook extends Command
 
 
         }
-        foreach ($crawler->filter('body div.bookinfocol div.s6 a')->link() as $link){
+        foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
            echo "links : "; print_r($link);
         }
 
