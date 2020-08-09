@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\DomCrawler\Crawler;
 
 
 class GetGissomBook extends Command
@@ -102,7 +103,8 @@ class GetGissomBook extends Command
 
         }
         foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
-           echo "links : "; print_r($link->getUri());
+            $clink = new Crawler($link);
+           echo "links : "; print_r($clink->link()->getUri());
         }
 
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
