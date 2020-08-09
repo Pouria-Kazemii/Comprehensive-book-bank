@@ -21,6 +21,7 @@ class CreateGisoomBook extends Migration
             $table->longText('lang')->nullable();
             $table->longText('editor')->nullable();
             $table->longText('radeD')->nullable();
+            $table->longText('nasher')->nullable();
             $table->integer('saleNashr')->nullable();
             $table->integer('nobatChap')->nullable();
             $table->integer('tiraj')->nullable();
