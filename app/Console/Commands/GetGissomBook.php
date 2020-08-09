@@ -45,7 +45,7 @@ class GetGissomBook extends Command
 
         // title $crawler->filter('body div.bookinfocol div h1 a')[0]->textContent)
         // all data $crawler->filter('body div.bookinfocol div.col'))
-        // image $crawler->filter('body img.cls3')
+        // image $crawler->filter('body img.cls3')->image();
         $filtered= array();
         $title = $crawler->filter('body div.bookinfocol div h1 a');
         $filtered['title'] = $title->text();
@@ -99,6 +99,7 @@ class GetGissomBook extends Command
 
 
         }
+        $filtered['image'] = $crawler->filter('body img.cls3')->image();
         $filtered['recordNumber'] = $recordNumber;
 
 
