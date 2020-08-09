@@ -52,10 +52,11 @@ class GetGissomBook extends Command
 
         foreach($crawler->filter('body div.bookinfocol div.col') as $col){
             if(strpos($col->textContent, 'ناشر:') !== false){
-                $filtered['nasher'] = $col->filter('a')->text();
+                $filtered['nasher'] =  str_replace('ناشر:','',$col->textContent);
+
             }
             if(strpos($col->textContent, 'ویراستار:') !== false){
-                $filtered['editor'] = $col->filter('a')->text();
+                $filtered['editor'] = str_replace('ویراستار:','',$col->textContent);
             }
             if(strpos($col->textContent, 'مترجمان:') !== false){
                 $filtered['tarjome'] = true;
@@ -94,7 +95,7 @@ class GetGissomBook extends Command
                 $filtered['shabak13'] = str_replace('شابک 13 رقمی:','',$col->textContent);
             }
             if(strpos($col->textContent, 'توضیح کتاب:') !== false){
-                $filtered['desc'] = $col->filter('div.justify')->text();
+                $filtered['desc'] = str_replace('توضیح کتاب:','',$col->textContent);
             }
 
 
