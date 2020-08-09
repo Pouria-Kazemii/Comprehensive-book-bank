@@ -22,6 +22,10 @@ class Author extends Model
     {
         return $this->belongsToMany(BOOK::class);
     }
+    public function BookGisoom()
+    {
+        return $this->belongsToMany(BookGisoom::class);
+    }
     static public function authorSeprator($authorStr){
 
         // initial filter
