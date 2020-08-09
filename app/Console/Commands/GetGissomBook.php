@@ -64,11 +64,15 @@ class GetGissomBook extends Command
                 $filtered['tarjome'] = true;
 
             }
-            // if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
-            //     foreach($col->filter('a') as $author){
-            //         $autors[] = $author->text();
-            //     }
-            // }
+            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
+                $colc = new Crawler($col);
+                foreach($colc->filter('a') as $link){
+                    $clink = new Crawler($link);
+                    echo "\n links : "; print_r($clink->link());
+                    echo "\n href : "; print($clink->link()->getUri());
+                }
+
+            }
             if(strpos($col->textContent, 'زبان:') !== false){
                 $filtered['lang'] = str_replace('زبان:','',$col->textContent);
             }
@@ -102,11 +106,11 @@ class GetGissomBook extends Command
 
 
         }
-        foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
-            $clink = new Crawler($link);
-           echo "\n links : "; print_r($clink->link());
-           echo "\n href : "; print($clink->link()->getUri());
-        }
+        // foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
+        //     $clink = new Crawler($link);
+        //    echo "\n links : "; print_r($clink->link());
+        //    echo "\n href : "; print($clink->link()->getUri());
+        // }
 
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
