@@ -31,6 +31,7 @@ class CreateGisoomBook extends Migration
             $table->longText('desc')->nullable();
             $table->longText('shabak10')->nullable();
             $table->longText('shabak13')->nullable();
+            $table->longText('image')->nullable();
             $table->timestamps();
         });
     }
