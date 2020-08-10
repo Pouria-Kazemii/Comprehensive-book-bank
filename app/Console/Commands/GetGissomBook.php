@@ -106,6 +106,59 @@ class GetGissomBook extends Command
 
 
         }
+        foreach($crawler->filter('body div.bshadow tr') as $tr){
+            $trCrawler = new Crawler($tr);
+            switch($trCrawler->filter('td')->first()->text('')){
+                case 'شماره کتابشناسی ملی':
+                    if(isset($filtered['nnumber'])){
+                        $filtered['nnumber'] = $filtered['nnumber'].'-|-'.$trCrawler->filter('td')->last()->text('');
+                    }else{
+                        $filtered['nnumber'] = $trCrawler->filter('td')->last()->text('');
+                    }
+                break;
+                case 'یادداشت':
+                    if(isset($filtered['descriptions'])){
+                        $filtered['descriptions'] = $filtered['descriptions'].' - '.$trCrawler->filter('td')->last()->text('');
+                    }else{
+                        $filtered['descriptions'] = $trCrawler->filter('td')->last()->text('');
+                    }
+                break;
+                case 'شناسه افزوده':
+                    if(isset($filtered['descriptions'])){
+                        $filtered['descriptions'] = $filtered['descriptions'].' - '.$trCrawler->filter('td')->last()->text('');
+                    }else{
+                        $filtered['descriptions'] = $trCrawler->filter('td')->last()->text('');
+                    }
+                break;
+                case 'موضوع':
+                    if(isset($filtered['catText'])){
+                        $filtered['catText'] = $filtered['catText'].' -|- '.$trCrawler->filter('td')->last()->text('');
+                    }else{
+                        $filtered['catText'] = $trCrawler->filter('td')->last()->text('');
+                    }
+                break;
+                case 'سرشناسه':
+                    $filtered['sarshenase']=$trCrawler->filter('td')->last()->text('');
+                break;
+                case 'رده بندی کنگره':
+                    $filtered['radeKongere']=$trCrawler->filter('td')->last()->text('');
+                break;
+                case 'رده بندی دیویی':
+                    $filtered['radeDText']=$trCrawler->filter('td')->last()->text('');
+                break;
+                case 'مشخصات ظاهری':
+                    $filtered['zaherDesc']=$trCrawler->filter('td')->last()->text('');
+                break;
+                case 'عنوان روی جلد':
+                    $filtered['bigTitle']=$trCrawler->filter('td')->last()->text('');
+                break;
+                case 'مشخصات نشر':
+                    $filtered['nasherDesc']=$trCrawler->filter('td')->last()->text('');
+                break;
+            }
+        }
+
+
         // foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
         //     $clink = new Crawler($link);
         //    echo "\n links : "; print_r($clink->link());
