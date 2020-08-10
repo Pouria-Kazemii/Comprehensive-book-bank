@@ -26,7 +26,7 @@ class CreateGisoomBook extends Migration
             $table->integer('nobatChap')->nullable();
             $table->integer('tiraj')->nullable();
             $table->integer('tedadSafe')->nullable();
-            $table->integer('ghatechap')->nullable();
+            $table->longText('ghatechap')->nullable();
             $table->boolean('tarjome')->nullable()->default(false);
             $table->longText('desc')->nullable();
             $table->longText('shabak10')->nullable();
