@@ -13,10 +13,10 @@ class AuthorGisoomBook extends Migration
      */
     public function up()
     {
-        Schema::create('author_bookgisoom', function (Blueprint $table) {
+        Schema::create('author_book_gisoom', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('author_id');
-            $table->unsignedInteger('bookgissom_id');
+            $table->unsignedInteger('book_gisoom_id');
             $table->timestamps();
         });
     }
