@@ -109,7 +109,7 @@ class GetGissomBook extends Command
 
         $categories = array();
         foreach($crawler->filter("div.nav-wrapper a") as $catLinks){
-            $categories[]= $catLinks->textContent;
+            if($catLinks->textContent != 'کتاب')$categories[]= $catLinks->textContent;
         }
 
         $filtered['price'] = 0;
