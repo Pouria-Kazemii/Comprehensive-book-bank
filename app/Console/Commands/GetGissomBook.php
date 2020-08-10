@@ -80,16 +80,16 @@ class GetGissomBook extends Command
                 $filtered['radeD'] = str_replace('رده‌بندی دیویی:','',$col->textContent);
             }
             if(strpos($col->textContent, 'سال چاپ:') !== false){
-                $filtered['saleNashr'] = str_replace('سال چاپ:','',$col->textContent);
+                $filtered['saleNashr'] = enNumberKeepOnly(faCharToEN(str_replace('سال چاپ:','',$col->textContent)));
             }
             if(strpos($col->textContent, 'نوبت چاپ:') !== false){
-                $filtered['nobatChap'] = str_replace('نوبت چاپ:','',$col->textContent);
+                $filtered['nobatChap'] = enNumberKeepOnly(faCharToEN(str_replace('نوبت چاپ:','',$col->textContent)));
             }
             if(strpos($col->textContent, 'تیراژ:') !== false){
-                $filtered['tiraj'] = str_replace('تیراژ:','',$col->textContent);
+                $filtered['tiraj'] = enNumberKeepOnly(faCharToEN(str_replace('تیراژ:','',$col->textContent)));
             }
             if(strpos($col->textContent, 'تعداد صفحات:') !== false){
-                $filtered['tedadSafe'] = str_replace('تعداد صفحات:','',$col->textContent);
+                $filtered['tedadSafe'] = enNumberKeepOnly(faCharToEN(str_replace('تعداد صفحات:','',$col->textContent)));
             }
             if(strpos($col->textContent, 'قطع و نوع جلد:') !== false){
                 $filtered['ghateChap'] = str_replace('قطع و نوع جلد:','',$col->textContent);
@@ -115,9 +115,9 @@ class GetGissomBook extends Command
         $dibcontent = $crawler->filter('body a.iwantbook span.dib')->first()->text();
         $dbcontent = $crawler->filter('body a.iwantbook span.db')->first()->text();
         if($dibcontent != ''){
-            $filtered['price'] = $dibcontent;
+            $filtered['price'] = enNumberKeepOnly(faCharToEN($dibcontent));
         }elseif($dbcontent != ''){
-            $filtered['price'] = $dbcontent;
+            $filtered['price'] = enNumberKeepOnly(faCharToEN($dbcontent));
         }
 
 
