@@ -112,10 +112,12 @@ class GetGissomBook extends Command
         //    echo "\n href : "; print($clink->link()->getUri());
         // }
         $filtered['price'] = 0;
-        if($crawler->filter('body a.iwantbook span.dib')->textContent != ''){
-            $filtered['price'] = $crawler->filter('body a.iwantbook span.dib')->textContent;
-        }elseif($crawler->filter('body a.iwantbook span.db')->textContent != ''){
-            $filtered['price'] = $crawler->filter('body a.iwantbook span.db')->textContent;
+        $dibcontent = $crawler->filter('body a.iwantbook span.dib');
+        $dbcontent = $crawler->filter('body a.iwantbook span.db');
+        if($dibcontent->textContent != ''){
+            $filtered['price'] = $dibcontent->textContent;
+        }elseif($dbcontent->textContent != ''){
+            $filtered['price'] = $dbcontent->textContent;
         }
 
 
