@@ -15,16 +15,7 @@ class AlterGisoomBook extends Migration
     {
         Schema::table('bookgisoom', function($table) {
             $table->integer('price')->default(0);
-            $table->longText('bigTitle')->nullable();
-            $table->longText('nnumber')->nullable();
-            $table->longText('sarshenase')->nullable();
-            $table->longText('nasherDesc')->nullable();
-            $table->longText('zaherDesc')->nullable();
-            $table->longText('descriptions')->nullable();
             $table->longText('catText')->nullable();
-            $table->longText('radeKongere')->nullable();
-            $table->longText('radeDText')->nullable();
-            $table->longText('relatedN')->nullable();
         });
     }
 
