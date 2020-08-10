@@ -60,6 +60,9 @@ class GetGissomBook extends Command
             if(strpos($col->textContent, 'ویراستار:') !== false){
                 $filtered['editor'] = str_replace('ویراستار:','',$col->textContent);
             }
+            if(strpos($col->textContent, 'ویراستاران:') !== false){
+                $filtered['editor'] = str_replace('ویراستاران:','',$col->textContent);
+            }
             if(strpos($col->textContent, 'مترجمان:') !== false){
                 $filtered['tarjome'] = true;
 
