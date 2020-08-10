@@ -106,75 +106,12 @@ class GetGissomBook extends Command
 
 
         }
-        $currentUrl= $client->getHistory()->current()->getUri();
 
-        $queryParams = [
-            'data[load]=1',
-            'data[cache]=true'
-        ];
-        $content = implode('&', $queryParams);
-        $crawler2 = $client->request('POST', $currentUrl, [], [], ['HTTP_CONTENT_TYPE' => 'application/x-www-form-urlencoded'], $content);
-
-        print_r($crawler2->filter('body div.bshadow tr'));exit;
-
-        foreach($crawler->filter('body div.bshadow tr') as $tr){
-            $trCrawler = new Crawler($tr);
-            switch($trCrawler->filter('td')->first()->text('')){
-                case 'شماره کتابشناسی ملی':
-                    if(isset($filtered['nnumber'])){
-                        $filtered['nnumber'] = $filtered['nnumber'].'-|-'.$trCrawler->filter('td')->last()->text('');
-                    }else{
-                        $filtered['nnumber'] = $trCrawler->filter('td')->last()->text('');
-                    }
-                break;
-                case 'یادداشت':
-                    if(isset($filtered['descriptions'])){
-                        $filtered['descriptions'] = $filtered['descriptions'].' - '.$trCrawler->filter('td')->last()->text('');
-                    }else{
-                        $filtered['descriptions'] = $trCrawler->filter('td')->last()->text('');
-                    }
-                break;
-                case 'شناسه افزوده':
-                    if(isset($filtered['descriptions'])){
-                        $filtered['descriptions'] = $filtered['descriptions'].' - '.$trCrawler->filter('td')->last()->text('');
-                    }else{
-                        $filtered['descriptions'] = $trCrawler->filter('td')->last()->text('');
-                    }
-                break;
-                case 'موضوع':
-                    if(isset($filtered['catText'])){
-                        $filtered['catText'] = $filtered['catText'].' -|- '.$trCrawler->filter('td')->last()->text('');
-                    }else{
-                        $filtered['catText'] = $trCrawler->filter('td')->last()->text('');
-                    }
-                break;
-                case 'سرشناسه':
-                    $filtered['sarshenase']=$trCrawler->filter('td')->last()->text('');
-                break;
-                case 'رده بندی کنگره':
-                    $filtered['radeKongere']=$trCrawler->filter('td')->last()->text('');
-                break;
-                case 'رده بندی دیویی':
-                    $filtered['radeDText']=$trCrawler->filter('td')->last()->text('');
-                break;
-                case 'مشخصات ظاهری':
-                    $filtered['zaherDesc']=$trCrawler->filter('td')->last()->text('');
-                break;
-                case 'عنوان روی جلد':
-                    $filtered['bigTitle']=$trCrawler->filter('td')->last()->text('');
-                break;
-                case 'مشخصات نشر':
-                    $filtered['nasherDesc']=$trCrawler->filter('td')->last()->text('');
-                break;
-            }
+        $categories = array();
+        foreach($crawler->filter("div.nav-wrapper a") as $catLinks){
+            $categories[]= $catLinks->textContent;
         }
 
-
-        // foreach ($crawler->filter('body div.bookinfocol div.s6 a') as $link){
-        //     $clink = new Crawler($link);
-        //    echo "\n links : "; print_r($clink->link());
-        //    echo "\n href : "; print($clink->link()->getUri());
-        // }
         $filtered['price'] = 0;
         $dibcontent = $crawler->filter('body a.iwantbook span.dib')->first()->text('');
         $dbcontent = $crawler->filter('body a.iwantbook span.db')->first()->text('');
@@ -188,6 +125,7 @@ class GetGissomBook extends Command
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
 
+        print_r($categories);
         print_r($authors);
         print_r($filtered);
         exit;
