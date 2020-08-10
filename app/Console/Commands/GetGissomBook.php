@@ -106,8 +106,6 @@ class GetGissomBook extends Command
             if(strpos($col->textContent, 'توضیح کتاب:') !== false){
                 $filtered['desc'] = str_replace('توضیح کتاب:','',$col->textContent);
             }
-
-
         }
 
         $categories = array();
