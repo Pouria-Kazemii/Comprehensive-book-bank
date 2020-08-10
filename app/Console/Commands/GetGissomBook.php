@@ -7,6 +7,7 @@ use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookGisoom;
+use App\Models\Author;
 
 
 class GetGissomBook extends Command
@@ -71,7 +72,8 @@ class GetGissomBook extends Command
             if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
                 $colc = new Crawler($col);
                 foreach($colc->filter('a') as $link){
-                    $authors[]=$link->textContent;
+                    $authorObject = Author::firstOrCreate(array("d_name" => $link->textContent));
+                    $authors[]=$authorObject->id;
                 }
             }
             if(strpos($col->textContent, 'زبان:') !== false){
