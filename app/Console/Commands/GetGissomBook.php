@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Models\BookGisoom;
 
 
 class GetGissomBook extends Command
@@ -121,9 +122,17 @@ class GetGissomBook extends Command
             $filtered['price'] = enNumberKeepOnly(faCharToEN($dbcontent));
         }
 
+        $filtered['catText'] = implode("-|-", $categories);
 
         $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
         $filtered['recordNumber'] = $recordNumber;
+
+        $book = BookGisoom::firstOrCreate($filtered);
+        $this->info(" \n ---------- Inserted Book   ".$recordNumber."           ---------- ");
+        if(count($authors)>0){
+             $book->authors()->attach($authors);
+             $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
+        }
 
         print_r($categories);
         print_r($authors);
