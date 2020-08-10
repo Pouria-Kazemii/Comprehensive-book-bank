@@ -63,11 +63,11 @@ class GetGissomBook extends Command
             if(strpos($col->textContent, 'ویراستاران:') !== false){
                 $filtered['editor'] = str_replace('ویراستاران:','',$col->textContent);
             }
-            if(strpos($col->textContent, 'مترجمان:') !== false){
+            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false){
                 $filtered['tarjome'] = true;
 
             }
-            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
+            if(strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false){
                 $colc = new Crawler($col);
                 foreach($colc->filter('a') as $link){
                     $authors[]=$link->textContent;
