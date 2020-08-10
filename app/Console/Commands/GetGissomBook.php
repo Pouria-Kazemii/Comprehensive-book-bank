@@ -106,6 +106,17 @@ class GetGissomBook extends Command
 
 
         }
+        $currentUrl= $client->getHistory()->current()->getUri();
+
+        $queryParams = [
+            'data[load]=1',
+            'data[cache]=true'
+        ];
+        $content = implode('&', $queryParams);
+        $crawler2 = $client->request('POST', $currentUrl, [], [], ['HTTP_CONTENT_TYPE' => 'application/x-www-form-urlencoded'], $content);
+
+        print_r($crawler2->filter('body div.bshadow tr'));exit;
+
         foreach($crawler->filter('body div.bshadow tr') as $tr){
             $trCrawler = new Crawler($tr);
             switch($trCrawler->filter('td')->first()->text('')){
