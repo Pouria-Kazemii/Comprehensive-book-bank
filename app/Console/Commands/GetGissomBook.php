@@ -67,12 +67,14 @@ class GetGissomBook extends Command
             try {
                 $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
                 $crawler = $client->request('GET', 'https://www.gisoom.com/book/'.$recordNumber);
+                $status_code = $client->getResponse()->getStatus();
             } catch (\Exception $e) {
                 $crawler = null;
+                $status_code = 500;
                 $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
             }
 
-            if($crawler){
+            if($status_code == 200){
                 $filtered= array();
                 $title = $crawler->filter('body div.bookinfocol div h1 a');
                 $filtered['title'] = $title->text();
