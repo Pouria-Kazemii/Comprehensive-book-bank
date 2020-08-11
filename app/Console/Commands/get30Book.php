@@ -55,10 +55,27 @@ class get30Book extends Command
             echo "nasher : ".$crawler->filter('body div.body-content h2 a.site-c')->text();
             echo "price : ".$crawler->filter('body div.body-content span.price-slash')->text();
             echo "Desc : ".$crawler->filter('body div.body-content p.line-h-2')->text();
-            echo "cats : ".$crawler->filter('body div.body-content a.indigo')->text();
+
+            $cats = array();
+            foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
+                $cats[]= $cat->textContent;
+            }
+            echo "cats : ";
+            print_r($cats);
+
+            $details = array();
             echo "table : ";
-            print_r($crawler->filter("body div.body-content table.table-striped tr"));
+            foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
+                $trObj = new Crawler($trTable);
+                $details[] = array ('name'=> $trObj->filter('td')->first()->text(), 'value'=>$trObj->filter('td')->nextAll()->text());
+            }
+            print_r($details);
+
             echo "cats array : ";
-            print_r($crawler->filter("body div.body-content li.breadcrumb-item"));
+            $catPath = array();
+            foreach ($crawler->filter("body div.body-content li.breadcrumb-item a") as $linkcat){
+                $catPath[] = $linkcat->textContent;
+            }
+            print_r($catPath);
     }
 }
