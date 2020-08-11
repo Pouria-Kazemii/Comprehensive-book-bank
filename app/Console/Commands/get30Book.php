@@ -63,10 +63,9 @@ class get30Book extends Command
                 if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
                 else $filtered['cats']= $cat->textContent;
             }
-
+            $authors = array();
             foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
                 $trObj = new Crawler($trTable);
-                $authors = array();
                 switch($trObj->filter('td')->first()->text('')){
                     case 'شابک':
                         $filtered['shabak'] = $trObj->filter('td')->nextAll()->text('');
