@@ -74,7 +74,7 @@ class get30Book extends Command
             echo "\n cats array : ";
             $catPath = array();
             foreach ($crawler->filter("body div.body-content li.breadcrumb-item a") as $linkcat){
-                $catPath[] = $linkcat->textContent;
+                if($linkcat->textContent != 'کتاب')$catPath[] = $linkcat->textContent;
             }
             print_r($catPath);
     }
