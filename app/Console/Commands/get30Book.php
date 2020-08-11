@@ -51,27 +51,27 @@ class get30Book extends Command
             $status_code = 500;
             $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
         }
-            echo "title : ".$crawler->filter('body div.body-content h1')->text();
-            echo "nasher : ".$crawler->filter('body div.body-content h2 a.site-c')->text();
-            echo "price : ".$crawler->filter('body div.body-content span.price-slash')->text();
-            echo "Desc : ".$crawler->filter('body div.body-content p.line-h-2')->text();
+            echo "\n title : ".$crawler->filter('body div.body-content h1')->text();
+            echo "\n nasher : ".$crawler->filter('body div.body-content h2 a.site-c')->text();
+            echo "\n price : ".$crawler->filter('body div.body-content span.price-slash')->text();
+            echo "\n Desc : ".$crawler->filter('body div.body-content p.line-h-2')->text();
 
             $cats = array();
             foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
                 $cats[]= $cat->textContent;
             }
-            echo "cats : ";
+            echo "\n cats : ";
             print_r($cats);
 
             $details = array();
-            echo "table : ";
+            echo "\n table : ";
             foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
                 $trObj = new Crawler($trTable);
                 $details[] = array ('name'=> $trObj->filter('td')->first()->text(), 'value'=>$trObj->filter('td')->nextAll()->text());
             }
             print_r($details);
 
-            echo "cats array : ";
+            echo "\n cats array : ";
             $catPath = array();
             foreach ($crawler->filter("body div.body-content li.breadcrumb-item a") as $linkcat){
                 $catPath[] = $linkcat->textContent;
