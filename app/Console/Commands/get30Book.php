@@ -54,6 +54,7 @@ class get30Book extends Command
             echo "\n title : ".$crawler->filter('body div.body-content h1')->text();
             echo "\n nasher : ".$crawler->filter('body div.body-content h2 a.site-c')->text();
             echo "\n price : ".$crawler->filter('body div.body-content span.price-slash')->text();
+            echo "\n Image : ".$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
             echo "\n Desc : ".$crawler->filter('body div.body-content p.line-h-2')->text('');
 
             $cats = array();
