@@ -51,32 +51,75 @@ class get30Book extends Command
             $status_code = 500;
             $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
         }
-            echo "\n title : ".$crawler->filter('body div.body-content h1')->text();
-            echo "\n nasher : ".$crawler->filter('body div.body-content h2 a.site-c')->text();
-            echo "\n price : ".$crawler->filter('body div.body-content span.price-slash')->text();
-            echo "\n Image : ".'https://www.30book.com/'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
-            echo "\n Desc : ".$crawler->filter('body div.body-content p.line-h-2')->text('');
+        if($status_code == 200){
+            $filtered= array();
+            $filtered['title']  = $crawler->filter('body div.body-content h1')->text();
+            $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text();
+            $filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text()));
+            $filtered['image']  = 'https://www.30book.com/'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
+            $filtered['desc']  = $crawler->filter('body div.body-content p.line-h-2')->text('');
 
-            $cats = array();
             foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
-                $cats[]= $cat->textContent;
+                if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
+                else $filtered['cats']= $cat->textContent;
             }
-            echo "\n cats : ";
-            print_r($cats);
 
-            $details = array();
-            echo "\n table : ";
             foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
                 $trObj = new Crawler($trTable);
-                $details[] = array ('name'=> $trObj->filter('td')->first()->text(), 'value'=>$trObj->filter('td')->nextAll()->text());
-            }
-            print_r($details);
+                $authors = array();
+                switch($trObj->filter('td')->first()->text('')){
+                    case 'شابک':
+                        $filtered['shabak'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'نویسنده':
+                        if($trObj->filter('td')->nextAll()->text('') != ''){
+                            foreach($trObj->filter('a') as $link){
+                                $authors[] = $link->textContent;
+                            }
+                        }
+                    break;
+                    case 'مترجم':
+                        if($trObj->filter('td')->nextAll()->text('') != ''){
+                            $filtered['tarjome'] = true;
+                            foreach($trObj->filter('a') as $link){
+                                $authors[] = $link->textContent;
+                            }
+                        }
+                    break;
+                    case 'سال انتشار':
+                        $filtered['saleNashr'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'نوبت چاپ':
+                        $filtered['nobatChap'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'زبان کتاب':
+                        $filtered['lang'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'قطع کتاب':
+                        $filtered['ghateChap'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'جلد کتاب':
+                        $filtered['jeld'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'تعداد صفحه':
+                        $filtered['tedadSafe'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'وزن':
+                        $filtered['vazn'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
 
-            echo "\n cats array : ";
-            $catPath = array();
-            foreach ($crawler->filter("body div.body-content li.breadcrumb-item a") as $linkcat){
-                if($linkcat->textContent != 'خانه')$catPath[] = $linkcat->textContent;
+                }
             }
-            print_r($catPath);
+
+            foreach ($crawler->filter("body div.body-content li.breadcrumb-item a") as $linkcat){
+                if($linkcat->textContent != 'خانه'){
+                    if(isset($filtered['catPath']))$filtered['catPath'] = $filtered['catPath']."-|-".$linkcat->textContent;
+                    else $filtered['catPath'] = $linkcat->textContent;
+                }
+            }
+
+            print_r($authors);
+            print_r($filtered);
+        }
     }
 }
