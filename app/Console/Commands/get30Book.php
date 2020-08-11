@@ -14,7 +14,7 @@ class get30Book extends Command
      *
      * @var string
      */
-    protected $signature = 'get:30book {Id?}';
+    protected $signature = 'get:30book {Id}';
 
     /**
      * The console command description.
