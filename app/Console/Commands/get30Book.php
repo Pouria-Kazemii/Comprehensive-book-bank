@@ -49,7 +49,7 @@ class get30Book extends Command
             else $startC=1;
             $endC   = $startC + CrawlerM::$crawlerSize;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
+            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-30book-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
         }catch (\Exception $e){
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
         }
