@@ -84,7 +84,7 @@ class get30Book extends Command
                         if($trObj->filter('td')->nextAll()->text('') == 'کودک و نوجوان')$koodat = true;
                     break;
                     case 'موضوع فرعی':
-                        if($trObj->filter('td')->nextAll()->text('') == 'داستان' && $koodat )$save = true;
+                        if(strpos($trObj->filter('td')->nextAll()->text(''), 'داستان')!==false  && $koodat )$save = true;
                     break;
                     case 'نویسنده':
                         if($trObj->filter('td')->nextAll()->text('') != ''){
