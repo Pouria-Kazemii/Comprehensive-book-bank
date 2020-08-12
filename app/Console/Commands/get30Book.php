@@ -66,7 +66,7 @@ class get30Book extends Command
 
             $filtered['title']  = $crawler->filter('body div.body-content h1')->text('');
             $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text('');
-            $filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text('')));
+            if($crawler->filter('body div.body-content span.price-slash')->count() > 0)$filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text('')));
             if($filtered['price'] == ''){
                 if(strpos($crawler->filter('body div.body-content span.red-text')->text(''), 'ریال') !== false){
                     $filtered['price'] = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.red-text')->text('')));
