@@ -67,16 +67,24 @@ class get30Book extends Command
             $filtered['title']  = $crawler->filter('body div.body-content h1')->text();
             $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text();
             $filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text()));
-            $filtered['image']  = 'https://www.30book.com/'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
+            $filtered['image']  = 'https://www.30book.com'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
             $filtered['desc']  = $crawler->filter('body div.body-content p.line-h-2')->text('');
 
 
             $authors = array();
             foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
                 $trObj = new Crawler($trTable);
+                $koodat = false;
+                $save = false;
                 switch($trObj->filter('td')->first()->text('')){
                     case 'شابک':
                         $filtered['shabak'] = $trObj->filter('td')->nextAll()->text('');
+                    break;
+                    case 'دسته بندی':
+                        if($trObj->filter('td')->nextAll()->text('') == 'کودک و نوجوان')$koodat = true;
+                    break;
+                    case 'موضوع فرعی':
+                        if($trObj->filter('td')->nextAll()->text('') == 'داستان' && $koodat )$save = true;
                     break;
                     case 'نویسنده':
                         if($trObj->filter('td')->nextAll()->text('') != ''){
@@ -124,7 +132,7 @@ class get30Book extends Command
                     else $filtered['catPath'] = $linkcat->textContent;
                 }
             }
-            if((!in_array('کودک و نوجوان', $cats) && !in_array('بازی و اسباب بازی', $cats) && !in_array('سرگرمی', $cats) && !in_array('کالای فرهنگی', $cats)) || $filtered['shabak'] != ''){
+            if((!in_array('کودک و نوجوان', $cats) && !in_array('بازی و اسباب بازی', $cats) && !in_array('سرگرمی', $cats) && !in_array('کالای فرهنگی', $cats)) || $save){
 
                 print_r($authors);
                 print_r($filtered);
