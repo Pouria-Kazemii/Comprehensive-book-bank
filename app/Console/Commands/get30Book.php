@@ -61,7 +61,8 @@ class get30Book extends Command
                 if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
                 else $filtered['cats']= $cat->textContent;
             }
-            if(!in_array('بازی و اسباب بازی',$filtered['cats'])){
+            $cats = explode('-|-', $filtered['cats']);
+            if(!in_array('بازی و اسباب بازی', $cats)){
 
                 $filtered['title']  = $crawler->filter('body div.body-content h1')->text();
                 $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text();
