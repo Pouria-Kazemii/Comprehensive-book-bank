@@ -90,6 +90,9 @@ class get30Book extends Command
                     break;
                     case 'موضوع فرعی':
                         if(strpos($trObj->filter('td')->nextAll()->text(''), 'داستان')!==false  && $koodat )$save = true;
+                        if(strpos($trObj->filter('td')->nextAll()->text(''), 'کمیک و داستان مصور')!==false  && $koodat )$save = true;
+                        if(strpos($trObj->filter('td')->nextAll()->text(''), 'قصه و شعر')!==false  && $koodat )$save = true;
+                        if(strpos($trObj->filter('td')->nextAll()->text(''), 'علمی تخیلی')!==false  && $koodat )$save = true;
                     break;
                     case 'نویسنده':
                         if($trObj->filter('td')->nextAll()->text('') != ''){
