@@ -74,6 +74,7 @@ class get30Book extends Command
             }
             $filtered['image']  = 'https://www.30book.com'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
             $filtered['desc']  = $crawler->filter('body div.body-content p.line-h-2')->text('');
+            $filtered['recordNumber']  = $recordNumber;
 
             $authors = array();
             $koodat = false;
