@@ -117,10 +117,10 @@ class get30Book extends Command
                         $filtered['jeld'] = $trObj->filter('td')->nextAll()->text('');
                     break;
                     case 'تعداد صفحه':
-                        $filtered['tedadSafe'] = $trObj->filter('td')->nextAll()->text('');
+                        $filtered['tedadSafe'] = enNumberKeepOnly(faCharToEN($trObj->filter('td')->nextAll()->text('')));
                     break;
                     case 'وزن':
-                        $filtered['vazn'] = $trObj->filter('td')->nextAll()->text('');
+                        $filtered['vazn'] = enNumberKeepOnly(faCharToEN($trObj->filter('td')->nextAll()->text('')));
                     break;
 
                 }
