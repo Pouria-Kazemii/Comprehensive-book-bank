@@ -70,12 +70,12 @@ class get30Book extends Command
             $filtered['image']  = 'https://www.30book.com'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
             $filtered['desc']  = $crawler->filter('body div.body-content p.line-h-2')->text('');
 
-
             $authors = array();
+            $koodat = false;
+            $save = false;
             foreach ($crawler->filter("body div.body-content table.table-striped tr") as $trTable){
                 $trObj = new Crawler($trTable);
-                $koodat = false;
-                $save = false;
+
                 switch($trObj->filter('td')->first()->text('')){
                     case 'شابک':
                         $filtered['shabak'] = $trObj->filter('td')->nextAll()->text('');
