@@ -79,13 +79,13 @@ class get30Book extends Command
             if($status_code == 200){
 
                 $filtered= array();
+                $cats= array();
 
                 foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
                     if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
                     else $filtered['cats']= $cat->textContent;
                 }
-                $cats = explode('-|-', $filtered['cats']);
-
+                if(isset($filtered['cats']))$cats = explode('-|-', $filtered['cats']);
 
                 $filtered['title']  = $crawler->filter('body div.body-content h1')->text('');
                 $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text('');
@@ -166,6 +166,7 @@ class get30Book extends Command
                         else $filtered['catPath'] = $linkcat->textContent;
                     }
                 }
+                if($filtered['title'] =='')$save =false;
 
                 if((!in_array('کودک و نوجوان', $cats) && !in_array('بازی و اسباب بازی', $cats) && !in_array('سرگرمی', $cats) && !in_array('کالای فرهنگی', $cats)) || $save){
 
