@@ -45,7 +45,11 @@ class get30Book extends Command
 
         try {
             $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
-            $crawler = $client->request('GET', 'https://www.30book.com/Book/'.$recordNumber);
+            $crawler = $client->request('GET', 'https://www.30book.com/Book/'.$recordNumber , [
+                'headers' => [
+                    'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                ],
+            ]);
             $status_code = $client->getInternalResponse()->getStatusCode();
         }catch (\Exception $e) {
             $crawler = null;
