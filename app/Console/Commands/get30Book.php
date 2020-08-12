@@ -140,6 +140,7 @@ class get30Book extends Command
                     else $filtered['catPath'] = $linkcat->textContent;
                 }
             }
+
             if((!in_array('کودک و نوجوان', $cats) && !in_array('بازی و اسباب بازی', $cats) && !in_array('سرگرمی', $cats) && !in_array('کالای فرهنگی', $cats)) || $save){
 
                 print_r($authors);
