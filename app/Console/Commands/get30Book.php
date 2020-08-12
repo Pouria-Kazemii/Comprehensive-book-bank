@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
+use App\Models\Book30book;
+use App\Models\Author;
 
 class get30Book extends Command
 {
@@ -102,7 +104,8 @@ class get30Book extends Command
                     case 'نویسنده':
                         if($trObj->filter('td')->nextAll()->text('') != ''){
                             foreach($trObj->filter('a') as $link){
-                                $authors[] = $link->textContent;
+                                $authorObject = Author::firstOrCreate(array("d_name" => $link->textContent));
+                                $authors[]=$authorObject->id;
                             }
                         }
                     break;
@@ -110,7 +113,8 @@ class get30Book extends Command
                         if($trObj->filter('td')->nextAll()->text('') != ''){
                             $filtered['tarjome'] = true;
                             foreach($trObj->filter('a') as $link){
-                                $authors[] = $link->textContent;
+                                $authorObject = Author::firstOrCreate(array("d_name" => $link->textContent));
+                                $authors[]=$authorObject->id;
                             }
                         }
                     break;
@@ -147,6 +151,13 @@ class get30Book extends Command
             }
 
             if((!in_array('کودک و نوجوان', $cats) && !in_array('بازی و اسباب بازی', $cats) && !in_array('سرگرمی', $cats) && !in_array('کالای فرهنگی', $cats)) || $save){
+
+                $book = Book30book::firstOrCreate($filtered);
+                $this->info(" \n ---------- Inserted Book   ".$recordNumber."           ---------- ");
+                if(count($authors)>0){
+                    $book->authors()->attach($authors);
+                    $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
+                }
 
                 print_r($authors);
                 print_r($filtered);
