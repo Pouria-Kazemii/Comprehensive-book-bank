@@ -64,9 +64,14 @@ class get30Book extends Command
             $cats = explode('-|-', $filtered['cats']);
 
 
-            $filtered['title']  = $crawler->filter('body div.body-content h1')->text();
-            $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text();
-            $filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text()));
+            $filtered['title']  = $crawler->filter('body div.body-content h1')->text('');
+            $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text('');
+            $filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text('')));
+            if($filtered['price'] == ''){
+                if(strpos($crawler->filter('body div.body-content span.red-text')->text(''), 'ریال') !== false){
+                    $filtered['price'] = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.red-text')->text('')));
+                }
+            }
             $filtered['image']  = 'https://www.30book.com'.$crawler->filter('body div.body-content div.card img.rounded')->attr('src');
             $filtered['desc']  = $crawler->filter('body div.body-content p.line-h-2')->text('');
 
