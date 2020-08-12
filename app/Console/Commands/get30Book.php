@@ -17,7 +17,7 @@ class get30Book extends Command
      *
      * @var string
      */
-    protected $signature = 'get:30book {Id}';
+    protected $signature = 'get:30book {crawlerId}';
 
     /**
      * The console command description.
@@ -44,12 +44,12 @@ class get30Book extends Command
     public function handle()
     {
         try{
-            $lastCrawler = CrawlerM::where('type',2)->orderBy('end', 'desc')->first();
+            $lastCrawler = CrawlerM::where('type',3)->orderBy('end', 'desc')->first();
             if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-            else $startC=11000000;
+            else $startC=1;
             $endC   = $startC + CrawlerM::$crawlerSize;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>2));
+            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
         }catch (\Exception $e){
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
         }
