@@ -16,8 +16,8 @@ class Crawler extends Migration
         Schema::create('crawler', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->unsignedInteger('start')->unique();
-            $table->unsignedInteger('end')->unique();
+            $table->unsignedInteger('start')->index();
+            $table->unsignedInteger('end')->index();
             $table->integer('status')->index()->default(0);
             $table->timestamps();
         });
