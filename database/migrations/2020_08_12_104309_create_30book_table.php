@@ -28,6 +28,7 @@ class Create30bookTable extends Migration
             $table->boolean('tarjome')->nullable()->default(false);
             $table->binary('desc')->nullable();
             $table->longText('jeld')->nullable();
+            $table->integer('price')->nullable()->default(0);
             $table->integer('vazn')->nullable()->default(0);
             $table->longText('image')->nullable();
             $table->longText('catPath')->nullable();
