@@ -43,7 +43,7 @@ class Book extends Controller
                         $qBooks = BookM::with(['authors', 'libraries'])->where('Title','LIKE','%'.$request->input('title').'%');
                     break;
                     case 1: // Gisoom
-                        $qBooks = GBookM::with(['authors'])->where('title','LIKE','%'.$request->input('title').'%');
+                        $qBooks = GBookM::where('title','LIKE','%'.$request->input('title').'%');
                     break;
                     case 2: // 30Book
                         $qBooks = B30BookM::with(['authors'])->where('title','LIKE','%'.$request->input('title').'%');
@@ -65,7 +65,7 @@ class Book extends Controller
                 else $qBooks->Where('tedadSafhe','LIKE','%'.$request->input('tedadsafe').'%');
             }
             if($request->input('nevisande','')!=''){
-                $qBooks->whereHas('authors', function ($query){
+                if($source != 1)$qBooks->whereHas('authors', function ($query){
                                               global $request;
                                               $query->where('d_name','LIKE', '%'.$request->input('nevisande').'%');
                                             });
@@ -120,8 +120,10 @@ class Book extends Controller
                 if($source == 0)$temp['katerD'] = $book->ShomareKaterD;
                 if($source == 0)$temp['pishrade'] = $book->PishRade;
                 $temp['authors'] = array();
-                foreach($book->authors as $author){
-                    $temp['authors'][] = $author->d_name;
+                if($source != 1){
+                    foreach($book->authors as $author){
+                        $temp['authors'][] = $author->d_name;
+                    }
                 }
                 $temp['libraries'] = array();
                 if($source == 0){
