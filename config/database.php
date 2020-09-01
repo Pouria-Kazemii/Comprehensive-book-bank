@@ -91,6 +91,20 @@ return [
             'prefix_indexes' => true,
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'host' => env('MONGODB_HOST', '127.0.0.1'),
+            'port' => env('MONGODB_PORT', 27017),
+            'database' => env('MONGODB_DATABASE', 'homestead'),
+            'username' => env('MONGODB_USERNAME', 'homestead'),
+            'password' => env('MONGODB_PASSWORD', 'secret'),
+            'options' => [
+                // here you can pass more settings to the Mongo Driver Manager
+                // see https://www.php.net/manual/en/mongodb-driver-manager.construct.php under "Uri Options" for a list of complete parameters that you can use
+                'database' => env('MONGODB_AUTHENTICATION_DATABASE', 'admin'), // required with Mongo 3+
+            ],
+        ],
+
     ],
 
     /*
