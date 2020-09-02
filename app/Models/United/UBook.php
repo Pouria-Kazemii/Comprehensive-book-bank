@@ -11,6 +11,8 @@ class UBook extends Model
 {
     protected $collection = 'UBook';
     protected $dates = ['crawled_at'];
+    protected $connection = 'mongodb';
+    protected $fillable = ['title', 'ISBN', 'ISBN10', 'source', 'subject', 'publisher', 'barcode', 'language', 'translate', 'classification', 'prints', 'publication_place', 'description', 'library_info', 'image', 'editor'];
 
     public function authors()
     {
