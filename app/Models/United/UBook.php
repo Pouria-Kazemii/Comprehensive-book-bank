@@ -3,7 +3,6 @@
 namespace App\Models\United;
 
 use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
 use App\Models\United\UAuthor;
 use App\Models\United\ULibrary;
 use App\Models\United\UTag;
@@ -17,7 +16,7 @@ class UBook extends Model
 
     public function authors()
     {
-        return $this->embedsMany(UAuthor::class);
+        return $this->belongsToMany(UAuthor::class);
     }
 
     public function libraries()

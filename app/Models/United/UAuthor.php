@@ -3,7 +3,6 @@
 namespace App\Models\United;
 
 use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
 use App\Models\United\UBook;
 
 class UAuthor extends Model
@@ -14,7 +13,7 @@ class UAuthor extends Model
 
     public function books()
     {
-        return $this->embedsMany(UBook::class);
+        return $this->belongsToMany(UBook::class);
     }
 }
 
