@@ -3,6 +3,15 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\Book as BookM;
+use App\Models\Book30book as B30BookM;
+use App\Models\BookGisoom as GBookM;
+use App\Models\United\UBook as UBook;
+use App\Models\United\UAuthor as UAuthor;
+use App\Models\United\UTag as UTag;
+use App\Models\United\ULibrary as ULibrary;
+use App\Models\Library\Library;
+
 
 class MergeBook extends Command
 {
@@ -11,14 +20,14 @@ class MergeBook extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'merge:book {mergeCount}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Merge All Book To United';
 
     /**
      * Create a new command instance.
@@ -37,6 +46,15 @@ class MergeBook extends Command
      */
     public function handle()
     {
+
+        $bar = $this->output->createProgressBar($this->argument('mergeCount'));
+        $bar->start();
+        $books = BookM::with(['authors', 'libraries'])->where('')->take($this->argument('mergeCount'))->get();
+        foreach ($books as $book){
+
+        }
+
+
         return 0;
     }
 }
