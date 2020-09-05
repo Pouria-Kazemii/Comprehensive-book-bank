@@ -3,6 +3,7 @@
 namespace App\Models\United;
 
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
 use App\Models\United\UAuthor;
 use App\Models\United\ULibrary;
 use App\Models\United\UTag;

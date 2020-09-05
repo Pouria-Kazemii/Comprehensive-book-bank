@@ -3,6 +3,7 @@
 namespace App\Models\United;
 
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
 use App\Models\United\UBook;
 
 class UAuthor extends Model
