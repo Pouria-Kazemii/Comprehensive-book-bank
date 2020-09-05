@@ -8,6 +8,7 @@ use App\Models\United\UBook;
 class UAuthor extends Model
 {
     protected $collection = 'UAuthor';
+    protected $connection = 'mongodb';
     protected $fillable = ['name', 'first_name','last_name'];
 
     public function books()
