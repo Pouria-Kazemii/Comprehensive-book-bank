@@ -48,11 +48,15 @@ class MergeBook extends Command
     {
 
         $bar = $this->output->createProgressBar($this->argument('mergeCount'));
+        $this->info(" \n ----------  SATRT MERGE BOOK MODEL   ----------");
         $bar->start();
-        $books = BookM::with(['authors', 'libraries'])->where('')->take($this->argument('mergeCount'))->get();
+        $books = BookM::with(['authors', 'libraries'])->where('saveBook',false)->take($this->argument('mergeCount'))->get();
         foreach ($books as $book){
 
+            $bar->advance();
         }
+        $bar->finish();
+        $this->info(" \n ----------  FINISH MERGE BOOK MODEL  ----------");
 
 
         return 0;
