@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
-    protected $fillable = ['all','recordNumber','Creator','barcode', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak', 'Nasher', 'matName', 'langName', 'RadeAsliD', 'RadeFareiD','ShomareKaterD','PishRade','Image_Address'];
+    protected $fillable = ['all','recordNumber','Creator','barcode', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak', 'Nasher', 'matName', 'langName', 'RadeAsliD', 'RadeFareiD','ShomareKaterD','PishRade','Image_Address', 'saveBook'];
     static protected $shabakSeparator = array(",", " ");
 
     public function authors() {
