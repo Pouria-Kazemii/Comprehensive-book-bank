@@ -52,7 +52,7 @@ class MergeBook extends Command
         $bar->start();
         $books = BookM::with(['authors', 'libraries'])->where('saveBook',false)->take($this->argument('mergeCount'))->get();
         foreach ($books as $book){
-
+            $this->info($book->title);
             $bar->advance();
         }
         $bar->finish();
