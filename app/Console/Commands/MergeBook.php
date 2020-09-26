@@ -52,7 +52,40 @@ class MergeBook extends Command
         $bar->start();
         $books = BookM::with(['authors', 'libraries'])->where('saveBook',false)->take($this->argument('mergeCount'))->get();
         foreach ($books as $book){
-            $this->info($book->title);
+            $this->info($book->Title);
+
+            $temp['title'] = $book->Title;
+            $temp['nasher'] = $book->Nasher;
+            $temp['recordNumber'] = $book->recordNumber;
+            $temp['shabak'] = $book->shabak;
+            $temp['barcode'] = $book->barcode;
+            $temp['mozoe'] = $book->mozoe;
+            $temp['salenashr'] = $book->saleNashr;
+            $temp['mahalnashr'] = $book->MahalNashr;
+            $temp['tedadsafhe'] = $book->TedadSafhe;
+            $temp['image'] = $book->Image_Address;
+            $temp['lang'] = $book->langName;
+            $temp['radeasliD'] = $book->RadeAsliD;
+            $temp['radefareiD'] = $book->RadeFareiD;
+            $temp['katerD'] = $book->ShomareKaterD;
+            $temp['pishrade'] = $book->PishRade;
+            $temp['authors'] = array();
+                    foreach($book->authors as $author){
+                        $temp['authors'][] = $author->d_name;
+                    }
+            $temp['libraries'] = array();
+                foreach($book->libraries as $key=>$library){
+                    $temp['libraries'][$key]['code']      = $library->libraryCode;
+                    $temp['libraries'][$key]['name']      = $library->libraryName;
+                    $temp['libraries'][$key]['address']   = $library->address;
+                    $temp['libraries'][$key]['postcode']  = $library->postCode;
+                    $temp['libraries'][$key]['phone']     = $library->phone;
+                    $temp['libraries'][$key]['state']     = $library->state->stateName;
+                    $temp['libraries'][$key]['city']      = $library->city->townshipName;
+                }
+
+
+
             $bar->advance();
         }
         $bar->finish();

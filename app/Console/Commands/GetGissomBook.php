@@ -48,7 +48,7 @@ class GetGissomBook extends Command
         try{
             $lastCrawler = CrawlerM::where('type',2)->orderBy('end', 'desc')->first();
             if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-            else $startC=11000000;
+            else $startC=11044084;
             $endC   = $startC + CrawlerM::$crawlerSize;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
             $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>2));
@@ -66,7 +66,7 @@ class GetGissomBook extends Command
 
             try {
                 $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
-                $crawler = $client->request('GET', 'https://www.gisoom.com/book/'.$recordNumber);
+                $crawler = $client->request('GET', 'http://188.253.2.66/proxy.php?url=https://www.gisoom.com/book/'.$recordNumber);
                 $status_code = $client->getInternalResponse()->getStatusCode();
             } catch (\Exception $e) {
                 $crawler = null;
