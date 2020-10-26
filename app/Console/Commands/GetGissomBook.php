@@ -46,7 +46,7 @@ class GetGissomBook extends Command
     {
         if($this->argument('miss') && $this->argument('miss')==1){
             try{
-                $lastCrawler = CrawlerM::where('type',2)->where('status',1)->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('type',2)->where('status',1)->orderBy('end', 'ASC')->first();
                 if(isset($lastCrawler->end)){
                     $startC = $lastCrawler->start;
                     $endC   = $lastCrawler->end;
