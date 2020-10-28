@@ -92,6 +92,8 @@ class GetGissomBook extends Command
 
                 if($status_code == 200){
                     $filtered= array();
+                    $body = $crawler->filter('body');
+                    $this->info(" \n ----- Body Export -----  \n          ".$body->html()."            \n   ---------=-- ");
                     $title = $crawler->filter('body div.bookinfocol div h1 a');
                     $filtered['title'] = $title->text();
 
