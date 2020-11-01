@@ -90,10 +90,10 @@ class GetGissomBook extends Command
                     $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
                 }
 
-                if($status_code == 200 && !empty($body = $crawler->filter('body'))){
+                if($status_code == 200 && !empty($crawler->filter('body'))){
                     $filtered= array();
                     $body = $crawler->filter('body');
-                    $this->info(" \n ----- Body Export -----  \n          ".$body->html()."            \n   ---------=-- ");
+                    //$this->info(" \n ----- Body Export -----  \n          ".$body->html()."            \n   ---------=-- ");
                     $title = $crawler->filter('body div.bookinfocol div h1 a');
                     $filtered['title'] = $title->text();
 
