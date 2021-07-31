@@ -68,7 +68,7 @@ class GetK24Book extends Command
             }
 
             if($response){
-                if((int)($response[MaxID]) >= $recordNumber){
+                if((int)($response['MaxID']) >= $recordNumber){
                     $filtered= array();
                     $cats= array();
                     $content = $response;
