@@ -10,7 +10,7 @@ use App\Models\BookK24;
 use App\Models\Author;
 use App\Models\Crawler as CrawlerM;
 
-class get30Book extends Command
+class getk24Book extends Command
 {
     /**
      * The name and signature of the console command.
