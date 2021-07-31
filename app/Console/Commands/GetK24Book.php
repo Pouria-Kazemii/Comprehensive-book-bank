@@ -68,58 +68,66 @@ class GetK24Book extends Command
             }
 
             if($response){
+                if($response[MaxID] >= $recordNumber){
+                    $filtered= array();
+                    $cats= array();
+                    $content = $response;
 
-                $filtered= array();
-                $cats= array();
-                $content = $response;
+                    $filtered['title']  = $content['Title'];
+                    foreach($content['PublisherList'] as $pub){
+                        if (isset($filtered['nasher'])){
+                            $filtered['nasher'] .= " -|- ". $pub['PublisherName'];
+                        }else{
+                            $filtered['nasher'] = $pub['PublisherName'];
+                        }
 
-                $filtered['title']  = $content['Title'];
-                foreach($content['PublisherList'] as $pub){
-                    if (isset($filtered['nasher'])){
-                        $filtered['nasher'] .= " -|- ". $pub['PublisherName'];
-                    }else{
-                        $filtered['nasher'] = $pub['PublisherName'];
                     }
-
-                }
-                $filtered['lang']  = $content['Lang'];
-                foreach($content['SubjectArray'] as $pub){
-                    if (isset($filtered['cats'])){
-                        $filtered['cats'] .= " -|- ". $pub;
-                    }else{
-                        $filtered['cats'] = $pub;
+                    $filtered['lang']  = $content['Lang'];
+                    foreach($content['SubjectArray'] as $pub){
+                        if (isset($filtered['cats'])){
+                            $filtered['cats'] .= " -|- ". $pub;
+                        }else{
+                            $filtered['cats'] = $pub;
+                        }
                     }
-                }
-                $filtered['saleNashr']  = (int)($content['PubDate']);
-                $filtered['nobatChap']  = (int)($content['PrintNumber']);
-                $filtered['recordNumber']  = $recordNumber;
-                $filtered['tedadSafe']  = (int)($content['PageCount']);
-                $filtered['ghateChap']  = $content['Format'];
-                $filtered['shabak']  = enNumberKeepOnly($content['ISBN']);
-                $filtered['tarjome']  = ($content['Title']!='فارسی')? True:False;
-                $filtered['desc']  = $content['Context'];
-                $filtered['image']  = $content['PicAddress'];
-                $filtered['price']  = (int)($content['Price']);
-                $filtered['DioCode']  = $content['DioCode'];
-                $filtered['printCount']  = (int)($content['Circulation']);
-                $filtered['printLocation']  = $content['PubPlace'];
-                $partners=array();
-                    $authors=array();
-                foreach($content['CreatorList'] as $creator){
-                    if($creator['CreatorRole']=="نویسنده"){
-                        $authorObject = Author::firstOrCreate(array("d_name" => $creator['CreatorName']));
-                        $authors[]=$authorObject->id;
-                    }else{
-                        $partners[]=array("role"=>$creator['CreatorRole'], "name"=>$creator['CreatorName']);
+                    $filtered['saleNashr']  = (int)($content['PubDate']);
+                    $filtered['nobatChap']  = (int)($content['PrintNumber']);
+                    $filtered['recordNumber']  = $recordNumber;
+                    $filtered['tedadSafe']  = (int)($content['PageCount']);
+                    $filtered['ghateChap']  = $content['Format'];
+                    $filtered['shabak']  = enNumberKeepOnly($content['ISBN']);
+                    $filtered['tarjome']  = ($content['Title']!='فارسی')? True:False;
+                    $filtered['desc']  = $content['Context'];
+                    $filtered['image']  = $content['PicAddress'];
+                    $filtered['price']  = (int)($content['Price']);
+                    $filtered['DioCode']  = $content['DioCode'];
+                    $filtered['printCount']  = (int)($content['Circulation']);
+                    $filtered['printLocation']  = $content['PubPlace'];
+                    $partners=array();
+                        $authors=array();
+                    foreach($content['CreatorList'] as $creator){
+                        if($creator['CreatorRole']=="نویسنده"){
+                            $authorObject = Author::firstOrCreate(array("d_name" => $creator['CreatorName']));
+                            $authors[]=$authorObject->id;
+                        }else{
+                            $partners[]=array("role"=>$creator['CreatorRole'], "name"=>$creator['CreatorName']);
+                        }
                     }
-                }
-                $filtered['partnerArray'] = json_encode($partners);
+                    $filtered['partnerArray'] = json_encode($partners);
 
-                $book = BookK24::firstOrCreate($filtered);
-                $this->info(" \n ---------- Inserted Book   ".$recordNumber."           ---------- ");
-                if(count($authors)>0){
-                    $book->authors()->attach($authors);
-                    $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
+                    $book = BookK24::firstOrCreate($filtered);
+                    $this->info(" \n ---------- Inserted Book   ".$recordNumber."           ---------- ");
+                    if(count($authors)>0){
+                        $book->authors()->attach($authors);
+                        $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
+                    }
+                }else{
+                    $this->info(" \n ---------- END Book          ---------- ");
+                    $newCrawler->status = 2;
+                    $newCrawler->save();
+                    $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+                    $bar->finish();
+                    exit;
                 }
 
             }else{
