@@ -30,9 +30,9 @@ class Author extends Model
     {
         return $this->belongsToMany(Book30book::class);
     }
-    public function bookK24()
+    public function BookK24()
     {
-        return $this->belongsToMany(bookK24::class);
+        return $this->belongsToMany(BookK24::class);
     }
     static public function authorSeprator($authorStr){
 
