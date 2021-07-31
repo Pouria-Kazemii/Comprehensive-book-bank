@@ -44,12 +44,12 @@ class getk24Book extends Command
     public function handle()
     {
         try{
-            $lastCrawler = CrawlerM::where('type',3)->orderBy('end', 'desc')->first();
+            $lastCrawler = CrawlerM::where('type',4)->orderBy('end', 'desc')->first();
             if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-            else $startC=1;
+            else $startC=100;
             $endC   = $startC + CrawlerM::$crawlerSize;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-30book-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
+            $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-k24-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>4));
         }catch (\Exception $e){
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
         }
