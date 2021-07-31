@@ -86,7 +86,7 @@ class get30Book extends Command
                 $filtered['title']  = $content['Title'];
                 foreach($content['PublisherList'] as $pub){
                     if (isset($filtered['nasher'])){
-                        $filtered['nasher'] .= " -|- " $pub['PublisherName'];
+                        $filtered['nasher'] .= " -|- ". $pub['PublisherName'];
                     }else{
                         $filtered['nasher'] = $pub['PublisherName'];
                     }
@@ -95,7 +95,7 @@ class get30Book extends Command
                 $filtered['lang']  = $content['Lang'];
                 foreach($content['SubjectArray'] as $pub){
                     if (isset($filtered['cats'])){
-                        $filtered['cats'] .= " -|- " $pub;
+                        $filtered['cats'] .= " -|- ". $pub;
                     }else{
                         $filtered['cats'] = $pub;
                     }
