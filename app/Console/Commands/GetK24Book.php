@@ -3,9 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\DomCrawler\Crawler;
+use Illuminate\Support\Facades\Http;
 use App\Models\BookK24;
 use App\Models\Author;
 use App\Models\Crawler as CrawlerM;
@@ -54,8 +52,6 @@ class getk24Book extends Command
             $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
         }
 
-        $client = new Client(HttpClient::create(['timeout' => 30]));
-
         $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
         $bar->start();
 
@@ -64,24 +60,18 @@ class getk24Book extends Command
 
             try {
                 $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
-                $crawler = $client->request('GET', 'http://k24.ir/v1/getbookbyid&bookid='.$recordNumber."/" , [
-                    'headers' => [
-                        'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
-                    ],
-                ]);
-                $status_code = $client->getInternalResponse()->getStatusCode();
-            }catch (\Exception $e) {
-                $crawler = null;
-                $status_code = 500;
+                $response = Http::retry(3, 100)->timeout(10)->get('http://k24.ir/v1/getbookbyid&bookid='.$recordNumber."/", []);
+                $response = json_decode($response, true);
+            } catch (\Exception $e) {
+                $response = null;
                 $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
             }
 
-            if($status_code == 200){
+            if($response){
 
                 $filtered= array();
                 $cats= array();
-                $content = $crawler->getContent();
-                $content = $crawler->toArray();
+                $content = $response;
 
                 $filtered['title']  = $content['Title'];
                 foreach($content['PublisherList'] as $pub){
