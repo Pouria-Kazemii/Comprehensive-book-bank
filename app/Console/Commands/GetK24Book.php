@@ -104,6 +104,7 @@ class GetK24Book extends Command
                 $filtered['printCount']  = $content['Circulation'];
                 $filtered['printLocation']  = $content['PubPlace'];
                 $partners=array();
+                $authors=array();
                 foreach($content['CreatorList'] as $creator){
                     if($creator['CreatorRole']=="نویسنده"){
                         $authorObject = Author::firstOrCreate(array("d_name" => $creator['CreatorName']));
