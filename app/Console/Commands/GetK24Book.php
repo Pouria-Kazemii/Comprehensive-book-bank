@@ -90,21 +90,21 @@ class GetK24Book extends Command
                         $filtered['cats'] = $pub;
                     }
                 }
-                $filtered['saleNashr']  = $content['PubDate'];
-                $filtered['nobatChap']  = $content['PrintNumber'];
+                $filtered['saleNashr']  = (int)($content['PubDate']);
+                $filtered['nobatChap']  = (int)($content['PrintNumber']);
                 $filtered['recordNumber']  = $recordNumber;
-                $filtered['tedadSafe']  = $content['PageCount'];
+                $filtered['tedadSafe']  = (int)($content['PageCount']);
                 $filtered['ghateChap']  = $content['Format'];
                 $filtered['shabak']  = enNumberKeepOnly($content['ISBN']);
                 $filtered['tarjome']  = ($content['Title']!='فارسی')? True:False;
                 $filtered['desc']  = $content['Context'];
                 $filtered['image']  = $content['PicAddress'];
-                $filtered['price']  = $content['Price'];
+                $filtered['price']  = (int)($content['Price']);
                 $filtered['DioCode']  = $content['DioCode'];
-                $filtered['printCount']  = $content['Circulation'];
+                $filtered['printCount']  = (int)($content['Circulation']);
                 $filtered['printLocation']  = $content['PubPlace'];
                 $partners=array();
-                $authors=array();
+                    $authors=array();
                 foreach($content['CreatorList'] as $creator){
                     if($creator['CreatorRole']=="نویسنده"){
                         $authorObject = Author::firstOrCreate(array("d_name" => $creator['CreatorName']));
