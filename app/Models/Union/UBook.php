@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Models\United;
+namespace App\Models\Union;
 
 use Jenssegers\Mongodb\Eloquent\Model;
-use App\Models\United\UAuthor;
-use App\Models\United\ULibrary;
-use App\Models\United\UTag;
+use App\Models\Union\UAuthor;
+use App\Models\Union\ULibrary;
+use App\Models\Union\UTag;
 
 class UBook extends Model
 {
