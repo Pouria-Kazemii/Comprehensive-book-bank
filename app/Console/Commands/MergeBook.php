@@ -6,10 +6,10 @@ use Illuminate\Console\Command;
 use App\Models\Book as BookM;
 use App\Models\Book30book as B30BookM;
 use App\Models\BookGisoom as GBookM;
-use App\Models\United\UBook as UBook;
-use App\Models\United\UAuthor as UAuthor;
-use App\Models\United\UTag as UTag;
-use App\Models\United\ULibrary as ULibrary;
+use App\Models\Union\UBook as UBook;
+use App\Models\Union\UAuthor as UAuthor;
+use App\Models\Union\UTag as UTag;
+use App\Models\Union\ULibrary as ULibrary;
 use App\Models\Library\Library;
 
 
@@ -27,7 +27,7 @@ class MergeBook extends Command
      *
      * @var string
      */
-    protected $description = 'Merge All Book To United';
+    protected $description = 'Merge All Book To Union';
 
     /**
      * Create a new command instance.

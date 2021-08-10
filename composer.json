@@ -15,6 +15,7 @@
         "fruitcake/laravel-cors": "^1.0",
         "guzzlehttp/guzzle": "^7.0",
         "illuminate/events": "^7.26",
+        "illuminated/wikipedia-grabber": "^7.0",
         "jenssegers/mongodb": "dev-develop",
         "laravel/framework": "^7.0",
         "laravel/tinker": "^2.0"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fc3bcd14df7009b6d0919aaec99035ba",
+    "content-hash": "adf7e4bd6ba6eabbe631ea56cc7d0161",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -940,6 +940,75 @@
                 "url"
             ],
             "time": "2019-07-01T23:21:34+00:00"
+        },
+        {
+            "name": "illuminated/wikipedia-grabber",
+            "version": "7.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dmitry-ivanov/laravel-wikipedia-grabber.git",
+                "reference": "548426165f2380cd24fa8309d79eb49141d6c7ed"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dmitry-ivanov/laravel-wikipedia-grabber/zipball/548426165f2380cd24fa8309d79eb49141d6c7ed",
+                "reference": "548426165f2380cd24fa8309d79eb49141d6c7ed",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^6.3.1|^7.0",
+                "illuminate/support": "^7.0",
+                "php": "^7.2.5|^8.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.3.1",
+                "orchestra/testbench": "^5.0",
+                "phpunit/phpunit": "^8.4|^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Illuminated\\Wikipedia\\WikipediaGrabberServiceProvider"
+                    ],
+                    "aliases": {
+                        "Wikipedia": "Illuminated\\Wikipedia\\Wikipedia",
+                        "MediaWiki": "Illuminated\\Wikipedia\\MediaWiki"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminated\\Wikipedia\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dmitry Ivanov",
+                    "email": "dmitry.g.ivanov@gmail.com"
+                }
+            ],
+            "description": "Wikipedia/MediaWiki Grabber for Laravel.",
+            "keywords": [
+                "grabber",
+                "laravel",
+                "mediawiki",
+                "parser",
+                "wiki",
+                "wikipedia",
+                "wikipedia-grabber",
+                "wikipedia-parser"
+            ],
+            "support": {
+                "issues": "https://github.com/dmitry-ivanov/laravel-wikipedia-grabber/issues",
+                "source": "https://github.com/dmitry-ivanov/laravel-wikipedia-grabber"
+            },
+            "time": "2020-12-21T18:53:14+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
@@ -7332,5 +7401,5 @@
         "php": "^7.2.5"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }

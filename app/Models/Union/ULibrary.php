@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\United;
+namespace App\Models\Union;
 
 use Jenssegers\Mongodb\Eloquent\Model;
 
