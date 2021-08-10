@@ -59,6 +59,7 @@ class GetK24Book extends Command
         while ($recordNumber <= $endC){
 
             try {
+                usleep( 2 * 1000 );
                 $this->info(" \n ---------- Try Get BOOK ".$recordNumber."              ---------- ");
                 $response = Http::retry(3, 100)->timeout(10)->get('http://k24.ir/v1/getbookbyid&bookid='.$recordNumber."/", []);
                 $response = json_decode($response, true);
