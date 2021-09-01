@@ -36,7 +36,7 @@ class IranketabTable extends Migration
             $table->longText('images')->nullable();
             $table->integer('price')->nullable()->default(0);
             $table->longText('partnerArray')->nullable();
-            $table->float('rate', 8, 2)->nullable();
+            $table->float('rate', 2, 2)->nullable();
             $table->boolean('saveBook')->nullable()->default(false);
             $table->timestamps();
         });
