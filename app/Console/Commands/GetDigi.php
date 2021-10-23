@@ -45,7 +45,7 @@ class GetDigi extends Command
     {
         if($this->argument('miss') && $this->argument('miss')==1){
             try{
-                $lastCrawler = CrawlerM::where('type',2)->where('status',1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('type',5)->where('status',1)->orderBy('end', 'ASC')->first();
                 if(isset($lastCrawler->end)){
                     $startC = $lastCrawler->start;
                     $endC   = $lastCrawler->end;
@@ -57,12 +57,12 @@ class GetDigi extends Command
             }
         }else{
             try{
-                $lastCrawler = CrawlerM::where('type',2)->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('type',5)->orderBy('end', 'desc')->first();
                 if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
                 else $startC=1;
                 $endC   = $startC;
                 $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>2));
+                $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-digi-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>5));
             }catch (\Exception $e){
                 $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
             }
@@ -75,7 +75,7 @@ class GetDigi extends Command
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
-            $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
+            $bar = $this->output->createProgressBar(36);
             $bar->start();
 
             try {
@@ -83,6 +83,7 @@ class GetDigi extends Command
                 // $crawler = $client->request('GET', 'https://www.digikala.com/ajax/search/category-book/?pageno='.$startC.'&sortby=1');
                 // $status_code = $client->getInternalResponse()->getStatusCode();
                 $pageUrl ='https://www.digikala.com/ajax/search/category-book/?pageno='.$startC.'&sortby=1';
+                $this->info(" \n ---------- Page URL  ".$pageUrl."              ---------=-- ");
                 $json = file_get_contents($pageUrl);
                 $headers = get_headers($pageUrl);
                 $status_code= substr($headers[0], 9, 3);
@@ -104,19 +105,19 @@ class GetDigi extends Command
                     //$productUrl="https://www.digikala.com/product/dkp-5547149/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D8%B9%D8%AC%D8%B2%D9%87-%D8%B4%DA%A9%D8%B1%DA%AF%D8%B2%D8%A7%D8%B1%DB%8C-%D8%A7%D8%AB%D8%B1-%D8%B1%D8%A7%D9%86%D8%AF%D8%A7-%D8%A8%D8%B1%D9%86-%D8%A7%D9%86%D8%AA%D8%B4%D8%A7%D8%B1%D8%A7%D8%AA-%D9%86%DA%AF%DB%8C%D9%86-%D8%A7%DB%8C%D8%B1%D8%A7%D9%86";
 
                     try {
-                        $this->info(" \n ---------- Try Get BOOK               ---------- ");
+                        $this->info(" \n ---------- Try Get BOOK        ".$pp->product_id."       ---------- ");
                         $crawler = $client->request('GET', $productUrl);
                         $status_code = $client->getInternalResponse()->getStatusCode();
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                        $this->info(" \n ---------- Failed Get  ".$pp->product_id."              ---------=-- ");
                     }
 
                     if($status_code == 200 ){
                         $row = $crawler->filter('body');
                         if($row->filter('h1.c-product__title')->text('')!=''){
-                            $authors= array();
+                            $authorsobj= array();
                             $filtered= array();
                             $filtered['title']=$row->filter('h1.c-product__title')->text('');
                             $filtered['rate']=(int)$row->filter('div.c-product__engagement-rating')->text('');
@@ -125,6 +126,17 @@ class GetDigi extends Command
                             $filtered['images']=$row->filter('img.js-gallery-img')->attr('data-src');
                             $filtered['recordNumber']='dkp-'.$row->filter('div.js-product-page')->attr('data-product-id');
                             $filtered['features']="";
+                            //sellers   c-table-suppliers__body
+                            if($row->filter('div.c-c-table-suppliers__body')->text('')!=''){
+                                $filtered['sellers'] = '';
+                                foreach($row->filterXPath('//div[contains(@class, "c-c-table-suppliers__body")]/div') as $div){
+                                    $divobj=new Crawler($div);
+                                    if($divobj->filter('div.c-seller-rating__title')->text('')!=''){
+                                        $filtered['sellers'].=$divobj->filter('div.c-seller-rating__title')->text('')." :|: ";
+                                    }
+                                }
+                            }
+
                             foreach($row->filterXPath('//ul[contains(@class, "c-params__list")]/li') as $li){
                                 $litag=new Crawler($li);
                                 if($litag->filter('div.c-params__list-key')->text('')=='سایر توضیحات' || $litag->filter('div.c-params__list-key')->text('|')==''){
@@ -134,7 +146,7 @@ class GetDigi extends Command
                                     $filtered['vazn']=$litag->filter('div.c-params__list-value')->text('');
                                 }
                                 if($litag->filter('div.c-params__list-key')->text('')=='نویسنده'){
-                                    $authors = Author::firstOrCreate(array("d_name" => $litag->filter('div.c-params__list-value')->text('')));
+                                    $authorsobj = Author::firstOrCreate(array("d_name" => $litag->filter('div.c-params__list-value')->text('')));
                                 }
                                 if($litag->filter('div.c-params__list-key')->text('')=='قطع'){
                                     $filtered['ghateChap']=$litag->filter('div.c-params__list-value')->text('');
@@ -167,15 +179,18 @@ class GetDigi extends Command
                                     $filtered['noechap']=$litag->filter('div.c-params__list-value')->text('');
                                 }
                                 
+                                
 
                             }
                             $book = BookDigi::firstOrCreate($filtered);
                             
-                            $book->authors()->attach(array($authors->Id));
-                            $this->info(" \n ---------- Attach Author Book   ".$recordNumber."          ---------- ");
+                            if(isset($authorsobj->id)){
+                                $book->authors()->attach(array($authorsobj->id));
+                                $this->info(" \n ---------- Attach Author Book   ".$authorsobj->id."  To ".$pp->product_id."        ---------- ");
+                            }
                             
 
-                            var_dump($book);
+                            //var_dump($book);
 
                         }
                         
@@ -184,7 +199,6 @@ class GetDigi extends Command
                     $recordNumber ++;
                 }
             }
-            exit;
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
