@@ -15,7 +15,7 @@ class Adddigibook extends Migration
     {
         Schema::create('bookDigi', function (Blueprint $table) {
             $table->id();
-            $table->integer('recordNumber')->index();
+            $table->longText('recordNumber')->index();
             $table->longText('title')->nullable();
             $table->longText('nasher')->nullable();
             $table->longText('ghatechap')->nullable();
@@ -30,6 +30,7 @@ class Adddigibook extends Migration
             $table->binary('features')->nullable();
             $table->longText('images')->nullable();
             $table->integer('count')->nullable()->default(0);
+            $table->integer('tedadSafe')->nullable()->default(0);
             $table->integer('price')->nullable()->default(0);
             $table->longText('partnerArray')->nullable();
             $table->float('rate', 2, 2)->nullable();
