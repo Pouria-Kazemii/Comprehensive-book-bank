@@ -13,7 +13,29 @@ class Adddigibook extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('bookDigi', function (Blueprint $table) {
+            $table->id();
+            $table->integer('recordNumber')->index();
+            $table->longText('title')->nullable();
+            $table->longText('nasher')->nullable();
+            $table->longText('ghatechap')->nullable();
+            $table->longText('shabak')->nullable();
+            $table->longText('cat')->nullable();
+            $table->longText('noekaghaz')->nullable();
+            $table->longText('noechap')->nullable();
+            $table->longText('jeld')->nullable();
+            $table->longText('vazn')->nullable();
+            $table->binary('desc')->nullable();
+            $table->binary('sellers')->nullable();
+            $table->binary('features')->nullable();
+            $table->longText('images')->nullable();
+            $table->integer('count')->nullable()->default(0);
+            $table->integer('price')->nullable()->default(0);
+            $table->longText('partnerArray')->nullable();
+            $table->float('rate', 2, 2)->nullable();
+            $table->boolean('saveBook')->nullable()->default(false);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -23,6 +45,6 @@ class Adddigibook extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('bookDigi');
     }
 }
