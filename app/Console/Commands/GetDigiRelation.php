@@ -83,7 +83,7 @@ class GetDigiRelation extends Command
                 $bar->start();
                 
                 foreach($books as $book){
-                    $book->recordNumber = 'dkp-1111023';
+                    //$book->recordNumber = 'dkp-1111023';
                     $productUrl="https://www.digikala.com/product/".$book->recordNumber."/";
                     //$productUrl="https://www.digikala.com/product/dkp-5547149/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D8%B9%D8%AC%D8%B2%D9%87-%D8%B4%DA%A9%D8%B1%DA%AF%D8%B2%D8%A7%D8%B1%DB%8C-%D8%A7%D8%AB%D8%B1-%D8%B1%D8%A7%D9%86%D8%AF%D8%A7-%D8%A8%D8%B1%D9%86-%D8%A7%D9%86%D8%AA%D8%B4%D8%A7%D8%B1%D8%A7%D8%AA-%D9%86%DA%AF%DB%8C%D9%86-%D8%A7%DB%8C%D8%B1%D8%A7%D9%86";
 
@@ -101,11 +101,13 @@ class GetDigiRelation extends Command
                         $related_array = array();
                         foreach($crawler->filterXPath('//div[contains(@class, "c-carousel--horizontal-general")]') as $div){
                             $divobj=new Crawler($div);                            
-                            //var_dump($divobj->filterXPath('//div[contains(@class, "swiper-wrapper")]/div'));exit;
+                            //var_dump($divobj->filterXPath('//div[contains(@class, "swiper-slide")]'));exit;
                             foreach($divobj->filterXPath('//div[contains(@class, "swiper-wrapper")]/div') as $divi){
                                 $divitem=new Crawler($divi);
-                                if(strpos($divitem->filter('div.c-product-box__img')->attr('title'), 'کتاب')==0){
-                                    $relatedBook = BookDigi::where('recordNumber', 'dkp-'.$divitem->attr('data-id'))->first();
+                                $this->info("\n-- Title : ".$divitem->filter('div.c-product-box__title.js-ab-not-app-incredible-product')->text('')."--".strpos($divitem->filter('div.c-product-box__title.js-ab-not-app-incredible-product')->text(''), 'کتاب'));
+                                if(strpos($divitem->filter('div.c-product-box__title.js-ab-not-app-incredible-product')->text(''), 'کتاب')==0){
+                                    $this->info('\n --- DIGI ID : '.$divitem->attr('data-id'));
+				    $relatedBook = BookDigi::where('recordNumber', 'dkp-'.$divitem->attr('data-id'))->first();
                                     if(isset($relatedBook->id)){
                                         $related = bookDigiRelated::firstOrCreate(array('book_id'=>$relatedBook->id));
                                         array_push($related_array, $related->id);
