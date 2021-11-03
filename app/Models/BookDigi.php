@@ -12,4 +12,8 @@ class BookDigi extends Model
     public function authors() {
         return $this->belongsToMany(Author::class);
     }
+
+    public function related() {
+        return $this->belongsToMany(BookDigiRelated::class);
+    }
 }
