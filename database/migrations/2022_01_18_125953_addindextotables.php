@@ -14,37 +14,26 @@ class Addindextotables extends Migration
     public function up()
     {
         //
-        Schema::table('books', function(Blueprint $table)
-        {
-            $table->index('shabak');
-            $table->index('Title');
-            $table->index('Nasher');
-        });
-        Schema::table('bookK24', function(Blueprint $table)
-        {
-            $table->index('title');
-            $table->index('nasher');
-            $table->index('shabak');
-        });
-        Schema::table('book30book', function(Blueprint $table)
-        {
-            $table->index('title');
-            $table->index('nasher');
-            $table->index('shabak');
-        });
-        Schema::table('bookDigi', function(Blueprint $table)
-        {
-            $table->index('title');
-            $table->index('nasher');
-            $table->index('shabak');
-        });
-        Schema::table('bookgisoom', function(Blueprint $table)
-        {
-            $table->index('title');
-            $table->index('nasher');
-            $table->index('shabak10');
-            $table->index('shabak13');
-        });
+        DB::statement('ALTER TABLE `books` ADD FULLTEXT INDEX book_shabak_index (shabak)');
+        DB::statement('ALTER TABLE `books` ADD FULLTEXT INDEX book_title_index (Title)');
+        DB::statement('ALTER TABLE `books` ADD FULLTEXT INDEX book_nasher_index (Nasher)');
+        
+        DB::statement('ALTER TABLE `bookK24` ADD FULLTEXT INDEX book_shabak_index (shabak)');
+        DB::statement('ALTER TABLE `bookK24` ADD FULLTEXT INDEX book_title_index (title)');
+        DB::statement('ALTER TABLE `bookK24` ADD FULLTEXT INDEX book_nasher_index (nasher)');
+
+        DB::statement('ALTER TABLE `book30book` ADD FULLTEXT INDEX book_shabak_index (shabak)');
+        DB::statement('ALTER TABLE `book30book` ADD FULLTEXT INDEX book_title_index (title)');
+        DB::statement('ALTER TABLE `book30book` ADD FULLTEXT INDEX book_nasher_index (nasher)');
+
+        DB::statement('ALTER TABLE `bookDigi` ADD FULLTEXT INDEX book_shabak_index (shabak)');
+        DB::statement('ALTER TABLE `bookDigi` ADD FULLTEXT INDEX book_title_index (title)');
+        DB::statement('ALTER TABLE `bookDigi` ADD FULLTEXT INDEX book_nasher_index (nasher)');
+
+        DB::statement('ALTER TABLE `bookgisoom` ADD FULLTEXT INDEX book_shabak_index (shabak10)');
+        DB::statement('ALTER TABLE `bookgisoom` ADD FULLTEXT INDEX book_shabak13_index (shabak13)');
+        DB::statement('ALTER TABLE `bookgisoom` ADD FULLTEXT INDEX book_title_index (title)');
+        DB::statement('ALTER TABLE `bookgisoom` ADD FULLTEXT INDEX book_nasher_index (nasher)');
     }
 
     /**
