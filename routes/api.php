@@ -14,10 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-Route::middleware(['ChToken'])->group(function () {
-    Route::post('/v1/find/book','API\Book@find');
-    Route::post('/v1/find/library','API\Library@find');
-});
+Route::post('/v1/user/login', 'API\UserController@login');
+
+Route::group
+(
+    ['middleware' => ['jwt.auth']],
+    function()
+    {
+        Route::post('/v1/book/find', 'API\BookController@find');
+    }
+);
