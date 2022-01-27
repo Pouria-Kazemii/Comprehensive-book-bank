@@ -176,11 +176,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        /*
-         * Jenssegers Mongodb Providers...
-         */
-        Jenssegers\Mongodb\MongodbServiceProvider::class,
-
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
     ],
 

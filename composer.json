@@ -16,10 +16,8 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "illuminate/events": "^8.50.0",
         "illuminated/wikipedia-grabber": "^8.0",
-        "jenssegers/mongodb": "^3.8",
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
-        "mongodb/mongodb": "^1.11",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
