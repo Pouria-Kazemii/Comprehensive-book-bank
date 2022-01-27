@@ -13,7 +13,7 @@ class AddBookMasterIdToBookiranketabTable extends Migration
      */
     public function up()
     {
-        Schema::table('bookiranketab', function (Blueprint $table) {
+        Schema::table('bookIranketab', function (Blueprint $table) {
             $table->integer('book_master_id')->nullable()->default(0);
         });
     }
@@ -25,7 +25,7 @@ class AddBookMasterIdToBookiranketabTable extends Migration
      */
     public function down()
     {
-        Schema::table('bookiranketab', function (Blueprint $table) {
+        Schema::table('bookIranketab', function (Blueprint $table) {
             $table->dropColumn('book_master_id');
         });
     }
