@@ -13,7 +13,7 @@ class AddBookMasterIdToBookdigiTable extends Migration
      */
     public function up()
     {
-        Schema::table('bookdigi', function (Blueprint $table) {
+        Schema::table('bookDigi', function (Blueprint $table) {
             $table->integer('book_master_id')->nullable()->default(0);
         });
     }
@@ -25,8 +25,8 @@ class AddBookMasterIdToBookdigiTable extends Migration
      */
     public function down()
     {
-        Schema::table('bookdigi', function (Blueprint $table) {
-            //
+        Schema::table('bookDigi', function (Blueprint $table) {
+            $table->dropColumn('book_master_id');
         });
     }
 }

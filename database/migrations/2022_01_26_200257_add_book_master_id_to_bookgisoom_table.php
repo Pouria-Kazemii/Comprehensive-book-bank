@@ -26,7 +26,7 @@ class AddBookMasterIdToBookgisoomTable extends Migration
     public function down()
     {
         Schema::table('bookgisoom', function (Blueprint $table) {
-            //
+            $table->dropColumn('book_master_id');
         });
     }
 }
