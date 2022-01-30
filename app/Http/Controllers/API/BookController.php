@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
+use App\Models\BookDigi;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
@@ -30,6 +32,7 @@ class BookController extends Controller
             {
                 $data[] =
                     [
+                        "id" => $book->id,
                         "title" => $book->title,
                         "publisher" => $book->publisher,
                         "language" => $book->language,
@@ -61,143 +64,330 @@ class BookController extends Controller
         );
     }
 
-    public function CheckBook()
+    // detail book
+    public function detail(Request $request)
     {
-        // read --> bookk24
-        $books= BookK24::where('book_master_id', '=', '0')->take(200)->get();
+        $bookId = $request["bookId"];
+        $dataMaster = null;
+        $data = null;
+
+        // read books
+        $book = TblBookMaster::all()->where('id', '=', $bookId)->first();
+        if($book != null and $book->id > 0)
+        {
+            $dataMaster =
+                [
+                    "id" => $book->id,
+                    "title" => $book->title,
+                    "titleEn" => $book->title_en,
+                    "publisher" => $book->publisher,
+                    "author" => $book->author,
+                    "translator" => $book->translator,
+                    "language" => $book->language,
+                    "category" => $book->category,
+                    "weight" => $book->weight,
+                    "bookCoverType" => $book->book_cover_type,
+                    "paperType" => $book->paper_type,
+                    "typePrinting" => $book->type_printing,
+                    "editor" => $book->editor,
+                    "firstYearPublication" => $book->first_year_publication,
+                    "lastYearPublication" => $book->last_year_publication,
+                    "printPeriodCount" => $book->print_period_count,
+                    "bookSize" => $book->book_size,
+                    "countPages" => $book->count_pages,
+                    "printCount" => $book->print_count,
+                    "printLocation" => $book->print_location,
+                    "shabak" => $book->shabak,
+                    "price" => $book->price,
+                    "dioCode" => $book->dio_code,
+                    "image" => $book->image,
+                ];
+        }
+
+        // read books
+        $books = BookK24::where('book_master_id', '=', $bookId)->get();
+        if($books != null and count($books) > 0)
+        {
+            $dataTemp = null;
+
+            foreach ($books as $book)
+            {
+                $dataTemp[] =
+                    [
+                        "title" => $book->title,
+                        "titleEn" => '',
+                        "publisher" => $book->nasher,
+                        "author" => '',
+                        "translator" => '',
+                        "language" => $book->lang,
+                        "category" => $book->cats,
+                        "weight" => '',
+                        "bookCoverType" => '',
+                        "paperType" => '',
+                        "typePrinting" => '',
+                        "editor" => '',
+                        "yearPublication" => $book->saleNashr,
+                        "printPeriodCount" => $book->nobatChap,
+                        "bookSize" => $book->ghatechap,
+                        "countPages" => $book->tedadSafe,
+                        "printCount" => $book->printCount,
+                        "printLocation" => $book->printLocation,
+                        "shabak" => $book->shabak,
+                        "price" => $book->price,
+                        "dioCode" => $book->DioCode,
+                    ];
+            }
+
+            $data[] = ["bookSource" => "ketab.ir", "books" => $dataTemp];
+        }
+
+        if($dataMaster != null and $data != null) $status = 200;
+
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["master" => $dataMaster, "list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // read & check ---> bookk24
+    public function checkBookK24()
+    {
+        $books = BookK24::where('book_master_id', '=', '0')->take(200)->get();
         if($books != null)
         {
             foreach ($books as $book)
             {
-                // check book exist in TblBookMaster
-                $tblBookMaster = TblBookMaster::where('shabak', '=', $book->shabak)->first();
-                if($tblBookMaster != null) // exist
+                $bookMasterData = new BookMasterData();
+                $bookMasterData->record_number = $book->recordNumber;
+                $bookMasterData->shabak = $book->shabak;
+                $bookMasterData->title = $book->title;
+                $bookMasterData->title_en = '';
+                $bookMasterData->publisher = $book->nasher;
+                $bookMasterData->author = '';
+                $bookMasterData->translator = '';
+                $bookMasterData->language = $book->lang;
+                $bookMasterData->category = $book->cats;
+                $bookMasterData->weight = 0;
+                $bookMasterData->book_cover_type = '';
+                $bookMasterData->paper_type = '';
+                $bookMasterData->type_printing = '';
+                $bookMasterData->editor = '';
+                $bookMasterData->first_year_publication = $book->saleNashr;
+                $bookMasterData->last_year_publication = $book->saleNashr;
+                $bookMasterData->count_pages = $book->tedadSafe;
+                $bookMasterData->book_size = $book->ghatechap;
+                $bookMasterData->print_period_count = $book->nobatChap;
+                $bookMasterData->print_count = $book->printCount;
+                $bookMasterData->print_location = $book->printLocation;
+                $bookMasterData->translation = $book->tarjome;
+                $bookMasterData->desc = $book->desc;
+                $bookMasterData->image = $book->image;
+                $bookMasterData->price = $book->price;
+                $bookMasterData->dio_code = $book->DioCode;
+
+                // call check book
+                $where = [['shabak', '=', $book->shabak]];
+
+                $bookMasterId = $this->checkBook($bookMasterData, $where);
+
+                // save bookMaster id in bookk24
+                $book->book_master_id = $bookMasterId;
+                $book->save();
+            }
+        }
+    }
+
+    // read & check ---> bookDigi
+    public function checkBookDigi()
+    {
+        $books = BookDigi::where('book_master_id', '=', '0')->where('shabak', '!=', '')->take(200)->get();
+        if($books != null)
+        {
+            foreach ($books as $book)
+            {
+                $bookMasterData = new BookMasterData();
+                $bookMasterData->record_number = $book->recordNumber;
+                $bookMasterData->shabak = faCharToEN(str_replace("-", "", $book->shabak));
+                $bookMasterData->title = $book->title;
+                $bookMasterData->title_en = '';
+                $bookMasterData->publisher = $book->nasher;
+                $bookMasterData->author = '';
+                $bookMasterData->translator = '';
+                $bookMasterData->language = '';
+                $bookMasterData->category = $book->cat;
+                $bookMasterData->weight = $book->vazn;
+                $bookMasterData->book_cover_type = $book->jeld;
+                $bookMasterData->paper_type = $book->noekaghaz;
+                $bookMasterData->type_printing = $book->noechap;
+                $bookMasterData->editor = '';
+                $bookMasterData->first_year_publication = 0;
+                $bookMasterData->last_year_publication = 0;
+                $bookMasterData->count_pages = $book->tedadSafe;
+                $bookMasterData->book_size = $book->ghatechap;
+                $bookMasterData->print_period_count = 0;
+                $bookMasterData->print_count = $book->count;
+                $bookMasterData->print_location = '';
+                $bookMasterData->translation = '';
+                $bookMasterData->desc = $book->desc;
+                $bookMasterData->image = $book->images;
+                $bookMasterData->price = $book->price;
+                $bookMasterData->dio_code = '';
+
+                // call check book
+                $where = [['shabak', '=', $book->shabak]];
+
+                $bookMasterId = $this->checkBook($bookMasterData, $where);
+
+                // save bookMaster id in bookk24
+                $book->book_master_id = $bookMasterId;
+                $book->save();
+            }
+        }
+    }
+
+    // check & save in bookMaster
+    /**
+     * @param BookMasterData $bookMasterData
+     * @param array $where
+     * @return integer $bookMasterId
+     */
+    private function checkBook($bookMasterData, $where)
+    {
+        $bookMasterId = 0;
+
+        // check book exist in TblBookMaster
+        $bookMaster = TblBookMaster::where($where)->first();
+        if($bookMaster != null) // exist
+        {
+            if($bookMaster->title == "") $bookMaster->title = $bookMasterData->title;
+            if($bookMaster->publisher != $bookMasterData->publisher) $bookMaster->publisher = $bookMaster->publisher.",".$bookMasterData->publisher;
+            if($bookMaster->language == "") $bookMaster->language = $bookMasterData->language;
+            if($bookMaster->category != $bookMasterData->category) $bookMaster->category = $bookMaster->category.",".$bookMasterData->category;
+            if($bookMaster->first_year_publication > $bookMasterData->first_year_publication) $bookMaster->first_year_publication = $bookMasterData->first_year_publication;
+            if($bookMaster->last_year_publication < $bookMasterData->last_year_publication) $bookMaster->last_year_publication = $bookMasterData->last_year_publication;
+            if($bookMaster->count_pages == 0) $bookMaster->count_pages = $bookMasterData->count_pages;
+            if($bookMaster->book_size == "") $bookMaster->book_size = $bookMasterData->book_size;
+            if($bookMaster->print_period_count < $bookMasterData->print_period_count) $bookMaster->print_period_count = $bookMasterData->print_period_count;
+            $bookMaster->print_count = $bookMaster->print_count + $bookMasterData->print_count;
+            if($bookMaster->print_location == "") $bookMaster->print_location = $bookMasterData->print_location;
+            if($bookMaster->translation == 0) $bookMaster->translation = $bookMasterData->translation;
+            if($bookMaster->desc == "") $bookMaster->desc = $bookMasterData->desc;
+            if($bookMaster->image == "") $bookMaster->image = $bookMasterData->image;
+            if($bookMaster->price == 0) $bookMaster->price = $bookMasterData->price;
+            if($bookMaster->dio_code == "") $bookMaster->dio_code = $bookMasterData->dio_code;
+            $resultSave = $bookMaster->save();
+        }
+        else // no exist
+        {
+            $bookMaster = new TblBookMaster();
+            $bookMaster->record_number = $bookMasterData->record_number;
+            $bookMaster->shabak = $bookMasterData->shabak;
+            $bookMaster->title = $bookMasterData->title;
+            $bookMaster->title_en = $bookMasterData->title_en;
+            $bookMaster->publisher = $bookMasterData->publisher;
+            $bookMaster->author = $bookMasterData->author;
+            $bookMaster->translator = $bookMasterData->translator;
+            $bookMaster->language = $bookMasterData->language;
+            $bookMaster->category = $bookMasterData->category;
+            $bookMaster->weight = $bookMasterData->weight;
+            $bookMaster->book_cover_type = $bookMasterData->book_cover_type;
+            $bookMaster->paper_type = $bookMasterData->paper_type;
+            $bookMaster->type_printing = $bookMasterData->type_printing;
+            $bookMaster->editor = $bookMasterData->editor;
+            $bookMaster->first_year_publication = $bookMasterData->first_year_publication;
+            $bookMaster->last_year_publication = $bookMasterData->last_year_publication;
+            $bookMaster->count_pages = $bookMasterData->count_pages;
+            $bookMaster->book_size = $bookMasterData->book_size;
+            $bookMaster->print_period_count = $bookMasterData->print_period_count;
+            $bookMaster->print_count = $bookMasterData->print_count;
+            $bookMaster->print_location = $bookMasterData->print_location;
+            $bookMaster->translation = $bookMasterData->translation;
+            $bookMaster->desc = $bookMasterData->desc;
+            $bookMaster->image = $bookMasterData->image;
+            $bookMaster->price = $bookMasterData->price;
+            $bookMaster->dio_code = $bookMasterData->dio_code;
+            $resultSave = $bookMaster->save();
+        }
+
+        if($resultSave)
+        {
+            $bookMasterId = $bookMaster->id;
+
+            // save category
+            $categories = $bookMasterData->category;
+            $categories = explode("-", $categories);
+
+            if($categories != null and count($categories) > 0)
+            {
+                foreach($categories as $categoryTitle)
                 {
-                    if($tblBookMaster->title == "") $tblBookMaster->title = $book->title;
-                    if($tblBookMaster->publisher != $book->nasher) $tblBookMaster->publisher = $tblBookMaster->publisher.",".$book->nasher;
-                    if($tblBookMaster->language == "") $tblBookMaster->language = $book->lang;
-                    if($tblBookMaster->category != $book->cats) $tblBookMaster->category = $tblBookMaster->category.",".$book->cats;
-                    if($tblBookMaster->first_year_publication > $book->saleNashr) $tblBookMaster->first_year_publication = $book->saleNashr;
-                    if($tblBookMaster->last_year_publication < $book->saleNashr) $tblBookMaster->last_year_publication = $book->saleNashr;
-                    if($tblBookMaster->count_pages == 0) $tblBookMaster->count_pages = $book->tedadSafe;
-                    if($tblBookMaster->book_size == "") $tblBookMaster->book_size = $book->ghatechap;
-                    if($tblBookMaster->print_period_count < $book->nobatChap) $tblBookMaster->print_period_count = $book->nobatChap;
-                    $tblBookMaster->print_count = $tblBookMaster->print_count + $book->printCount;
-                    if($tblBookMaster->print_location == "") $tblBookMaster->print_location = $book->printLocation;
-                    if($tblBookMaster->translation == 0) $tblBookMaster->translation = $book->tarjome;
-                    if($tblBookMaster->desc == "") $tblBookMaster->desc = $book->desc;
-                    if($tblBookMaster->image == "") $tblBookMaster->image = $book->image;
-                    if($tblBookMaster->price == 0) $tblBookMaster->price = $book->price;
-                    if($tblBookMaster->dio_code == "") $tblBookMaster->dio_code = $book->DioCode;
-                    $resultSave = $tblBookMaster->save();
-                }
-                else // no exist
-                {
-                    $tblBookMaster = new TblBookMaster();
-                    $tblBookMaster->record_number = $book->recordNumber;
-                    $tblBookMaster->shabak = $book->shabak;
-                    $tblBookMaster->title = $book->title;
-                    $tblBookMaster->title_en = '';
-                    $tblBookMaster->publisher = $book->nasher;
-                    $tblBookMaster->author = '';
-                    $tblBookMaster->translator = '';
-                    $tblBookMaster->language = $book->lang;
-                    $tblBookMaster->category = $book->cats;
-                    $tblBookMaster->weight = 0;
-                    $tblBookMaster->book_cover_type = '';
-                    $tblBookMaster->paper_type = '';
-                    $tblBookMaster->type_printing = '';
-                    $tblBookMaster->editor = '';
-                    $tblBookMaster->first_year_publication = $book->saleNashr;
-                    $tblBookMaster->last_year_publication = $book->saleNashr;
-                    $tblBookMaster->count_pages = $book->tedadSafe;
-                    $tblBookMaster->book_size = $book->ghatechap;
-                    $tblBookMaster->print_period_count = $book->nobatChap;
-                    $tblBookMaster->print_count = $book->printCount;
-                    $tblBookMaster->print_location = $book->printLocation;
-                    $tblBookMaster->translation = $book->tarjome;
-                    $tblBookMaster->desc = $book->desc;
-                    $tblBookMaster->image = $book->image;
-                    $tblBookMaster->price = $book->price;
-                    $tblBookMaster->dio_code = $book->DioCode;
-                    $resultSave = $tblBookMaster->save();
-                }
-
-                if($resultSave)
-                {
-                    $bookMasterId = $tblBookMaster->id;
-
-                    // save bookMaster id in bookk24
-                    $book->book_master_id = $bookMasterId;
-                    $book->save();
-
-                    // save category
-                    $categories = $book->cats;
-                    $categories = explode("-", $categories);
-
-                    if($categories != null and count($categories) > 0)
+                    $categoryTitle = trim($categoryTitle);
+                    if($categoryTitle != "" and $categoryTitle != "|")
                     {
-                        foreach($categories as $categoryTitle)
+                        $tblCategory = TblCategory::where('title', '=', $categoryTitle)->first();
+                        if($tblCategory != null)
                         {
-                            $categoryTitle = trim($categoryTitle);
-                            if($categoryTitle != "" and $categoryTitle != "|")
-                            {
-                                $tblCategory = TblCategory::where('title', '=', $categoryTitle)->first();
-                                if($tblCategory != null)
-                                {
-                                    $categoryId = $tblCategory->id;
-                                }
-                                else
-                                {
-                                    $tblCategory = new TblCategory();
-                                    $tblCategory->title = $categoryTitle;
-                                    $resultSave = $tblCategory->save();
-                                    if($resultSave) $categoryId = $tblCategory->id;
-                                }
-
-                                if($categoryId > 0)
-                                {
-                                    $tblBookMasterCategory = TblBookMasterCategory::where('book_master_id', '=', $bookMasterId)->where('category_id', '=', $categoryId)->first();
-                                    if($tblBookMasterCategory == null)
-                                    {
-                                        $tblBookMasterCategory = new TblBookMasterCategory();
-                                        $tblBookMasterCategory->book_master_id = $bookMasterId;
-                                        $tblBookMasterCategory->category_id = $categoryId;
-                                        $tblBookMasterCategory->save();
-                                    }
-                                }
-                            }
+                            $categoryId = $tblCategory->id;
                         }
-                    }
-
-                    // save publisher
-                    $publisher = $book->nasher;
-                    $tblPublisher = TblPublisher::where('title', '=', $publisher)->first();
-                    if($tblPublisher != null)
-                    {
-                        $publisherId = $tblPublisher->id;
-                    }
-                    else
-                    {
-                        $tblPublisher = new TblPublisher();
-                        $tblPublisher->title = $publisher;
-                        $resultSave = $tblPublisher->save();
-                        if($resultSave) $publisherId = $tblPublisher->id;
-                    }
-
-                    if($publisherId > 0)
-                    {
-                        $tblBookMasterPublisher = TblBookMasterPublisher::where('book_master_id', '=', $bookMasterId)->where('publisher_id', '=', $publisherId)->first();
-                        if($tblBookMasterPublisher == null)
+                        else
                         {
-                            $tblBookMasterPublisher = new TblBookMasterPublisher();
-                            $tblBookMasterPublisher->book_master_id = $bookMasterId;
-                            $tblBookMasterPublisher->publisher_id = $publisherId;
-                            $tblBookMasterPublisher->save();
+                            $tblCategory = new TblCategory();
+                            $tblCategory->title = $categoryTitle;
+                            $resultSave = $tblCategory->save();
+                            if($resultSave) $categoryId = $tblCategory->id;
+                        }
+
+                        if($categoryId > 0)
+                        {
+                            $bookMasterCategory = TblBookMasterCategory::where('book_master_id', '=', $bookMasterId)->where('category_id', '=', $categoryId)->first();
+                            if($bookMasterCategory == null)
+                            {
+                                $bookMasterCategory = new TblBookMasterCategory();
+                                $bookMasterCategory->book_master_id = $bookMasterId;
+                                $bookMasterCategory->category_id = $categoryId;
+                                $bookMasterCategory->save();
+                            }
                         }
                     }
                 }
             }
+
+            // save publisher
+            $publisher = $bookMasterData->publisher;
+            if($publisher != '')
+            {
+                $tblPublisher = TblPublisher::where('title', '=', $publisher)->first();
+                if($tblPublisher != null)
+                {
+                    $publisherId = $tblPublisher->id;
+                }
+                else
+                {
+                    $tblPublisher = new TblPublisher();
+                    $tblPublisher->title = $publisher;
+                    $resultSave = $tblPublisher->save();
+                    if($resultSave) $publisherId = $tblPublisher->id;
+                }
+
+                if($publisherId > 0)
+                {
+                    $bookMasterPublisher = TblBookMasterPublisher::where('book_master_id', '=', $bookMasterId)->where('publisher_id', '=', $publisherId)->first();
+                    if($bookMasterPublisher == null)
+                    {
+                        $bookMasterPublisher = new TblBookMasterPublisher();
+                        $bookMasterPublisher->book_master_id = $bookMasterId;
+                        $bookMasterPublisher->publisher_id = $publisherId;
+                        $bookMasterPublisher->save();
+                    }
+                }
+            }
         }
+
+        return $bookMasterId;
     }
 }
