@@ -21,7 +21,7 @@ Route::post('/v1/user/login', 'API\UserController@login');
 
 Route::group
 (
-    ['middleware' => ['jwt.auth2']],
+    ['middleware' => ['jwt.auth']],
     function()
     {
         Route::post('/v1/book/find', 'API\BookController@find');

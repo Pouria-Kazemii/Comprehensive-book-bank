@@ -66,8 +66,8 @@ class Kernel extends HttpKernel
         'ChToken' => \App\Http\Middleware\CheckApiToken::class,
 
 
-        'jwt.auth2' => \App\Http\Middleware\JwtMiddleware::class,
-//        'jwt.auth' => 'Tymon\JWTAuth\Middleware\GetUserFromToken',
+//        'jwt.auth2' => \App\Http\Middleware\JwtMiddleware::class,
+        'jwt.auth' => 'Tymon\JWTAuth\Middleware\GetUserFromToken',
         'jwt.refresh' => 'Tymon\JWTAuth\Middleware\RefreshToken',
     ];
 }

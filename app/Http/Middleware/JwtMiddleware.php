@@ -18,20 +18,26 @@ class JwtMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        return response()->json(['status' => 'Authorization Token not found WHY!']);
-
-
-        try {
+        try
+        {
             $user = (new \Tymon\JWTAuth\JWTAuth)->parseToken()->authenticate();
-        } catch (Exception $e) {
-            if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
+        }
+        catch(Exception $e)
+        {
+            if($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
+            {
                 return response()->json(['status' => 'Token is Invalid']);
-            }else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException){
+            }
+            else if($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
+            {
                 return response()->json(['status' => 'Token is Expired']);
-            }else{
+            }
+            else
+            {
                 return response()->json(['status' => 'Authorization Token not found']);
             }
         }
+
         return $next($request)
             ->header('Access-Control-Allow-Origin', '*')
             ->header('Access-Control-Allow-Methods', '*')
