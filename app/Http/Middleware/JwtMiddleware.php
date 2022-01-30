@@ -18,6 +18,9 @@ class JwtMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        return response()->json(['status' => 'Authorization Token not found WHY!']);
+
+
         try {
             $user = (new \Tymon\JWTAuth\JWTAuth)->parseToken()->authenticate();
         } catch (Exception $e) {
