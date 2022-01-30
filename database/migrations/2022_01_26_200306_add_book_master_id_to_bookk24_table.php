@@ -13,7 +13,7 @@ class AddBookMasterIdToBookk24Table extends Migration
      */
     public function up()
     {
-        Schema::table('bookk24', function (Blueprint $table) {
+        Schema::table('bookK24', function (Blueprint $table) {
             $table->integer('book_master_id')->nullable()->default(0);
         });
     }
@@ -25,8 +25,8 @@ class AddBookMasterIdToBookk24Table extends Migration
      */
     public function down()
     {
-        Schema::table('bookk24', function (Blueprint $table) {
-            //
+        Schema::table('bookK24', function (Blueprint $table) {
+            $table->dropColumn('book_master_id');
         });
     }
 }

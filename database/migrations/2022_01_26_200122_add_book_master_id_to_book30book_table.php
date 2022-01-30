@@ -26,7 +26,7 @@ class AddBookMasterIdToBook30bookTable extends Migration
     public function down()
     {
         Schema::table('book30book', function (Blueprint $table) {
-            //
+            $table->dropColumn('book_master_id');
         });
     }
 }
