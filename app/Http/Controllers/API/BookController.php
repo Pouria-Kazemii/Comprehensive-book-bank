@@ -18,6 +18,20 @@ class BookController extends Controller
     // list books
     public function find(Request $request)
     {
+
+        return response()->json
+        (
+            [
+                "status" => 200,
+                "message" => "ok",
+                "data" => "yht"
+            ],
+            200
+        );
+        exit;
+
+
+
         $currentPageNumber = $request["currentPageNumber"];
         $data = null;
         $status = 404;
