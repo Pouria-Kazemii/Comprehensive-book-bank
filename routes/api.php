@@ -25,5 +25,6 @@ Route::group
     function()
     {
         Route::post('/v1/book/find', 'API\BookController@find');
+        Route::post('/v1/book/detail', 'API\BookController@detail');
     }
 );
