@@ -28,7 +28,7 @@ class BookController extends Controller
             ],
             200
         );
-        exit;
+
 
 
 
