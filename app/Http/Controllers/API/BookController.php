@@ -160,7 +160,7 @@ class BookController extends Controller
     // read & check ---> bookk24
     public function checkBookK24()
     {
-        $books = BookK24::where('book_master_id', '=', '0')->take(5)->get();
+        $books = BookK24::where('book_master_id', '=', '0')->take(200)->get();
         if($books != null)
         {
             foreach ($books as $book)
