@@ -228,7 +228,7 @@ class BookController extends Controller
         }
 
         // temp set author
-        $books = BookK24::where('tmp_author', '=', '0')->where('book_master_id', '!=', '0')->take(500)->get();
+        $books = BookK24::where('tmp_author', '=', '0')->where('book_master_id', '!=', '0')->take(200)->get();
         if($books != null)
         {
             foreach ($books as $book)
