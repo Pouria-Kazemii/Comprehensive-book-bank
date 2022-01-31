@@ -50,7 +50,7 @@ class BookController extends Controller
             $status = 200;
         }
 
-        $totalRows = TblBookMaster::all()->count();
+        $totalRows = TblBookMaster::count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         return response()->json
@@ -72,7 +72,7 @@ class BookController extends Controller
         $data = null;
 
         // read books
-        $book = TblBookMaster::all()->where('id', '=', $bookId)->first();
+        $book = TblBookMaster::where('id', '=', $bookId)->first();
         if($book != null and $book->id > 0)
         {
             $dataMaster =
