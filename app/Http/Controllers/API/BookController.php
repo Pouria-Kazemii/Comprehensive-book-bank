@@ -8,10 +8,13 @@ use App\Models\BookDigi;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
+use App\Models\TblBookMasterPerson;
 use App\Models\TblBookMasterPublisher;
 use App\Models\TblCategory;
+use App\Models\TblPerson;
 use App\Models\TblPublisher;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -21,11 +24,11 @@ class BookController extends Controller
         $currentPageNumber = $request["currentPageNumber"];
         $data = null;
         $status = 404;
-        $pageRows = 20;
+        $pageRows = 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $books = TblBookMaster::skip($offset)->take(20)->get();
+        $books = TblBookMaster::orderBy('last_year_publication', 'desc')->skip($offset)->take($pageRows)->get();
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -157,7 +160,7 @@ class BookController extends Controller
     // read & check ---> bookk24
     public function checkBookK24()
     {
-        $books = BookK24::where('book_master_id', '=', '0')->take(200)->get();
+        $books = BookK24::where('book_master_id', '=', '0')->take(5)->get();
         if($books != null)
         {
             foreach ($books as $book)
@@ -190,14 +193,116 @@ class BookController extends Controller
                 $bookMasterData->price = $book->price;
                 $bookMasterData->dio_code = $book->DioCode;
 
+                // find authors
+                $authorsData = null;
+                $whereAuthors = null;
+
+                $authorsK24 = DB::table('author_book_k24')->where('book_k24_id', '=', $book->id)->get();
+                if($authorsK24 != null and count($authorsK24) > 0)
+                {
+                    foreach ($authorsK24 as $authorK24) $whereAuthors[] = ['id', '=', $authorK24->author_id];
+
+                    if($whereAuthors != null)
+                    {
+                        $authors = DB::table('author')->where($whereAuthors)->get();
+                        if($authors != null and count($authors) > 0)
+                        {
+                            foreach ($authors as $author)
+                            {
+                                $authorsData[] = $author->d_name;
+                            }
+                        }
+                    }
+                }
+
                 // call check book
                 $where = [['shabak', '=', $book->shabak]];
 
-                $bookMasterId = $this->checkBook($bookMasterData, $where);
+                $bookMasterId = $this->checkBook($bookMasterData, $authorsData, $where);
 
                 // save bookMaster id in bookk24
+                $book->tmp_author = 1;
                 $book->book_master_id = $bookMasterId;
                 $book->save();
+            }
+        }
+
+        // temp set author
+        $books = BookK24::where('tmp_author', '=', '0')->where('book_master_id', '!=', '0')->take(500)->get();
+        if($books != null)
+        {
+            foreach ($books as $book)
+            {
+                $bookId = $book->id;
+                $bookMasterId = $book->book_master_id;
+                $whereAuthors = null;
+                $authorNames = "";
+
+                $authorsK24 = DB::table('author_book_k24')->where('book_k24_id', '=', $bookId)->get();
+                if($authorsK24 != null and count($authorsK24) > 0)
+                {
+                    foreach ($authorsK24 as $authorK24) $whereAuthors[] = ['id', '=', $authorK24->author_id];
+
+                    if($whereAuthors != null)
+                    {
+                        $authors = DB::table('author')->where($whereAuthors)->get();
+                        if($authors != null and count($authors) > 0)
+                        {
+                            foreach ($authors as $author)
+                            {
+//                                echo $author->d_name."<br>";
+
+                                // save in tblPerson
+                                $person = TblPerson::where('name', '=', $author->d_name)->first();
+                                if($person != null)
+                                {
+                                    $personId = $person->id;
+                                }
+                                else
+                                {
+                                    $person = new TblPerson();
+                                    $person->name = $author->d_name;
+                                    $person->save();
+
+                                    $personId = $person->id;
+                                }
+
+                                // save in tblBookMasterPerson
+                                if($personId > 0)
+                                {
+                                    $bookMasterPerson = TblBookMasterPerson::where('book_master_id', '=', $bookMasterId)->where('person_id', '=', $personId)->first();
+                                    if($bookMasterPerson == null)
+                                    {
+                                        $bookMasterPerson = new TblBookMasterPerson();
+                                        $bookMasterPerson->book_master_id = $bookMasterId;
+                                        $bookMasterPerson->person_id = $personId;
+                                        $bookMasterPerson->role = 'author';
+                                        $bookMasterPerson->save();
+
+                                        $authorNames .= $author->d_name." - ";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //
+                $book->tmp_author = 1;
+                $book->save();
+
+                // save in book master
+                if($authorNames != "")
+                {
+                    $bookMaster = TblBookMaster::where('id', '=', $bookMasterId)->first();
+                    if($bookMaster != null and $bookMaster->id > 0)
+                    {
+                        $bookMaster->author = $bookMaster->author != "" ? $authorNames.$bookMaster->author : rtrim($authorNames, ' - ');
+                        $bookMaster->save();
+                    }
+                }
+
+//                echo "<hr>";
             }
         }
     }
@@ -253,10 +358,11 @@ class BookController extends Controller
     // check & save in bookMaster
     /**
      * @param BookMasterData $bookMasterData
+     * @param array $authorsData
      * @param array $where
      * @return integer $bookMasterId
      */
-    private function checkBook($bookMasterData, $where)
+    private function checkBook($bookMasterData, $authorsData, $where)
     {
         $bookMasterId = 0;
 
@@ -317,6 +423,7 @@ class BookController extends Controller
         if($resultSave)
         {
             $bookMasterId = $bookMaster->id;
+            $authorNames = "";
 
             // save category
             $categories = $bookMasterData->category;
@@ -385,6 +492,51 @@ class BookController extends Controller
                         $bookMasterPublisher->save();
                     }
                 }
+            }
+
+            // authors
+            if($authorsData != null and count($authorsData) > 0)
+            {
+                foreach ($authorsData as $authorName)
+                {
+                    // save in tblPerson
+                    $person = TblPerson::where('name', '=', $authorName)->first();
+                    if($person != null)
+                    {
+                        $personId = $person->id;
+                    }
+                    else
+                    {
+                        $person = new TblPerson();
+                        $person->name = $authorName;
+                        $person->save();
+
+                        $personId = $person->id;
+                    }
+
+                    // save in tblBookMasterPerson
+                    if($personId > 0)
+                    {
+                        $bookMasterPerson = TblBookMasterPerson::where('book_master_id', '=', $bookMasterId)->where('person_id', '=', $personId)->first();
+                        if($bookMasterPerson == null)
+                        {
+                            $bookMasterPerson = new TblBookMasterPerson();
+                            $bookMasterPerson->book_master_id = $bookMasterId;
+                            $bookMasterPerson->person_id = $personId;
+                            $bookMasterPerson->role = 'author';
+                            $bookMasterPerson->save();
+
+                            $authorNames .= $authorName." - ";
+                        }
+                    }
+                }
+            }
+
+            // save in book master
+            if($authorNames != "")
+            {
+                $bookMaster->author = $bookMaster->author != "" ? $authorNames.$bookMaster->author : rtrim($authorNames, ' - ');
+                $bookMaster->save();
             }
         }
 
