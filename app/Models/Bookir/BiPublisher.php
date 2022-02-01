@@ -11,6 +11,8 @@ class BiPublisher extends Model
     public $timestamps = false;
     protected $fillable = ['xpublishername','xmanager','xactivity','xplace', 'xaddress', 'xzipcode', 'xpobox', 'xphone', 'xcellphone', 'xfax', 'xtype', 'xpermitno', 'xemail', 'xsite', 'xisbnid', 'xfoundingdate'];
 
-    
+    public function book() {
+        return $this->belongsToMany(BiBook::class);
+    }
 
 }
