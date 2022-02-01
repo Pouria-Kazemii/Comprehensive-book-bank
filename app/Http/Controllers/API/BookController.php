@@ -86,6 +86,7 @@ class BookController extends Controller
         $status = 404;
         $pageRows = 50;
         $totalPages = 0;
+        $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // get publisher
@@ -170,6 +171,7 @@ class BookController extends Controller
         $status = 404;
         $pageRows = 50;
         $totalPages = 0;
+        $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // get author
