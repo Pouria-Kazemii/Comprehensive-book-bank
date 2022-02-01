@@ -29,4 +29,17 @@ Route::get('/v1/book/check', 'API\BookController@checkBookK24');
 //    }
 //);
 Route::post('/v1/book/find', 'API\BookController@find');
+Route::post('/v1/book/publisher/find', 'API\BookController@publisherFind');
+Route::post('/v1/book/author/find', 'API\BookController@authorFind');
+
+Route::post('/v1/book/dossier', 'API\BookController@dossier');
 Route::post('/v1/book/detail', 'API\BookController@detail');
+
+Route::post('/v1/author/find', 'API\AuthorController@find');
+Route::post('/v1/author/detail', 'API\AuthorController@detail');
+
+Route::post('/v1/subject/find', 'API\SubjectController@find');
+Route::post('/v1/subject/detail', 'API\SubjectController@detail');
+
+Route::post('/v1/publisher/find', 'API\PublisherController@find');
+Route::post('/v1/publisher/detail', 'API\PublisherController@detail');
