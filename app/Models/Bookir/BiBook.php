@@ -16,7 +16,7 @@ class BiBook extends Model
     }
 
     public function publisher() {
-        return $this->hasOne(BiPublisher::class);
+        return $this->belongsToMany(BiPublisher::class);
     }
 
     public function subjects() {
