@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
+use App\Models\BiBookBiPublisher;
 use App\Models\BookDigi;
+use App\Models\BookirBook;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
@@ -77,7 +79,7 @@ class BookController extends Controller
         );
     }
 
-    // list books
+    // list books by publisher
     public function publisherFind(Request $request)
     {
         $bookId = $request["bookId"];
@@ -162,7 +164,7 @@ class BookController extends Controller
         );
     }
 
-    // list books
+    // list books by author
     public function authorFind(Request $request)
     {
         $bookId = $request["bookId"];
@@ -481,7 +483,102 @@ class BookController extends Controller
         );
     }
 
+    // read & check
+    public function checkBook()
+    {
+        $books = BookirBook::where('xparent', '=', '0')->take(10)->get();
+        if($books != null)
+        {
+            foreach ($books as $book)
+            {
+                $id = $book->xid;
+                $isbn = $book->xisbn;
+                $isbn2 = $book->xisbn2;
+                $name = $book->xname;
+                $isPublisher = $book->xispublisher;
+                $publisherIds = null;
+
+                $bookBiPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $id)->get();
+                if($bookBiPublishers != null)
+                {
+                    foreach ($bookBiPublishers as $bookBiPublisher)
+                    {
+                        $publisherIds[] = $bookBiPublisher->bi_publisher_xid;
+                    }
+                }
+
+//                $books = BookirBook::where('xparent', '=', '0')->where('xid', '!=', $id)->where('xisbn', '=', $isbn)->orwhere('xisbn2', '=', $isbn2)->get();
+                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and (xisbn='$isbn' or xisbn2='$isbn2')")->get();
+
+print_r($similarBooks);
+
+                /*
+                $bookMasterData = new BookMasterData();
+                $bookMasterData->record_number = $book->recordNumber;
+                $bookMasterData->shabak = $book->shabak;
+                $bookMasterData->title = $book->title;
+                $bookMasterData->title_en = '';
+                $bookMasterData->publisher = $book->nasher;
+                $bookMasterData->author = '';
+                $bookMasterData->translator = '';
+                $bookMasterData->language = $book->lang;
+                $bookMasterData->category = $book->cats;
+                $bookMasterData->weight = 0;
+                $bookMasterData->book_cover_type = '';
+                $bookMasterData->paper_type = '';
+                $bookMasterData->type_printing = '';
+                $bookMasterData->editor = '';
+                $bookMasterData->first_year_publication = $book->saleNashr;
+                $bookMasterData->last_year_publication = $book->saleNashr;
+                $bookMasterData->count_pages = $book->tedadSafe;
+                $bookMasterData->book_size = $book->ghatechap;
+                $bookMasterData->print_period_count = $book->nobatChap;
+                $bookMasterData->print_count = $book->printCount;
+                $bookMasterData->print_location = $book->printLocation;
+                $bookMasterData->translation = $book->tarjome;
+                $bookMasterData->desc = $book->desc;
+                $bookMasterData->image = $book->image;
+                $bookMasterData->price = $book->price;
+                $bookMasterData->dio_code = $book->DioCode;
+
+                // find authors
+                $authorsData = null;
+                $whereAuthors = null;
+
+                $authorsK24 = DB::table('author_book_k24')->where('book_k24_id', '=', $book->id)->get();
+                if($authorsK24 != null and count($authorsK24) > 0)
+                {
+                    foreach ($authorsK24 as $authorK24) $whereAuthors[] = ['id', '=', $authorK24->author_id];
+
+                    if($whereAuthors != null)
+                    {
+                        $authors = DB::table('author')->where($whereAuthors)->get();
+                        if($authors != null and count($authors) > 0)
+                        {
+                            foreach ($authors as $author)
+                            {
+                                $authorsData[] = $author->d_name;
+                            }
+                        }
+                    }
+                }
+
+                // call check book
+                $where = [['shabak', '=', $book->shabak]];
+
+                $bookMasterId = $this->checkBook($bookMasterData, $authorsData, $where);
+
+                // save bookMaster id in bookk24
+                $book->tmp_author = 1;
+                $book->book_master_id = $bookMasterId;
+                $book->save();
+                */
+            }
+        }
+    }
+
     // read & check ---> bookk24
+    /*
     public function checkBookK24()
     {
         $books = BookK24::where('book_master_id', '=', '0')->take(10)->get();
@@ -630,8 +727,10 @@ class BookController extends Controller
             }
         }
     }
+    */
 
     // read & check ---> bookDigi
+    /*
     public function checkBookDigi()
     {
         $books = BookDigi::where('book_master_id', '=', '0')->where('shabak', '!=', '')->take(200)->get();
@@ -678,6 +777,7 @@ class BookController extends Controller
             }
         }
     }
+    */
 
     // check & save in bookMaster
     /**
@@ -686,6 +786,7 @@ class BookController extends Controller
      * @param array $where
      * @return integer $bookMasterId
      */
+    /*
     private function checkBook($bookMasterData, $authorsData, $where)
     {
         $bookMasterId = 0;
@@ -866,4 +967,5 @@ class BookController extends Controller
 
         return $bookMasterId;
     }
+    */
 }
