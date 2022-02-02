@@ -511,7 +511,7 @@ class BookController extends Controller
                 $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and (xisbn='$isbn' or xisbn2='$isbn2')")->get();
 
 print_r($similarBooks);
-
+exit;
                 /*
                 $bookMasterData = new BookMasterData();
                 $bookMasterData->record_number = $book->recordNumber;
