@@ -497,18 +497,21 @@ class BookController extends Controller
                 $name = $book->xname;
                 $isPublisher = $book->xispublisher;
                 $publisherIds = null;
+                $where = "";
 
                 $bookBiPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $id)->get();
                 if($bookBiPublishers != null)
                 {
                     foreach ($bookBiPublishers as $bookBiPublisher)
                     {
-                        $publisherIds[] = $bookBiPublisher->bi_publisher_xid;
+                        $publisherId = $bookBiPublisher->bi_publisher_xid;
+
+                        $where .= "(xname='$name' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')) or ";
                     }
                 }
+                $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
 
-//                $books = BookirBook::where('xparent', '=', '0')->where('xid', '!=', $id)->where('xisbn', '=', $isbn)->orwhere('xisbn2', '=', $isbn2)->get();
-                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and (xisbn='$isbn' or xisbn2='$isbn2')")->get();
+                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
 
 print_r($similarBooks);
 exit;
