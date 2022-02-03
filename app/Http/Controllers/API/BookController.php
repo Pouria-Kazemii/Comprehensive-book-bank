@@ -37,7 +37,7 @@ class BookController extends Controller
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $books = BookirBook::orderBy('xid', 'desc');
+        $books = BookirBook::orderBy('xid', 'desc')->where('xparent', '=', '-1');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         $books = $books->skip($offset)->take($pageRows)->get();
@@ -109,7 +109,7 @@ class BookController extends Controller
         }
 
         //
-        $books = BookirBook::orderBy('xid', 'desc');
+        $books = BookirBook::orderBy('xid', 'desc')->where('xparent', '=', '-1');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         $totalRows = $books->count();
