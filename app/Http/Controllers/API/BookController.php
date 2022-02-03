@@ -53,20 +53,20 @@ class BookController extends Controller
                 $bookPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $book->xid)->get();
                 if($bookPublishers != null)
                 {
-                    foreach ($bookPublishers as $bookPublisher)
-                    {
-                        $wherePublisher[] = ['xid', '=', $bookPublisher->bi_publisher_xid];
-                    }
-
-                    $publishers = BookirPublisher::where($wherePublisher)->get();
-                    if($publishers != null)
-                    {
-                        foreach ($publishers as $publisher)
-                        {
-                            $publisherNames .= $publisher->xpublishername." - ";
-                        }
-                    }
-                    $publisherNames = rtrim($publisherNames, " - ");
+//                    foreach ($bookPublishers as $bookPublisher)
+//                    {
+//                        $wherePublisher[] = ['xid', '=', $bookPublisher->bi_publisher_xid];
+//                    }
+//
+//                    $publishers = BookirPublisher::where($wherePublisher)->get();
+//                    if($publishers != null)
+//                    {
+//                        foreach ($publishers as $publisher)
+//                        {
+//                            $publisherNames .= $publisher->xpublishername." - ";
+//                        }
+//                    }
+//                    $publisherNames = rtrim($publisherNames, " - ");
                 }
 //
 //                $bookSubjects = BiBookBiSubject::where('bi_book_xid', '=', $book->xid)->get();
