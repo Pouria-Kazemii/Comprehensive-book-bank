@@ -96,7 +96,7 @@ class BookController extends Controller
                         "publisher" => $publisherNames,
                         "language" => $book->xlang,
                         "subject" => $subjectTitles,
-                        "publishDate" => $book->xpublishdate,
+//                        "publishDate" => $book->xpublishdate,
                         "printNumber" => $book->xprintnumber,
                         "format" => $book->xformat,
                         "pageCount" => $book->xpagecount,
