@@ -47,8 +47,8 @@ class BookCheckController extends Controller
                 }
 
                 //
-                $book->xparent = -1;
-                $book->save();
+//                $book->xparent = -1;
+//                $book->save();
 
 
                 echo $id;
