@@ -33,7 +33,7 @@ class BookController extends Controller
         $status = 404;
         $pageRows = 50;
         $totalPages = 0;
-        $totalRows = 0;
+        $totalRows = 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
 /*
         // read books
