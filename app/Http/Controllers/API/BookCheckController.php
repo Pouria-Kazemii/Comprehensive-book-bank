@@ -6,18 +6,12 @@ use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BookirBook;
-use Illuminate\Support\Facades\DB;
 
 class BookCheckController extends Controller
 {
     public function check()
     {
-        $books = BookirBook::where('xparent', '=', '0')->take(1)->get();
-        print_r($books);
-        exit;
-
-
-        $books = BookirBook::where('xparent', '=', '0')->take(200)->get();
+        $books = BookirBook::where('xparent', '=', '0')->take(50)->get();
         if($books != null)
         {
             foreach ($books as $book)
