@@ -109,7 +109,7 @@ class BookController extends Controller
         }
 */
         //
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
+        $books = BookirBook::orderBy('xid', 'desc');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         $totalRows = $books->count();
