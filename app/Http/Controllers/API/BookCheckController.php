@@ -36,14 +36,21 @@ class BookCheckController extends Controller
                 $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
 
                 //
-                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
-                if($similarBooks != null)
+                try
                 {
-                    foreach ($similarBooks as $similarBook)
+                    $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
+                    if($similarBooks != null)
                     {
-                        $similarBook->xparent = $id;
-                        $similarBook->save();
+                        foreach ($similarBooks as $similarBook)
+                        {
+                            $similarBook->xparent = $id;
+                            $similarBook->save();
+                        }
                     }
+                }
+                catch (\Exception $ex)
+                {
+                    print_r($ex);
                 }
 
                 //
