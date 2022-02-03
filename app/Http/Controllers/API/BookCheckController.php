@@ -11,7 +11,7 @@ class BookCheckController extends Controller
 {
     public function check()
     {
-        $books = BookirBook::where('xparent', '=', '0')->take(10)->get();
+        $books = BookirBook::where('xparent', '=', '0')->take(1)->get();
         if($books != null)
         {
             foreach ($books as $book)
@@ -41,14 +41,14 @@ class BookCheckController extends Controller
                 {
                     foreach ($similarBooks as $similarBook)
                     {
-                        $similarBook->xparent = $id;
-                        $similarBook->save();
+                        /*$similarBook->xparent = $id;
+                        $similarBook->save();*/
                     }
                 }
 
                 //
-                $book->xparent = -1;
-                $book->save();
+                /*$book->xparent = -1;
+                $book->save();*/
             }
         }
     }
