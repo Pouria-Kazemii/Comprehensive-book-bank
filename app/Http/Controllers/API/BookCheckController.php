@@ -24,45 +24,30 @@ class BookCheckController extends Controller
                 $publisherIds = null;
                 $where = "";
 
-//                $bookBiPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $id)->get();
-//                if($bookBiPublishers != null)
-//                {
-//                    foreach ($bookBiPublishers as $bookBiPublisher)
-//                    {
-//                        $publisherId = $bookBiPublisher->bi_publisher_xid;
-//
-//                        $where .= "(xname='$name' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')) or ";
-//                    }
-//                }
-//                $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
+                $bookBiPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $id)->get();
+                if($bookBiPublishers != null)
+                {
+                    foreach ($bookBiPublishers as $bookBiPublisher)
+                    {
+                        $publisherId = $bookBiPublisher->bi_publisher_xid;
+
+                        $where .= "(xname='$name' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')) or ";
+                    }
+                }
+                $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
 
                 //
-                try
+                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
+                if($similarBooks != null)
                 {
-//                    $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
-//                    if($similarBooks != null)
-//                    {
-//                        foreach ($similarBooks as $similarBook)
-//                        {
-//                            $similarBook->xparent = $id;
-//                            $similarBook->save();
-//                        }
-//                    }
-
-                    //
-//                    $book->xparent = -1;
-//                    $book->save();
-                }
-                catch (\Exception $ex)
-                {
-                    print_r($ex);
+                    foreach ($similarBooks as $similarBook)
+                    {
+                        BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
+                    }
                 }
 
-
+                //
                 BookirBook::where('xid', $id)->update(['xparent' => -1]);
-
-
-                echo $id;
             }
         }
     }
