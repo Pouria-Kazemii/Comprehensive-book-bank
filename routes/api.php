@@ -30,7 +30,7 @@ Route::get('/v1/book/check', 'API\BookCheckController@check');
 //    }
 //);
 //Route::post('/v1/book/find', 'API\BookController@find');
-Route::any('/v1/book/find', 'API\BookController@find');
+Route::get('/v1/book/find', 'API\BookController@find');
 
 Route::post('/v1/book/publisher/find', 'API\BookController@publisherFind');
 Route::post('/v1/book/author/find', 'API\BookController@authorFind');
