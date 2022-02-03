@@ -35,9 +35,9 @@ class BookController extends Controller
         $totalPages = 0;
         $totalRows = 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
-/*
+
         // read books
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
+        $books = BookirBook::orderBy('xid', 'desc');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         $books = $books->skip($offset)->take($pageRows)->get();
@@ -107,7 +107,7 @@ class BookController extends Controller
 
             $status = 200;
         }
-*/
+
         //
         $books = BookirBook::orderBy('xid', 'desc');
         if($name != "") $books->where('xname', 'like', "%$name%");
