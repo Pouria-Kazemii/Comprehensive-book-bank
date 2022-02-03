@@ -59,9 +59,7 @@ class BookCheckController extends Controller
                 }
 
 
-                DB::table('bookir_book')
-                    ->where('xid', $id)
-                    ->update(['xparent' => -1]);
+                BookirBook::where('xid', $id)->update(['xparent' => -1]);
 
 
                 echo $id;
