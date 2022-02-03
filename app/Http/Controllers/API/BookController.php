@@ -49,60 +49,60 @@ class BookController extends Controller
                 $subjectTitles = "";
                 $wherePublisher = null;
                 $whereSubject = null;
-
-                $bookPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $book->xid)->get();
-                if($bookPublishers != null)
-                {
-                    foreach ($bookPublishers as $bookPublisher)
-                    {
-                        $wherePublisher[] = ['xid', '=', $bookPublisher->bi_publisher_xid];
-                    }
-
-                    $publishers = BookirPublisher::where($wherePublisher)->get();
-                    if($publishers != null)
-                    {
-                        foreach ($publishers as $publisher)
-                        {
-                            $publisherNames .= $publisher->xpublishername." - ";
-                        }
-                    }
-                    $publisherNames = rtrim($publisherNames, " - ");
-                }
-
-                $bookSubjects = BiBookBiSubject::where('bi_book_xid', '=', $book->xid)->get();
-                if($bookSubjects != null)
-                {
-                    foreach ($bookSubjects as $bookSubject)
-                    {
-                        $whereSubject[] = ['xid', '=', $bookSubject->bi_subject_xid];
-                    }
-
-                    $subjects = BookirSubject::where($whereSubject)->get();
-                    if($subjects != null)
-                    {
-                        foreach ($subjects as $subject)
-                        {
-                            $subjectTitles .= $subject->xsubject." - ";
-                        }
-                    }
-                    $subjectTitles = rtrim($subjectTitles, " - ");
-                }
-
-                //
-                $data[] =
-                    [
-                        "id" => $book->xid,
-                        "name" => $book->xname,
-                        "publisher" => $publisherNames,
-                        "language" => $book->xlang,
-                        "subject" => $subjectTitles,
-//                        "publishDate" => $book->xpublishdate,
-                        "printNumber" => $book->xprintnumber,
-                        "format" => $book->xformat,
-                        "pageCount" => $book->xpagecount,
-                        "isbn" => $book->xisbn,
-                        "price" => $book->xcoverprice
-                    ];
+//
+//                $bookPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $book->xid)->get();
+//                if($bookPublishers != null)
+//                {
+//                    foreach ($bookPublishers as $bookPublisher)
+//                    {
+//                        $wherePublisher[] = ['xid', '=', $bookPublisher->bi_publisher_xid];
+//                    }
+//
+//                    $publishers = BookirPublisher::where($wherePublisher)->get();
+//                    if($publishers != null)
+//                    {
+//                        foreach ($publishers as $publisher)
+//                        {
+//                            $publisherNames .= $publisher->xpublishername." - ";
+//                        }
+//                    }
+//                    $publisherNames = rtrim($publisherNames, " - ");
+//                }
+//
+//                $bookSubjects = BiBookBiSubject::where('bi_book_xid', '=', $book->xid)->get();
+//                if($bookSubjects != null)
+//                {
+//                    foreach ($bookSubjects as $bookSubject)
+//                    {
+//                        $whereSubject[] = ['xid', '=', $bookSubject->bi_subject_xid];
+//                    }
+//
+//                    $subjects = BookirSubject::where($whereSubject)->get();
+//                    if($subjects != null)
+//                    {
+//                        foreach ($subjects as $subject)
+//                        {
+//                            $subjectTitles .= $subject->xsubject." - ";
+//                        }
+//                    }
+//                    $subjectTitles = rtrim($subjectTitles, " - ");
+//                }
+//
+//                //
+//                $data[] =
+//                    [
+//                        "id" => $book->xid,
+//                        "name" => $book->xname,
+//                        "publisher" => $publisherNames,
+//                        "language" => $book->xlang,
+//                        "subject" => $subjectTitles,
+////                        "publishDate" => $book->xpublishdate,
+//                        "printNumber" => $book->xprintnumber,
+//                        "format" => $book->xformat,
+//                        "pageCount" => $book->xpagecount,
+//                        "isbn" => $book->xisbn,
+//                        "price" => $book->xcoverprice
+//                    ];
             }
 
             $status = 200;
