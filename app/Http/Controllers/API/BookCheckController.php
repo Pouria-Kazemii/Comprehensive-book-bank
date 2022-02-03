@@ -41,8 +41,8 @@ class BookCheckController extends Controller
                 {
                     foreach ($similarBooks as $similarBook)
                     {
-                        /*$similarBook->xparent = $id;
-                        $similarBook->save();*/
+                        $similarBook->xparent = $id;
+                        $similarBook->save();
                     }
                 }
 
