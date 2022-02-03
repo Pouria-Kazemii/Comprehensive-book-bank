@@ -5,11 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
-use App\Models\BiBookBiSubject;
 use App\Models\BookDigi;
 use App\Models\BookirBook;
-use App\Models\BookirPublisher;
-use App\Models\BookirSubject;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
@@ -26,8 +23,8 @@ class BookController extends Controller
     // list books
     public function find(Request $request)
     {
-        $name = $request["name"];
-        $isbn = $request["isbn"];
+        $title = $request["title"];
+        $shabak = $request["shabak"];
         $currentPageNumber = $request["currentPageNumber"];
         $data = null;
         $status = 404;
@@ -35,81 +32,38 @@ class BookController extends Controller
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
-        if($name != "") $books->where('xname', 'like', "%$name%");
-        if($isbn != "") $books->where('xisbn', '=', $isbn);
+        $books = TblBookMaster::orderBy('last_year_publication', 'desc')->orderBy('first_year_publication', 'desc');
+        if($title != "") $books->where('title', 'like', "%$title%");
+        if($shabak != "") $books->where('shabak', '=', $shabak);
         $books = $books->skip($offset)->take($pageRows)->get();
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
             {
-                $publisherNames = "";
-                $subjectTitles = "";
-                $wherePublisher = null;
-                $whereSubject = null;
-
-                $bookPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $book->xid)->get();
-                if($bookPublishers != null)
-                {
-                    foreach ($bookPublishers as $bookPublisher)
-                    {
-                        $wherePublisher[] = ['xid', '=', $bookPublisher->bi_publisher_xid];
-                    }
-
-                    $publishers = BookirPublisher::where($wherePublisher)->get();
-                    if($publishers != null)
-                    {
-                        foreach ($publishers as $publisher)
-                        {
-                            $publisherNames .= $publisher->xpublishername." - ";
-                        }
-                    }
-                    $publisherNames = rtrim($publisherNames, " - ");
-                }
-
-                $bookSubjects = BiBookBiSubject::where('bi_book_xid', '=', $book->xid)->get();
-                if($bookSubjects != null)
-                {
-                    foreach ($bookSubjects as $bookSubject)
-                    {
-                        $whereSubject[] = ['xid', '=', $bookSubject->bi_subject_xid];
-                    }
-
-                    $subjects = BookirSubject::where($whereSubject)->get();
-                    if($subjects != null)
-                    {
-                        foreach ($subjects as $subject)
-                        {
-                            $subjectTitles .= $subject->xsubject." - ";
-                        }
-                    }
-                    $subjectTitles = rtrim($subjectTitles, " - ");
-                }
-
-                //
                 $data[] =
                     [
-                        "id" => $book->xid,
-                        "name" => $book->xname,
-                        "publisher" => $publisherNames,
-                        "language" => $book->xlang,
-                        "subject" => $subjectTitles,
-                        "publishDate" => $book->xpublishdate,
-                        "printNumber" => $book->xprintnumber,
-                        "format" => $book->xformat,
-                        "pageCount" => $book->xpagecount,
-                        "isbn" => $book->xisbn,
-                        "price" => $book->xcoverprice
+                        "id" => $book->id,
+                        "title" => $book->title,
+                        "publisher" => $book->publisher,
+                        "language" => $book->language,
+                        "category" => $book->category,
+                        "firstYearPublication" => $book->first_year_publication,
+                        "lastYearPublication" => $book->last_year_publication,
+                        "printPeriodCount" => $book->print_period_count,
+                        "bookSize" => $book->book_size,
+                        "countPages" => $book->count_pages,
+                        "shabak" => $book->shabak,
+                        "price" => $book->price
                     ];
             }
 
             $status = 200;
         }
 
-        //
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
-        if($name != "") $books->where('xname', 'like', "%$name%");
-        if($isbn != "") $books->where('xisbn', '=', $isbn);
+//        $totalRows = TblBookMaster::count();
+        $books = TblBookMaster::orderBy('last_year_publication', 'desc')->orderBy('first_year_publication', 'desc');
+        if($title != "") $books->where('title', 'like', "%$title%");
+        if($shabak != "") $books->where('shabak', '=', $shabak);
         $totalRows = $books->count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
@@ -180,7 +134,7 @@ class BookController extends Controller
                             "printPeriodCount" => $book->print_period_count,
                             "bookSize" => $book->book_size,
                             "countPages" => $book->count_pages,
-                            "isbn" => $book->isbn,
+                            "shabak" => $book->shabak,
                             "price" => $book->price
                         ];
                 }
@@ -265,7 +219,7 @@ class BookController extends Controller
                             "printPeriodCount" => $book->print_period_count,
                             "bookSize" => $book->book_size,
                             "countPages" => $book->count_pages,
-                            "isbn" => $book->isbn,
+                            "shabak" => $book->shabak,
                             "price" => $book->price
                         ];
                 }
@@ -332,7 +286,7 @@ class BookController extends Controller
                     "countPages" => $book->count_pages,
                     "printCount" => $book->print_count,
                     "printLocation" => $book->print_location,
-                    "isbn" => $book->isbn,
+                    "shabak" => $book->shabak,
                     "price" => $book->price,
                     "dioCode" => $book->dio_code,
                     "image" => $book->image,
@@ -367,7 +321,7 @@ class BookController extends Controller
                         "countPages" => $book->tedadSafe,
                         "printCount" => $book->printCount,
                         "printLocation" => $book->printLocation,
-                        "isbn" => $book->isbn,
+                        "shabak" => $book->shabak,
                         "price" => $book->price,
                         "dioCode" => $book->DioCode,
                     ];
@@ -446,7 +400,7 @@ class BookController extends Controller
                     "countPages" => $book->count_pages,
                     "printCount" => $book->print_count,
                     "printLocation" => $book->print_location,
-                    "isbn" => $book->isbn,
+                    "shabak" => $book->shabak,
                     "price" => $book->price,
                     "dioCode" => $book->dio_code,
                     "image" => $book->image,
@@ -481,7 +435,7 @@ class BookController extends Controller
                         "countPages" => $book->tedadSafe,
                         "printCount" => $book->printCount,
                         "printLocation" => $book->printLocation,
-                        "isbn" => $book->isbn,
+                        "shabak" => $book->shabak,
                         "price" => $book->price,
                         "dioCode" => $book->DioCode,
                     ];
