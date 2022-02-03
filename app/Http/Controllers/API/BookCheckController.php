@@ -12,6 +12,11 @@ class BookCheckController extends Controller
 {
     public function check()
     {
+        $books = BookirBook::where('xparent', '=', '0')->take(1)->get();
+        print_r($books);
+        exit;
+
+
         $books = BookirBook::where('xparent', '=', '0')->take(200)->get();
         if($books != null)
         {
