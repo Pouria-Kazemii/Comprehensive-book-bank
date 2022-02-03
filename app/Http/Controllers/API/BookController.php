@@ -35,7 +35,7 @@ class BookController extends Controller
         $totalPages = 0;
         $totalRows = 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
-/*
+
         // read books
         $books = BookirBook::orderBy('xpublishdate', 'desc');
         if($name != "") $books->where('xname', 'like', "%$name%");
@@ -114,7 +114,7 @@ class BookController extends Controller
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         $totalRows = $books->count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
-*/
+
         // response
         return response()->json
         (
