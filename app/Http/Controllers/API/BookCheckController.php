@@ -6,6 +6,7 @@ use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BookirBook;
+use Illuminate\Support\Facades\DB;
 
 class BookCheckController extends Controller
 {
@@ -51,14 +52,16 @@ class BookCheckController extends Controller
                     //
 //                    $book->xparent = -1;
 //                    $book->save();
-
-                    $book->update(['xparent' => -1]);
                 }
                 catch (\Exception $ex)
                 {
                     print_r($ex);
                 }
 
+
+                DB::table('bookir_book')
+                    ->where('xid', $id)
+                    ->update(['xparent' => -1]);
 
 
                 echo $id;
