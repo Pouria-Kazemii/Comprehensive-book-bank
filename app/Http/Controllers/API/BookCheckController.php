@@ -49,13 +49,16 @@ class BookCheckController extends Controller
 //                    }
 
                     //
-                    $book->xparent = -1;
-                    $book->save();
+//                    $book->xparent = -1;
+//                    $book->save();
+
+                    $book->update(['xparent' => -1]);
                 }
                 catch (\Exception $ex)
                 {
                     print_r($ex);
                 }
+
 
 
                 echo $id;
