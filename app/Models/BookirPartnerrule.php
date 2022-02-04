@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookirPartnerrule extends Model
 {
-    use HasFactory;
+    protected $fillable = ['xid', 'xbookid', 'xcreatorid', 'xroleid'];
+    protected $table = 'bookir_partnerrule';
+    public $timestamps = false;
 }
