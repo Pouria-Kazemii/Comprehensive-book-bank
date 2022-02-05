@@ -48,7 +48,7 @@ class BookController extends Controller
             $wherePublisher = rtrim($wherePublisher, " or ");
         }
 
-        return $this->lists($request, $wherePublisher);
+        return $this->lists($request, false, $wherePublisher);
     }
 
     // list books by creator
@@ -68,11 +68,20 @@ class BookController extends Controller
             $whereCreator = rtrim($whereCreator, " or ");
         }
 
-        return $this->lists($request, "", $whereCreator);
+        return $this->lists($request, false, "", $whereCreator);
+    }
+
+    // list books by ver
+    public function findByVer(Request $request)
+    {
+        $bookId = $request["bookId"];
+        $whereVer = "xid='$bookId' or xparent='$bookId'";
+
+        return $this->lists($request, false, "", "", $whereVer);
     }
 
     // list
-    public function lists(Request $request, $wherePublisher = "", $whereCreator = "")
+    public function lists(Request $request, $defaultWhere = true, $wherePublisher = "", $whereCreator = "", $whereVer = "")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? $request["isbn"] : "";
@@ -80,16 +89,16 @@ class BookController extends Controller
         $data = null;
         $status = 404;
         $pageRows = 50;
-        $totalPages = 0;
-        $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $books = BookirBook::orderBy('xpublishdate', 'desc')->where('xparent', '=', '-1');
+        $books = BookirBook::orderBy('xpublishdate', 'desc');
+        if($defaultWhere) $books->where('xparent', '=', '-1');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         if($wherePublisher != "") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $wherePublisher)");
         if($whereCreator != "") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $whereCreator)");
+        if($whereVer != "") $books->whereRaw($whereVer);
         $books = $books->skip($offset)->take($pageRows)->get();
         if($books != null and count($books) > 0)
         {
@@ -131,11 +140,13 @@ class BookController extends Controller
         }
 
         //
-        $books = BookirBook::orderBy('xpublishdate', 'desc')->where('xparent', '=', '-1');
+        $books = BookirBook::orderBy('xpublishdate', 'desc');
+        if($defaultWhere) $books->where('xparent', '=', '-1');
         if($name != "") $books->where('xname', 'like', "%$name%");
         if($isbn != "") $books->where('xisbn', '=', $isbn);
         if($wherePublisher != "") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $wherePublisher)");
         if($whereCreator != "") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $whereCreator)");
+        if($whereVer != "") $books->whereRaw($whereVer);
         $totalRows = $books->count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
@@ -151,18 +162,13 @@ class BookController extends Controller
         );
     }
 
-
-
-
-
-
-
     // detail book
     public function detail(Request $request)
     {
         $bookId = $request["bookId"];
         $dataMaster = null;
-        $printData = null;
+        $yearPrintCountData = null;
+        $publisherPrintCountData = null;
         $status = 404;
 
         // read books
@@ -193,6 +199,7 @@ class BookController extends Controller
                 [
                     "isbn" => $book->xisbn,
                     "name" => $book->xname,
+                    "dioCode" => $book->xdiocode,
                     "publisher" => $bookPublishers,
                     "subject" => $bookSubjects,
                     "creator" => $bookPartnerRules,
@@ -200,7 +207,7 @@ class BookController extends Controller
                 ];
         }
 
-        // read books for printCount
+        // read books for year printCount
         $books = BookirBook::where('xid', '=', $bookId)->orwhere('xparent', '=', $bookId)->get();
         if($books != null and count($books) > 0)
         {
@@ -209,11 +216,38 @@ class BookController extends Controller
                 $year = BookirBook::getShamsiYear($book->xpublishdate);
                 $printCount = $book->xpagecount;
 
-                $printData[$year] = ["year" => $year, "printCount" => (isset($printData[$year])) ? $printCount + $printData[$year]["printCount"] : $printCount];
+                $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
             }
+
+            $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        $printData = ["label" => array_column($printData, 'year'), "value" => array_column($printData, 'printCount')];
+        // read books for publisher PrintCount
+        $books = DB::table('bookir_book')
+            ->where('bookir_book.xid', '=', $bookId)->orwhere('bookir_book.xparent', '=', $bookId)
+            ->join('bi_book_bi_publisher', 'bi_book_bi_publisher.bi_book_xid', '=', 'bookir_book.xid')
+            ->join('bookir_publisher', 'bookir_publisher.xid', '=', 'bi_book_bi_publisher.bi_publisher_xid')
+            ->select('bookir_publisher.xpublishername as name', DB::raw('SUM(bookir_book.xpagecount) as printCount'))
+            ->groupBy('bookir_publisher.xid')
+            ->get();
+        if($books != null and count($books) > 0)
+        {
+            $totalPrintCount = 0;
+            foreach ($books as $book)
+            {
+                $totalPrintCount += $book->printCount;
+            }
+
+            foreach ($books as $book)
+            {
+                $publisherName = $book->name;
+                $percentPrintCount = ($book->printCount > 0 and $totalPrintCount > 0) ? round(($book->printCount / $totalPrintCount) * 100, 2) : 0;
+
+                $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
+            }
+
+            $publisherPrintCountData = ["label" => array_column($publisherPrintCountData, 'name'), "value" => array_column($publisherPrintCountData, 'percentPrintCount')];
+        }
 
         //
         if($dataMaster != null) $status = 200;
@@ -224,139 +258,7 @@ class BookController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster, "list" => null, "chart" => $printData]
-            ],
-            $status
-        );
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-    // dossier book
-    public function dossier(Request $request)
-    {
-        $bookId = $request["bookId"];
-        $dataMaster = null;
-        $data = null;
-        $chartData = null;
-        $chartLabelData = null;
-        $chartValueData = null;
-        $publisherData = null;
-        $totalPrintCount = 0;
-
-        // read books
-        $book = TblBookMaster::where('id', '=', $bookId)->first();
-        if($book != null and $book->id > 0)
-        {
-            $dataMaster =
-                [
-                    "id" => $book->id,
-                    "title" => $book->title,
-                    "titleEn" => $book->title_en,
-                    "publisher" => $book->publisher,
-                    "author" => $book->author,
-                    "translator" => $book->translator,
-                    "language" => $book->language,
-                    "category" => $book->category,
-                    "weight" => $book->weight,
-                    "bookCoverType" => $book->book_cover_type,
-                    "paperType" => $book->paper_type,
-                    "typePrinting" => $book->type_printing,
-                    "editor" => $book->editor,
-                    "firstYearPublication" => $book->first_year_publication,
-                    "lastYearPublication" => $book->last_year_publication,
-                    "printPeriodCount" => $book->print_period_count,
-                    "bookSize" => $book->book_size,
-                    "countPages" => $book->count_pages,
-                    "printCount" => $book->print_count,
-                    "printLocation" => $book->print_location,
-                    "isbn" => $book->isbn,
-                    "price" => $book->price,
-                    "dioCode" => $book->dio_code,
-                    "image" => $book->image,
-                ];
-        }
-
-        // read books
-        $books = BookK24::where('book_master_id', '=', $bookId)->get();
-        if($books != null and count($books) > 0)
-        {
-            $dataTemp = null;
-
-            foreach ($books as $book)
-            {
-                $dataTemp[] =
-                    [
-                        "title" => $book->title,
-                        "titleEn" => '',
-                        "publisher" => $book->nasher,
-                        "author" => '',
-                        "translator" => '',
-                        "language" => $book->lang,
-                        "category" => $book->cats,
-                        "weight" => '',
-                        "bookCoverType" => '',
-                        "paperType" => '',
-                        "typePrinting" => '',
-                        "editor" => '',
-                        "yearPublication" => $book->saleNashr,
-                        "printPeriodCount" => $book->nobatChap,
-                        "bookSize" => $book->ghatechap,
-                        "countPages" => $book->tedadSafe,
-                        "printCount" => $book->printCount,
-                        "printLocation" => $book->printLocation,
-                        "isbn" => $book->isbn,
-                        "price" => $book->price,
-                        "dioCode" => $book->DioCode,
-                    ];
-
-                if(isset($publisherData[md5($book->nasher)]))
-                    $publisherData[md5($book->nasher)] = ["name" => $book->nasher, "printCount" => $book->printCount + $publisherData[md5($book->nasher)]["printCount"]];
-                else
-                    $publisherData[md5($book->nasher)] = ["name" => $book->nasher, "printCount" => $book->printCount];
-
-                $totalPrintCount += $book->printCount;
-            }
-
-            $data[] = ["bookSource" => "ketab.ir", "books" => $dataTemp];
-        }
-
-        $data[] = ["bookSource" => "DigiKala.com", "books" => null];
-        $data[] = ["bookSource" => "30Book.com", "books" => null];
-        $data[] = ["bookSource" => "Gisoom.com", "books" => null];
-        $data[] = ["bookSource" => "IranKetab.ir", "books" => null];
-
-        // chart data
-        if($publisherData != null and count($publisherData) > 0)
-        {
-            foreach ($publisherData as $publisher)
-            {
-                $chartLabelData[] = $publisher["name"];
-                $chartValueData[] = round(($publisher["printCount"] / $totalPrintCount) * 100, 2);
-            }
-        }
-
-        $chartData = ["label" => $chartLabelData, "value" => $chartValueData];
-
-        //
-        if($dataMaster != null and $data != null) $status = 200;
-
-        // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster, "list" => $data, "chart" => $chartData]
+                "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
             ],
             $status
         );
