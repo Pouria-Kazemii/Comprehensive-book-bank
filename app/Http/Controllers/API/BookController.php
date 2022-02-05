@@ -6,7 +6,9 @@ use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BiBookBiSubject;
+use App\Models\Book30book;
 use App\Models\BookDigi;
+use App\Models\BookGisoom;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
@@ -35,7 +37,7 @@ class BookController extends Controller
     public function findByPublisher(Request $request)
     {
         $bookId = $request["bookId"];
-        $wherePublisher = "";
+        $where = "";
 
         // get publisher
         $publishers = BiBookBiPublisher::where('bi_book_xid', '=', $bookId)->get();
@@ -43,19 +45,19 @@ class BookController extends Controller
         {
             foreach ($publishers as $publisher)
             {
-                $wherePublisher = "bi_publisher_xid='".$publisher->bi_publisher_xid."' or ";
+                $where = "bi_publisher_xid='".$publisher->bi_publisher_xid."' or ";
             }
-            $wherePublisher = rtrim($wherePublisher, " or ");
+            $where = rtrim($where, " or ");
         }
 
-        return $this->lists($request, false, $wherePublisher);
+        return $this->lists($request, false, ($where == ""), ["type" => "publisher", "where" => $where]);
     }
 
     // list books by creator
     public function findByCreator(Request $request)
     {
         $bookId = $request["bookId"];
-        $whereCreator = "";
+        $where = "";
 
         // get creator
         $creators = BookirPartnerrule::where('xbookid', '=', $bookId)->get();
@@ -63,25 +65,25 @@ class BookController extends Controller
         {
             foreach ($creators as $creator)
             {
-                $whereCreator = "xcreatorid='".$creator->xcreatorid."' or ";
+                $where = "xcreatorid='".$creator->xcreatorid."' or ";
             }
-            $whereCreator = rtrim($whereCreator, " or ");
+            $where = rtrim($where, " or ");
         }
 
-        return $this->lists($request, false, "", $whereCreator);
+        return $this->lists($request, false, ($where == ""), ["type" => "creator", "where" => $where]);
     }
 
     // list books by ver
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
-        $whereVer = "xid='$bookId' or xparent='$bookId'";
+        $where = "xid='$bookId' or xparent='$bookId'";
 
-        return $this->lists($request, false, "", "", $whereVer);
+        return $this->lists($request, false, ($where == ""), ["type" => "version", "where" => $where]);
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $wherePublisher = "", $whereCreator = "", $whereVer = "")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = null)
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? $request["isbn"] : "";
@@ -89,66 +91,73 @@ class BookController extends Controller
         $data = null;
         $status = 404;
         $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
+        $whereType = ($where != null) ? $where["type"] : "";
+        $where = ($where != null) ? $where["where"] : "";
 
-        // read books
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
-        if($defaultWhere) $books->where('xparent', '=', '-1');
-        if($name != "") $books->where('xname', 'like', "%$name%");
-        if($isbn != "") $books->where('xisbn', '=', $isbn);
-        if($wherePublisher != "") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $wherePublisher)");
-        if($whereCreator != "") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $whereCreator)");
-        if($whereVer != "") $books->whereRaw($whereVer);
-        $books = $books->skip($offset)->take($pageRows)->get();
-        if($books != null and count($books) > 0)
+        if(!$isNull)
         {
-            foreach ($books as $book)
+            // read books
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            if($defaultWhere) $books->where('xparent', '=', '-1');
+            if($name != "") $books->where('xname', 'like', "%$name%");
+            if($isbn != "") $books->where('xisbn', '=', $isbn);
+            if($whereType == "publisher") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $where)");
+            if($whereType == "creator") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $where)");
+            if($whereType == "version") $books->whereRaw($where);
+            $books = $books->skip($offset)->take($pageRows)->get();
+            if($books != null and count($books) > 0)
             {
-                $publisherNames = "";
-
-                $bookPublishers = DB::table('bi_book_bi_publisher')
-                    ->where('bi_book_xid', '=', $book->xid)
-                    ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                    ->select('bookir_publisher.xpublishername as name')
-                    ->get();
-                if($bookPublishers != null and count($bookPublishers) > 0)
+                foreach ($books as $book)
                 {
-                    foreach ($bookPublishers as $bookPublisher)
+                    $publisherNames = "";
+
+                    $bookPublishers = DB::table('bi_book_bi_publisher')
+                        ->where('bi_book_xid', '=', $book->xid)
+                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                        ->select('bookir_publisher.xpublishername as name')
+                        ->get();
+                    if($bookPublishers != null and count($bookPublishers) > 0)
                     {
-                        $publisherNames .= $bookPublisher->name." - ";
+                        foreach ($bookPublishers as $bookPublisher)
+                        {
+                            $publisherNames .= $bookPublisher->name." - ";
+                        }
+                        $publisherNames = rtrim($publisherNames, " - ");
                     }
-                    $publisherNames = rtrim($publisherNames, " - ");
+
+                    //
+                    $data[] =
+                        [
+                            "id" => $book->xid,
+                            "name" => $book->xname,
+                            "publisher" => $publisherNames,
+                            "language" => $book->xlang,
+                            "publishDate" => BookirBook::getShamsiYear($book->xpublishdate),
+                            "printNumber" => $book->xprintnumber,
+                            "format" => $book->xformat,
+                            "pageCount" => $book->xpagecount,
+                            "isbn" => $book->xisbn,
+                            "price" => $book->xcoverprice
+                        ];
                 }
 
-                //
-                $data[] =
-                    [
-                        "id" => $book->xid,
-                        "name" => $book->xname,
-                        "publisher" => $publisherNames,
-                        "language" => $book->xlang,
-                        "publishDate" => BookirBook::getShamsiYear($book->xpublishdate),
-                        "printNumber" => $book->xprintnumber,
-                        "format" => $book->xformat,
-                        "pageCount" => $book->xpagecount,
-                        "isbn" => $book->xisbn,
-                        "price" => $book->xcoverprice
-                    ];
+                $status = 200;
             }
 
-            $status = 200;
+            //
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            if($defaultWhere) $books->where('xparent', '=', '-1');
+            if($name != "") $books->where('xname', 'like', "%$name%");
+            if($isbn != "") $books->where('xisbn', '=', $isbn);
+            if($whereType == "publisher") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $where)");
+            if($whereType == "creator") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $where)");
+            if($whereType == "version") $books->whereRaw($where);
+            $totalRows = $books->count();
+            $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
-
-        //
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
-        if($defaultWhere) $books->where('xparent', '=', '-1');
-        if($name != "") $books->where('xname', 'like', "%$name%");
-        if($isbn != "") $books->where('xisbn', '=', $isbn);
-        if($wherePublisher != "") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $wherePublisher)");
-        if($whereCreator != "") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $whereCreator)");
-        if($whereVer != "") $books->whereRaw($whereVer);
-        $totalRows = $books->count();
-        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -259,6 +268,92 @@ class BookController extends Controller
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
                 "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
+            ],
+            $status
+        );
+    }
+
+    // market
+    public function market(Request $request)
+    {
+        $bookId = $request["bookId"];
+        $isbn = "";
+        $isbn2 = "";
+        $data = null;
+        $status = 404;
+
+        // read book
+        $book = BookirBook::where('xid', '=', $bookId)->first();
+        if($book != null and $book->xid > 0)
+        {
+            $isbn = $book->xisbn;
+            $isbn2 = $book->xisbn2;
+        }
+
+        if($isbn != "")
+        {
+            // read books of digi
+            $books = BookDigi::where('shabak', '=', $isbn);
+            if($isbn2 != "") $books->orwhere('shabak', '=', $isbn2);
+            $books->get();
+            if($books != null and count($books) > 0)
+            {
+                foreach ($books as $book)
+                {
+                    if($book->price > 0)
+                    $data[] =
+                        [
+                            "source" => "دیجیکالا",
+                            "price" => $book->price,
+                        ];
+                }
+            }
+
+            // read books of gisoom
+            $books = BookGisoom::where('shabak10', '=', $isbn)->orwhere('shabak13', '=', $isbn);
+            if($isbn2 != "") $books->orwhere('shabak10', '=', $isbn2)->orwhere('shabak13', '=', $isbn2);
+            $books->get();
+            if($books != null and count($books) > 0)
+            {
+                foreach ($books as $book)
+                {
+                    if($book->price > 0)
+                    $data[] =
+                        [
+                            "source" => "گیسوم",
+                            "price" => $book->price,
+                        ];
+                }
+            }
+
+            // read books of 30Book
+            $books = Book30book::where('shabak', '=', $isbn);
+            if($isbn2 != "") $books->orwhere('shabak', '=', $isbn2);
+            $books->get();
+            if($books != null and count($books) > 0)
+            {
+                foreach ($books as $book)
+                {
+                    if($book->price > 0)
+                    $data[] =
+                        [
+                            "source" => "سی بوک",
+                            "price" => $book->price,
+                        ];
+                }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
             ],
             $status
         );
