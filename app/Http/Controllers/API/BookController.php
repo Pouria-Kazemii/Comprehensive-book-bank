@@ -295,7 +295,7 @@ class BookController extends Controller
             // read books of digi
             $books = BookDigi::where('shabak', '=', $isbn);
             if($isbn2 != "") $books->orwhere('shabak', '=', $isbn2);
-            $books->get();
+            $books = $books->get();
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -312,7 +312,7 @@ class BookController extends Controller
             // read books of gisoom
             $books = BookGisoom::where('shabak10', '=', $isbn)->orwhere('shabak13', '=', $isbn);
             if($isbn2 != "") $books->orwhere('shabak10', '=', $isbn2)->orwhere('shabak13', '=', $isbn2);
-            $books->get();
+            $books = $books->get();
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -329,7 +329,7 @@ class BookController extends Controller
             // read books of 30Book
             $books = Book30book::where('shabak', '=', $isbn);
             if($isbn2 != "") $books->orwhere('shabak', '=', $isbn2);
-            $books->get();
+            $books = $books->get();
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
