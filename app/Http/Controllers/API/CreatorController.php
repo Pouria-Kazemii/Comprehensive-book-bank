@@ -33,11 +33,11 @@ class CreatorController extends Controller
 
         $where = $publisherId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId'))" : "";
 
-        return $this->lists($request, ($where == ""), $where);
+        return $this->lists($request, ($where == ""), $where, 0, $publisherId);
     }
 
     // list
-    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0)
+    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $publisherId = 0)
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $roleId = (isset($request["roleId"])) ? $request["roleId"] : "";
@@ -62,7 +62,9 @@ class CreatorController extends Controller
                 foreach ($creators as $creator)
                 {
                     $creatorId = $creator->xid;
-                    $bookCount = ($subjectId > 0) ? BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count() : 0;
+                    if($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
+                    else if($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
+                    else $bookCount = 0;
 
                     //
                     $data[] =
