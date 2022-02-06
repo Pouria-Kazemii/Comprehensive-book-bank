@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookirRules extends Model
 {
-    use HasFactory;
+    protected $fillable = ['xid', 'xrole', 'xregdate', 'xisauthors'];
+    protected $table = 'bookir_rules';
+    public $timestamps = false;
 }

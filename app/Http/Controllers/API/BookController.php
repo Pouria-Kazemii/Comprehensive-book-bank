@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BiBookBiSubject;
@@ -10,30 +9,19 @@ use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
-use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
-use App\Models\BookirPublisher;
-use App\Models\BookirSubject;
-use App\Models\BookK24;
-use App\Models\TblBookMaster;
-use App\Models\TblBookMasterCategory;
-use App\Models\TblBookMasterPerson;
-use App\Models\TblBookMasterPublisher;
-use App\Models\TblCategory;
-use App\Models\TblPerson;
-use App\Models\TblPublisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
-    // list books
+    // find
     public function find(Request $request)
     {
         return $this->lists($request);
     }
 
-    // list books by publisher
+    // find by publisher
     public function findByPublisher(Request $request)
     {
         $bookId = $request["bookId"];
@@ -47,43 +35,44 @@ class BookController extends Controller
             {
                 $where = "bi_publisher_xid='".$publisher->bi_publisher_xid."' or ";
             }
-            $where = rtrim($where, " or ");
+
+            $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where ".rtrim($where, " or ").")";
         }
 
-        return $this->lists($request, false, ($where == ""), ["type" => "publisher", "where" => $where]);
+        return $this->lists($request, false, ($where == ""), $where);
     }
 
-    // list books by creator
+    // find by creator
     public function findByCreator(Request $request)
     {
-        $bookId = $request["bookId"];
-        $where = "";
+        $creatorId = $request["creatorId"];
 
-        // get creator
-        $creators = BookirPartnerrule::where('xbookid', '=', $bookId)->get();
-        if($creators != null and count($creators) > 0)
-        {
-            foreach ($creators as $creator)
-            {
-                $where = "xcreatorid='".$creator->xcreatorid."' or ";
-            }
-            $where = rtrim($where, " or ");
-        }
+        $where = $creatorId != "" ? "xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')" : "";
 
-        return $this->lists($request, false, ($where == ""), ["type" => "creator", "where" => $where]);
+        return $this->lists($request, false, ($where == ""), $where);
     }
 
-    // list books by ver
+    // find by ver
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
         $where = "xid='$bookId' or xparent='$bookId'";
 
-        return $this->lists($request, false, ($where == ""), ["type" => "version", "where" => $where]);
+        return $this->lists($request, false, ($where == ""), $where);
+    }
+
+    // find by subject
+    public function findBySubject(Request $request)
+    {
+        $subjectId = $request["subjectId"];
+
+        $where = $subjectId != "" ? "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')" : "";
+
+        return $this->lists($request, false, ($where == ""), $where);
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = null)
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? $request["isbn"] : "";
@@ -94,8 +83,6 @@ class BookController extends Controller
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
-        $whereType = ($where != null) ? $where["type"] : "";
-        $where = ($where != null) ? $where["where"] : "";
 
         if(!$isNull)
         {
@@ -104,9 +91,7 @@ class BookController extends Controller
             if($defaultWhere) $books->where('xparent', '=', '-1');
             if($name != "") $books->where('xname', 'like', "%$name%");
             if($isbn != "") $books->where('xisbn', '=', $isbn);
-            if($whereType == "publisher") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $where)");
-            if($whereType == "creator") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $where)");
-            if($whereType == "version") $books->whereRaw($where);
+            if($where != "") $books->whereRaw($where);
             $books = $books->skip($offset)->take($pageRows)->get();
             if($books != null and count($books) > 0)
             {
@@ -152,9 +137,7 @@ class BookController extends Controller
             if($defaultWhere) $books->where('xparent', '=', '-1');
             if($name != "") $books->where('xname', 'like', "%$name%");
             if($isbn != "") $books->where('xisbn', '=', $isbn);
-            if($whereType == "publisher") $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where $where)");
-            if($whereType == "creator") $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where $where)");
-            if($whereType == "version") $books->whereRaw($where);
+            if($where != "") $books->whereRaw($where);
             $totalRows = $books->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
@@ -181,7 +164,7 @@ class BookController extends Controller
         $status = 404;
 
         // read books
-        $book = BookirBook::where('xid', '=', $bookId)->where('xparent', '=', '-1')->first();
+        $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
         if($book != null and $book->xid > 0)
         {
             $bookPublishers = DB::table('bi_book_bi_publisher')
@@ -300,7 +283,7 @@ class BookController extends Controller
             {
                 foreach ($books as $book)
                 {
-                    if($book->price > 0)
+//                    if($book->price > 0)
                     $data[] =
                         [
                             "source" => "دیجیکالا",
@@ -317,7 +300,7 @@ class BookController extends Controller
             {
                 foreach ($books as $book)
                 {
-                    if($book->price > 0)
+//                    if($book->price > 0)
                     $data[] =
                         [
                             "source" => "گیسوم",
@@ -334,7 +317,7 @@ class BookController extends Controller
             {
                 foreach ($books as $book)
                 {
-                    if($book->price > 0)
+//                    if($book->price > 0)
                     $data[] =
                         [
                             "source" => "سی بوک",

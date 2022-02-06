@@ -34,14 +34,20 @@ Route::any('/v1/book/find', 'API\BookController@find');
 Route::post('/v1/book/find/publisher', 'API\BookController@findByPublisher');
 Route::post('/v1/book/find/creator', 'API\BookController@findByCreator');
 Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
+Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
 Route::post('/v1/book/detail', 'API\BookController@detail');
 Route::post('/v1/book/market', 'API\BookController@market');
 
-Route::post('/v1/author/find', 'API\AuthorController@find');
-Route::post('/v1/author/detail', 'API\AuthorController@detail');
+Route::post('/v1/creator/find', 'API\CreatorController@find');
+Route::post('/v1/creator/find/subject', 'API\CreatorController@findBySubject');
+Route::post('/v1/creator/role', 'API\CreatorController@role');
+Route::post('/v1/creator/annual-activity', 'API\CreatorController@annualActivity');
+Route::post('/v1/creator/detail', 'API\CreatorController@detail');
 
 Route::post('/v1/subject/find', 'API\SubjectController@find');
 Route::post('/v1/subject/detail', 'API\SubjectController@detail');
 
 Route::post('/v1/publisher/find', 'API\PublisherController@find');
+Route::post('/v1/publisher/find/subject', 'API\PublisherController@findBySubject');
+Route::post('/v1/publisher/find/creator', 'API\PublisherController@findByCreator');
 Route::post('/v1/publisher/detail', 'API\PublisherController@detail');

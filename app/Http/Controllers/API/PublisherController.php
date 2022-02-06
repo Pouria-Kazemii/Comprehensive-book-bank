@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
+use App\Models\BiBookBiPublisher;
 use App\Models\BookDigi;
+use App\Models\BookirBook;
+use App\Models\BookirPartnerrule;
+use App\Models\BookirPublisher;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
@@ -18,39 +22,74 @@ use Illuminate\Support\Facades\DB;
 
 class PublisherController extends Controller
 {
-    // list publisher
+    // find
     public function find(Request $request)
     {
-        $title = $request["title"];
-        $currentPageNumber = $request["currentPageNumber"];
+        return $this->lists($request);
+    }
+
+    // find by creator
+    public function findByCreator(Request $request)
+    {
+        $creatorId = $request["creatorId"];
+
+        $where = $creatorId != "" ? "xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))" : "";
+
+        return $this->lists($request, false, ($where == ""), $where);
+    }
+
+    // find by subject
+    public function findBySubject(Request $request)
+    {
+        $subjectId = $request["subjectId"];
+
+        $where = $subjectId != "" ? "xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId'))" : "";
+
+        return $this->lists($request, false, ($where == ""), $where);
+    }
+
+    // list
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "")
+    {
+        $name = (isset($request["name"])) ? $request["name"] : "";
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
         $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
-        // read books
-        $publishers = TblPublisher::orderBy('title', 'asc');
-        if($title != "") $publishers->where('title', 'like', "%$title%");
-        $publishers = $publishers->skip($offset)->take($pageRows)->get();
-        if($publishers != null and count($publishers) > 0)
+        if(!$isNull)
         {
-            foreach ($publishers as $publisher)
+            // read books
+            $publishers = BookirPublisher::orderBy('xpublishername', 'desc');
+//            if($defaultWhere) $publishers->where('xparent', '=', '-1');
+            if($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if($where != "") $publishers->whereRaw($where);
+            $publishers = $publishers->skip($offset)->take($pageRows)->get();
+            if($publishers != null and count($publishers) > 0)
             {
-                $data[] =
-                    [
-                        "id" => $publisher->id,
-                        "title" => $publisher->title,
-                    ];
+                foreach ($publishers as $publisher)
+                {
+                    $data[] =
+                        [
+                            "id" => $publisher->xid,
+                            "name" => $publisher->xpublishername,
+                        ];
+                }
+
+                $status = 200;
             }
 
-            $status = 200;
+            //
+            $publishers = BookirPublisher::orderBy('xpublishername', 'desc');
+//            if($defaultWhere) $publishers->where('xparent', '=', '-1');
+            if($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if($where != "") $publishers->whereRaw($where);
+            $totalRows = $publishers->count();
+            $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
-
-        //
-        $publishers = TblPublisher::orderBy('title', 'asc');
-        if($title != "") $publishers->where('title', 'like', "%$title%");
-        $totalRows = $publishers->count();
-        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -59,97 +98,6 @@ class PublisherController extends Controller
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
                 "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-            ],
-            $status
-        );
-    }
-
-    // detail publisher
-    public function detail(Request $request)
-    {
-        $bookId = $request["bookId"];
-        $dataMaster = null;
-        $data = null;
-
-        // read books
-        $book = TblBookMaster::where('id', '=', $bookId)->first();
-        if($book != null and $book->id > 0)
-        {
-            $dataMaster =
-                [
-                    "id" => $book->id,
-                    "title" => $book->title,
-                    "titleEn" => $book->title_en,
-                    "publisher" => $book->publisher,
-                    "author" => $book->author,
-                    "translator" => $book->translator,
-                    "language" => $book->language,
-                    "category" => $book->category,
-                    "weight" => $book->weight,
-                    "bookCoverType" => $book->book_cover_type,
-                    "paperType" => $book->paper_type,
-                    "typePrinting" => $book->type_printing,
-                    "editor" => $book->editor,
-                    "firstYearPublication" => $book->first_year_publication,
-                    "lastYearPublication" => $book->last_year_publication,
-                    "printPeriodCount" => $book->print_period_count,
-                    "bookSize" => $book->book_size,
-                    "countPages" => $book->count_pages,
-                    "printCount" => $book->print_count,
-                    "printLocation" => $book->print_location,
-                    "shabak" => $book->shabak,
-                    "price" => $book->price,
-                    "dioCode" => $book->dio_code,
-                    "image" => $book->image,
-                ];
-        }
-
-        // read books
-        $books = BookK24::where('book_master_id', '=', $bookId)->get();
-        if($books != null and count($books) > 0)
-        {
-            $dataTemp = null;
-
-            foreach ($books as $book)
-            {
-                $dataTemp[] =
-                    [
-                        "title" => $book->title,
-                        "titleEn" => '',
-                        "publisher" => $book->nasher,
-                        "author" => '',
-                        "translator" => '',
-                        "language" => $book->lang,
-                        "category" => $book->cats,
-                        "weight" => '',
-                        "bookCoverType" => '',
-                        "paperType" => '',
-                        "typePrinting" => '',
-                        "editor" => '',
-                        "yearPublication" => $book->saleNashr,
-                        "printPeriodCount" => $book->nobatChap,
-                        "bookSize" => $book->ghatechap,
-                        "countPages" => $book->tedadSafe,
-                        "printCount" => $book->printCount,
-                        "printLocation" => $book->printLocation,
-                        "shabak" => $book->shabak,
-                        "price" => $book->price,
-                        "dioCode" => $book->DioCode,
-                    ];
-            }
-
-            $data[] = ["bookSource" => "ketab.ir", "books" => $dataTemp];
-        }
-
-        if($dataMaster != null and $data != null) $status = 200;
-
-        // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster, "list" => $data]
             ],
             $status
         );

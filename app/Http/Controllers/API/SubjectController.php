@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BookDigi;
+use App\Models\BookirSubject;
 use App\Models\BookK24;
 use App\Models\TblBookMaster;
 use App\Models\TblBookMasterCategory;
@@ -29,8 +30,8 @@ class SubjectController extends Controller
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $subjects = TblCategory::orderBy('title', 'asc');
-        if($title != "") $subjects->where('title', 'like', "%$title%");
+        $subjects = BookirSubject::orderBy('xsubject', 'asc');
+        if($title != "") $subjects->where('xsubject', 'like', "%$title%");
         $subjects = $subjects->skip($offset)->take($pageRows)->get();
         if($subjects != null and count($subjects) > 0)
         {
@@ -38,8 +39,8 @@ class SubjectController extends Controller
             {
                 $data[] =
                     [
-                        "id" => $subject->id,
-                        "title" => $subject->title,
+                        "id" => $subject->xid,
+                        "title" => $subject->xsubject,
                     ];
             }
 
@@ -47,8 +48,8 @@ class SubjectController extends Controller
         }
 
         //
-        $subjects = TblCategory::orderBy('title', 'asc');
-        if($title != "") $subjects->where('title', 'like', "%$title%");
+        $subjects = BookirSubject::orderBy('xsubject', 'asc');
+        if($title != "") $subjects->where('xsubject', 'like', "%$title%");
         $totalRows = $subjects->count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
