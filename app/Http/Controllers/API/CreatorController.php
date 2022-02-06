@@ -2,25 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
-use App\Models\BiBookBiCreator;
-use App\Models\BookDigi;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
-use App\Models\BookirPartnerrule;
-use App\Models\BookirCreator;
 use App\Models\BookirRules;
-use App\Models\BookK24;
-use App\Models\TblBookMaster;
-use App\Models\TblBookMasterCategory;
-use App\Models\TblBookMasterPerson;
-use App\Models\TblBookMasterCreator;
-use App\Models\TblCategory;
-use App\Models\TblPerson;
-use App\Models\TblCreator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CreatorController extends Controller
 {
@@ -35,12 +21,19 @@ class CreatorController extends Controller
     {
         $subjectId = $request["subjectId"];
 
-        $where = $subjectId != "" ? "
-        xid In (Select xcreatorid From bookir_partnerrule Where 
-        
-        xbookid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId'))" : "";
+        $where = $subjectId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId'))" : "";
 
         return $this->lists($request, ($where == ""), $where, $subjectId);
+    }
+
+    // find by publisher
+    public function findByPublisher(Request $request)
+    {
+        $publisherId = $request["publisherId"];
+
+        $where = $publisherId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId'))" : "";
+
+        return $this->lists($request, ($where == ""), $where);
     }
 
     // list

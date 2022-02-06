@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\BiBookBiPublisher;
-use App\Models\BiBookBiSubject;
 use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
-use App\Models\BookirPartnerrule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,20 +21,9 @@ class BookController extends Controller
     // find by publisher
     public function findByPublisher(Request $request)
     {
-        $bookId = $request["bookId"];
-        $where = "";
+        $publisherId = $request["publisherId"];
 
-        // get publisher
-        $publishers = BiBookBiPublisher::where('bi_book_xid', '=', $bookId)->get();
-        if($publishers != null and count($publishers) > 0)
-        {
-            foreach ($publishers as $publisher)
-            {
-                $where = "bi_publisher_xid='".$publisher->bi_publisher_xid."' or ";
-            }
-
-            $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where ".rtrim($where, " or ").")";
-        }
+        $where = $publisherId != "" ? "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')" : "";
 
         return $this->lists($request, false, ($where == ""), $where);
     }
