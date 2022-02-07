@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BiBookBiPublisher;
 use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
@@ -22,8 +23,27 @@ class BookController extends Controller
     public function findByPublisher(Request $request)
     {
         $publisherId = $request["publisherId"];
+        $bookId = $request["bookId"];
+        $where = "";
 
-        $where = $publisherId != "" ? "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')" : "";
+        if($publisherId > 0)
+        {
+            $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')";
+        }
+        elseif($bookId > 0)
+        {
+            // get publisher
+            $publishers = BiBookBiPublisher::where('bi_book_xid', '=', $bookId)->get();
+            if($publishers != null and count($publishers) > 0)
+            {
+                foreach ($publishers as $publisher)
+                {
+                    $where = "bi_publisher_xid='".$publisher->bi_publisher_xid."' or ";
+                }
+
+                $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where ".rtrim($where, " or ").")";
+            }
+        }
 
         return $this->lists($request, false, ($where == ""), $where);
     }
@@ -32,8 +52,27 @@ class BookController extends Controller
     public function findByCreator(Request $request)
     {
         $creatorId = $request["creatorId"];
+        $bookId = $request["bookId"];
+        $where = "";
 
-        $where = $creatorId != "" ? "xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')" : "";
+        if($creatorId > 0)
+        {
+            $where = "xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')";
+        }
+        elseif($bookId > 0)
+        {
+            // get creator
+            $creators = BookirPartnerrule::where('xbookid', '=', $bookId)->get();
+            if($creators != null and count($creators) > 0)
+            {
+                foreach ($creators as $creator)
+                {
+                    $where = "xcreatorid='".$creator->xcreatorid."' or ";
+                }
+
+                $where = "xid In (Select xbookid From bookir_partnerrule Where ".rtrim($where, " or ").")";
+            }
+        }
 
         return $this->lists($request, false, ($where == ""), $where);
     }
