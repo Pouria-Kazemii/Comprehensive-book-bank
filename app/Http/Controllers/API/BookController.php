@@ -8,6 +8,7 @@ use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
+use App\Models\BookirPartnerrule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
