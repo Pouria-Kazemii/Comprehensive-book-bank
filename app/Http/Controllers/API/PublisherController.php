@@ -289,6 +289,8 @@ class PublisherController extends Controller
 
             //
             $data = ["label" => array_keys($data), "value" => array_values($data)];
+            $data = array_slice($data, 0, 10);
+
         }
 
         //
