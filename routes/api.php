@@ -47,6 +47,7 @@ Route::post('/v1/creator/detail', 'API\CreatorController@detail');
 
 Route::post('/v1/subject/find', 'API\SubjectController@find');
 
+Route::post('/v1/publisher/search', 'API\PublisherController@search');
 Route::post('/v1/publisher/find', 'API\PublisherController@find');
 Route::post('/v1/publisher/find/subject', 'API\PublisherController@findBySubject');
 Route::post('/v1/publisher/find/creator', 'API\PublisherController@findByCreator');
@@ -55,3 +56,6 @@ Route::post('/v1/publisher/annual-activity-title', 'API\PublisherController@annu
 Route::post('/v1/publisher/annual-activity-circulation', 'API\PublisherController@annualActivityByCirculation');
 Route::post('/v1/publisher/translate-authorship', 'API\PublisherController@translateAuthorship');
 Route::post('/v1/publisher/statistic-subject', 'API\PublisherController@statisticSubject');
+
+
+Route::post('/v1/report/publisher', 'API\ReportController@publisher');

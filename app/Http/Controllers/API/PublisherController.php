@@ -91,6 +91,41 @@ class PublisherController extends Controller
         );
     }
 
+    // search
+    public function search(Request $request)
+    {
+        $searchWord = (isset($request["search-word"])) ? $request["search-word"] : "";
+        $data = null;
+        $status = 404;
+
+        // read
+        $publishers = BookirPublisher::where('xpublishername', '!=', '')->where('xpublishername', 'like', "%$searchWord%")->orderBy('xpublishername', 'asc')->get();
+        if($publishers != null and count($publishers) > 0)
+        {
+            foreach ($publishers as $publisher)
+            {
+                $data[] =
+                    [
+                        "id" => $publisher->xid,
+                        "name" => $publisher->xpublishername,
+                    ];
+            }
+
+            $status = 200;
+        }
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
     // annual activity by title
     public function annualActivityByTitle(Request $request)
     {
@@ -261,7 +296,6 @@ class PublisherController extends Controller
         {
             foreach ($books as $book)
             {
-                /*
                 $bookSubjects = DB::table('bi_book_bi_subject')
                     ->where('bi_book_xid', '=', $book->xid)
                     ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
@@ -276,10 +310,9 @@ class PublisherController extends Controller
                         $data[$bookSubject->title] = (isset($data[$bookSubject->title])) ? $data[$bookSubject->title] + 1 : 1;
                     }
                 }
-                */
 
-                if(!isset($data[$book->xdiocode])) $totalSubjects += 1;
-                $data[$book->xdiocode] = (isset($data[$book->xdiocode])) ? $data[$book->xdiocode] + 1 : 1;
+//                if(!isset($data[$book->xdiocode])) $totalSubjects += 1;
+//                $data[$book->xdiocode] = (isset($data[$book->xdiocode])) ? $data[$book->xdiocode] + 1 : 1;
             }
 
             /*foreach ($data as $key => $value)
@@ -289,8 +322,6 @@ class PublisherController extends Controller
 
             //
             $data = ["label" => array_keys($data), "value" => array_values($data)];
-            $data = array_slice($data, 0, 10);
-
         }
 
         //
