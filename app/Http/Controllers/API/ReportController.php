@@ -39,21 +39,33 @@ class ReportController extends Controller
             foreach ($books as $book)
             {
                 $dioCode = $book->xdiocode;
+                $creatorsData = null;
+
                 $creators = DB::table('bookir_partnerrule')
                     ->where('xbookid', '=', $book->xid)->where('xroleid', '=', '1')
                     ->join('bookir_partner', 'bookir_partnerrule.xroleid', '=', 'bookir_partner.xid')
-                    ->select('bookir_partner.xcreatorname as name')
+                    ->select('bookir_partner.xid as id, bookir_partner.xcreatorname as name')
                     ->get();
-                $creators = (array) $creators;
+
+                if($creators != null and count($creators) > 0)
+                {
+                    foreach ($creators as $creator)
+                    {
+                        if(!((isset($data[$dioCode]) and $data[$dioCode]["creator"] != null) and $data[$dioCode]["creator"][md5($creator->name)]))
+                            $creatorsData[md5($creator->name)] = ["id" => $creator->id, "name" => $creator->name];
+                    }
+                }
 
                 $data[$dioCode] = array
                 (
-                    "creator" => (isset($data[$dioCode]) and $data[$dioCode]["creator"] != null) ? array_merge($data[$dioCode]["creator"], $creators) : $creators,
+                    "creator" => $creatorsData,
                     "translate" => $book->xlang == "فارسی" ? 0 : 1,
                     "circulation" => $book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
                     "dio" => $dioCode,
                 );
             }
+
+            $status = 200;
         }
 
         //
