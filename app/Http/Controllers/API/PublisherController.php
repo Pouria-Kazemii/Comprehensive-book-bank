@@ -98,7 +98,7 @@ class PublisherController extends Controller
         $yearPrintCountData = null;
 
         // read books for year printCount by title
-        $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->get();
+        $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -133,7 +133,7 @@ class PublisherController extends Controller
         $yearPrintCountData = null;
 
         // read books for year printCount by circulation
-        $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->get();
+        $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
