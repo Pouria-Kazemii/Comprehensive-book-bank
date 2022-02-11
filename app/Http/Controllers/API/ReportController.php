@@ -44,6 +44,7 @@ class ReportController extends Controller
                     ->join('bookir_partner', 'bookir_partnerrule.xroleid', '=', 'bookir_partner.xid')
                     ->select('bookir_partner.xcreatorname as name')
                     ->get();
+                $creators = (array) $creators;
 
                 $data[$dioCode] = array
                 (
