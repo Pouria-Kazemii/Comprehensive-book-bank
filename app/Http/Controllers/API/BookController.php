@@ -124,20 +124,19 @@ class BookController extends Controller
             {
                 foreach ($books as $book)
                 {
-                    $publisherNames = "";
+                    $publishers = null;
 
                     $bookPublishers = DB::table('bi_book_bi_publisher')
                         ->where('bi_book_xid', '=', $book->xid)
                         ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                        ->select('bookir_publisher.xpublishername as name')
+                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                         ->get();
                     if($bookPublishers != null and count($bookPublishers) > 0)
                     {
                         foreach ($bookPublishers as $bookPublisher)
                         {
-                            $publisherNames .= $bookPublisher->name." - ";
+                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
                         }
-                        $publisherNames = rtrim($publisherNames, " - ");
                     }
 
                     //
@@ -145,7 +144,7 @@ class BookController extends Controller
                         [
                             "id" => $book->xid,
                             "name" => $book->xname,
-                            "publisher" => $publisherNames,
+                            "publishers" => $publishers,
                             "language" => $book->xlang,
                             "publishDate" => BookirBook::getShamsiYear($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
