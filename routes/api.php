@@ -37,6 +37,7 @@ Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
 Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
 Route::post('/v1/book/detail', 'API\BookController@detail');
 Route::post('/v1/book/market', 'API\BookController@market');
+Route::post('/v1/book/search/dio', 'API\BookController@searchDio');
 
 Route::post('/v1/creator/find', 'API\CreatorController@find');
 Route::post('/v1/creator/find/subject', 'API\CreatorController@findBySubject');
@@ -59,3 +60,4 @@ Route::post('/v1/publisher/statistic-subject', 'API\PublisherController@statisti
 
 
 Route::post('/v1/report/publisher', 'API\ReportController@publisher');
+Route::post('/v1/report/publisher/dio', 'API\ReportController@publisherDio');

@@ -9,6 +9,7 @@ use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;
+use App\Models\BookirPublisher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -356,6 +357,42 @@ class BookController extends Controller
 
         //
         if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // search dio
+    public function searchDio(Request $request)
+    {
+        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
+        $data = null;
+        $status = 404;
+
+        // read
+        $books = BookirBook::where('xdiocode', 'like', "%$searchWord%")->orderBy('xdiocode', 'asc')->get();
+        if($books != null and count($books) > 0)
+        {
+            foreach ($books as $book)
+            {
+                $data[md5($book->xdiocode)] =
+                    [
+                        "id" => $book->xdiocode,
+                        "value" => $book->xdiocode,
+                    ];
+            }
+
+            $status = 200;
+            $data = array_values($data);
+        }
 
         // response
         return response()->json

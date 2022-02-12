@@ -62,8 +62,90 @@ class ReportController extends Controller
             }
 
             $data = array_values($data);
-            $status = 200;
         }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // publisher dio
+    public function publisherDio(Request $request)
+    {
+        $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
+        $dio = (isset($request["dio"])) ? $request["dio"] : "";
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $dioData = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+        if($dio != "") $books->where("xdiocode", "=", "$dio");
+        if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+        if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+        $books = $books->get(); // get list
+        if($books != null and count($books) > 0)
+        {
+            foreach ($books as $book)
+            {
+                $dioData[md5($book->xdiocode)] = $book->xdiocode;
+            }
+        }
+
+        if($dioData != null and count($dioData) > 0)
+        {
+            foreach ($dioData as $dio)
+            {
+                $books = BookirBook::orderBy('xdiocode', 'asc');
+                $books->whereRaw("xdiocode='$dio' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+                if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+                if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+                $books = $books->get(); // get list
+                if($books != null and count($books) > 0)
+                {
+                    foreach ($books as $book)
+                    {
+                        $dioCode = $book->xdiocode;
+
+                        $data[$dioCode] = array
+                        (
+                            "dio" => $dioCode,
+                            "countTitle" => 1 + ((isset($data[$dioCode])) ? $data[$dioCode]["countTitle"] : 0),
+                            "circulation" => $book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
+                            "price" => (intval($book->xcoverprice) * $book->xcirculation) + ((isset($data[$dioCode])) ? $data[$dioCode]["price"] : 0),
+                        );
+                    }
+
+                    foreach ($data as $key => $item)
+                    {
+                        $price = (int) filter_var($item["price"], FILTER_SANITIZE_NUMBER_INT);
+
+                        $data[$key]["price"] = number_format($price);
+                    }
+
+                    $data = array_values($data);
+                }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
 
         // response
         return response()->json
