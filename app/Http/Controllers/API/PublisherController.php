@@ -94,7 +94,7 @@ class PublisherController extends Controller
     // search
     public function search(Request $request)
     {
-        $searchWord = (isset($request["search-word"])) ? $request["search-word"] : "";
+        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
         $data = null;
         $status = 404;
 
@@ -107,7 +107,7 @@ class PublisherController extends Controller
                 $data[] =
                     [
                         "id" => $publisher->xid,
-                        "name" => $publisher->xpublishername,
+                        "value" => $publisher->xpublishername,
                     ];
             }
 

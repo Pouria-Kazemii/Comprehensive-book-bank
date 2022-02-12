@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Morilog\Jalali\CalendarUtils;
 use Morilog\Jalali\Jalalian;
@@ -17,6 +15,17 @@ class BookirBook extends Model
     static public function getShamsiYear($date)
     {
         $date = CalendarUtils::strftime('Y', strtotime($date));
+
+        return $date;
+    }
+
+    static public function generateMiladiDate($year, $flagEnd = false)
+    {
+        // 1 = end year --- 0 = start year
+        if($flagEnd == 1)
+            $date = (new Jalalian($year, 1, 1, 0, 0, 0))->toCarbon()->year."-12-30";
+        else
+            $date = (new Jalalian($year, 12, 29, 0, 0, 0))->toCarbon()->year."-01-01";
 
         return $date;
     }
