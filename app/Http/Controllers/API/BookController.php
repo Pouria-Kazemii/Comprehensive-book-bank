@@ -151,7 +151,8 @@ class BookController extends Controller
                             "format" => $book->xformat,
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
-                            "price" => $book->xcoverprice
+                            "price" => $book->xcoverprice,
+                            "image" => $book->ximgeurl,
                         ];
                 }
 
