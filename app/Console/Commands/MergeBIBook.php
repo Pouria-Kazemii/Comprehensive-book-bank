@@ -39,6 +39,6 @@ class MergeBIBook extends Command
      */
     public function handle()
     {
-        app()->call('App\Http\Controllers\Api\BookCheckController@check');
+        app()->call('App\Http\Controllers\API\BookCheckController@check');
     }
 }
