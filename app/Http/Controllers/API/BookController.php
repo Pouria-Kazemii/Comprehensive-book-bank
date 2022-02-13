@@ -151,7 +151,7 @@ class BookController extends Controller
                             "format" => $book->xformat,
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
-                            "price" => $book->xcoverprice,
+                            "price" => priceFormat($book->xcoverprice),
                             "image" => $book->ximgeurl,
                         ];
                 }
@@ -194,24 +194,49 @@ class BookController extends Controller
         $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
         if($book != null and $book->xid > 0)
         {
+            $publishersData = null;
+            $subjectsData = null;
+            $creatorsData = null;
+
             $bookPublishers = DB::table('bi_book_bi_publisher')
                 ->where('bi_book_xid', '=', $book->xid)
                 ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                ->select('bookir_publisher.xpublishername as name')
+                ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                 ->get();
+            if($bookPublishers != null and count($bookPublishers) > 0)
+            {
+                foreach ($bookPublishers as $bookPublisher)
+                {
+                    $publishersData[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                }
+            }
 
             $bookSubjects = DB::table('bi_book_bi_subject')
                 ->where('bi_book_xid', '=', $book->xid)
                 ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
-                ->select('bookir_subject.xsubject as title')
-                ->get();
+            ->select('bookir_subject.xid as id', 'bookir_subject.xsubject as title')
+            ->get();
+            if($bookSubjects != null and count($bookSubjects) > 0)
+            {
+                foreach ($bookSubjects as $subject)
+                {
+                    $subjectsData[] = ["id" => $subject->id, "title" => $subject->title];
+                }
+            }
 
             $bookPartnerRules = DB::table('bookir_partnerrule')
                 ->where('xbookid', '=', $book->xid)
                 ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                 ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
-                ->select('bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
+                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
                 ->get();
+            if($bookPartnerRules != null and count($bookPartnerRules) > 0)
+            {
+                foreach ($bookPartnerRules as $partner)
+                {
+                    $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role" => $partner->role];
+                }
+            }
 
             //
             $dataMaster =
@@ -219,9 +244,9 @@ class BookController extends Controller
                     "isbn" => $book->xisbn,
                     "name" => $book->xname,
                     "dioCode" => $book->xdiocode,
-                    "publisher" => $bookPublishers,
-                    "subject" => $bookSubjects,
-                    "creator" => $bookPartnerRules,
+                    "publishers" => $publishersData,
+                    "subjects" => $subjectsData,
+                    "creators" => $creatorsData,
                     "image" => $book->ximgeurl,
                 ];
         }

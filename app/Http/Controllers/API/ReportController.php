@@ -18,30 +18,43 @@ class ReportController extends Controller
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $books = BookirBook::orderBy('xpublishdate', 'desc');
+        $books = BookirBook::orderBy('xdiocode', 'asc');
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-        $books = $books->get(); // get list
+        $books->select("xcirculation", "xlang", "xdiocode");
+        $books->selectRaw("REPLACE(REPLACE(REPLACE(xdiocode, '-', ''), ' ', ''), '.', '') as diocode");
+        $books->groupBy("diocode");
+        $totalRows = count($books->get()); //$books->count(); // get total records count
+        $books = $books->skip($offset)->take($pageRows)->get(); // get list
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
             {
-                $dioCode = $book->xdiocode;
+                $dioCode = str_replace("-", "", str_replace(".", "", str_replace(" ", "", $book->xdiocode)));
                 $translate = $book->xlang == "فارسی" ? 0 : 1;
 
-                $data["$dioCode*$translate"] = array
+                 $bookCirculation = DB::table('bookir_book')->whereRaw("'$dioCode'=REPLACE(REPLACE(REPLACE(xdiocode, '-', ''), ' ', ''), '.', '')")->selectRaw('SUM(xcirculation) as circulation')->first();
+                 $circulation = $bookCirculation != null ? $bookCirculation->circulation : 0;
+
+//                $data["$dioCode*$translate"] = array
+                $data[$book->xdiocode] = array
                 (
                     "translate" => $translate,
-                    "circulation" => $book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
-                    "dio" => $dioCode,
+                    "circulation" => priceFormat($circulation),//$book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
+                    "dio" => $book->xdiocode,
                 );
             }
 
@@ -50,6 +63,7 @@ class ReportController extends Controller
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -57,7 +71,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -118,9 +132,8 @@ class ReportController extends Controller
 
                     foreach ($data as $key => $item)
                     {
-                        $price = (int) filter_var($item["price"], FILTER_SANITIZE_NUMBER_INT);
-
-                        $data[$key]["price"] = number_format($price);
+                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
+                        $data[$key]["price"] = priceFormat($item["price"]);
                     }
 
                     $data = array_values($data);
@@ -151,9 +164,14 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -167,7 +185,8 @@ class ReportController extends Controller
             if($authorship == 1) $books->where("xlang", "=", "فارسی");
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-            $books = $books->get(); // get list
+            $totalRows = $books->count(); // get total records count
+            $books = $books->skip($offset)->take($pageRows)->get(); // get list
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -209,6 +228,7 @@ class ReportController extends Controller
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -216,7 +236,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -228,8 +248,13 @@ class ReportController extends Controller
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -242,7 +267,8 @@ class ReportController extends Controller
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-            $books = $books->get(); // get list
+            $totalRows = $books->count(); // get total records count
+            $books = $books->skip($offset)->take($pageRows)->get(); // get list
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -268,7 +294,7 @@ class ReportController extends Controller
                     {
                         $creators = DB::table('bookir_partnerrule')
                             ->whereRaw($where)
-                            ->join('bookir_partner', 'bookir_partnerrule.xroleid', '=', 'bookir_partner.xid')
+                            ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                             ->groupBy('bookir_partner.xid')
                             ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name')
                             ->get();
@@ -289,21 +315,20 @@ class ReportController extends Controller
                     (
                         "id" => $book->xid,
                         "name" => $book->xname,
-                        "circulation" => $circulation,
+                        "circulation" => priceFormat($circulation),
                         "translate" => $book->xlang == "فارسی" ? 0 : 1,
-                        "price" => $book->xcoverprice,
+                        "price" => priceFormat($book->xcoverprice),
                         "format" => $book->xformat,
                         "creators" => $creatorsData,
                         "image" => $book->ximgeurl,
                     );
                 }
-
-                $data = array_values($data);
             }
         }
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -311,7 +336,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -324,9 +349,14 @@ class ReportController extends Controller
         $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -337,7 +367,8 @@ class ReportController extends Controller
         if($subjectId > 0) $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-        $books = $books->get(); // get list
+        $totalRows = $books->count(); // get total records count
+        $books = $books->skip($offset)->take($pageRows)->get(); // get list
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -362,9 +393,9 @@ class ReportController extends Controller
                     "id" => $book->xid,
                     "name" => $book->xname,
                     "subjects" => $subjectsData,
-                    "circulation" => $book->xcirculation,
+                    "circulation" => priceFormat($book->xcirculation),
                     "year" => BookirBook::getShamsiYear($book->xpublishdate),
-                    "price" => $book->xcoverprice,
+                    "price" => priceFormat($book->xcoverprice),
                     "image" => $book->ximgeurl,
                 );
             }
@@ -372,6 +403,7 @@ class ReportController extends Controller
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -379,7 +411,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -431,6 +463,11 @@ class ReportController extends Controller
                             "countTitle" => 1 + ((isset($data[$subjectId])) ? $data[$subjectId]["countTitle"] : 0),
                             "circulation" => $book->xcirculation + ((isset($data[$subjectId])) ? $data[$subjectId]["circulation"] : 0),
                         );
+                    }
+
+                    foreach ($data as $key => $item)
+                    {
+                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
                     }
 
                     $data = array_values($data);
@@ -503,6 +540,11 @@ class ReportController extends Controller
                         );
                     }
 
+                    foreach ($data as $key => $item)
+                    {
+                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
+                    }
+
                     $data = array_values($data);
                 }
             }
@@ -531,9 +573,14 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -547,7 +594,8 @@ class ReportController extends Controller
             if($authorship == 1) $books->where("xlang", "=", "فارسی");
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-            $books = $books->get(); // get list
+            $totalRows = $books->count(); // get total records count
+            $books = $books->skip($offset)->take($pageRows)->get(); // get list
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -574,9 +622,9 @@ class ReportController extends Controller
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "year" => BookirBook::getShamsiYear($book->xpublishdate),
-                            "price" => $book->xcoverprice,
+                            "price" => priceFormat($book->xcoverprice),
                             "image" => $book->ximgeurl,
-                            "circulation" => $book->xcirculation,
+                            "circulation" => priceFormat($book->xcirculation),
                         ];
                 }
             }
@@ -584,6 +632,7 @@ class ReportController extends Controller
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -591,7 +640,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -604,9 +653,14 @@ class ReportController extends Controller
         $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -617,7 +671,8 @@ class ReportController extends Controller
         if($subjectId > 0) $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-        $books = $books->get(); // get list
+        $totalRows = $books->count(); // get total records count
+        $books = $books->skip($offset)->take($pageRows)->get(); // get list
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -642,9 +697,9 @@ class ReportController extends Controller
                     "id" => $book->xid,
                     "name" => $book->xname,
                     "publishers" => $publishersData,
-                    "circulation" => $book->xcirculation,
+                    "circulation" => priceFormat($book->xcirculation),
                     "year" => BookirBook::getShamsiYear($book->xpublishdate),
-                    "price" => $book->xcoverprice,
+                    "price" => priceFormat($book->xcoverprice),
                     "image" => $book->ximgeurl,
                 );
             }
@@ -652,6 +707,7 @@ class ReportController extends Controller
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -659,7 +715,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -671,8 +727,13 @@ class ReportController extends Controller
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
@@ -689,7 +750,8 @@ class ReportController extends Controller
             $creatorRoles->join('bookir_book', 'bookir_partnerrule.xbookid', '=', 'bookir_book.xid');
             $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid', 'bookir_partnerrule.xbookid');
             $creatorRoles->select('bookir_book.xlang as xlang', 'bookir_book.xcirculation as xcirculation', 'bookir_partnerrule.xbookid as xbookid', 'bookir_partnerrule.xroleid as xroleid', 'bookir_partnerrule.xcreatorid as xcreatorid', 'bookir_partner.xcreatorname as xcreatorname', 'bookir_rules.xrole as xrole');
-            $creatorRoles = $creatorRoles->get(); // get list
+            $totalRows = count($creatorRoles->get()); // get total records count
+            $creatorRoles = $creatorRoles->skip($offset)->take($pageRows)->get(); // get list
             if($creatorRoles != null and count($creatorRoles) > 0)
             {
                 foreach ($creatorRoles as $creatorRole)
@@ -699,16 +761,15 @@ class ReportController extends Controller
                         "creator" => ["id" => $creatorRole->xcreatorid, "name" => $creatorRole->xcreatorname],
                         "role" => $creatorRole->xrole,
                         "translate" => $creatorRole->xlang == "فارسی" ? 0 : 1,
-                        "circulation" => $creatorRole->xcirculation,
+                        "circulation" => priceFormat($creatorRole->xcirculation),
                     );
                 }
-
-                $data = array_values($data);
             }
         }
 
         //
         if($data != null) $status = 200;
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -716,7 +777,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -766,6 +827,11 @@ class ReportController extends Controller
                             "countTitle" => 1 + ((isset($data[$creatorId])) ? $data[$creatorId]["countTitle"] : 0),
                             "circulation" => $book->xcirculation + ((isset($data[$creatorId])) ? $data[$creatorId]["circulation"] : 0),
                         );
+                    }
+
+                    foreach ($data as $key => $item)
+                    {
+                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
                     }
 
                     $data = array_values($data);
