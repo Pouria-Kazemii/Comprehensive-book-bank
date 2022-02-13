@@ -45,6 +45,7 @@ Route::post('/v1/creator/find/publisher', 'API\CreatorController@findByPublisher
 Route::post('/v1/creator/role', 'API\CreatorController@role');
 Route::post('/v1/creator/annual-activity', 'API\CreatorController@annualActivity');
 Route::post('/v1/creator/detail', 'API\CreatorController@detail');
+Route::post('/v1/creator/search', 'API\CreatorController@search');
 
 Route::post('/v1/subject/find', 'API\SubjectController@find');
 Route::post('/v1/subject/search', 'API\SubjectController@search');
@@ -61,8 +62,12 @@ Route::post('/v1/publisher/statistic-subject', 'API\PublisherController@statisti
 
 
 Route::post('/v1/report/publisher', 'API\ReportController@publisher');
-Route::post('/v1/report/publisher/dio', 'API\ReportController@publisherDio');
-Route::post('/v1/report/publisher/book', 'API\ReportController@publisherBook');
-Route::post('/v1/report/publisher/subject', 'API\ReportController@publisherSubject');
-Route::post('/v1/report/publisher/subject/aggregation', 'API\ReportController@publisherSubjectAggregation');
+Route::post('/v1/report/publisher-dio', 'API\ReportController@publisherDio');
+Route::post('/v1/report/publisher-book', 'API\ReportController@publisherBook');
+Route::post('/v1/report/publisher-subject', 'API\ReportController@publisherSubject');
+Route::post('/v1/report/publisher-subject-aggregation', 'API\ReportController@publisherSubjectAggregation');
+Route::post('/v1/report/subject-aggregation', 'API\ReportController@subjectAggregation');
+Route::post('/v1/report/subject', 'API\ReportController@subject');
+Route::post('/v1/report/creator-subject', 'API\ReportController@creatorSubject');
+Route::post('/v1/report/creator-publisher', 'API\ReportController@creatorPublisher');
 Route::post('/v1/report/dio', 'API\ReportController@dio');

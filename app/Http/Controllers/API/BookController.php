@@ -47,7 +47,7 @@ class BookController extends Controller
             }
         }
 
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where);
     }
 
     // find by creator
@@ -76,7 +76,7 @@ class BookController extends Controller
             }
         }
 
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where);
     }
 
     // find by ver
@@ -85,7 +85,7 @@ class BookController extends Controller
         $bookId = $request["bookId"];
         $where = "xid='$bookId' or xparent='$bookId'";
 
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where);
     }
 
     // find by subject
@@ -95,7 +95,7 @@ class BookController extends Controller
 
         $where = $subjectId != "" ? "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')" : "";
 
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where);
     }
 
     // list
@@ -115,7 +115,7 @@ class BookController extends Controller
         {
             // read books
             $books = BookirBook::orderBy('xpublishdate', 'desc');
-            if($defaultWhere) $books->where('xparent', '=', '-1');
+            if($defaultWhere) $books->where('xparent', '=', '-1')->orwhere('xparent', '=', '0');
             if($name != "") $books->where('xname', 'like', "%$name%");
             if($isbn != "") $books->where('xisbn', '=', $isbn);
             if($where != "") $books->whereRaw($where);
@@ -146,7 +146,7 @@ class BookController extends Controller
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "language" => $book->xlang,
-                            "publishDate" => BookirBook::getShamsiYear($book->xpublishdate),
+                            "year" => BookirBook::getShamsiYear($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
                             "format" => $book->xformat,
                             "pageCount" => $book->xpagecount,

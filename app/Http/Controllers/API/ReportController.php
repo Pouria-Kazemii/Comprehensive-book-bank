@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookirBook;
+use App\Models\BookirPartnerrule;
+use App\Models\BookirPublisher;
 use App\Models\BookirSubject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+
 
 
     // publisher
@@ -35,28 +38,11 @@ class ReportController extends Controller
             foreach ($books as $book)
             {
                 $dioCode = $book->xdiocode;
-                $creatorsData = null;
+                $translate = $book->xlang == "فارسی" ? 0 : 1;
 
-                $creators = DB::table('bookir_partnerrule')
-                    ->where('xbookid', '=', $book->xid)->where('xroleid', '=', '1')
-                    ->join('bookir_partner', 'bookir_partnerrule.xroleid', '=', 'bookir_partner.xid')
-                    ->groupBy('bookir_partner.xid')
-                    ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name')
-                    ->get();
-
-                if($creators != null and count($creators) > 0)
-                {
-                    foreach ($creators as $creator)
-                    {
-                        if(!(isset($data[$dioCode]) and $data[$dioCode]["creators"] != null and array_search($creator->name, array_column($data[$dioCode]["creators"], "name"))))
-                            $creatorsData[] = ["id" => $creator->id, "name" => $creator->name];
-                    }
-                }
-
-                $data[$dioCode] = array
+                $data["$dioCode*$translate"] = array
                 (
-                    "creators" => $creatorsData,
-                    "translate" => $book->xlang == "فارسی" ? 0 : 1,
+                    "translate" => $translate,
                     "circulation" => $book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
                     "dio" => $dioCode,
                 );
@@ -211,7 +197,7 @@ class ReportController extends Controller
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "language" => $book->xlang,
-                            "publishDate" => BookirBook::getShamsiYear($book->xpublishdate),
+                            "year" => BookirBook::getShamsiYear($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
                             "format" => $book->xformat,
                             "pageCount" => $book->xpagecount,
@@ -255,7 +241,8 @@ class ReportController extends Controller
         if($publisherId > 0)
         {
             $books = BookirBook::orderBy('xpublishdate', 'desc');
-            $books->whereRaw("xparent='-1' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+//            $books->whereRaw("xparent='-1' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+            $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
             $books = $books->get(); // get list
@@ -401,7 +388,7 @@ class ReportController extends Controller
         );
     }
 
-    // publisher subject شggregation
+    // publisher subject aggregation
     public function publisherSubjectAggregation(Request $request)
     {
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
@@ -451,6 +438,277 @@ class ReportController extends Controller
 
                     $data = array_values($data);
                 }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // subject aggregation
+    public function subjectAggregation(Request $request)
+    {
+        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $translate = (isset($request["translate"])) ? $request["translate"] : 0;
+        $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $publishersData = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        $publishers = BookirPublisher::orderBy('xpublishername', 'asc');
+        $publishers->whereRaw("xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId'))");
+        $publishers = $publishers->get(); // get list
+        if($publishers != null and count($publishers) > 0)
+        {
+            foreach ($publishers as $publisher)
+            {
+                $publishersData[$publisher->xid] = $publisher->xpublishername;
+            }
+        }
+
+        if($publishersData != null and count($publishersData) > 0)
+        {
+            foreach ($publishersData as $publisherId => $publisherName)
+            {
+                $books = BookirBook::orderBy('xdiocode', 'asc');
+                $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+                if($translate == 1) $books->where("xlang", "!=", "فارسی");
+                if($authorship == 1) $books->where("xlang", "=", "فارسی");
+                if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+                if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+                $books = $books->get(); // get list
+                if($books != null and count($books) > 0)
+                {
+                    foreach ($books as $book)
+                    {
+                        $data[$subjectId] = array
+                        (
+                            "publisher" => ["id" => $publisherId, "name" => $publisherName],
+                            "countTitle" => 1 + ((isset($data[$subjectId])) ? $data[$subjectId]["countTitle"] : 0),
+                            "circulation" => $book->xcirculation + ((isset($data[$subjectId])) ? $data[$subjectId]["circulation"] : 0),
+                        );
+                    }
+
+                    $data = array_values($data);
+                }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // subject
+    public function subject(Request $request)
+    {
+        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $translate = (isset($request["translate"])) ? $request["translate"] : 0;
+        $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $dioData = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        if($subjectId > 0)
+        {
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
+            if($translate == 1) $books->where("xlang", "!=", "فارسی");
+            if($authorship == 1) $books->where("xlang", "=", "فارسی");
+            if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+            if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+            $books = $books->get(); // get list
+            if($books != null and count($books) > 0)
+            {
+                foreach ($books as $book)
+                {
+                    $publishers = null;
+
+                    $bookPublishers = DB::table('bi_book_bi_publisher')
+                        ->where('bi_book_xid', '=', $book->xid)
+                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                        ->get();
+                    if($bookPublishers != null and count($bookPublishers) > 0)
+                    {
+                        foreach ($bookPublishers as $bookPublisher)
+                        {
+                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                        }
+                    }
+
+                    //
+                    $data[] =
+                        [
+                            "id" => $book->xid,
+                            "name" => $book->xname,
+                            "publishers" => $publishers,
+                            "year" => BookirBook::getShamsiYear($book->xpublishdate),
+                            "price" => $book->xcoverprice,
+                            "image" => $book->ximgeurl,
+                            "circulation" => $book->xcirculation,
+                        ];
+                }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // creator subject
+    public function creatorSubject(Request $request)
+    {
+        $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
+        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $dioData = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')");
+        if($subjectId > 0) $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
+        if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+        if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+        $books = $books->get(); // get list
+        if($books != null and count($books) > 0)
+        {
+            foreach ($books as $book)
+            {
+                $publishersData = null;
+                $publishers = DB::table('bi_book_bi_publisher')
+                    ->where('bi_book_xid', '=', $book->xid)
+                    ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                    ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as title')
+                    ->get();
+                if($publishers != null and count($publishers) > 0)
+                {
+                    foreach ($publishers as $publisher)
+                    {
+                        $publishersData[] = ["id" => $publisher->id, "title" => $publisher->title];
+                    }
+                }
+
+                //
+                $data[] = array
+                (
+                    "id" => $book->xid,
+                    "name" => $book->xname,
+                    "publishers" => $publishersData,
+                    "circulation" => $book->xcirculation,
+                    "year" => BookirBook::getShamsiYear($book->xpublishdate),
+                    "price" => $book->xcoverprice,
+                    "image" => $book->ximgeurl,
+                );
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    // creator publisher
+    public function creatorPublisher(Request $request)
+    {
+        $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        if($publisherId > 0)
+        {
+            $creatorRoles = BookirPartnerrule::orderBy('xbookid', 'asc');
+            $creatorRoles->whereRaw("xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+            if($yearStart != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate >= '$yearStart')");
+            if($yearEnd != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate <= '$yearEnd')");
+
+            $creatorRoles->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid');
+            $creatorRoles->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid');
+            $creatorRoles->join('bookir_book', 'bookir_partnerrule.xbookid', '=', 'bookir_book.xid');
+
+            $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid', 'bookir_partnerrule.xbookid');
+            $creatorRoles->select('bookir_book.xlang as xlang', 'bookir_book.xcirculation as xcirculation', 'bookir_partnerrule.xbookid as xbookid', 'bookir_partnerrule.xroleid as xroleid', 'bookir_partnerrule.xcreatorid as xcreatorid', 'bookir_partner.xcreatorname as xcreatorname', 'bookir_rules.xrole as xrole');
+            $creatorRoles = $creatorRoles->get(); // get list
+            if($creatorRoles != null and count($creatorRoles) > 0)
+            {
+                foreach ($creatorRoles as $creatorRole)
+                {
+                    $data[] = array
+                    (
+                        "creator" => ["id" => $creatorRole->xcreatorid, "name" => $creatorRole->xcreatorname],
+                        "role" => $creatorRole->xrole,
+                        "translate" => $creatorRole->xlang == "فارسی" ? 0 : 1,
+                        "circulation" => $creatorRole->xcirculation,
+                    );
+                }
+
+                $data = array_values($data);
             }
         }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
 use App\Models\BookirRules;
+use App\Models\BookirSubject;
 use Illuminate\Http\Request;
 
 class CreatorController extends Controller
@@ -94,6 +95,41 @@ class CreatorController extends Controller
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
                 "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+            ],
+            $status
+        );
+    }
+
+    // search
+    public function search(Request $request)
+    {
+        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
+        $data = null;
+        $status = 404;
+
+        // read
+        $creators = BookirPartner::where('xcreatorname', '!=', '')->where('xcreatorname', 'like', "%$searchWord%")->orderBy('xcreatorname', 'asc')->get();
+        if($creators != null and count($creators) > 0)
+        {
+            foreach ($creators as $creator)
+            {
+                $data[] =
+                    [
+                        "id" => $creator->xid,
+                        "value" => $creator->xcreatorname,
+                    ];
+            }
+
+            $status = 200;
+        }
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
             ],
             $status
         );
