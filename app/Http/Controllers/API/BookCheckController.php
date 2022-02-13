@@ -51,6 +51,48 @@ class BookCheckController extends Controller
         }
     }
 
+    public function checkReverse()
+    {
+        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate')->take(100)->get();
+        if($books != null)
+        {
+            foreach ($books as $book)
+            {
+                $id = $book->xid;
+                $isbn = $book->xisbn;
+                $isbn2 = $book->xisbn2;
+                $name = $book->xname;
+                $publisherIds = null;
+                $where = "";
+
+                $bookBiPublishers = BiBookBiPublisher::where('bi_book_xid', '=', $id)->get();
+                if($bookBiPublishers != null)
+                {
+                    foreach ($bookBiPublishers as $bookBiPublisher)
+                    {
+                        $publisherId = $bookBiPublisher->bi_publisher_xid;
+
+                        $where .= "(xname='$name' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')) or ";
+                    }
+                }
+                $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
+
+                //
+                $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
+                if($similarBooks != null)
+                {
+                    foreach ($similarBooks as $similarBook)
+                    {
+                        BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
+                    }
+                }
+
+                //
+                BookirBook::where('xid', $id)->update(['xparent' => -1]);
+            }
+        }
+    }
+
     // read & check ---> bookk24
     /*
     public function checkBookK24()
