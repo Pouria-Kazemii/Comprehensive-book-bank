@@ -11,7 +11,7 @@ class BookCheckController extends Controller
 {
     public function check()
     {
-        $books = BookirBook::where('xparent', '=', '0')->take(50)->get();
+        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate', 'DESC')->take(50)->get();
         if($books != null)
         {
             foreach ($books as $book)
