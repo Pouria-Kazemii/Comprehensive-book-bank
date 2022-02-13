@@ -70,4 +70,5 @@ Route::post('/v1/report/subject-aggregation', 'API\ReportController@subjectAggre
 Route::post('/v1/report/subject', 'API\ReportController@subject');
 Route::post('/v1/report/creator-subject', 'API\ReportController@creatorSubject');
 Route::post('/v1/report/creator-publisher', 'API\ReportController@creatorPublisher');
+Route::post('/v1/report/creator-aggregation', 'API\ReportController@creatorAggregation');
 Route::post('/v1/report/dio', 'API\ReportController@dio');

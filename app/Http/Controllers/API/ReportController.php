@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-
-
-
     // publisher
     public function publisher(Request $request)
     {
@@ -687,11 +684,9 @@ class ReportController extends Controller
             $creatorRoles->whereRaw("xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             if($yearStart != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate >= '$yearStart')");
             if($yearEnd != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate <= '$yearEnd')");
-
             $creatorRoles->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid');
             $creatorRoles->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid');
             $creatorRoles->join('bookir_book', 'bookir_partnerrule.xbookid', '=', 'bookir_book.xid');
-
             $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid', 'bookir_partnerrule.xbookid');
             $creatorRoles->select('bookir_book.xlang as xlang', 'bookir_book.xcirculation as xcirculation', 'bookir_partnerrule.xbookid as xbookid', 'bookir_partnerrule.xroleid as xroleid', 'bookir_partnerrule.xcreatorid as xcreatorid', 'bookir_partner.xcreatorname as xcreatorname', 'bookir_rules.xrole as xrole');
             $creatorRoles = $creatorRoles->get(); // get list
@@ -727,4 +722,69 @@ class ReportController extends Controller
         );
     }
 
+    // creator aggregation
+    public function creatorAggregation(Request $request)
+    {
+        $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $data = null;
+        $publishersData = null;
+        $status = 404;
+
+        $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
+        $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
+
+        // read
+        $publishers = BookirPublisher::orderBy('xpublishername', 'asc');
+        $publishers->whereRaw("xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))");
+        $publishers = $publishers->get(); // get list
+        if($publishers != null and count($publishers) > 0)
+        {
+            foreach ($publishers as $publisher)
+            {
+                $publishersData[$publisher->xid] = $publisher->xpublishername;
+            }
+        }
+
+        if($publishersData != null and count($publishersData) > 0)
+        {
+            foreach ($publishersData as $publisherId => $publisherName)
+            {
+                $books = BookirBook::orderBy('xpublishdate', 'asc');
+                $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
+                if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
+                if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
+                $books = $books->get(); // get list
+                if($books != null and count($books) > 0)
+                {
+                    foreach ($books as $book)
+                    {
+                        $data[$creatorId] = array
+                        (
+                            "publisher" => ["id" => $publisherId, "name" => $publisherName],
+                            "countTitle" => 1 + ((isset($data[$creatorId])) ? $data[$creatorId]["countTitle"] : 0),
+                            "circulation" => $book->xcirculation + ((isset($data[$creatorId])) ? $data[$creatorId]["circulation"] : 0),
+                        );
+                    }
+
+                    $data = array_values($data);
+                }
+            }
+        }
+
+        //
+        if($data != null) $status = 200;
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
 }
