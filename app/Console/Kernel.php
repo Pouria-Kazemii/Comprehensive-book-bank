@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // read --> bookk24
-        $schedule->call('App\Http\Controllers\API\BookCheckController@check')->everyMinute();
+//        $schedule->call('App\Http\Controllers\API\BookCheckController@check')->everyMinute();
 //        $schedule->call('App\Http\Controllers\API\BookController@checkBookK24')->everyMinute();
 //        $schedule->call('App\Http\Controllers\API\BookController@checkBookDigi')->everyMinute();
     }
