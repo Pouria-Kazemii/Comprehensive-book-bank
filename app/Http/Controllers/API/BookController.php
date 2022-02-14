@@ -148,7 +148,7 @@ class BookController extends Controller
                             "language" => $book->xlang,
                             "year" => BookirBook::getShamsiYear($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
-                            "circulation" => $book->xcirculation,
+                            "circulation" => priceFormat($book->xcirculation),
                             "format" => $book->xformat,
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
