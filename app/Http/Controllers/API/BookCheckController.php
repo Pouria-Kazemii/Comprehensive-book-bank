@@ -6,6 +6,7 @@ use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BookirBook;
+use App\Models\BookirPartnerrule;
 
 class BookCheckController extends Controller
 {
