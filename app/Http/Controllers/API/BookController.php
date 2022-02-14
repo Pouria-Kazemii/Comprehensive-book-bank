@@ -259,7 +259,7 @@ class BookController extends Controller
             foreach ($books as $book)
             {
                 $year = BookirBook::getShamsiYear($book->xpublishdate);
-                $printCount = $book->xpagecount;
+                $printCount = $book->xcirculation;
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
             }
