@@ -12,7 +12,7 @@ class BookCheckController extends Controller
 {
     public function check()
     {
-        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate', 'DESC')->take(50)->get();
+        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate', 'DESC')->take(1)->get();
         if($books != null)
         {
             foreach ($books as $book)
@@ -78,13 +78,16 @@ class BookCheckController extends Controller
                 BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
             }
         }
-
-        $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and $whereCreator")->get();
-        if($similarBooks != null)
+echo "--> $whereCreator";
+        if($whereCreator != "")
         {
-            foreach ($similarBooks as $similarBook)
+            $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' $whereCreator")->get();
+            if($similarBooks != null)
             {
-                BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
+                foreach ($similarBooks as $similarBook)
+                {
+                    BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
+                }
             }
         }
 
