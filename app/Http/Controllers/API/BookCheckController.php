@@ -78,7 +78,7 @@ class BookCheckController extends Controller
                 BookirBook::where('xid', $similarBook->xid)->update(['xparent' => $id]);
             }
         }
-echo "--> $whereCreator";
+
         if($whereCreator != "")
         {
             $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' $whereCreator")->get();
