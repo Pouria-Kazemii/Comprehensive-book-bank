@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AlterBookForeingKey extends Migration
+class CreateAuthorBook30book extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,11 @@ class AlterBookForeingKey extends Migration
      */
     public function up()
     {
-        //
-        Schema::table('books', function($table) {
-            $table->foreign("author_id")->references('id')->on('author');
+        Schema::create('author_book30book', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('author_id');
+            $table->unsignedInteger('book30book_id');
+            $table->timestamps();
         });
     }
 
@@ -26,6 +28,6 @@ class AlterBookForeingKey extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('author_book30book');
     }
 }
