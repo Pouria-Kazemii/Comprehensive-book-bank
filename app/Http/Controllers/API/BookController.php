@@ -10,6 +10,7 @@ use App\Models\BookGisoom;
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;
 use App\Models\BookirPublisher;
+use App\Models\BookirSubject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -92,17 +93,24 @@ class BookController extends Controller
     public function findBySubject(Request $request)
     {
         $subjectId = $request["subjectId"];
+        $subjectTitle = "";
+
+        $subject = BookirSubject::where('xid', '=', $subjectId)->first();
+        if($subject != null and $subject->xid > 0)
+        {
+            $subjectTitle = $subject->xsubject;
+        }
 
         $where = $subjectId != "" ? "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')" : "";
 
-        return $this->lists($request, true, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where, $subjectTitle);
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
-        $isbn = (isset($request["isbn"])) ? $request["isbn"] : "";
+        $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
@@ -117,7 +125,7 @@ class BookController extends Controller
             $books = BookirBook::orderBy('xpublishdate', 'desc');
             if($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')");//$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if($name != "") $books->where('xname', 'like', "%$name%");
-            if($isbn != "") $books->where('xisbn', '=', $isbn);
+            if($isbn != "") $books->where('xisbn2', '=', $isbn);
             if($where != "") $books->whereRaw($where);
             $books = $books->skip($offset)->take($pageRows)->get();
             if($books != null and count($books) > 0)
@@ -146,18 +154,17 @@ class BookController extends Controller
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "language" => $book->xlang,
-                            "year" => BookirBook::getShamsiYear($book->xpublishdate),
+                            "year" => BookirBook::getShamsiYearMonth($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
                             "circulation" => priceFormat($book->xcirculation),
                             "format" => $book->xformat,
+                            "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
                             "image" => $book->ximgeurl,
                         ];
                 }
-
-                $status = 200;
             }
 
             //
@@ -170,13 +177,15 @@ class BookController extends Controller
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
 
+        if($data != null or $subjectTitle != "") $status = 200;
+
         // response
         return response()->json
         (
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle]
             ],
             $status
         );
@@ -249,6 +258,14 @@ class BookController extends Controller
                     "subjects" => $subjectsData,
                     "creators" => $creatorsData,
                     "image" => $book->ximgeurl,
+                    "publishPlace" => $book->xpublishplace,
+                    "format" => $book->xformat,
+                    "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
+                    "printNumber" => $book->xprintnumber,
+                    "circulation" => $book->circulation,
+                    "price" => priceFormat($book->xcoverprice),
+                    "des" => $book->xdescription,
                 ];
         }
 

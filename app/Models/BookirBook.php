@@ -19,6 +19,13 @@ class BookirBook extends Model
         return $date;
     }
 
+    static public function getShamsiYearMonth($date)
+    {
+        $date = CalendarUtils::strftime('Y-m', strtotime($date));
+
+        return $date;
+    }
+
     static public function generateMiladiDate($year, $flagEnd = false)
     {
         // 1 = end year --- 0 = start year
@@ -28,5 +35,10 @@ class BookirBook extends Model
             $date = (new Jalalian($year, 12, 29, 0, 0, 0))->toCarbon()->year."-01-01";
 
         return $date;
+    }
+
+    static public function convertMiladi2Shamsi($date)
+    {
+        return CalendarUtils::strftime('Y-m-d', strtotime($date));
     }
 }
