@@ -10,6 +10,7 @@ class BookirBook extends Model
 {
     protected $fillable = ['xid', 'xdocid', 'xsiteid', 'xpageurl', 'xname', 'xdoctype', 'xpagecount', 'xformat', 'xcover', 'xprintnumber', 'xcirculation', 'xcovernumber', 'xcovercount', 'xapearance', 'xisbn', 'xisbn2', 'xpublishdate', 'xcoverprice', 'xminprice', 'xcongresscode', 'xdiocode', 'xlang', 'xpublishplace', 'xdescription', 'xweight', 'ximgeurl', 'xpdfurl', 'xregdate', 'xissubject', 'xiscreator', 'xispublisher', 'xislibrary', 'xistag', 'xisseller', 'xname2', 'xisname', 'xisdoc', 'xisdoc2', 'xiswater', 'xwhite', 'xblack', 'xparent'];
     protected $table = 'bookir_book';
+    protected $primaryKey = 'xid';
     public $timestamps = false;
 
     static public function getShamsiYear($date)
