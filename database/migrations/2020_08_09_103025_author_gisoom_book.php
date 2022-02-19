@@ -28,6 +28,7 @@ class AuthorGisoomBook extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('author_book_gisoom');
+
     }
 }

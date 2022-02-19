@@ -43,6 +43,6 @@ class CreateGisoomBook extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('gisoom_book');
+        Schema::dropIfExists('bookgisoom');
     }
 }
