@@ -181,8 +181,10 @@ class ReportController extends Controller
         {
             $books = BookirBook::orderBy('xpublishdate', 'desc');
             $books->where("xdiocode", "=", "$dio");
-            if($translate == 1) $books->where("xlang", "!=", "فارسی");
-            if($authorship == 1) $books->where("xlang", "=", "فارسی");
+            // if($translate == 1) $books->where("xlang", "!=", "فارسی");
+            if($translate == 1) $books->where("is_translate", 2);
+            // if($authorship == 1) $books->where("xlang", "=", "فارسی");
+            if($authorship == 1) $books->where("is_translate", 1);
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
             $totalRows = $books->count(); // get total records count

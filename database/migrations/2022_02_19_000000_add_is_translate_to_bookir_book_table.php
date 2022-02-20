@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AuthorGisoomBook extends Migration
+class AddIsTranslateToBookirBookTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,8 @@ class AuthorGisoomBook extends Migration
      */
     public function up()
     {
-        Schema::create('author_book_gisoom', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('author_id');
-            $table->unsignedInteger('book_gisoom_id');
-            $table->timestamps();
+        Schema::table('bookir_book', function (Blueprint $table) {
+            $table->tinyInteger('is_translate')->default(0); //1 : Authorship 2:translate
         });
     }
 
@@ -28,7 +25,8 @@ class AuthorGisoomBook extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('author_book_gisoom');
-
+        Schema::table('bookir_book', function (Blueprint $table) {
+            $table->dropColumn('is_translate');
+        });
     }
 }
