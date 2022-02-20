@@ -121,16 +121,3 @@ if (!function_exists('faAlphabetKeep')) {
         return trim($faStr);
     }
 }
-if (!function_exists('enNumberKeepOnly')) {
-
-    /**
-     * Keep fa alphabet only
-     *
-     * @param string $numallStr
-     * @return string $cleanedStr
-     */
-    function enNumberKeepOnly($numallStr)
-    {
-        return trim(preg_replace("/[^0-9]/", "",$numallStr));
-    }
-}
