@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Book extends Model
 {
-    protected $fillable = ['all','recordNumber','Creator','barcode', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak', 'Nasher', 'matName', 'langName', 'RadeAsliD', 'RadeFareiD','ShomareKaterD','PishRade','Image_Address', 'saveBook'];
+    protected $fillable = ['all','recordNumber','Creator','barcode', 'MahalNashr', 'Title', 'mozoe', 'Yaddasht', 'TedadSafhe', 'saleNashr', 'EjazeReserv', 'EjazeAmanat', 'shabak', 'Nasher', 'matName', 'langName', 'RadeAsliD', 'RadeFareiD','ShomareKaterD','PishRade','Image_Address'];
     static protected $shabakSeparator = array(",", " ");
 
     public function authors() {
@@ -24,7 +24,7 @@ class Book extends Model
 
     static public function getLastBookRecordNumber()
     {
-        $lastBook = Book::where('recordNumber', '<', 1000000)->orderBy('recordNumber', 'desc')->first();
+        $lastBook = Book::orderBy('id', 'desc')->first();
         return (is_null($lastBook))?0:$lastBook->recordNumber;
     }
     static public function getShabakArray($shabakStr){
