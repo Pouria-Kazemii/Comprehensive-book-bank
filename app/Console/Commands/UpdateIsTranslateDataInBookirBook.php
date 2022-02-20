@@ -15,7 +15,7 @@ class UpdateIsTranslateDataInBookirBook extends Command
      *
      * @var string
      */
-    protected $signature = 'is_translate:update';
+    protected $signature = 'is_translate:update {limit}';
 
     /**
      * The console command description.
@@ -41,7 +41,8 @@ class UpdateIsTranslateDataInBookirBook extends Command
      */
     public function handle()
     {
-        $books = BookirBook::where('is_translate',0)->get();
+        $limit = $this->argument('limit');
+        $books = BookirBook::where('is_translate',0)->skip(0)->take($limit)->get();
         if($books->count() != 0){
             foreach($books as $book){
                 $result = BookirPartnerrule::where('xbookid',$book->xid)->where('xroleid',BookirRules::where('xrole','مترجم')->first()->xid)->get();
