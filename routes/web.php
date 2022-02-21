@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ChangeDataController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 //Route::get('book', 'bookController@index');
+// add by kiani
+Route::get('/v1/book/check_is_translate/{from}/{limit}', [ChangeDataController::class, 'check_is_translate']);
