@@ -21,9 +21,9 @@ class ChangeDataController extends Controller
                 }
                 $book->update();
             }
-        $this->info("successfully update is_translate info");
+            echo "successfully update is_translate info";
         } else {
-            $this->info("nothing for update");
+           echo "nothing for update";
         }
     }
 }
