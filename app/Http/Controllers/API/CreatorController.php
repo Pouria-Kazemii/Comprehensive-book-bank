@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
+use App\Models\BookirPartnerrule;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use Illuminate\Http\Request;
@@ -63,9 +64,11 @@ class CreatorController extends Controller
                 foreach ($creators as $creator)
                 {
                     $creatorId = $creator->xid;
+
                     if($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
                     else if($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
-                    else $bookCount = 0;
+                    elseif($subjectId == 0 AND $publisherId ==0 ) $bookCount = BookirPartnerrule::where('xcreatorid',$creatorId)->count(); // add by kiani
+                    else  $bookCount = 0;
 
                     //
                     $data[] =
