@@ -45,7 +45,7 @@ class UpdateIsTranslateDataInBookirBook extends Command
         $books = BookirBook::where('is_translate',0)->skip(0)->take($limit)->get();
         if($books->count() != 0){
             foreach($books as $book){
-                $result = BookirPartnerrule::where('xbookid',$book->xid)->where('xroleid',BookirRules::where('xrole','مترجم')->first()->xid)->get();
+                $result = BookirPartnerrule::where('xbookid',$book->xid)->where('xroleid',2)->get();
                 if( $result->count() > 0){
                     $book->is_translate = 2;
                 }else{

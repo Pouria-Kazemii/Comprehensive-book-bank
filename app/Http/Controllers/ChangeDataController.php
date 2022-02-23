@@ -6,24 +6,21 @@ use Illuminate\Http\Request;
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;
 use App\Models\BookirRules;
+use Illuminate\Support\Facades\DB;
 
 class ChangeDataController extends Controller
 {
-    public function check_is_translate($from,$limit){
-        $books = BookirBook::where('is_translate',0)->skip($from)->take($limit)->get();
-        if($books->count() != 0){
-            foreach($books as $book){
-                $result = BookirPartnerrule::where('xbookid',$book->xid)->where('xroleid',BookirRules::where('xrole','مترجم')->first()->xid)->get();
-                if( $result->count() > 0){
-                    $book->is_translate = 2;
-                }else{
-                    $book->is_translate = 1;
-                }
-                $book->update();
-            }
+    public function check_is_translate($roleid,$from, $limit,$order)
+    {
+
+        $motarjemBooks = BookirPartnerrule::select('xbookid')->where('xroleid', $roleid)->skip($from)->take($limit)->orderBy('xid',$order)->get();
+
+        if ($motarjemBooks->count() > 0) {
+            $books = $motarjemBooks->pluck('xbookid');
+            BookirBook::whereIn('xid', $books)->update(['is_translate' => $roleid]);
             echo "successfully update is_translate info";
         } else {
-           echo "nothing for update";
+            echo "nothing for update";
         }
     }
 }
