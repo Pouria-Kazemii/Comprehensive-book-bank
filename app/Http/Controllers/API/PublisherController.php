@@ -255,7 +255,8 @@ class PublisherController extends Controller
 
             foreach ($books as $book)
             {
-                $type = $book->xlang == "فارسی" ? "authorship" : "translate";
+                // $type = $book->xlang == "فارسی" ? "authorship" : "translate";
+                $type = $book->is_translate == "1" ? "authorship" : "translate";
                 $data[$type] += 1;
             }
 

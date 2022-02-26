@@ -44,7 +44,8 @@ class ReportController extends Controller
             foreach ($books as $book)
             {
                 $dioCode = str_replace("-", "", str_replace(".", "", str_replace(" ", "", $book->xdiocode)));
-                $translate = $book->xlang == "فارسی" ? 0 : 1;
+                // $translate = $book->xlang == "فارسی" ? 0 : 1;
+                $translate = $book->is_translate == 2 ? 1 : 0; // if translate return 1
 
                  $bookCirculation = DB::table('bookir_book')->whereRaw("'$dioCode'=REPLACE(REPLACE(REPLACE(xdiocode, '-', ''), ' ', ''), '.', '')")->selectRaw('SUM(xcirculation) as circulation')->first();
                  $circulation = $bookCirculation != null ? $bookCirculation->circulation : 0;
@@ -318,7 +319,8 @@ class ReportController extends Controller
                         "id" => $book->xid,
                         "name" => $book->xname,
                         "circulation" => priceFormat($circulation),
-                        "translate" => $book->xlang == "فارسی" ? 0 : 1,
+                        // "translate" => $book->xlang == "فارسی" ? 0 : 1,
+                        "translate" =>$book->is_translate == 2 ? 1 : 0, // if translate return 1
                         "price" => priceFormat($book->xcoverprice),
                         "format" => $book->xformat,
                         "creators" => $creatorsData,
@@ -525,8 +527,10 @@ class ReportController extends Controller
             {
                 $books = BookirBook::orderBy('xdiocode', 'asc');
                 $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
-                if($translate == 1) $books->where("xlang", "!=", "فارسی");
-                if($authorship == 1) $books->where("xlang", "=", "فارسی");
+                // if($translate == 1) $books->where("xlang", "!=", "فارسی");
+                if($translate == 1) $books->where("is_translate", 2);
+                // if($authorship == 1) $books->where("xlang", "=", "فارسی");
+                if($authorship == 1) $books->where("is_translate", 1);
                 if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
                 if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
                 $books = $books->get(); // get list
@@ -592,8 +596,10 @@ class ReportController extends Controller
         {
             $books = BookirBook::orderBy('xpublishdate', 'desc');
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
-            if($translate == 1) $books->where("xlang", "!=", "فارسی");
-            if($authorship == 1) $books->where("xlang", "=", "فارسی");
+            // if($translate == 1) $books->where("xlang", "!=", "فارسی");
+            if($translate == 1) $books->where("is_translate", 2);
+            // if($authorship == 1) $books->where("xlang", "=", "فارسی");
+            if($authorship == 1) $books->where("is_translate", 1);
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
             if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
             $totalRows = $books->count(); // get total records count
@@ -762,7 +768,8 @@ class ReportController extends Controller
                     (
                         "creator" => ["id" => $creatorRole->xcreatorid, "name" => $creatorRole->xcreatorname],
                         "role" => $creatorRole->xrole,
-                        "translate" => $creatorRole->xlang == "فارسی" ? 0 : 1,
+                        // "translate" => $creatorRole->xlang == "فارسی" ? 0 : 1,
+                        "translate" => $creatorRole->is_translate == 2 ? 1 : 0, // if translate return 1
                         "circulation" => priceFormat($creatorRole->xcirculation),
                     );
                 }
