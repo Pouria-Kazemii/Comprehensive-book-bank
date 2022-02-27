@@ -424,9 +424,9 @@ class BookController extends Controller
 
             if ($publish_places != null and count($publish_places) > 0) {
                 foreach ($publish_places as $publish_place) {
-                    $publishPlaceData .= $publish_place->xpublishplace . ',';
+                    $publishPlaceData .= $publish_place->xpublishplace . ' , ';
                 }
-                $publishPlaceData = rtrim($publishPlaceData, ',');
+                $publishPlaceData = rtrim($publishPlaceData, ' , ');
             }
 
             $dataMaster =
