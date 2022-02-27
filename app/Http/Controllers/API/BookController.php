@@ -190,6 +190,127 @@ class BookController extends Controller
             $subjectsData = null;
             $creatorsData = null;
 
+            $bookPublishers = DB::table('bi_book_bi_publisher')
+                ->where('bi_book_xid', '=', $book->xid)
+                ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                ->get();
+            if ($bookPublishers != null and count($bookPublishers) > 0) {
+                foreach ($bookPublishers as $bookPublisher) {
+                    $publishersData[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                }
+            }
+
+            $bookSubjects = DB::table('bi_book_bi_subject')
+                ->where('bi_book_xid', '=', $book->xid)
+                ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
+                ->select('bookir_subject.xid as id', 'bookir_subject.xsubject as title')
+                ->get();
+            if ($bookSubjects != null and count($bookSubjects) > 0) {
+                foreach ($bookSubjects as $subject) {
+                    $subjectsData[] = ["id" => $subject->id, "title" => $subject->title];
+                }
+            }
+
+            $bookPartnerRules = DB::table('bookir_partnerrule')
+                ->where('xbookid', '=', $book->xid)
+                ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
+                ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
+                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
+                ->get();
+            if ($bookPartnerRules != null and count($bookPartnerRules) > 0) {
+                foreach ($bookPartnerRules as $partner) {
+                    $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role" => $partner->role];
+                }
+            }
+
+            //
+            $dataMaster =
+                [
+                    "isbn" => $book->xisbn,
+                    "name" => $book->xname,
+                    "dioCode" => $book->xdiocode,
+                    "publishers" => $publishersData,
+                    "subjects" => $subjectsData,
+                    "creators" => $creatorsData,
+                    "image" => $book->ximgeurl,
+                    "publishPlace" => $book->xpublishplace,
+                    "format" => $book->xformat,
+                    "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
+                    "printNumber" => $book->xprintnumber,
+                    "circulation" => $book->circulation,
+                    "price" => priceFormat($book->xcoverprice),
+                    "des" => $book->xdescription,
+                ];
+        }
+
+        // read books for year printCount
+        $books = BookirBook::where('xid', '=', $bookId)->orwhere('xparent', '=', $bookId)->get();
+        if ($books != null and count($books) > 0) {
+            foreach ($books as $book) {
+                $year = BookirBook::getShamsiYear($book->xpublishdate);
+                $printCount = $book->xcirculation;
+
+                $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
+            }
+
+            $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
+        }
+
+        // read books for publisher PrintCount
+        $books = DB::table('bookir_book')
+            ->where('bookir_book.xid', '=', $bookId)->orwhere('bookir_book.xparent', '=', $bookId)
+            ->join('bi_book_bi_publisher', 'bi_book_bi_publisher.bi_book_xid', '=', 'bookir_book.xid')
+            ->join('bookir_publisher', 'bookir_publisher.xid', '=', 'bi_book_bi_publisher.bi_publisher_xid')
+            ->select('bookir_publisher.xpublishername as name', DB::raw('SUM(bookir_book.xpagecount) as printCount'))
+            ->groupBy('bookir_publisher.xid')
+            ->get();
+        if ($books != null and count($books) > 0) {
+            $totalPrintCount = 0;
+            foreach ($books as $book) {
+                $totalPrintCount += $book->printCount;
+            }
+
+            foreach ($books as $book) {
+                $publisherName = $book->name;
+                $percentPrintCount = ($book->printCount > 0 and $totalPrintCount > 0) ? round(($book->printCount / $totalPrintCount) * 100, 2) : 0;
+
+                $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
+            }
+
+            $publisherPrintCountData = ["label" => array_column($publisherPrintCountData, 'name'), "value" => array_column($publisherPrintCountData, 'percentPrintCount')];
+        }
+
+        //
+        if ($dataMaster != null) $status = 200;
+
+        // response
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
+                ],
+                $status
+            );
+    }
+    // detail book
+    public function dossier(Request $request)
+    {
+        $bookId = $request["bookId"];
+        $dataMaster = null;
+        $yearPrintCountData = null;
+        $publisherPrintCountData = null;
+        $status = 404;
+
+        // read books
+        $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
+        if ($book != null and $book->xid > 0) {
+            $publishersData = null;
+            $subjectsData = null;
+            $creatorsData = null;
+
             // DB::enableQueryLog();
             $bookPublishers = DB::table('bi_book_bi_publisher')
                 ->where('bi_book_xid', '=', $book->xid)
@@ -323,7 +444,7 @@ class BookController extends Controller
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
-                    "price" => 'از ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
+                    "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
                     "des" => $book_description->xdescription,
                 ];
         }
@@ -370,14 +491,15 @@ class BookController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
+            ],
+            $status
+        );
     }
+
 
     // market
     public function market(Request $request)
