@@ -403,6 +403,14 @@ class BookController extends Controller
                 }
                 $formatsData = rtrim($formatsData, '-');
             }
+
+            //publish date
+            $publish_date = BookirBook::where('xpublishdate', '!=', '')->where('xpublishdate', '!=', 'null');
+            $publish_date = $publish_date->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $publish_date = $publish_date->min('xpublishdate');
+
             $dataMaster =
                 [
                     "isbn" => $book->xisbn,
@@ -417,7 +425,7 @@ class BookController extends Controller
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
-                    "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
+                    "publishDate" => BookirBook::convertMiladi2Shamsi($publish_date->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
