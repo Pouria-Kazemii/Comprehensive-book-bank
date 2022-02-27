@@ -319,14 +319,13 @@ class BookController extends Controller
             $subjectsData = null;
             $creatorsData = null;
 
-            // DB::enableQueryLog();
             $bookPublishers = DB::table('bi_book_bi_publisher')
-                ->where('bi_book_xid', '=', $book->xid)
+                ->whereIn('bi_book_xid', $dossier_book_id)
                 ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
                 ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                ->groupBy('id')
                 ->get();
-            // $query = DB::getQueryLog();
-            // dd($query);
+
             if ($bookPublishers != null and count($bookPublishers) > 0) {
                 foreach ($bookPublishers as $bookPublisher) {
                     $publishersData[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
