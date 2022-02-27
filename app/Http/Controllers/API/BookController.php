@@ -175,7 +175,8 @@ class BookController extends Controller
     }
 
     // detail book
-    public function detail(Request $request)
+    // public function detail(Request $request)
+    public function main_detail(Request $request)
     {
         $bookId = $request["bookId"];
         $dataMaster = null;
@@ -296,7 +297,8 @@ class BookController extends Controller
             );
     }
     // detail book
-    public function dossier(Request $request)
+    // public function dossier(Request $request)
+    public function detail(Request $request)
     {
         $bookId = $request["bookId"];
         $dataMaster = null;
