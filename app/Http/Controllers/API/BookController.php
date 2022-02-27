@@ -310,6 +310,7 @@ class BookController extends Controller
         $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
         if ($book->xparent != -1) { // found leader
             $book = BookirBook::where('xid', '=', $$book->xparent)->first();
+            $bookId = $book->xid;
         }
         //SELECT clidren id 
         $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
@@ -411,8 +412,23 @@ class BookController extends Controller
             $publish_date = $publish_date->where(function ($query) use ($book) {
                 $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
             });
-            
             $publish_date = $publish_date->min('xpublishdate');
+
+            //publish place 
+            $publishPlaceData = '';
+            $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
+            $publish_place = $publish_place->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $publish_places = $publish_place->groupBy('xpublishplace')->get();
+
+            if ($publish_places != null and count($publish_places) > 0) {
+                foreach ($publish_places as $publish_place) {
+                    $publishPlaceData .= $publish_place->xpublishplace . ',';
+                }
+                $publishPlaceData = rtrim($publishPlaceData, ',');
+            }
+
             $dataMaster =
                 [
                     "isbn" => $book->xisbn,
@@ -422,7 +438,7 @@ class BookController extends Controller
                     "subjects" => $subjectsData,
                     "creators" => $creatorsData,
                     "image" => $book->ximgeurl,
-                    "publishPlace" => $book->xpublishplace,
+                    "publishPlace" => $publishPlaceData,
                     // "format" => $book->xformat,
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
