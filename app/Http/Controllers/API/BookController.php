@@ -272,18 +272,41 @@ class BookController extends Controller
 
             //description
             if($book->xparent == -1){  // header
-                $coverPrice = BookirBook::where('xdescription', '!=','');
-                $coverPrice = $coverPrice->where(function ($query) use ($bookId){
+                $book_des = BookirBook::where('xdescription', '!=','');
+                $book_des = $book_des->where(function ($query) use ($bookId){
                     $query->where('xid',$bookId)->orwhere('xparent',$bookId);
                 });
-                $book_description = $coverPrice->orderBy('xdescription','DESC')->first();
+                $book_description = $book_des->orderBy('xdescription','DESC')->first();
             }else{
                 $parent = $book->xparent;
-                $coverPrice = BookirBook::where('xdescription', '!= ','');
-                $coverPrice = $coverPrice->where(function ($query) use ($bookId,$parent){
+                $book_des = BookirBook::where('xdescription', '!= ','');
+                $book_des = $book_des->where(function ($query) use ($bookId,$parent){
                     $query->where('xid',$bookId)->orwhere('xparent',$parent);
                 });
-                $book_description = $coverPrice->orderBy('xdescription','DESC')->first();
+                $book_description = $book_des->orderBy('xdescription','DESC')->first();
+            }
+            //xcover
+            $coversData = array();
+            if($book->xparent == -1){  // header
+                $book_cover = BookirBook::select('xcover')->where('xcover', '!=','')->where('xcover','!=','null');
+                $book_cover = $book_cover->where(function ($query) use ($bookId){
+                    $query->where('xid',$bookId)->orwhere('xparent',$bookId);
+                });
+                $book_covers = $book_cover->groupBy('xcover')->get();
+            }else{
+                $parent = $book->xparent;
+                $book_cover = BookirBook::select('xcover')->where('xcover', '!=','')->where('xcover','!=','null');
+                $book_cover = $book_cover->where(function ($query) use ($bookId,$parent){
+                    $query->where('xid',$bookId)->orwhere('xparent',$parent);
+                });
+                $book_covers = $book_cover->groupBy('xcover')->get();
+            }
+            if($book_covers != null and count($book_covers) > 0)
+            {
+                foreach ($book_covers as $cover)
+                {
+                    $coversData[] = [$cover->xcover];
+                }
             }
            
             $dataMaster =
@@ -297,7 +320,8 @@ class BookController extends Controller
                     "image" => $book->ximgeurl,
                     "publishPlace" => $book->xpublishplace,
                     "format" => $book->xformat,
-                    "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    "cover" =>  $coversData,
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
