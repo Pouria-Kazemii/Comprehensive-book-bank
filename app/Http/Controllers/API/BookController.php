@@ -253,12 +253,22 @@ class BookController extends Controller
 
             //
             // price 
-            $coverPrice = BookirBook::where('xcoverprice', '>',0);
-            $coverPrice = $coverPrice->where(function ($query) use ($bookId){
-                $query->where('xid',$bookId)->orwhere('xparent',$bookId);
-            });
-            $max_coverPrice = $coverPrice->max('xcoverprice');
-            $min_coverPrice = $coverPrice->min('xcoverprice');
+            if($book->xparent == -1){  // header
+                $coverPrice = BookirBook::where('xcoverprice', '>',0);
+                $coverPrice = $coverPrice->where(function ($query) use ($bookId){
+                    $query->where('xid',$bookId)->orwhere('xparent',$bookId);
+                });
+                $max_coverPrice = $coverPrice->max('xcoverprice');
+                $min_coverPrice = $coverPrice->min('xcoverprice');
+            }else{
+                $parent = $book->xparent;
+                $coverPrice = BookirBook::where('xcoverprice', '>',0);
+                $coverPrice = $coverPrice->where(function ($query) use ($bookId,$parent){
+                    $query->where('xid',$bookId)->orwhere('xparent',$parent);
+                });
+                $max_coverPrice = $coverPrice->max('xcoverprice');
+                $min_coverPrice = $coverPrice->min('xcoverprice');
+            }
             
             $dataMaster =
                 [
@@ -275,7 +285,7 @@ class BookController extends Controller
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
-                    "price" => 'از '.priceFormat($min_coverPrice).' تا '.priceFormat($max_coverPrice),
+                    "price" => 'از '.priceFormat($min_coverPrice).' تا '.priceFormat($max_coverPrice) .' ریال ',
                     "des" => $book->xdescription,
                 ];
         }
