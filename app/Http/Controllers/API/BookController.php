@@ -208,11 +208,14 @@ class BookController extends Controller
             $subjectsData = null;
             $creatorsData = null;
 
+            // DB::enableQueryLog();
             $bookPublishers = DB::table('bi_book_bi_publisher')
                 ->where('bi_book_xid', '=', $book->xid)
                 ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
                 ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                 ->get();
+            // $query = DB::getQueryLog();
+            // dd($query);
             if($bookPublishers != null and count($bookPublishers) > 0)
             {
                 foreach ($bookPublishers as $bookPublisher)
@@ -249,6 +252,14 @@ class BookController extends Controller
             }
 
             //
+            // price 
+            $coverPrice = BookirBook::where('xcoverprice', '>',0);
+            $coverPrice = $coverPrice->where(function ($query) use ($bookId){
+                $query->where('xid',$bookId)->orwhere('xparent',$bookId);
+            });
+            $max_coverPrice = $coverPrice->max('xcoverprice');
+            $min_coverPrice = $coverPrice->min('xcoverprice');
+            
             $dataMaster =
                 [
                     "isbn" => $book->xisbn,
@@ -264,7 +275,7 @@ class BookController extends Controller
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
-                    "price" => priceFormat($book->xcoverprice),
+                    "price" => 'از '.priceFormat($min_coverPrice).' تا '.priceFormat($max_coverPrice),
                     "des" => $book->xdescription,
                 ];
         }
