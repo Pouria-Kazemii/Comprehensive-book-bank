@@ -269,7 +269,23 @@ class BookController extends Controller
                 $max_coverPrice = $coverPrice->max('xcoverprice');
                 $min_coverPrice = $coverPrice->min('xcoverprice');
             }
-            
+
+            //description
+            if($book->xparent == -1){  // header
+                $coverPrice = BookirBook::where('xdescription', '!=','');
+                $coverPrice = $coverPrice->where(function ($query) use ($bookId){
+                    $query->where('xid',$bookId)->orwhere('xparent',$bookId);
+                });
+                $book_description = $coverPrice->orderBy('xdescription','DESC')->first();
+            }else{
+                $parent = $book->xparent;
+                $coverPrice = BookirBook::where('xdescription', '!= ','');
+                $coverPrice = $coverPrice->where(function ($query) use ($bookId,$parent){
+                    $query->where('xid',$bookId)->orwhere('xparent',$parent);
+                });
+                $book_description = $coverPrice->orderBy('xdescription','DESC')->first();
+            }
+           
             $dataMaster =
                 [
                     "isbn" => $book->xisbn,
@@ -286,7 +302,7 @@ class BookController extends Controller
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
                     "price" => 'از '.priceFormat($min_coverPrice).' تا '.priceFormat($max_coverPrice) .' ریال ',
-                    "des" => $book->xdescription,
+                    "des" => $book_description->xdescription,
                 ];
         }
 

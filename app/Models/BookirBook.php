@@ -30,10 +30,10 @@ class BookirBook extends Model
     static public function generateMiladiDate($year, $flagEnd = false)
     {
         // 1 = end year --- 0 = start year
-        if($flagEnd == 1)
-            $date = (new Jalalian($year, 1, 1, 0, 0, 0))->toCarbon()->year."-12-30";
+        if ($flagEnd == 1)
+            $date = (new Jalalian($year, 1, 1, 0, 0, 0))->toCarbon()->year . "-12-30";
         else
-            $date = (new Jalalian($year, 12, 29, 0, 0, 0))->toCarbon()->year."-01-01";
+            $date = (new Jalalian($year, 12, 29, 0, 0, 0))->toCarbon()->year . "-01-01";
 
         return $date;
     }
@@ -41,5 +41,14 @@ class BookirBook extends Model
     static public function convertMiladi2Shamsi($date)
     {
         return CalendarUtils::strftime('Y-m-d', strtotime($date));
+    }
+    public function children()
+    {
+        return $this->hasMany(self::class, 'xparent');
+    }
+
+    public function parents()
+    {
+        return $this->belongsTo(self::class, 'xid');
     }
 }
