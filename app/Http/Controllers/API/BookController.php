@@ -165,13 +165,13 @@ class BookController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle]
+            ],
+            $status
+        );
     }
 
     // detail book
@@ -288,13 +288,13 @@ class BookController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
+            ],
+            $status
+        );
     }
     // detail book
     // public function dossier(Request $request)
@@ -308,6 +308,12 @@ class BookController extends Controller
 
         // read books
         $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
+        if ($book->xparent != -1) { // found leader
+            $book = BookirBook::where('xid', '=', $$book->xparent)->first();
+        }
+        //SELECT clidren id 
+        $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
+        $dossier_book_id = $dossier_book->pluck('xid')->all();
         if ($book != null and $book->xid > 0) {
             $publishersData = null;
             $subjectsData = null;
@@ -328,9 +334,10 @@ class BookController extends Controller
             }
 
             $bookSubjects = DB::table('bi_book_bi_subject')
-                ->where('bi_book_xid', '=', $book->xid)
+                ->whereIn('bi_book_xid', $dossier_book_id)
                 ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
                 ->select('bookir_subject.xid as id', 'bookir_subject.xsubject as title')
+                ->groupBy('id')
                 ->get();
             if ($bookSubjects != null and count($bookSubjects) > 0) {
                 foreach ($bookSubjects as $subject) {
@@ -352,54 +359,29 @@ class BookController extends Controller
 
             //
             // price 
-            if ($book->xparent == -1) {  // header
-                $coverPrice = BookirBook::where('xcoverprice', '>', 0);
-                $coverPrice = $coverPrice->where(function ($query) use ($bookId) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $bookId);
-                });
-                $max_coverPrice = $coverPrice->max('xcoverprice');
-                $min_coverPrice = $coverPrice->min('xcoverprice');
-            } else {
-                $parent = $book->xparent;
-                $coverPrice = BookirBook::where('xcoverprice', '>', 0);
-                $coverPrice = $coverPrice->where(function ($query) use ($bookId, $parent) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $parent);
-                });
-                $max_coverPrice = $coverPrice->max('xcoverprice');
-                $min_coverPrice = $coverPrice->min('xcoverprice');
-            }
+            $coverPrice = BookirBook::where('xcoverprice', '>', 0);
+            $coverPrice = $coverPrice->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $max_coverPrice = $coverPrice->max('xcoverprice');
+            $min_coverPrice = $coverPrice->min('xcoverprice');
+
 
             //description
-            if ($book->xparent == -1) {  // header
-                $book_des = BookirBook::where('xdescription', '!=', '');
-                $book_des = $book_des->where(function ($query) use ($bookId) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $bookId);
-                });
-                $book_description = $book_des->orderBy('xdescription', 'DESC')->first();
-            } else {
-                $parent = $book->xparent;
-                $book_des = BookirBook::where('xdescription', '!= ', '');
-                $book_des = $book_des->where(function ($query) use ($bookId, $parent) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $parent);
-                });
-                $book_description = $book_des->orderBy('xdescription', 'DESC')->first();
-            }
+            $book_des = BookirBook::where('xdescription', '!=', '');
+            $book_des = $book_des->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $book_description = $book_des->orderBy('xdescription', 'DESC')->first();
+
             //xcover
             $coversData = '';
-            if ($book->xparent == -1) {  // header
-                $book_cover = BookirBook::select('xcover')->where('xcover', '!=', '')->where('xcover', '!=', 'null');
-                $book_cover = $book_cover->where(function ($query) use ($bookId) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $bookId);
-                });
-                $book_covers = $book_cover->groupBy('xcover')->get();
-            } else {
-                $parent = $book->xparent;
-                $book_cover = BookirBook::select('xcover')->where('xcover', '!=', '')->where('xcover', '!=', 'null');
-                $book_cover = $book_cover->where(function ($query) use ($bookId, $parent) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $parent);
-                });
-                $book_covers = $book_cover->groupBy('xcover')->get();
-            }
+            $book_cover = BookirBook::select('xcover')->where('xcover', '!=', '')->where('xcover', '!=', 'null');
+            $book_cover = $book_cover->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $book_covers = $book_cover->groupBy('xcover')->get();
+
             if ($book_covers != null and count($book_covers) > 0) {
                 foreach ($book_covers as $cover) {
                     $coversData .= $cover->xcover . '-';
@@ -409,20 +391,12 @@ class BookController extends Controller
 
             //format
             $formatsData = '';
-            if ($book->xparent == -1) {  // header
-                $book_format = BookirBook::select('xformat')->where('xformat', '!=', '')->where('xformat', '!=', 'null');
-                $book_format = $book_format->where(function ($query) use ($bookId) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $bookId);
-                });
-                $book_formats = $book_format->groupBy('xformat')->get();
-            } else {
-                $parent = $book->xparent;
-                $book_format = BookirBook::select('xformat')->where('xformat', '!=', '')->where('xformat', '!=', 'null');
-                $book_format = $book_format->where(function ($query) use ($bookId, $parent) {
-                    $query->where('xid', $bookId)->orwhere('xparent', $parent);
-                });
-                $book_formats = $book_format->groupBy('xformat')->get();
-            }
+            $book_format = BookirBook::select('xformat')->where('xformat', '!=', '')->where('xformat', '!=', 'null');
+            $book_format = $book_format->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $book_formats = $book_format->groupBy('xformat')->get();
+
             if ($book_formats != null and count($book_formats) > 0) {
                 foreach ($book_formats as $format) {
                     $formatsData .= $format->xformat . '-';
@@ -571,13 +545,13 @@ class BookController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
     }
 
     // search dio
@@ -604,12 +578,12 @@ class BookController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
     }
 }
