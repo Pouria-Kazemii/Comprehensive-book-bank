@@ -345,7 +345,7 @@ class BookController extends Controller
             }
 
             $bookPartnerRules = DB::table('bookir_partnerrule')
-                ->whereIn('bi_book_xid', $dossier_book_id)
+                ->whereIn('xbookid', $dossier_book_id)
                 ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                 ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
                 ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
