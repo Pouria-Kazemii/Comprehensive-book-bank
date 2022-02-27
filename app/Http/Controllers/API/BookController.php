@@ -328,7 +328,7 @@ class BookController extends Controller
 
             if ($bookPublishers != null and count($bookPublishers) > 0) {
                 foreach ($bookPublishers as $bookPublisher) {
-                    $publishersData[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name.'</br>'];
+                    $publishersData[] = ["id" => $bookPublisher->id, "name" => ' '.$bookPublisher->name.' ' ];
                 }
             }
 
@@ -348,9 +348,11 @@ class BookController extends Controller
                 ->whereIn('xbookid', $dossier_book_id)
                 ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                 ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
-                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
+                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role','bookir_rules.xid as role_id')
                 ->groupBy('id')
+                ->orderBy('role_id')
                 ->get();
+
             if ($bookPartnerRules != null and count($bookPartnerRules) > 0) {
                 foreach ($bookPartnerRules as $partner) {
                     $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role" => $partner->role];
