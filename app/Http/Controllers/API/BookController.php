@@ -279,7 +279,7 @@ class BookController extends Controller
             }
             if ($book_covers != null and count($book_covers) > 0) {
                 foreach ($book_covers as $cover) {
-                    $coversData = $cover->xcover . '-';
+                    $coversData .= $cover->xcover . '-';
                 }
                 $coversData = rtrim($coversData, '-');
             }
@@ -302,7 +302,7 @@ class BookController extends Controller
             }
             if ($book_formats != null and count($book_formats) > 0) {
                 foreach ($book_formats as $format) {
-                    $formatsData = $format->xformat . '-';
+                    $formatsData .= $format->xformat . '-';
                 }
                 $formatsData = rtrim($formatsData, '-');
             }
