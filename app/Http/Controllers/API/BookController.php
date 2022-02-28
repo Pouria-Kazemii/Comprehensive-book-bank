@@ -315,8 +315,8 @@ class BookController extends Controller
 
         // read books
         $book = BookirBook::where('xid', '=', $bookId)/*->where('xparent', '=', '-1')*/->first();
-        if ($book->xparent != -1) { // found leader
-            $book = BookirBook::where('xid', '=', $$book->xparent)->first();
+        if ($book->xparent != -1 and $book->xparent != 0) { // found leader
+            $book = BookirBook::where('xid', '=', $book->xparent)->first();
             $bookId = $book->xid;
         }
         //SELECT clidren id 
@@ -436,6 +436,12 @@ class BookController extends Controller
                 }
                 $publishPlaceData = rtrim($publishPlaceData, ' , ');
             }
+            //printnumber
+            $printNumber = BookirBook::where('xprintnumber', '!=', '')->where('xprintnumber', '!=', 'null');
+            $printNumber = $publish_date->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $printNumber = $printNumber->max('xprintnumber');
 
             $dataMaster =
                 [
@@ -452,7 +458,7 @@ class BookController extends Controller
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
                     "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi($max_publish_date),
-                    "printNumber" => $book->xprintnumber,
+                    "printNumber" => $printNumber,
                     "circulation" => $book->circulation,
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
                     "des" => $book_description->xdescription,
