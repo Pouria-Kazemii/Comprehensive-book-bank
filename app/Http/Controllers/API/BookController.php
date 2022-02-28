@@ -184,7 +184,6 @@ class BookController extends Controller
 
     // detail book
     public function detail(Request $request)
-    // public function main_detail(Request $request)
     {
         $bookId = $request["bookId"];
         $dataMaster = null;
@@ -304,9 +303,8 @@ class BookController extends Controller
             $status
         );
     }
-    // detail book
+    // dossier book
     public function dossier(Request $request)
-    // public function detail(Request $request)
     {
 
         $bookId = $request["bookId"];
@@ -421,7 +419,8 @@ class BookController extends Controller
             $publish_date = $publish_date->where(function ($query) use ($book) {
                 $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
             });
-            $publish_date = $publish_date->min('xpublishdate');
+            $min_publish_date = $publish_date->min('xpublishdate');
+            $max_publish_date = $publish_date->min('xpublishdate');
 
             //publish place 
             $publishPlaceData = '';
@@ -452,7 +451,7 @@ class BookController extends Controller
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
-                    "publishDate" => BookirBook::convertMiladi2Shamsi($publish_date),
+                    "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi($max_publish_date),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
