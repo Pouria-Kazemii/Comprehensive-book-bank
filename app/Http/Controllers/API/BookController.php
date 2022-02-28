@@ -420,7 +420,7 @@ class BookController extends Controller
                 $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
             });
             $min_publish_date = $publish_date->min('xpublishdate');
-            $max_publish_date = $publish_date->min('xpublishdate');
+            $max_publish_date = $publish_date->max('xpublishdate');
 
             //publish place 
             $publishPlaceData = '';
@@ -465,7 +465,7 @@ class BookController extends Controller
                     "cover" =>  $coversData,
                     "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
                     "printNumber" => $printNumber,
-                    "circulation" => $circulation,
+                    "circulation" => priceFormat($circulation),
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
                     "des" => $book_description->xdescription,
                 ];
