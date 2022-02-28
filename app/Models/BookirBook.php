@@ -42,6 +42,10 @@ class BookirBook extends Model
     {
         return CalendarUtils::strftime('Y-m-d', strtotime($date));
     }
+    static public function convertMiladi2Shamsi_with_slash($date)
+    {
+        return CalendarUtils::strftime('Y/m/d', strtotime($date));
+    }
     public function children()
     {
         return $this->hasMany(self::class, 'xparent');
