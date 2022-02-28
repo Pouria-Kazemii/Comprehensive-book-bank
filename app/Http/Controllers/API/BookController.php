@@ -438,11 +438,17 @@ class BookController extends Controller
             }
             //printnumber
             $printNumber = BookirBook::where('xprintnumber', '!=', '')->where('xprintnumber', '!=', 'null');
-            $printNumber = $publish_date->where(function ($query) use ($book) {
+            $printNumber = $printNumber->where(function ($query) use ($book) {
                 $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
             });
             $printNumber = $printNumber->max('xprintnumber');
 
+            //circulation
+            $circulation = BookirBook::where('xcirculation', '!=', '')->where('xcirculation', '!=', 'null');
+            $circulation = $circulation->where(function ($query) use ($book) {
+                $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+            });
+            $circulation = $circulation->sum('xcirculation');
             $dataMaster =
                 [
                     "isbn" => $book->xisbn,
@@ -457,9 +463,9 @@ class BookController extends Controller
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
-                    "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi($max_publish_date),
+                    "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
                     "printNumber" => $printNumber,
-                    "circulation" => $book->circulation,
+                    "circulation" => $circulation,
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
                     "des" => $book_description->xdescription,
                 ];
