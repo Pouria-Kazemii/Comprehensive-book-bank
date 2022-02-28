@@ -302,6 +302,8 @@ class BookController extends Controller
     // public function dossier(Request $request)
     public function detail(Request $request)
     {
+        header("Location: hhttps://db.ketab.ir/");
+        die();
         $bookId = $request["bookId"];
         $dataMaster = null;
         $yearPrintCountData = null;
