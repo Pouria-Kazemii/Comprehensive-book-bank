@@ -119,6 +119,11 @@ class BookController extends Controller
             $books = $books->skip($offset)->take($pageRows)->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
+                    if ($books->xparent == -1 or  $books->xparent == 0) {
+                        $dossier_id = $book->xid;
+                    } else {
+                        $dossier_id = $book->xparent;
+                    }
                     $publishers = null;
 
                     $bookPublishers = DB::table('bi_book_bi_publisher')
@@ -136,6 +141,7 @@ class BookController extends Controller
                     $data[] =
                         [
                             "id" => $book->xid,
+                            "dossier_id" => $dossier_id,
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "language" => $book->xlang,
@@ -302,8 +308,7 @@ class BookController extends Controller
     // public function dossier(Request $request)
     public function detail(Request $request)
     {
-        header("Location: hhttps://db.ketab.ir/");
-        die();
+
         $bookId = $request["bookId"];
         $dataMaster = null;
         $yearPrintCountData = null;
@@ -333,7 +338,7 @@ class BookController extends Controller
 
             if ($bookPublishers != null and count($bookPublishers) > 0) {
                 foreach ($bookPublishers as $bookPublisher) {
-                    $publishersData[] = ["id" => $bookPublisher->id, "name" => ' '.$bookPublisher->name.' ' ];
+                    $publishersData[] = ["id" => $bookPublisher->id, "name" => ' ' . $bookPublisher->name . ' '];
                 }
             }
 
@@ -353,7 +358,7 @@ class BookController extends Controller
                 ->whereIn('xbookid', $dossier_book_id)
                 ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                 ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
-                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role','bookir_rules.xid as role_id')
+                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role', 'bookir_rules.xid as role_id')
                 ->groupBy('id')
                 ->orderBy('role_id')
                 ->get();
@@ -447,7 +452,7 @@ class BookController extends Controller
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
-                    "publishDate" => BookirBook::convertMiladi2Shamsi( $publish_date),
+                    "publishDate" => BookirBook::convertMiladi2Shamsi($publish_date),
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->circulation,
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
