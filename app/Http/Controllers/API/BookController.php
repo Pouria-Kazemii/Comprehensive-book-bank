@@ -119,7 +119,7 @@ class BookController extends Controller
             $books = $books->skip($offset)->take($pageRows)->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
-                    if ($books->xparent == -1 or  $books->xparent == 0) {
+                    if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
                     } else {
                         $dossier_id = $book->xparent;
