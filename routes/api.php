@@ -60,7 +60,7 @@ Route::post('/v1/publisher/annual-activity-title', 'API\PublisherController@annu
 Route::post('/v1/publisher/annual-activity-circulation', 'API\PublisherController@annualActivityByCirculation');
 Route::post('/v1/publisher/translate-authorship', 'API\PublisherController@translateAuthorship');
 Route::post('/v1/publisher/statistic-subject', 'API\PublisherController@statisticSubject');
-Route::post('/v1/publisher/role', 'API\PublisherController@role');
+Route::post('/v1/publisher/publisher-role', 'API\PublisherController@role');
 
 
 Route::post('/v1/report/publisher', 'API\ReportController@publisher');
