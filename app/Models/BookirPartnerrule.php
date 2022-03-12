@@ -10,4 +10,10 @@ class BookirPartnerrule extends Model
     protected $fillable = ['xid', 'xbookid', 'xcreatorid', 'xroleid'];
     protected $table = 'bookir_partnerrule';
     public $timestamps = false;
+
+    public function creators()
+    {
+        return $this->belongsTo(BookirPartner::class,'xcreatorid','xid');
+    }
+
 }

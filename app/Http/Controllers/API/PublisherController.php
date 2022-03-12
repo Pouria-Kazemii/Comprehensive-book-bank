@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Models\BookirBook;
-use App\Models\BookirPublisher;
+use App\Models\BookirRules;
 use Illuminate\Http\Request;
+use App\Models\BookirPartner;
+use App\Models\BookirPublisher;
+use App\Models\BookirPartnerrule;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use PHPUnit\TextUI\XmlConfiguration\Group;
 
 class PublisherController extends Controller
 {
@@ -48,18 +52,15 @@ class PublisherController extends Controller
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
-        if(!$isNull)
-        {
+        if (!$isNull) {
             // read books
             $publishers = BookirPublisher::orderBy('xpublishername', 'asc')->where('xpublishername', '!=', '');
-//            if($defaultWhere) $publishers->where('xparent', '=', '-1');
-            if($name != "") $publishers->where('xpublishername', 'like', "%$name%");
-            if($where != "") $publishers->whereRaw($where);
+            //            if($defaultWhere) $publishers->where('xparent', '=', '-1');
+            if ($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if ($where != "") $publishers->whereRaw($where);
             $publishers = $publishers->skip($offset)->take($pageRows)->get();
-            if($publishers != null and count($publishers) > 0)
-            {
-                foreach ($publishers as $publisher)
-                {
+            if ($publishers != null and count($publishers) > 0) {
+                foreach ($publishers as $publisher) {
                     $data[] =
                         [
                             "id" => $publisher->xid,
@@ -72,16 +73,15 @@ class PublisherController extends Controller
 
             //
             $publishers = BookirPublisher::orderBy('xpublishername', 'asc')->where('xpublishername', '!=', '');
-//            if($defaultWhere) $publishers->where('xparent', '=', '-1');
-            if($name != "") $publishers->where('xpublishername', 'like', "%$name%");
-            if($where != "") $publishers->whereRaw($where);
+            //            if($defaultWhere) $publishers->where('xparent', '=', '-1');
+            if ($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if ($where != "") $publishers->whereRaw($where);
             $totalRows = $publishers->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -100,10 +100,8 @@ class PublisherController extends Controller
 
         // read
         $publishers = BookirPublisher::where('xpublishername', '!=', '')->where('xpublishername', 'like', "%$searchWord%")->orderBy('xpublishername', 'asc')->get();
-        if($publishers != null and count($publishers) > 0)
-        {
-            foreach ($publishers as $publisher)
-            {
+        if ($publishers != null and count($publishers) > 0) {
+            foreach ($publishers as $publisher) {
                 $data[] =
                     [
                         "id" => $publisher->xid,
@@ -115,8 +113,7 @@ class PublisherController extends Controller
         }
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -134,10 +131,8 @@ class PublisherController extends Controller
 
         // read books for year printCount by title
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
-        if($books != null and count($books) > 0)
-        {
-            foreach ($books as $book)
-            {
+        if ($books != null and count($books) > 0) {
+            foreach ($books as $book) {
                 $year = BookirBook::getShamsiYear($book->xpublishdate);
                 $printCount = 1;
 
@@ -147,11 +142,10 @@ class PublisherController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if($yearPrintCountData != null) $status = 200;
+        if ($yearPrintCountData != null) $status = 200;
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -169,10 +163,8 @@ class PublisherController extends Controller
 
         // read books for year printCount by circulation
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
-        if($books != null and count($books) > 0)
-        {
-            foreach ($books as $book)
-            {
+        if ($books != null and count($books) > 0) {
+            foreach ($books as $book) {
                 $year = BookirBook::getShamsiYear($book->xpublishdate);
                 $printCount = $book->xcirculation;
 
@@ -182,11 +174,10 @@ class PublisherController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if($yearPrintCountData != null) $status = 200;
+        if ($yearPrintCountData != null) $status = 200;
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -204,8 +195,7 @@ class PublisherController extends Controller
 
         // read
         $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
-        if($publisher != null and $publisher->xid > 0)
-        {
+        if ($publisher != null and $publisher->xid > 0) {
             $dataMaster =
                 [
                     "name" => $publisher->xpublishername,
@@ -224,11 +214,10 @@ class PublisherController extends Controller
                 ];
         }
 
-        if($dataMaster != null) $status = 200;
+        if ($dataMaster != null) $status = 200;
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -247,14 +236,12 @@ class PublisherController extends Controller
 
         // read books
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->get();
-        if($books != null and count($books) > 0)
-        {
+        if ($books != null and count($books) > 0) {
             $totalBooks = count($books);
             $data["authorship"] = 0;
             $data["translate"] = 0;
 
-            foreach ($books as $book)
-            {
+            foreach ($books as $book) {
                 // $type = $book->xlang == "فارسی" ? "authorship" : "translate";
                 $type = $book->is_translate == "1" ? "authorship" : "translate";
                 $data[$type] += 1;
@@ -269,11 +256,10 @@ class PublisherController extends Controller
         }
 
         //
-        if($data != null) $status = 200;
+        if ($data != null) $status = 200;
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -293,27 +279,23 @@ class PublisherController extends Controller
 
         // read books
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->get();
-        if($books != null and count($books) > 0)
-        {
-            foreach ($books as $book)
-            {
+        if ($books != null and count($books) > 0) {
+            foreach ($books as $book) {
                 $bookSubjects = DB::table('bi_book_bi_subject')
                     ->where('bi_book_xid', '=', $book->xid)
                     ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
                     ->select('bookir_subject.xsubject as title')
                     ->get();
-                if($bookSubjects != null and count($bookSubjects) > 0)
-                {
-                    foreach ($bookSubjects as $bookSubject)
-                    {
-                        if(!isset($data[$bookSubject->title])) $totalSubjects += 1;
+                if ($bookSubjects != null and count($bookSubjects) > 0) {
+                    foreach ($bookSubjects as $bookSubject) {
+                        if (!isset($data[$bookSubject->title])) $totalSubjects += 1;
 
                         $data[$bookSubject->title] = (isset($data[$bookSubject->title])) ? $data[$bookSubject->title] + 1 : 1;
                     }
                 }
 
-//                if(!isset($data[$book->xdiocode])) $totalSubjects += 1;
-//                $data[$book->xdiocode] = (isset($data[$book->xdiocode])) ? $data[$book->xdiocode] + 1 : 1;
+                //                if(!isset($data[$book->xdiocode])) $totalSubjects += 1;
+                //                $data[$book->xdiocode] = (isset($data[$book->xdiocode])) ? $data[$book->xdiocode] + 1 : 1;
             }
 
             /*foreach ($data as $key => $value)
@@ -326,11 +308,95 @@ class PublisherController extends Controller
         }
 
         //
-        if($data != null) $status = 200;
+        if ($data != null) $status = 200;
 
         // response
-        return response()->json
-        (
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["data" => $data]
+            ],
+            $status
+        );
+    }
+
+    public function role(Request $request)
+    {
+        $publisherId = $request["publisherId"];
+        if(isset($_GET['publisherId'])){$publisherId =$_GET['publisherId'];}
+        $data = null;
+        $status = 404;
+
+        $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
+            $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
+        })->get();
+        // dd($publisher_books);
+
+        foreach ($publisher_books as $key => $item) {
+            $collection_data[$key]["id"] = $item->xid;
+            $collection_data[$key]["xbookid"] = $item->xbookid;
+            $collection_data[$key]["xcreatorid"] = $item->xcreatorid;
+            $collection_data[$key]["xroleid"] = $item->xroleid;
+        }
+        $collection = collect($collection_data);
+        // dd($collection);
+
+        ///////////////////////////role///////////////////////
+        $role_collection = $publisher_books->pluck('xroleid')->all();
+        $role_collection =  array_unique($role_collection);
+        // dd($role_collection);
+
+        $roles_name = BookirRules::whereIn('xid', $role_collection)->get();
+        $roles_name_array = $roles_name->pluck('xrole', 'xid')->all();
+        // dd( $roles_name_array );
+
+        ////////////////////creator////////////////////////////
+        $creator_collection = $publisher_books->pluck('xcreatorid')->all();
+        $creator_collection =  array_unique($creator_collection);
+
+        $creators = BookirPartner::whereIn('xid', $creator_collection)->get();
+        $creators_name_arary = $creators->pluck('xcreatorname', 'xid')->all();
+        // dd($creators_name_arary);
+
+
+        foreach ($role_collection as $key => $role_item) {
+            $data[$key]['role_id'] = $role_item;
+            $data[$key]['role_name'] = $roles_name_array[$role_item];
+
+            /////////////////////////////////// role partners/////////////////////////////
+            $role_creators = $collection->filter(function ($item) use ($role_item) {
+                return data_get($item, 'xroleid') == $role_item;
+            });
+            // dd($$role_creators);
+            $role_creator_collection = $role_creators->pluck('xcreatorid')->all();
+            $role_creator_collection =  array_unique($role_creator_collection);
+            // dd($role_creator_collection);
+
+            $role_creators_data = array();
+            foreach ($role_creator_collection as $role_creator_collection_value) {
+                $role_creators_data[$role_creator_collection_value] = $creators_name_arary[$role_creator_collection_value];
+            }
+            $data[$key]['partners_count'] = count($role_creators_data);
+            // dd($role_creators_data);
+            foreach ($role_creators_data as $role_creators_data_key => $role_creators_data_item) {
+                $data[$key]['partners'][$role_creators_data_key]['partner_id'] = $role_creators_data_key;
+                $data[$key]['partners'][$role_creators_data_key]['partner_name'] = $role_creators_data_item;
+
+                ///////////////////////////////role partner book////////////////////////////////
+                $role_creators_books = $collection->filter(function ($item) use ($role_creators_data_key,$role_item) {
+                    return data_get($item, 'xcreatorid') == $role_creators_data_key && data_get($item, 'xroleid') == $role_item;
+                });
+                // dd($role_creators_books);
+                $role_creators_books_array = $role_creators_books->pluck('xbookid')->all();
+                $role_creators_books_array =  array_unique($role_creators_books_array);
+                $data[$key]['partners'][$role_creators_data_key]['book_count'] = count($role_creators_books_array);
+            }
+        }
+        // dd($data);
+
+        if ($data != null) $status = 200;
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",

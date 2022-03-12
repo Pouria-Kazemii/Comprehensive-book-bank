@@ -20,3 +20,4 @@ Route::get('/', function () {
 //Route::get('book', 'bookController@index');
 // add by kiani
 Route::get('/v1/book/check_is_translate/{roleid}/{from}/{limit}/{order}', [ChangeDataController::class, 'check_is_translate']);
+Route::get('/v1/publisher/role', 'API\PublisherController@role');

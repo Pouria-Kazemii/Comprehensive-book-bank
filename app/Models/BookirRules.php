@@ -9,5 +9,6 @@ class BookirRules extends Model
 {
     protected $fillable = ['xid', 'xrole', 'xregdate', 'xisauthors'];
     protected $table = 'bookir_rules';
+    protected $primaryKey = 'xid';
     public $timestamps = false;
 }
