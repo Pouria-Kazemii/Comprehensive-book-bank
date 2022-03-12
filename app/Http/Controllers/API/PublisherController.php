@@ -324,6 +324,7 @@ class PublisherController extends Controller
     public function role(Request $request)
     {
         $publisherId = $request["publisherId"];
+        // if(isset($_GET['publisherId'])){$publisherId =$_GET['publisherId'];}
         $data = null;
         $status = 404;
 
