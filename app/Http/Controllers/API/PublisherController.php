@@ -324,9 +324,6 @@ class PublisherController extends Controller
     public function role(Request $request)
     {
         $publisherId = $request["publisherId"];
-        if (isset($_GET['publisherId'])) {
-            $publisherId = $_GET['publisherId'];
-        }
         $data = null;
         $status = 404;
 
@@ -398,10 +395,6 @@ class PublisherController extends Controller
             }
             // dd($data);
         }
-
-
-
-
 
         if ($data != null) $status = 200;
         return response()->json(
