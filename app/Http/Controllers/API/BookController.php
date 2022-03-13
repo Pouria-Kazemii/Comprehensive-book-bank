@@ -95,6 +95,53 @@ class BookController extends Controller
         return $this->lists($request, true, ($where == ""), $where, $subjectTitle);
     }
 
+    public function findByCreatorOfPublisher(Request $request)
+    {
+        $publisherId = $request["publisherId"];
+        $creatorId = $request["creatorId"];
+        $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
+            $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
+        })->get();
+
+        if ($publisher_books->count() > 0) {
+            foreach ($publisher_books as $key => $item) {
+                $collection_data[$key]["id"] = $item->xid;
+                $collection_data[$key]["xbookid"] = $item->xbookid;
+                $collection_data[$key]["xcreatorid"] = $item->xcreatorid;
+                $collection_data[$key]["xroleid"] = $item->xroleid;
+            }
+            $collection = collect($collection_data);
+            // dd($collection);
+
+            $creator_books = $collection->filter(function ($item) use ($creatorId) {
+                return data_get($item, 'xcreatorid') == $creatorId;
+            });
+            $creator_books_array = $creator_books->pluck('xbookid')->all();
+            $creator_books_array =  array_unique($creator_books_array);
+            $creator_books_string = implode(",", $creator_books_array);
+
+            $where = ($publisherId != "" and $creatorId != "") ? "xid In ($creator_books_string)" : "";
+
+            return $this->lists($request, true, ($where == ""), $where);
+        }
+    }
+
+    public function findBySharedCreators(Request $request)
+    { //co-creators
+        $creatorId = $request["creatorId"];
+        $teammateId = $request["teammateId"];
+
+        $shared_creator_books = BookirPartnerrule::select('xbookid')->where('xcreatorid', $creatorId)->whereIn('xbookid', function ($query) use ($teammateId) {
+            $query->select('xbookid')->from('bookir_partnerrule')->where('xcreatorid', $teammateId);
+        })->get();
+        $shared_creator_books_array = $shared_creator_books->pluck('xbookid')->all();
+        $shared_creator_books_array =  array_unique($shared_creator_books_array);
+        $shared_creator_books_string = implode(",", $shared_creator_books_array);
+        $where = ($teammateId != "" and $creatorId != "") ? "xid In ($shared_creator_books_string)" : "";
+
+        return $this->lists($request, true, ($where == ""), $where);
+    }
+
     // list
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "")
     {
@@ -463,7 +510,7 @@ class BookController extends Controller
                     "format" => $formatsData,
                     // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                     "cover" =>  $coversData,
-                    "publishDate" => ' بین '.BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date).' تا '.BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
+                    "publishDate" => ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
                     "printNumber" => $printNumber,
                     "circulation" => priceFormat($circulation),
                     "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',

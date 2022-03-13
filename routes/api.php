@@ -39,6 +39,8 @@ Route::post('/v1/book/detail', 'API\BookController@detail');
 Route::post('/v1/book/dossier', 'API\BookController@dossier');
 Route::post('/v1/book/market', 'API\BookController@market');
 Route::post('/v1/book/search/dio', 'API\BookController@searchDio');
+Route::post('/v1/book/find/creatorOfPublisher', 'API\BookController@findByCreatorOfPublisher');
+Route::post('/v1/book/find/sharedCreators', 'API\BookController@findBySharedCreators');
 
 Route::post('/v1/creator/find', 'API\CreatorController@find');
 Route::post('/v1/creator/find/subject', 'API\CreatorController@findBySubject');
