@@ -73,6 +73,8 @@ class CreatorController extends Controller
                     //
                     $data[] =
                         [
+                            "publisherId" => $publisherId,
+                            "subjectId" => $subjectId,
                             "id" => $creator->xid,
                             "bookCount" => $bookCount,
                             "name" => $creator->xcreatorname,
