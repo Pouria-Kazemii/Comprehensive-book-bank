@@ -49,7 +49,7 @@ class CreatorController extends Controller
         return $this->lists($request, ($where == ""), $where, 0, $creatorId);
     }
     // list
-    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $creatorId = 0, $publisherId = 0)
+    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $roleId = (isset($request["roleId"])) ? $request["roleId"] : "";
@@ -81,6 +81,7 @@ class CreatorController extends Controller
                     $data[] =
                         [
                             "publisherId" => $publisherId,
+                            "mainCreatorId" => $mainCreatorId,
                             "subjectId" => $subjectId,
                             "id" => $creator->xid,
                             "bookCount" => $bookCount,
