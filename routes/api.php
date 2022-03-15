@@ -49,6 +49,7 @@ Route::post('/v1/creator/role', 'API\CreatorController@role');
 Route::post('/v1/creator/annual-activity', 'API\CreatorController@annualActivity');
 Route::post('/v1/creator/detail', 'API\CreatorController@detail');
 Route::post('/v1/creator/search', 'API\CreatorController@search');
+Route::post('/v1/creator/find/creator', 'API\CreatorController@findByCreator');
 
 Route::post('/v1/subject/find', 'API\SubjectController@find');
 Route::post('/v1/subject/search', 'API\SubjectController@search');

@@ -38,6 +38,15 @@ class CreatorController extends Controller
         return $this->lists($request, ($where == ""), $where, 0, $publisherId);
     }
 
+    // find by creator
+    public function findByCreator(Request $request)
+    {
+        $creatorId = $request["creatorId"];
+
+        $where = $creatorId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))" : "";
+
+        return $this->lists($request, false, ($where == ""), $where,$creatorId);
+    }
     // list
     public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $publisherId = 0)
     {
