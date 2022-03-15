@@ -8,6 +8,7 @@ use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
+use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
 use App\Models\BookirPublisher;
 use App\Models\BookirSubject;
@@ -101,10 +102,18 @@ class BookController extends Controller
         $creatorId = $request["creatorId"];
         if( $publisherId == 0){
             $publisher_books = BookirPartnerrule::where('xcreatorid',$creatorId)->get();
+            $publisherName = '';
         }else{
             $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
                 $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
             })->get();
+           $publisherName =  BookirPublisher::where('xid',$publisherId)->first()->xpublishername;
+
+        }
+        if($creatorId == 0){
+            $creatorName= "";
+        }else{
+            $creatorName = BookirPartner::where('xid',$publisherId)->first()->xcreatorname;
         }
         
 
@@ -124,10 +133,9 @@ class BookController extends Controller
             $creator_books_array = $creator_books->pluck('xbookid')->all();
             $creator_books_array =  array_unique($creator_books_array);
             $creator_books_string = implode(",", $creator_books_array);
-
             $where = ($publisherId != "" and $creatorId != "") ? "xid In ($creator_books_string)" : "";
 
-            return $this->lists($request, true, ($where == ""), $where);
+            return $this->lists($request, true, ($where == ""), $where,"",$publisherName,$creatorName);
         }
     }
 
@@ -148,7 +156,7 @@ class BookController extends Controller
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "",$publisherName="",$creatorName="")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
@@ -228,7 +236,7 @@ class BookController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle,"publisherName"=>$publishers[0]['name'],"creatorName"=>"creatorName"]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle,"publisherName"=>$publisherName,"creatorName"=>$creatorName]
             ],
             $status
         );
