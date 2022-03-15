@@ -99,9 +99,14 @@ class BookController extends Controller
     {
         $publisherId = $request["publisherId"];
         $creatorId = $request["creatorId"];
-        $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
-            $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
-        })->get();
+        if( $publisherId == 0){
+            $publisher_books = BookirPartnerrule::where('xcreatorid',$creatorId)->get();
+        }else{
+            $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
+                $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
+            })->get();
+        }
+        
 
         if ($publisher_books->count() > 0) {
             foreach ($publisher_books as $key => $item) {
