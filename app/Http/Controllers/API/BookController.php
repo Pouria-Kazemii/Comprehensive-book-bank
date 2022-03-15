@@ -142,7 +142,8 @@ class BookController extends Controller
     { //co-creators
         $creatorId = $request["creatorId"];
         $teammateId = $request["teammateId"];
-
+        $creators = BookirPartner::where('xid',$creatorId)->orwhere('xid',$teammateId)->get();
+        $creatorName = $creators->pluck('xcreatorname','xid')->all();
         $shared_creator_books = BookirPartnerrule::select('xbookid')->where('xcreatorid', $creatorId)->whereIn('xbookid', function ($query) use ($teammateId) {
             $query->select('xbookid')->from('bookir_partnerrule')->where('xcreatorid', $teammateId);
         })->get();
@@ -151,7 +152,7 @@ class BookController extends Controller
         $shared_creator_books_array =  array_unique($shared_creator_books_array);
         $shared_creator_books_string = implode(",", $shared_creator_books_array);
         $where = ($teammateId != "" and $creatorId != "") ? "xid In ($shared_creator_books_string)" : "";
-        return $this->lists($request, true, ($where == ""), $where);
+        return $this->lists($request, true, ($where == ""), $where,"","",$creatorName);
     }
 
     // list
