@@ -9,6 +9,7 @@ use App\Models\BookirPartnerrule;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CreatorController extends Controller
 {
@@ -35,7 +36,7 @@ class CreatorController extends Controller
 
         $where = $publisherId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId'))" : "";
 
-        return $this->lists($request, ($where == ""), $where, 0, $publisherId);
+        return $this->lists($request, ($where == ""), $where, 0, 0, $publisherId);
     }
 
     // find by creator
@@ -43,12 +44,12 @@ class CreatorController extends Controller
     {
         $creatorId = $request["creatorId"];
 
-        $where = $creatorId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))" : "";
+        $where = $creatorId != "" ? "xid In (Select xcreatorid From bookir_partnerrule Where xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') AND xcreatorid != $creatorId) " : "";
 
-        return $this->lists($request, false, ($where == ""), $where,$creatorId);
+        return $this->lists($request, ($where == ""), $where, 0, $creatorId);
     }
     // list
-    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $publisherId = 0)
+    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $creatorId = 0, $publisherId = 0)
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $roleId = (isset($request["roleId"])) ? $request["roleId"] : "";
@@ -60,23 +61,20 @@ class CreatorController extends Controller
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
-        if(!$isNull)
-        {
+        if (!$isNull) {
             // read books
             $creators = BookirPartner::orderBy('xcreatorname', 'asc');
-            if($name != "") $creators->where('xcreatorname', 'like', "%$name%");
-            if($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
-            if($where != "") $creators->whereRaw($where);
+            if ($name != "") $creators->where('xcreatorname', 'like', "%$name%");
+            if ($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
+            if ($where != "") $creators->whereRaw($where);
             $creators = $creators->skip($offset)->take($pageRows)->get();
-            if($creators != null and count($creators) > 0)
-            {
-                foreach ($creators as $creator)
-                {
+            if ($creators != null and count($creators) > 0) {
+                foreach ($creators as $creator) {
                     $creatorId = $creator->xid;
 
-                    if($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
-                    else if($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
-                    elseif($subjectId == 0 AND $publisherId ==0 ) $bookCount = BookirPartnerrule::where('xcreatorid',$creatorId)->count(); // add by kiani
+                    if ($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
+                    else if ($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
+                    elseif ($subjectId == 0 and $publisherId == 0) $bookCount = BookirPartnerrule::where('xcreatorid', $creatorId)->count(); // add by kiani
                     else  $bookCount = 0;
 
                     //
@@ -95,23 +93,23 @@ class CreatorController extends Controller
 
             //
             $creators = BookirPartner::orderBy('xcreatorname', 'asc');
-            if($name != "") $creators->where('xcreatorname', 'like', "%$name%");
-            if($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
-            if($where != "") $creators->whereRaw($where);
+            if ($name != "") $creators->where('xcreatorname', 'like', "%$name%");
+            if ($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
+            if ($where != "") $creators->whereRaw($where);
             $totalRows = $creators->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
 
+
         // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-            ],
-            $status
-        );
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                ],
+                $status
+            );
     }
 
     // search
@@ -123,10 +121,8 @@ class CreatorController extends Controller
 
         // read
         $creators = BookirPartner::where('xcreatorname', '!=', '')->where('xcreatorname', 'like', "%$searchWord%")->orderBy('xcreatorname', 'asc')->get();
-        if($creators != null and count($creators) > 0)
-        {
-            foreach ($creators as $creator)
-            {
+        if ($creators != null and count($creators) > 0) {
+            foreach ($creators as $creator) {
                 $data[] =
                     [
                         "id" => $creator->xid,
@@ -138,15 +134,14 @@ class CreatorController extends Controller
         }
 
         // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["list" => $data]
+                ],
+                $status
+            );
     }
 
     // role
@@ -157,10 +152,8 @@ class CreatorController extends Controller
 
         // read books
         $roles = BookirRules::orderBy('xrole', 'asc')->get();
-        if($roles != null and count($roles) > 0)
-        {
-            foreach ($roles as $role)
-            {
+        if ($roles != null and count($roles) > 0) {
+            foreach ($roles as $role) {
                 $data[] =
                     [
                         "id" => $role->xid,
@@ -172,15 +165,14 @@ class CreatorController extends Controller
         }
 
         // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["list" => $data]
+                ],
+                $status
+            );
     }
 
     // detail
@@ -191,8 +183,7 @@ class CreatorController extends Controller
 
         // read
         $creator = BookirPartner::where('xid', '=', $creatorId)->first();
-        if($creator != null and $creator->xid > 0)
-        {
+        if ($creator != null and $creator->xid > 0) {
             $rolesData = null;
             $creatorId = $creator->xid;
 
@@ -205,18 +196,17 @@ class CreatorController extends Controller
                 ];
         }
 
-        if($dataMaster != null) $status = 200;
+        if ($dataMaster != null) $status = 200;
 
         // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster]
-            ],
-            $status
-        );
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["master" => $dataMaster]
+                ],
+                $status
+            );
     }
 
     // annual activity
@@ -227,10 +217,8 @@ class CreatorController extends Controller
 
         // read books for year printCount by title
         $books = BookirBook::whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')")->get();
-        if($books != null and count($books) > 0)
-        {
-            foreach ($books as $book)
-            {
+        if ($books != null and count($books) > 0) {
+            foreach ($books as $book) {
                 $year = BookirBook::getShamsiYear($book->xpublishdate);
                 $printCount = 1;
 
@@ -240,17 +228,16 @@ class CreatorController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if($yearPrintCountData != null) $status = 200;
+        if ($yearPrintCountData != null) $status = 200;
 
         // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["yearPrintCount" => $yearPrintCountData]
-            ],
-            $status
-        );
+        return response()->json(
+                [
+                    "status" => $status,
+                    "message" => $status == 200 ? "ok" : "not found",
+                    "data" => ["yearPrintCount" => $yearPrintCountData]
+                ],
+                $status
+            );
     }
 }
