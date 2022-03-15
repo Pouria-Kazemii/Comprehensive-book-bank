@@ -100,22 +100,31 @@ class BookController extends Controller
     {
         $publisherId = $request["publisherId"];
         $creatorId = $request["creatorId"];
-        if( $publisherId == 0){
-            $publisher_books = BookirPartnerrule::where('xcreatorid',$creatorId)->get();
+        if ($publisherId == 0) {
+            $publisher_books = BookirPartnerrule::where('xcreatorid', $creatorId)->get();
             $publisherName = '';
-        }else{
+        } else {
             $publisher_books = BookirPartnerrule::whereIn('xbookid', function ($query) use ($publisherId) {
                 $query->select('bi_book_xid')->from('bi_book_bi_publisher')->where('bi_publisher_xid', $publisherId);
             })->get();
-           $publisherName =  BookirPublisher::where('xid',$publisherId)->first()->xpublishername;
+            $publisherInfo =  BookirPublisher::where('xid', $publisherId)->first()->xpublishername;
+            if (isset($publisherInfo) and !empty($publisherInfo)) {
+                $publisherName = $publisherInfo->xpublishername;
+            } else {
+                $publisherName = "";
+            }
+        }
+        if ($creatorId == 0) {
+            $creatorName = "";
+        } else {
+            $creatorInfo = BookirPartner::where('xid', $publisherId)->first();
+            if (isset($creatorInfo) and !empty($creatorInfo)) {
+                $creatorName =  $creatorInfo->xcreatorname;
+            } else {
+                $creatorName = "";
+            }
+        }
 
-        }
-        if($creatorId == 0){
-            $creatorName= "";
-        }else{
-            $creatorName = BookirPartner::where('xid',$publisherId)->first()->xcreatorname;
-        }
-        
 
         if ($publisher_books->count() > 0) {
             foreach ($publisher_books as $key => $item) {
@@ -135,7 +144,7 @@ class BookController extends Controller
             $creator_books_string = implode(",", $creator_books_array);
             $where = ($publisherId != "" and $creatorId != "") ? "xid In ($creator_books_string)" : "";
 
-            return $this->lists($request, true, ($where == ""), $where,"",$publisherName,$creatorName);
+            return $this->lists($request, true, ($where == ""), $where, "", $publisherName, $creatorName);
         }
     }
 
@@ -156,7 +165,7 @@ class BookController extends Controller
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "",$publisherName="",$creatorName="")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
@@ -236,7 +245,7 @@ class BookController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle,"publisherName"=>$publisherName,"creatorName"=>$creatorName]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
             ],
             $status
         );
