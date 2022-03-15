@@ -27,7 +27,7 @@ class PublisherController extends Controller
 
         $where = $creatorId != "" ? "xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))" : "";
 
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, false, ($where == ""), $where,$creatorId);
     }
 
     // find by subject
@@ -41,7 +41,7 @@ class PublisherController extends Controller
     }
 
     // list
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "",$creatorId ="")
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
@@ -85,7 +85,7 @@ class PublisherController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows,"creatorId"=> $creatorId]
             ],
             $status
         );
