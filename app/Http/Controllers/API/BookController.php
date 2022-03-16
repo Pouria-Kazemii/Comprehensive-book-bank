@@ -77,7 +77,7 @@ class BookController extends Controller
         $bookId = $request["bookId"];
         $where = "xid='$bookId' or xparent='$bookId'";
 
-        return $this->lists($request, true, ($where == ""), $where);
+        return $this->listsWithOutGroupby($request, true, ($where == ""), $where);
     }
 
     // find by subject
@@ -176,6 +176,91 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->groupBy('xisbn');
+            $books = $books->skip($offset)->take($pageRows)->get();
+            if ($books != null and count($books) > 0) {
+                foreach ($books as $book) {
+                    if ($book->xparent == -1 or  $book->xparent == 0) {
+                        $dossier_id = $book->xid;
+                    } else {
+                        $dossier_id = $book->xparent;
+                    }
+                    $publishers = null;
+
+                    $bookPublishers = DB::table('bi_book_bi_publisher')
+                        ->where('bi_book_xid', '=', $book->xid)
+                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                        ->get();
+                    if ($bookPublishers != null and count($bookPublishers) > 0) {
+                        foreach ($bookPublishers as $bookPublisher) {
+                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                        }
+                    }
+
+                    //
+                    $data[] =
+                        [
+                            "id" => $book->xid,
+                            "dossier_id" => $dossier_id,
+                            "name" => $book->xname,
+                            "publishers" => $publishers,
+                            "language" => $book->xlang,
+                            "year" => BookirBook::getShamsiYearMonth($book->xpublishdate),
+                            "printNumber" => $book->xprintnumber,
+                            "circulation" => priceFormat($book->xcirculation),
+                            "format" => $book->xformat,
+                            "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                            "pageCount" => $book->xpagecount,
+                            "isbn" => $book->xisbn,
+                            "price" => priceFormat($book->xcoverprice),
+                            "image" => $book->ximgeurl,
+                        ];
+                }
+            }
+
+            //
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')");
+            if ($name != "") $books->where('xname', 'like', "%$name%");
+            if ($isbn != "") $books->where('xisbn', '=', $isbn);
+            if ($where != "") $books->whereRaw($where);
+            $books->groupBy('xisbn');
+            $totalRows = $books->count();
+            $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
+        }
+
+        if ($data != null or $subjectTitle != "") $status = 200;
+
+        // response
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+            ],
+            $status
+        );
+    }
+
+    public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
+    {
+        $name = (isset($request["name"])) ? $request["name"] : "";
+        $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        $data = null;
+        $status = 404;
+        $pageRows = 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+
+        if (!$isNull) {
+            // read books
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
+            if ($name != "") $books->where('xname', 'like', "%$name%");
+            if ($isbn != "") $books->where('xisbn2', '=', $isbn);
+            if ($where != "") $books->whereRaw($where);
             $books = $books->skip($offset)->take($pageRows)->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {

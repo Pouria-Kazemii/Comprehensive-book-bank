@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
+use App\Models\BookirPublisher;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use Illuminate\Http\Request;
@@ -81,7 +82,9 @@ class CreatorController extends Controller
                     $data[] =
                         [
                             "publisherId" => $publisherId,
+                            "publisherName" => $publisherId > 0 ? BookirPublisher::where('xid',$publisherId)->first()->xpublishername : "",
                             "mainCreatorId" => $mainCreatorId,
+                            "mainCreatorName" => $mainCreatorId > 0 ? BookirPartner::where('xid',$mainCreatorId)->first()->xcreatorname : "",
                             "subjectId" => $subjectId,
                             "id" => $creator->xid,
                             "bookCount" => $bookCount,
