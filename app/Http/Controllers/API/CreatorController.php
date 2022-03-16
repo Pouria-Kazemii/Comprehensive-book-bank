@@ -76,6 +76,7 @@ class CreatorController extends Controller
                     if ($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
                     else if ($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
                     elseif ($subjectId == 0 and $publisherId == 0) $bookCount = BookirPartnerrule::where('xcreatorid', $creatorId)->count(); // add by kiani
+                    elseif ($mainCreatorId > 0) $bookCount =  BookirPartnerrule::where('xcreatorid', $creatorId)->whereRaw("xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') AND xcreatorid != $mainCreatorId")->count(); // add by kiani
                     else  $bookCount = 0;
 
                     //
