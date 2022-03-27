@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Book30book;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
@@ -101,8 +102,8 @@ class UpdateBookMasterId extends Command
             $this->info("nothing for update");
         } */
         // 30book
-        /* $limit = $this->argument('limit');
-        $c_books = BookDigi::where('book_master_id', 0)->where('shabak','!=',NULL)->skip(0)->take($limit)->get();
+        /*$limit = $this->argument('limit');
+        $c_books = Book30book::where('book_master_id', 0)->where('shabak','!=',NULL)->skip(0)->take($limit)->get();
         if ($c_books->count() != 0) {
             foreach ($c_books as $c_book) {
                     $search_shabak = $c_book->shabak;

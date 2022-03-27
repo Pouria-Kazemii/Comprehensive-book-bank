@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book30book;
 use Illuminate\Http\Request;
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;
@@ -93,7 +94,7 @@ class ChangeDataController extends Controller
     public function update_book_master_id_in_30book($limit)
     {
         // 30book
-        $c_books = BookDigi::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
+        $c_books = Book30book::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
         if ($c_books->count() != 0) {
             foreach ($c_books as $c_book) {
                 $search_shabak = $c_book->shabak;
