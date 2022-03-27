@@ -15,7 +15,7 @@ class UpdateIsTranslateDataInBookirBook extends Command
      *
      * @var string
      */
-    protected $signature = 'is_translate:update {limit}';
+    protected $signature = 'update:is_translate {limit}';
 
     /**
      * The console command description.
