@@ -68,7 +68,7 @@ class UpdateBookMasterId extends Command
 
                 $gisoom_book->update();
             }
-            $this->info("successfully update is_translate info");
+            $this->info("successfully update book_master_id info");
         } else {
             $this->info("nothing for update");
         }
@@ -96,7 +96,7 @@ class UpdateBookMasterId extends Command
                 
                 $digi_book->update();
             }
-            $this->info("successfully update is_translate info");
+            $this->info("successfully update book_master_id info");
         } else {
             $this->info("nothing for update");
         } */
@@ -123,37 +123,11 @@ class UpdateBookMasterId extends Command
                 
                 $c_book->update();
             }
-            $this->info("successfully update is_translate info");
+            $this->info("successfully update book_master_id info");
         } else {
             $this->info("nothing for update");
         } */
 
-        // bookK24
-        /*  $limit = $this->argument('limit');
-        $k24_books = BookK24::where('book_master_id', 0)->where('shabak','!=',NULL)->skip(0)->take($limit)->get();
-        if ($k24_books->count() != 0) {
-            foreach ($k24_books as $k24_book) {
-                    $search_shabak = $k24_book->shabak;
-                    $main_book_info = BookirBook::where('xparent', '>=', -1)
-                        ->where(function ($query) use ($search_shabak) {
-                            $query->where('xisbn', $search_shabak);
-                            $query->orWhere('xisbn2', $search_shabak);
-                        })->first();
-                    if (!empty($main_book_info)) {
-                        if ($main_book_info->xparent == -1) {
-                            $k24_book->book_master_id = $main_book_info->xid;
-                        } else {
-                            $k24_book->book_master_id = $main_book_info->xparent;
-                        }
-                    } else {
-                        $k24_book->book_master_id = -10;
-                    }
-                
-                $k24_book->update();
-            }
-            $this->info("successfully update is_translate info");
-        } else {
-            $this->info("nothing for update");
-        } */
+       
     }
 }
