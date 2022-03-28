@@ -113,7 +113,9 @@ class GetIranketab extends Command
                             }
                             $filtered['refCode']=$refCode;
                             $filtered['traslate']=false;
-                            $filtered['rate']=$row->filterXPath('//meta[contains(@itemprop, "ratingvalue")]')->attr('content');
+                            // $filtered['rate']=$row->filterXPath('//meta[contains(@itemprop, "ratingvalue")]')->attr('content');
+                            $filtered['rate']=$row->filterXPath('//div[contains(@class, "my-rating")]')->attr('data-rating');
+
                             foreach($row->filter('table.product-table tr') as $tr){
                                 $trtag=new Crawler($tr);
                                 $trtag->filterXPath('//td[1]')->html();
