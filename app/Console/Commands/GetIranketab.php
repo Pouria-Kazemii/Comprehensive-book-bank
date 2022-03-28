@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use Goutte\Client;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\DomCrawler\Crawler;
-use App\Models\BookIranketab;
 use App\Models\Author;
+use App\Models\BookIranketab;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use App\Models\Crawler as CrawlerM;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpClient\HttpClient;
 
 class GetIranketab extends Command
 {
@@ -43,34 +44,35 @@ class GetIranketab extends Command
      */
     public function handle()
     {
-        // if($this->argument('miss') && $this->argument('miss')==1){
-        //     try{
-        //         $lastCrawler = CrawlerM::where('type',2)->where('status',1)->orderBy('end', 'ASC')->first();
-        //         if(isset($lastCrawler->end)){
-        //             $startC = $lastCrawler->start;
-        //             $endC   = $lastCrawler->end;
-        //             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-        //             $newCrawler = $lastCrawler;
-        //         }
-        //     }catch (\Exception $e){
-        //         $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
-        //     }
-        // }else{
-        //     try{
-        //         $lastCrawler = CrawlerM::where('type',2)->orderBy('end', 'desc')->first();
-        //         if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-        //         else $startC=11044084;
-        //         $endC   = $startC + CrawlerM::$crawlerSize;
-        //         $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
-        //         $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-Gisoom-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>2));
-        //     }catch (\Exception $e){
-        //         $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
-        //     }
-        // }
-        $recordNumber = $startC = $endC = 338 ;
+        if($this->argument('miss') && $this->argument('miss')==1){
+            try{
+                $lastCrawler = CrawlerM::where('type',2)->where('status',1)->orderBy('end', 'ASC')->first();
+                if(isset($lastCrawler->end)){
+                    $startC = $lastCrawler->start;
+                    $endC   = $lastCrawler->end;
+                    $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+                    $newCrawler = $lastCrawler;
+                }
+            }catch (\Exception $e){
+                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
+            }
+        }else{
+            try{
+                $lastCrawler = CrawlerM::where('name','LIKE','Crawler-IranKetab-%')->where('type',2)->orderBy('end', 'desc')->first();
+                if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
+                else $startC=24;
+                $endC   = $startC + CrawlerM::$crawlerSize;
+                $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+                $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-IranKetab-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>2));
+            }catch (\Exception $e){
+                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
+            }
+        }
+
+        // $recordNumber = $startC = $endC = 338 ;
 
 
-        // if(isset($newCrawler)){
+        if(isset($newCrawler)){
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
@@ -91,18 +93,20 @@ class GetIranketab extends Command
                 }
 
                 if($status_code == 200 &&  $crawler->filter('body')->text('')!=''){
-                    $allbook = $crawler->filterXPath('//*[@itemid="'.$recordNumber.'"]')->filter('div.product-container div');
+                    $allbook = $crawler->filterXPath('//*[@itemid="'.$recordNumber.'"]')->filter('div.product-container');
                     $refCode = md5(time());
                     foreach($allbook->filter('div.clearfix') as $book){
+                        unset($row);
+                        unset($filtered);
                         $row = new Crawler($book);
                         if($row->filter('h1.product-name')->text('')!='' || $row->filter('div.product-name')->text('')!=''){
                             $filtered= array();
                             $filtered['title']=($row->filter('h1.product-name')->text(''))?$row->filter('h1.product-name')->text(''):$row->filter('div.product-name')->text('');
                             $filtered['enTitle']=$row->filter('div.product-name-englishname')->text('');
                             $filtered['subTitle']=$row->filterXPath('//div[contains(@class, "col-md-7")]/div[3]')->text('');
-                            $filtered['price']=$row->filter('span.price')->text('');
+                            $filtered['price']= str_replace(",","",$row->filter('span.price')->text(''));
                             $filtered['nasher']=$row->filterXPath('//div[contains(@class, "prodoct-attribute-items")][1]/a')->text('');
-                            $authorarray=array();
+                           $authorarray=array();
                             foreach($row->filterXPath('//div[contains(@class, "prodoct-attribute-items")][2]/a') as $authortag){
                                 array_push($authorarray,$authortag->textContent);
                             }
@@ -115,37 +119,33 @@ class GetIranketab extends Command
                             $filtered['traslate']=false;
                             // $filtered['rate']=$row->filterXPath('//meta[contains(@itemprop, "ratingvalue")]')->attr('content');
                             $filtered['rate']=$row->filterXPath('//div[contains(@class, "my-rating")]')->attr('data-rating');
-
                             foreach($row->filter('table.product-table tr') as $tr){
                                 $trtag=new Crawler($tr);
                                 $trtag->filterXPath('//td[1]')->html();
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='کد کتاب :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='کد کتاب :' && empty($filtered['recordNumber']))
                                     $filtered['recordNumber']=trim($trtag->filterXPath('//td[2]')->text());
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='مترجم :'){
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='مترجم :' && empty($filtered['partnerArray'])){
                                     $filtered['traslate']=true;
                                     $partner=array();
                                     foreach($trtag->filterXPath('//td[2]/a') as $atag){
                                         array_push($partner, $atag->textContent);
                                     }
+
                                     $filtered['partnerArray']=serialize($partner);
                                 }
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='شابک :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='شابک :' && empty($filtered['shabak']))
                                     $filtered['shabak']=enNumberKeepOnly(faCharToEN($trtag->filterXPath('//td[2]')->text()));
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='قطع :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='قطع :' && empty($filtered['ghateChap']))
                                     $filtered['ghateChap']=trim($trtag->filterXPath('//td[2]')->text());
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='تعداد صفحه :')
-                                    $filtered['tedadSafe']=trim($trtag->filterXPath('//td[2]')->text());
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='سال انتشار شمسی :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='تعداد صفحه :' && empty($filtered['tedadSafe']))
+                                $filtered['tedadSafe']=trim($trtag->filterXPath('//td[2]')->text());
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='سال انتشار شمسی :' && empty($filtered['saleNashr']))
                                     $filtered['saleNashr']=trim($trtag->filterXPath('//td[2]')->text());
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='نوع جلد :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='نوع جلد :' && empty($filtered['jeld']))
                                     $filtered['jeld']=trim($trtag->filterXPath('//td[2]')->text());
-                                if(trim($trtag->filterXPath('//td[1]')->text())=='سری چاپ :')
+                                if(trim($trtag->filterXPath('//td[1]')->text())=='سری چاپ :' && empty($filtered['nobatChap']))
                                     $filtered['nobatChap']=trim($trtag->filterXPath('//td[2]')->text());
                             }
-
-
-
-
 
                             // $filtered['tags']='';
                             // $filtered['recordNumber']='';
@@ -161,12 +161,18 @@ class GetIranketab extends Command
                             
 
 
-                            var_dump($filtered);
-                            exit;
-                        }
+                            // var_dump($filtered);
+                            // die('stop');
+                            $selected_book = BookIranketab::where('recordNumber',$filtered['recordNumber'])->first();
+                            if ($selected_book !== null) {
+                                $selected_book->update($filtered);
+                            } else {
+                                BookIranketab::firstOrCreate($filtered);
+                            }
+                        } 
                     }
                     //var_dump($filtered);
-                    exit;
+                    // exit;
                 }
                 $bar->advance();
                 $recordNumber ++;
@@ -175,6 +181,6 @@ class GetIranketab extends Command
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
             $bar->finish();
-        // }
+        }
     }
 }
