@@ -12,7 +12,7 @@ use App\Models\BookIranKetabPartner;
 use App\Models\Crawler as CrawlerM;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
-
+use Exception;
 class GetIranketab extends Command
 {
     /**
@@ -74,7 +74,7 @@ class GetIranketab extends Command
             }
         }
 
-        // $recordNumber = $startC = $endC = 821;
+        // $recordNumber = $startC = $endC = 10159;
 
 
         if (isset($newCrawler)) {
@@ -294,7 +294,17 @@ class GetIranketab extends Command
                             // $filtered['saveBook']='';
                             $selected_book = BookIranketab::where('recordNumber', $filtered['recordNumber'])->first();
                             if ($selected_book == null) {
-                                BookIranketab::create($filtered);
+                                try {
+                                    BookIranketab::create($filtered);
+                                    $this->info(" \n ----------Save book info              ---------- ");
+
+                                } catch (Exception $Exception) {
+                                    //throw $th;
+                                    $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
+
+                                    
+                                }
+                               
                             }
                         }
                         
