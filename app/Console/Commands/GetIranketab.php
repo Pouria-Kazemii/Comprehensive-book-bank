@@ -74,7 +74,7 @@ class GetIranketab extends Command
             }
         }
 
-        // $recordNumber = $startC = $endC = 10159;
+        $recordNumber = $startC = $endC = 74502;
 
 
         if (isset($newCrawler)) {
@@ -100,7 +100,12 @@ class GetIranketab extends Command
                 if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' && $crawler->filterXPath('//*[@itemid="' . $recordNumber . '"]')->count() > 0) {
 
                     //tags
-                    $bookDesc = $crawler->filter('body div.product-description')->text();
+                    echo $crawler->filter('body div.product-description')->count();
+                    if($crawler->filter('body div.product-description')->count() > 0){
+                        $bookDesc = $crawler->filter('body div.product-description')->text();
+                    }else{
+                        $bookDesc ='';  
+                    }
                     $bookTags = '';
                     foreach ($crawler->filter('body div.product-tags h5 a') as $tag) {
                         $bookTags .= '#' . $tag->textContent;
@@ -301,10 +306,10 @@ class GetIranketab extends Command
                                 } catch (Exception $Exception) {
                                     //throw $th;
                                     $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
-
-                                    
                                 }
-                               
+                            }else{
+                                $this->info(" \n ---------- Book info is exist             ---------- ");
+ 
                             }
                         }
                         
