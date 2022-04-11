@@ -74,7 +74,7 @@ class GetIranketab extends Command
             }
         }
 
-        // $recordNumber = $startC = $endC = 74502;
+        $recordNumber = $startC = $endC = 73109;
 
 
         if (isset($newCrawler)) {
@@ -297,20 +297,25 @@ class GetIranketab extends Command
 
                             // $filtered['prizes']='';
                             // $filtered['saveBook']='';
-                            $selected_book = BookIranketab::where('recordNumber', $filtered['recordNumber'])->first();
-                            if ($selected_book == null) {
-                                try {
-                                    BookIranketab::create($filtered);
-                                    $this->info(" \n ----------Save book info              ---------- ");
-
-                                } catch (Exception $Exception) {
-                                    //throw $th;
-                                    $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
+                            if(isset($filtered['recordNumber']) && $filtered['recordNumber'] >0){
+                                $selected_book = BookIranketab::where('recordNumber', $filtered['recordNumber'])->first();
+                                if ($selected_book == null) {
+                                    try {
+                                        BookIranketab::create($filtered);
+                                        $this->info(" \n ----------Save book info              ---------- ");
+    
+                                    } catch (Exception $Exception) {
+                                        //throw $th;
+                                        $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
+                                    }
+                                }else{
+                                    $this->info(" \n ---------- Book info is exist             ---------- ");
+     
                                 }
                             }else{
-                                $this->info(" \n ---------- Book info is exist             ---------- ");
- 
+                                $this->info(" \n ---------- This url does not include the book             ---------- ");
                             }
+                           
                         }
                         
                     }
