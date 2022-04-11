@@ -74,7 +74,7 @@ class GetIranketab extends Command
             }
         }
 
-        $recordNumber = $startC = $endC = 74502;
+        // $recordNumber = $startC = $endC = 74502;
 
 
         if (isset($newCrawler)) {
