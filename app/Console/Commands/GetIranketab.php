@@ -74,7 +74,7 @@ class GetIranketab extends Command
             }
         }
 
-        // $recordNumber = $startC = $endC = 4913;
+        // $recordNumber = $startC = $endC = 9037;
 
 
         if (isset($newCrawler)) {
@@ -86,7 +86,27 @@ class GetIranketab extends Command
 
             $recordNumber = $startC;
             while ($recordNumber <= $endC) {
-                if($recordNumber !=4913){
+                $timeout= 120;
+                $url = 'https://www.iranketab.ir/book/' . $recordNumber;
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
+                curl_setopt($ch, CURLOPT_ENCODING, "" );
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
+                curl_setopt($ch, CURLOPT_AUTOREFERER, true );
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout );
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout );
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10 );
+                curl_setopt($ch, CURLOPT_REFERER, 'http://www.google.com/');
+                $content = curl_exec($ch);
+                if(curl_errno($ch))
+                {
+                    $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
+                    echo 'error:' . curl_error($ch);
+                }
+                else
+                {
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         $crawler = $client->request('GET', 'https://www.iranketab.ir/book/' . $recordNumber);
@@ -276,7 +296,7 @@ class GetIranketab extends Command
                                                 $partner[$index_key + 1]['name'] = $atag->textContent;
                                             } 
                                         }
-                                       
+                                        
                                     }
                                     $filtered['partnerArray'] = json_encode($partner, JSON_UNESCAPED_UNICODE);
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'شابک :' && empty($filtered['shabak']))
@@ -308,20 +328,22 @@ class GetIranketab extends Command
                                         }
                                     }else{
                                         $this->info(" \n ---------- Book info is exist             ---------- ");
-         
+            
                                     }
                                 }else{
                                     $this->info(" \n ---------- This url does not include the book             ---------- ");
                                 }
-                               
+                                
                             }
                             
                         }
                         //var_dump($filtered);
                         // exit;
-                    }
+                    }else{
+                        $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
+                    }    
                 }
-               
+              
                 // $bar->advance();
                 $recordNumber++;
             }
