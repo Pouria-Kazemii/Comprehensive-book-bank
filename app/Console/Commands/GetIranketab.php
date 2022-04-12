@@ -90,8 +90,7 @@ class GetIranketab extends Command
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         $crawler = $client->request('GET', 'https://www.iranketab.ir/book/' . $recordNumber);
-                        // var_dump($crawler);
-                         $status_code = $client->getInternalResponse()->getStatusCode();
+                        $status_code = $client->getInternalResponse()->getStatusCode();
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
@@ -99,7 +98,6 @@ class GetIranketab extends Command
                     }
     
                     if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' && $crawler->filterXPath('//*[@itemid="' . $recordNumber . '"]')->count() > 0) {
-                        die('dd');
                         //tags
                         if($crawler->filter('body div.product-description')->count() > 0){
                             $bookDesc = $crawler->filter('body div.product-description')->text();
