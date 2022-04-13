@@ -146,8 +146,10 @@ class ChangeDataController extends Controller
                 }
                 echo 'book_master_id : '.$iranketab_book->book_master_id;
                 echo '</br>';
-
+                DB::enableQueryLog();
                 $iranketab_book->update();
+                $query  = DB::getQueryLog();
+                echo $query;
             }
             die("successfully update book_master_id info");
         } else {
