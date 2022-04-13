@@ -128,8 +128,7 @@ class ChangeDataController extends Controller
         $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
-                echo $iranketab_book->id;
-                echo '</br>';
+                echo 'id : '.$iranketab_book->id;
                 $search_shabak = $iranketab_book->shabak;
                 $main_book_info = BookirBook::where('xparent', '>=', -1)
                     ->where(function ($query) use ($search_shabak) {
@@ -145,6 +144,9 @@ class ChangeDataController extends Controller
                 } else {
                     $iranketab_book->book_master_id = -10;
                 }
+                echo 'book_master_id : '.$iranketab_book->book_master_id;
+                echo '</br>';
+
                 $iranketab_book->update();
             }
             die("successfully update book_master_id info");
