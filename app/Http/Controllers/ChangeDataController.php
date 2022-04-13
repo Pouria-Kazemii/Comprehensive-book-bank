@@ -9,6 +9,7 @@ use App\Models\BookirPartnerrule;
 use App\Models\BookirRules;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
+use App\Models\BookIranketab;
 use App\Models\BookK24;
 use Illuminate\Support\Facades\DB;
 
@@ -121,5 +122,34 @@ class ChangeDataController extends Controller
         }
     }
 
+    public function update_book_master_id_in_iranketab($limit)
+    {
+        // iranketab
+        $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
+        if ($iranketab_books->count() != 0) {
+            foreach ($iranketab_books as $iranketab_book) {
+                $search_shabak = $iranketab_book->shabak;
+                $main_book_info = BookirBook::where('xparent', '>=', -1)
+                    ->where(function ($query) use ($search_shabak) {
+                        $query->where('xisbn', $search_shabak);
+                        $query->orWhere('xisbn2', $search_shabak);
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $iranketab_book->book_master_id = $main_book_info->xid;
+                    } else {
+                        $iranketab_book->book_master_id = $main_book_info->xparent;
+                    }
+                } else {
+                    $iranketab_book->book_master_id = -10;
+                }
+
+                $iranketab_book->update();
+            }
+            die("successfully update book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
     
 }
