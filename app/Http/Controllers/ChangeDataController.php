@@ -149,7 +149,7 @@ class ChangeDataController extends Controller
                 DB::enableQueryLog();
                 $iranketab_book->update();
                 $query  = DB::getQueryLog();
-                echo $query;
+                var_dump($query);
             }
             die("successfully update book_master_id info");
         } else {
