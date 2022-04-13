@@ -143,7 +143,6 @@ class ChangeDataController extends Controller
                 } else {
                     $iranketab_book->book_master_id = -10;
                 }
-
                 $iranketab_book->update();
             }
             die("successfully update book_master_id info");
