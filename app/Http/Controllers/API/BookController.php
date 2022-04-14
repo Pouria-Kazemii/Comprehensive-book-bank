@@ -753,7 +753,7 @@ class BookController extends Controller
             $gisoom_books = BookGisoom::where('book_master_id', $bookId)->get();
             if (!empty($gisoom_books)) {
                 $gisoom_titleData = array_unique($gisoom_books->pluck('title')->all());
-                $gisoom_langData = array_unique($si_books->pluck('lang')->all());
+                $gisoom_langData = array_unique($gisoom_books->pluck('lang')->all());
                 $gisoom_editorData = array_unique($gisoom_books->pluck('editor')->all());
                 $gisoom_dioCodeData = array_unique($gisoom_books->pluck('radeD')->all());
                 $gisoom_publishersData = array_unique($gisoom_books->pluck('nasher')->all());
@@ -797,7 +797,7 @@ class BookController extends Controller
             $iranketabData = array();
             $iranketab_books = BookIranketab::where('book_master_id', $bookId)->get();
             if (!empty($iranketab_books)) {
-                $iranketab_titleData = array_unique($iranketab_books->pluck('title')->all());
+                $iranketab_titleData = (array)array_unique($iranketab_books->pluck('title')->all());
                 $iranketab_publishersData = array_unique($iranketab_books->pluck('nasher')->all());
                 $tags_array = array();
                 foreach (array_unique($iranketab_books->pluck('tags')->all()) as $tag_items) {
