@@ -128,7 +128,6 @@ class ChangeDataController extends Controller
         $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
-                echo 'id : '.$iranketab_book->id;
                 $search_shabak = $iranketab_book->shabak;
                 $main_book_info = BookirBook::where('xparent', '>=', -1)
                     ->where(function ($query) use ($search_shabak) {
@@ -137,19 +136,15 @@ class ChangeDataController extends Controller
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
-                        $iranketab_book->book_master_id = $main_book_info->xid;
+                        $book_master_id = $main_book_info->xid;
                     } else {
-                        $iranketab_book->book_master_id = $main_book_info->xparent;
+                        $book_master_id = $main_book_info->xparent;
                     }
                 } else {
-                    $iranketab_book->book_master_id = -10;
+                    $book_master_id = -10;
                 }
-                echo 'book_master_id : '.$iranketab_book->book_master_id;
-                echo '</br>';
-                DB::enableQueryLog();
-                $iranketab_book->update();
-                $query  = DB::getQueryLog();
-                var_dump($query);
+                BookIranketab::where('parentId',$iranketab_book->parentId)->update(['book_master_id'=>$book_master_id]);
+                // $iranketab_book->update();
             }
             die("successfully update book_master_id info");
         } else {
