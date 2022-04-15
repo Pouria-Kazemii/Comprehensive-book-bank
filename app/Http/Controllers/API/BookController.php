@@ -468,7 +468,7 @@ class BookController extends Controller
                 $bookId = $book->xid;
             }
             //SELECT clidren id 
-            $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
+             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
                 $publishersData = null;
@@ -675,8 +675,8 @@ class BookController extends Controller
                 $digi_weightData = array_unique($digi_books->pluck('vazn')->all());
                 $digi_descriptionData = array_unique($digi_books->pluck('desc')->all());
                 $features_array = array();
-                foreach (array_unique($digi_books->pluck('features')->all()) as $feature_items) {
-                    $features_array = explode(":|:", $feature_items);
+                foreach(array_unique($digi_books->pluck('features')->all()) as $feature_items){
+                    $features_array = explode(":|:",$feature_items);
                 }
                 $digi_featuresData = array_unique($features_array);
                 $digi_imagesData = array_unique($digi_books->pluck('images')->all());
@@ -711,8 +711,8 @@ class BookController extends Controller
                 $si_langData = array_unique($si_books->pluck('lang')->all());
                 $si_shabakData = array_unique($si_books->pluck('shabak')->all());
                 $subjects_array = array();
-                foreach (array_unique($si_books->pluck('cats')->all()) as $subject_items) {
-                    $subjects_array = explode("-|-", $subject_items);
+                foreach(array_unique($si_books->pluck('cats')->all()) as $subject_items){
+                    $subjects_array = explode("-|-",$subject_items);
                 }
                 $si_subjectsData = array_unique($subjects_array);
                 $si_publishersData = array_unique($si_books->pluck('nasher')->all());
@@ -797,12 +797,12 @@ class BookController extends Controller
             $iranketabData = array();
             $iranketab_books = BookIranketab::where('book_master_id', $bookId)->get();
             if (!empty($iranketab_books)) {
-                $iranketab_titleData = (array)array_unique($iranketab_books->pluck('title')->all());
+                $iranketab_titleData = array_unique($iranketab_books->pluck('title')->all());
                 $iranketab_publishersData = array_unique($iranketab_books->pluck('nasher')->all());
                 $tags_array = array();
-                foreach (array_unique($iranketab_books->pluck('tags')->all()) as $tag_items) {
-                    if ($tag_items != null) {
-                        $tags_array = explode("#", $tag_items);
+                foreach(array_unique($iranketab_books->pluck('tags')->all()) as $tag_items){
+                    if($tag_items != null){
+                        $tags_array = explode("#",$tag_items);
                     }
                 }
                 $iranketab_subjectsData = array_unique(array_filter($tags_array));
@@ -821,19 +821,25 @@ class BookController extends Controller
                 $iranketab_partsTextData = json_decode($iranketab_partsTextData['0']);
                 $iranketab_notesData = array_unique(array_filter($iranketab_books->pluck('notes')->all()));
                 $iranketab_notesData = json_decode($iranketab_notesData['0']);
-                $iranketab_imagesData = array_unique($iranketab_books->pluck('images')->all());
+                $images_array = array();
+                foreach(array_unique($iranketab_books->pluck('images')->all()) as $image_items){
+                    if($tag_items != null){
+                        $images_array = explode(" =|= ",$image_items);
+                    }
+                }
+                $iranketab_imagesData = array_unique(array_filter($images_array));
                 $iranketab_min_price_date = $iranketab_books->min('price');
                 $iranketab_max_price_date = $iranketab_books->max('price');
                 $creators_array = array();
                 $exist_creators = array();
-                foreach (array_unique($iranketab_books->pluck('partnerArray')->all()) as $creator_items) {
+                foreach(array_unique($iranketab_books->pluck('partnerArray')->all()) as $creator_items){
                     $item_info = json_decode($creator_items);
-                    foreach ($item_info as $items) {
+                    foreach($item_info as $items){
                         if (!in_array($items->name, $exist_creators)) {
                             $index_key = array_key_last($creators_array);
                             $exist_creators[] = $items->name;
-                            $creators_array[$index_key + 1]['name'] = $items->name;
-                            $creators_array[$index_key + 1]['role'] = ($items->roleId == 1) ? "نویسنده" : "مترجم";
+                            $creators_array[$index_key+1]['name'] = $items->name;
+                            $creators_array[$index_key+1]['role'] = ($items->roleId == 1 )? "نویسنده": "مترجم";  
                         }
                     }
                 }
@@ -854,8 +860,8 @@ class BookController extends Controller
                         "partsTexts" => $iranketab_partsTextData,
                         "notes" => $iranketab_notesData,
                         "numberPages" => $iranketab_tedadSafeData,
-                        "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ? ' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date : null,
-                        "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ? ' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' ریال ' : null,
+                        "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ?' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date :null,
+                        "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ?' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' ریال ' : null,
                         "printNumbers" => $iranketab_printNumberData,
                         "translate" => $iranketab_translateData,
                         "ratings" => $iranketab_rate_date,
