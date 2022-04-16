@@ -661,7 +661,6 @@ class BookController extends Controller
 
 
             //----------------------------------------------book digi------------------------------------//
-            $digiData = array();
             $digi_books = BookDigi::where('book_master_id', $bookId)->get();
             if (!empty($digi_books)) {
                 $digi_titleData = array_unique($digi_books->pluck('title')->all());
@@ -706,7 +705,6 @@ class BookController extends Controller
             }
 
             //----------------------------------------------30book------------------------------------//
-            $siData = array();
             $si_books = Book30book::where('book_master_id', $bookId)->get();
             if (!empty($si_books)) {
                 $si_titleData = array_unique($si_books->pluck('title')->all());
@@ -753,7 +751,6 @@ class BookController extends Controller
             }
 
             //----------------------------------------------gisoom------------------------------------//
-            $gisoomData = array();
             $gisoom_books = BookGisoom::where('book_master_id', $bookId)->get();
             if (!empty($gisoom_books)) {
                 $gisoom_titleData = array_unique($gisoom_books->pluck('title')->all());
@@ -800,7 +797,7 @@ class BookController extends Controller
             }
 
             //----------------------------------------------iranketab------------------------------------//
-            $iranketabData = array();
+            
             $iranketab_books = BookIranketab::where('book_master_id', $bookId)->get();
             if (!empty($iranketab_books)) {
                 $iranketab_titleData = array_unique($iranketab_books->pluck('title')->all());
