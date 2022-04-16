@@ -662,26 +662,26 @@ class BookController extends Controller
 
             //----------------------------------------------book digi------------------------------------//
             $digi_books = BookDigi::where('book_master_id', $bookId)->get();
-            if (!empty($digi_books)) {
-                $digi_titleData = array_unique($digi_books->pluck('title')->all());
-                $digi_publishersData = array_unique($digi_books->pluck('nasher')->all());
-                $digi_formatData = array_unique($digi_books->pluck('ghatechap')->all());
-                $digi_shabakData = array_unique($digi_books->pluck('shabak')->all());
-                $digi_subjectsData = array_unique($digi_books->pluck('cat')->all());
-                $digi_noekaghazData = array_unique($digi_books->pluck('noekaghaz')->all());
-                $digi_noechapData = array_unique($digi_books->pluck('noechap')->all());
-                $digi_coverData = array_unique($digi_books->pluck('jeld')->all());
-                $digi_weightData = array_unique($digi_books->pluck('vazn')->all());
+            if ($digi_books->count() > 0) {
+                $digi_titleData = array_unique(array_filter($digi_books->pluck('title')->all()));
+                $digi_publishersData = array_unique(array_filter($digi_books->pluck('nasher')->all()));
+                $digi_formatData = array_unique(array_filter($digi_books->pluck('ghatechap')->all()));
+                $digi_shabakData = array_unique(array_filter($digi_books->pluck('shabak')->all()));
+                $digi_subjectsData = array_unique(array_filter($digi_books->pluck('cat')->all()));
+                $digi_noekaghazData = array_unique(array_filter($digi_books->pluck('noekaghaz')->all()));
+                $digi_noechapData = array_unique(array_filter($digi_books->pluck('noechap')->all()));
+                $digi_coverData = array_unique(array_filter($digi_books->pluck('jeld')->all()));
+                $digi_weightData = array_unique(array_filter($digi_books->pluck('vazn')->all()));
                 $digi_descriptionData = array_unique(array_filter($digi_books->pluck('desc')->all()));
                 $features_array = array();
                 foreach(array_unique($digi_books->pluck('features')->all()) as $feature_items){
                     $features_array = explode(":|:",$feature_items);
                 }
                 $digi_featuresData = array_unique($features_array);
-                $digi_imagesData = $digi_books->pluck('images')->all();
+                $digi_imagesData = $digi_books->pluck('images')->first();
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
-                $digi_tedadSafeData = array_unique($digi_books->pluck('tedadSafe')->all());
-                $digi_creatorsData = array_unique($digi_books->pluck('partnerArray')->all());
+                $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
+                $digi_creatorsData = array_unique(array_filter($digi_books->pluck('partnerArray')->all()));
                 $digiData =
                     [
                         "isbns" => $digi_shabakData,
@@ -706,26 +706,26 @@ class BookController extends Controller
 
             //----------------------------------------------30book------------------------------------//
             $si_books = Book30book::where('book_master_id', $bookId)->get();
-            if (!empty($si_books)) {
-                $si_titleData = array_unique($si_books->pluck('title')->all());
-                $si_langData = array_unique($si_books->pluck('lang')->all());
-                $si_shabakData = array_unique($si_books->pluck('shabak')->all());
+            if ($si_books->count() > 0) {
+                $si_titleData = array_unique(array_filter($si_books->pluck('title')->all()));
+                $si_langData = array_unique(array_filter($si_books->pluck('lang')->all()));
+                $si_shabakData = array_unique(array_filter($si_books->pluck('shabak')->all()));
                 $subjects_array = array();
-                foreach(array_unique($si_books->pluck('cats')->all()) as $subject_items){
+                foreach(array_unique(array_filter($si_books->pluck('cats')->all())) as $subject_items){
                     $subjects_array = explode("-|-",$subject_items);
                 }
                 $si_subjectsData = array_unique($subjects_array);
-                $si_publishersData = array_unique($si_books->pluck('nasher')->all());
+                $si_publishersData = array_unique(array_filter($si_books->pluck('nasher')->all()));
                 $si_min_publish_date = $si_books->min('saleNashr');
                 $si_max_publish_date = $si_books->max('saleNashr');
-                $si_printNumberData = array_unique($si_books->pluck('nobatChap')->all());
-                $si_tedadSafeData = array_unique($si_books->pluck('tedadSafe')->all());
-                $si_formatData = array_unique($si_books->pluck('ghatechap')->all());
-                $si_translateData = array_unique($si_books->pluck('tarjome')->all());
-                $si_descriptionData = array_unique($si_books->pluck('desc')->all());
-                $si_coverData = array_unique($si_books->pluck('jeld')->all());
-                $si_weightData = array_unique($digi_books->pluck('vazn')->all());
-                $si_imagesData = array_unique($si_books->pluck('images')->all());
+                $si_printNumberData = array_unique(array_filter($si_books->pluck('nobatChap')->all()));
+                $si_tedadSafeData = array_unique(array_filter($si_books->pluck('tedadSafe')->all()));
+                $si_formatData = array_unique(array_filter($si_books->pluck('ghatechap')->all()));
+                $si_translateData = array_unique(array_filter($si_books->pluck('tarjome')->all()));
+                $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
+                $si_coverData = array_unique(array_filter($si_books->pluck('jeld')->all()));
+                $si_weightData = array_unique(array_filter($digi_books->pluck('vazn')->all()));
+                $si_imagesData = array_unique(array_filter($si_books->pluck('images')->all()));
                 $si_min_price_date = $si_books->min('price');
                 $si_max_price_date = $si_books->max('price');
                 $siData =
@@ -752,26 +752,26 @@ class BookController extends Controller
 
             //----------------------------------------------gisoom------------------------------------//
             $gisoom_books = BookGisoom::where('book_master_id', $bookId)->get();
-            if (!empty($gisoom_books)) {
-                $gisoom_titleData = array_unique($gisoom_books->pluck('title')->all());
-                $gisoom_langData = array_unique($gisoom_books->pluck('lang')->all());
-                $gisoom_editorData = array_unique($gisoom_books->pluck('editor')->all());
-                $gisoom_dioCodeData = array_unique($gisoom_books->pluck('radeD')->all());
-                $gisoom_publishersData = array_unique($gisoom_books->pluck('nasher')->all());
+            if ($gisoom_books->count() > 0) {
+                $gisoom_titleData = array_unique(array_filter($gisoom_books->pluck('title')->all()));
+                $gisoom_langData = array_unique(array_filter($gisoom_books->pluck('lang')->all()));
+                $gisoom_editorData = array_unique(array_filter($gisoom_books->pluck('editor')->all()));
+                $gisoom_dioCodeData = array_unique(array_filter($gisoom_books->pluck('radeD')->all()));
+                $gisoom_publishersData = array_unique(array_filter($gisoom_books->pluck('nasher')->all()));
                 $gisoom_min_publish_date = $gisoom_books->min('saleNashr');
                 $gisoom_max_publish_date = $gisoom_books->max('saleNashr');
-                $gisoom_printNumberData = array_unique($gisoom_books->pluck('nobatChap')->all());
-                $gisoom_circulationData = array_unique($gisoom_books->pluck('tiraj')->all());
-                $gisoom_tedadSafeData = array_unique($gisoom_books->pluck('tedadSafe')->all());
-                $gisoom_formatData = array_unique($gisoom_books->pluck('ghatechap')->all());
-                $gisoom_translateData = array_unique($gisoom_books->pluck('tarjome')->all());
-                $gisoom_descriptionData = array_unique($gisoom_books->pluck('desc')->all());
-                $gisoom_shabak10Data = array_unique($gisoom_books->pluck('shabak10')->all());
-                $gisoom_shabak13Data = array_unique($gisoom_books->pluck('shabak13')->all());
-                $gisoom_imagesData = array_unique($gisoom_books->pluck('images')->all());
+                $gisoom_printNumberData = array_unique(array_filter($gisoom_books->pluck('nobatChap')->all()));
+                $gisoom_circulationData = array_unique(array_filter($gisoom_books->pluck('tiraj')->all()));
+                $gisoom_tedadSafeData = array_unique(array_filter($gisoom_books->pluck('tedadSafe')->all()));
+                $gisoom_formatData = array_unique(array_filter($gisoom_books->pluck('ghatechap')->all()));
+                $gisoom_translateData = array_unique(array_filter($gisoom_books->pluck('tarjome')->all()));
+                $gisoom_descriptionData = array_unique(array_filter($gisoom_books->pluck('desc')->all()));
+                $gisoom_shabak10Data = array_unique(array_filter($gisoom_books->pluck('shabak10')->all()));
+                $gisoom_shabak13Data = array_unique(array_filter($gisoom_books->pluck('shabak13')->all()));
+                $gisoom_imagesData = array_unique(array_filter($gisoom_books->pluck('images')->all()));
                 $gisoom_min_price_date = $gisoom_books->min('price');
                 $gisoom_max_price_date = $gisoom_books->max('price');
-                $gisoom_subjectsData = array_unique($gisoom_books->pluck('catText')->all());
+                $gisoom_subjectsData = array_unique(array_filter($gisoom_books->pluck('catText')->all()));
                 $gisoomData =
                     [
                         "isbns10" => $gisoom_shabak10Data,
@@ -799,9 +799,9 @@ class BookController extends Controller
             //----------------------------------------------iranketab------------------------------------//
             
             $iranketab_books = BookIranketab::where('book_master_id', $bookId)->get();
-            if (!empty($iranketab_books)) {
-                $iranketab_titleData = array_unique($iranketab_books->pluck('title')->all());
-                $iranketab_publishersData = array_unique($iranketab_books->pluck('nasher')->all());
+            if ($iranketab_books->count() > 0 ) {
+                $iranketab_titleData = array_unique(array_filter($iranketab_books->pluck('title')->all()));
+                $iranketab_publishersData = array_unique(array_filter($iranketab_books->pluck('nasher')->all()));
                 $tags_array = array();
                 foreach(array_unique($iranketab_books->pluck('tags')->all()) as $tag_items){
                     if($tag_items != null){
@@ -811,32 +811,26 @@ class BookController extends Controller
                 $iranketab_subjectsData = array_unique(array_filter($tags_array));
                 $iranketab_min_publish_date = $iranketab_books->min('saleNashr');
                 $iranketab_max_publish_date = $iranketab_books->max('saleNashr');
-                $iranketab_printNumberData = array_unique($iranketab_books->pluck('nobatChap')->all());
-                $iranketab_tedadSafeData = array_unique($iranketab_books->pluck('tedadSafe')->all());
-                $iranketab_formatData = array_unique($iranketab_books->pluck('ghatechap')->all());
-                $iranketab_shabakData = array_unique($iranketab_books->pluck('shabak')->all());
-                $iranketab_coverData = array_unique($iranketab_books->pluck('jeld')->all());
-                $iranketab_translateData = array_unique($iranketab_books->pluck('traslate')->all());
+                $iranketab_printNumberData = array_unique(array_filter($iranketab_books->pluck('nobatChap')->all()));
+                $iranketab_tedadSafeData = array_unique(array_filter($iranketab_books->pluck('tedadSafe')->all()));
+                $iranketab_formatData = array_unique(array_filter($iranketab_books->pluck('ghatechap')->all()));
+                $iranketab_shabakData = array_unique(array_filter($iranketab_books->pluck('shabak')->all()));
+                $iranketab_coverData = array_unique(array_filter($iranketab_books->pluck('jeld')->all()));
+                $iranketab_translateData = array_unique(array_filter($iranketab_books->pluck('traslate')->all()));
                 $iranketab_descriptionData = array_unique(array_filter($iranketab_books->pluck('desc')->all()));
-                $iranketab_featuresData = array_unique(array_filter($iranketab_books->pluck('features')->all()));
-                if( !empty($iranketab_featuresData)){
-                    $iranketab_featuresData = json_decode($iranketab_featuresData['0']);
-                }else{
-                    $iranketab_featuresData = null;
+                $iranketab_featuresData = $iranketab_books->pluck('features')->first();
+                if(!empty($iranketab_featuresData )){
+                    $iranketab_featuresData= json_decode($iranketab_featuresData);
                 }
                
-                $iranketab_partsTextData = array_unique(array_filter($iranketab_books->pluck('partsText')->all()));
-                if( !empty($iranketab_partsTextData)){
-                    $iranketab_partsTextData = json_decode($iranketab_partsTextData['0']);
-                }else{
-                    $iranketab_partsTextData = null;
+                $iranketab_partsTextData = $iranketab_books->pluck('partsText')->first();
+                if(!empty($iranketab_partsTextData )){
+                    $iranketab_partsTextData= json_decode($iranketab_partsTextData);
                 }
                 
-                $iranketab_notesData = array_unique(array_filter($iranketab_books->pluck('notes')->all()));
-                if( !empty($iranketab_notesData)){
-                    $iranketab_notesData = json_decode($iranketab_notesData['0']);
-                }else{
-                    $iranketab_notesData = null;
+                $iranketab_notesData = $iranketab_books->pluck('notes')->first();
+                if(!empty($iranketab_notesData )){
+                    $iranketab_notesData= json_decode($iranketab_notesData);
                 }
                
                 $images_array = array();
@@ -887,6 +881,7 @@ class BookController extends Controller
             } else{
                 $iranketabData = null;
             }
+           
         }
         // response
         return response()->json(
