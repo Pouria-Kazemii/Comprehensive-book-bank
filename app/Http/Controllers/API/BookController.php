@@ -679,26 +679,26 @@ class BookController extends Controller
                     $features_array = explode(":|:",$feature_items);
                 }
                 $digi_featuresData = array_unique($features_array);
-                $digi_imagesData = array_unique($digi_books->pluck('images')->all());
+                $digi_imagesData = array_unique(array_filter($digi_books->pluck('images')->all()));
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
                 $digi_tedadSafeData = array_unique($digi_books->pluck('tedadSafe')->all());
                 $digi_creatorsData = array_unique($digi_books->pluck('partnerArray')->all());
                 $digiData =
                     [
-                        "isbn" => $digi_shabakData,
-                        "name" => $digi_titleData,
+                        "isbns" => $digi_shabakData,
+                        "names" => $digi_titleData,
                         "publishers" => $digi_publishersData,
                         "subjects" => $digi_subjectsData,
                         "image" => $digi_imagesData,
-                        "format" => $digi_formatData,
-                        "cover" => $digi_coverData,
+                        "formats" => $digi_formatData,
+                        "covers" => $digi_coverData,
                         "circulation" => priceFormat($digi_circulationData),
                         "des" => $digi_descriptionData,
-                        "noekaghaz" => $digi_noekaghazData,
-                        "noechap" => $digi_noechapData,
-                        "weight" => $digi_weightData,
+                        "noekaghazs" => $digi_noekaghazData,
+                        "noechaps" => $digi_noechapData,
+                        "weights" => $digi_weightData,
                         "features" => $digi_featuresData,
-                        "tedadSafe" => $digi_tedadSafeData,
+                        "numberPages" => $digi_tedadSafeData,
                         "creators" => $digi_creatorsData,
                     ];
             }
