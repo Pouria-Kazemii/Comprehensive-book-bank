@@ -701,6 +701,8 @@ class BookController extends Controller
                         "numberPages" => $digi_tedadSafeData,
                         "creators" => $digi_creatorsData,
                     ];
+            }else{
+                $digiData = null;
             }
 
             //----------------------------------------------30book------------------------------------//
@@ -746,6 +748,8 @@ class BookController extends Controller
                         "translate" => $si_translateData,
                         "price" => (!empty($si_min_price_date) && !empty($si_max_price_date)) ? ' بین ' . priceFormat($si_min_price_date) . ' تا ' . priceFormat($si_max_price_date) . ' ریال ' : null,
                     ];
+            }else{
+                $siData = null;
             }
 
             //----------------------------------------------gisoom------------------------------------//
@@ -791,6 +795,8 @@ class BookController extends Controller
                         "printNumbers" => $gisoom_printNumberData,
                         "translate" => $gisoom_translateData,
                     ];
+            }else{
+                $gisoomData = null;
             }
 
             //----------------------------------------------iranketab------------------------------------//
@@ -881,6 +887,8 @@ class BookController extends Controller
                         "translate" => $iranketab_translateData,
                         "ratings" => $iranketab_rate_date,
                     ];
+            } else{
+                $iranketabData = null;
             }
         }
         // response
