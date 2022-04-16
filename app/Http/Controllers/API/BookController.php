@@ -773,22 +773,22 @@ class BookController extends Controller
                 $gisoom_subjectsData = array_unique($gisoom_books->pluck('catText')->all());
                 $gisoomData =
                     [
-                        "isbn10" => $gisoom_shabak10Data,
-                        "isbn13" => $gisoom_shabak13Data,
-                        "name" => $gisoom_titleData,
+                        "isbns10" => $gisoom_shabak10Data,
+                        "isbns13" => $gisoom_shabak13Data,
+                        "names" => $gisoom_titleData,
                         "lang" => $gisoom_langData,
                         "publishers" => $gisoom_publishersData,
                         "subjects" => $gisoom_subjectsData,
                         "image" => $gisoom_imagesData,
                         "circulation" => priceFormat($gisoom_circulationData),
-                        "dioCode" => $gisoom_dioCodeData,
-                        "format" => $gisoom_formatData,
+                        "dioCodes" => $gisoom_dioCodeData,
+                        "formats" => $gisoom_formatData,
                         "creators" => $gisoom_editorData,
                         "des" => $gisoom_descriptionData,
-                        "tedadSafe" => $gisoom_tedadSafeData,
+                        "numberPages" => $gisoom_tedadSafeData,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
-                        "printNumber" => $gisoom_printNumberData,
+                        "printNumbers" => $gisoom_printNumberData,
                         "translate" => $gisoom_translateData,
                     ];
             }
