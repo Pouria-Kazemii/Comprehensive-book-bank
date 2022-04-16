@@ -730,19 +730,19 @@ class BookController extends Controller
                 $si_max_price_date = $si_books->max('price');
                 $siData =
                     [
-                        "isbn" => $si_shabakData,
-                        "name" => $si_titleData,
+                        "isbns" => $si_shabakData,
+                        "names" => $si_titleData,
                         "lang" => $si_langData,
                         "publishers" => $si_publishersData,
                         "subjects" => $si_subjectsData,
                         "image" => $si_imagesData,
-                        "format" => $si_formatData,
-                        "cover" => $si_coverData,
+                        "formats" => $si_formatData,
+                        "covers" => $si_coverData,
                         "des" => $si_descriptionData,
-                        "weight" => $si_weightData,
-                        "tedadSafe" => $si_tedadSafeData,
+                        "weights" => $si_weightData,
+                        "numberPages" => $si_tedadSafeData,
                         "publishDate" => (!empty($si_min_publish_date) && !empty($si_max_publish_date)) ? ' بین ' . $si_min_publish_date . ' تا ' . $si_max_publish_date : null,
-                        "printNumber" => $si_printNumberData,
+                        "printNumbers" => $si_printNumberData,
                         "translate" => $si_translateData,
                         "price" => (!empty($si_min_price_date) && !empty($si_max_price_date)) ? ' بین ' . priceFormat($si_min_price_date) . ' تا ' . priceFormat($si_max_price_date) . ' ریال ' : null,
                     ];
