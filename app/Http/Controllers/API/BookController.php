@@ -673,7 +673,7 @@ class BookController extends Controller
                 $digi_noechapData = array_unique($digi_books->pluck('noechap')->all());
                 $digi_coverData = array_unique($digi_books->pluck('jeld')->all());
                 $digi_weightData = array_unique($digi_books->pluck('vazn')->all());
-                $digi_descriptionData = reset(array_unique($digi_books->pluck('desc')->all()));
+                $digi_descriptionData = array_unique($digi_books->pluck('desc')->all());
                 $features_array = array();
                 foreach(array_unique($digi_books->pluck('features')->all()) as $feature_items){
                     $features_array = explode(":|:",$feature_items);
