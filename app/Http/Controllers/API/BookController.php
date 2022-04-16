@@ -816,11 +816,26 @@ class BookController extends Controller
                 $iranketab_translateData = array_unique($iranketab_books->pluck('traslate')->all());
                 $iranketab_descriptionData = array_unique(array_filter($iranketab_books->pluck('desc')->all()));
                 $iranketab_featuresData = array_unique(array_filter($iranketab_books->pluck('features')->all()));
-                $iranketab_featuresData = json_decode($iranketab_featuresData['0']);
+                if( !empty($iranketab_featuresData)){
+                    $iranketab_featuresData = json_decode($iranketab_featuresData['0']);
+                }else{
+                    $iranketab_featuresData = null;
+                }
+               
                 $iranketab_partsTextData = array_unique(array_filter($iranketab_books->pluck('partsText')->all()));
-                $iranketab_partsTextData = json_decode($iranketab_partsTextData['0']);
+                if( !empty($iranketab_partsTextData)){
+                    $iranketab_partsTextData = json_decode($iranketab_partsTextData['0']);
+                }else{
+                    $iranketab_partsTextData = null;
+                }
+                
                 $iranketab_notesData = array_unique(array_filter($iranketab_books->pluck('notes')->all()));
-                $iranketab_notesData = json_decode($iranketab_notesData['0']);
+                if( !empty($iranketab_notesData)){
+                    $iranketab_notesData = json_decode($iranketab_notesData['0']);
+                }else{
+                    $iranketab_notesData = null;
+                }
+               
                 $images_array = array();
                 foreach(array_unique($iranketab_books->pluck('images')->all()) as $image_items){
                     if($image_items != null){
