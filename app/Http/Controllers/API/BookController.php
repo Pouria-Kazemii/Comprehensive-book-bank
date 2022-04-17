@@ -753,7 +753,7 @@ class BookController extends Controller
                 $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
                 $si_coverData = array_unique(array_filter($si_books->pluck('jeld')->all()));
                 $si_weightData = array_unique(array_filter($digi_books->pluck('vazn')->all()));
-                $si_imagesData = array_unique(array_filter($si_books->pluck('images')->all()));
+                $si_imagesData = array_unique(array_filter($si_books->pluck('image')->all()));
                 $si_min_price_date = $si_books->min('price');
                 $si_max_price_date = $si_books->max('price');
                 $siData =
