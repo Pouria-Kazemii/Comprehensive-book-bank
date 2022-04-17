@@ -459,7 +459,6 @@ class BookController extends Controller
     {
 
         $bookId = $request["bookId"];
-        // $bookId = 1616172;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
@@ -712,21 +711,21 @@ class BookController extends Controller
                 $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
                 $digiData =
                     [
-                        "isbns" => $digi_shabakData,
-                        "names" => $digi_titleData,
-                        "publishers" => $digi_publishersData,
-                        "subjects" => $digi_subjectsData,
-                        "image" => $digi_imagesData,
-                        "formats" => $digi_formatData,
-                        "covers" => $digi_coverData,
-                        "circulation" => priceFormat($digi_circulationData),
-                        "des" => $digi_descriptionData,
-                        "noekaghazs" => $digi_noekaghazData,
-                        "noechaps" => $digi_noechapData,
-                        "weights" => $digi_weightData,
-                        "features" => $digi_featuresData,
-                        "numberPages" => $digi_tedadSafeData,
-                        "creators" => $digi_creatorsData,
+                        "isbns" => !empty($digi_shabakData) ? $digi_shabakData : null,
+                        "names" => !empty($digi_titleData) ? $digi_titleData : null, 
+                        "publishers" => !empty($digi_publishersData) ? $digi_publishersData : null,
+                        "subjects" => !empty($digi_subjectsData) ? $digi_subjectsData : null, 
+                        "image" => !empty($digi_imagesData) ? $digi_imagesData : null,
+                        "formats" => !empty($digi_formatData) ? $digi_formatData : null,
+                        "covers" => !empty($digi_coverData) ? $digi_coverData : null,
+                        "circulation" => !empty($digi_circulationData) ? priceFormat($digi_circulationData) : null,
+                        "des" => !empty($digi_descriptionData) ? $digi_descriptionData : null,
+                        "noekaghazs" => !empty($digi_noekaghazData) ? $digi_noekaghazData : null,
+                        "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
+                        "weights" => !empty($digi_weightData) ? $digi_weightData: null,
+                        "features" => !empty($digi_featuresData) ? $digi_featuresData : null, 
+                        "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null, 
                     ];
             }else{
                 $digiData = null;
@@ -759,21 +758,21 @@ class BookController extends Controller
                 $si_max_price_date = $si_books->max('price');
                 $siData =
                     [
-                        "isbns" => $si_shabakData,
-                        "names" => $si_titleData,
-                        "lang" => $si_langData,
-                        "publishers" => $si_publishersData,
-                        'creators' =>$si_creatorData,
-                        "subjects" => $si_subjectsData,
-                        "image" => $si_imagesData,
-                        "formats" => $si_formatData,
-                        "covers" => $si_coverData,
-                        "des" => $si_descriptionData,
-                        "weights" => $si_weightData,
-                        "numberPages" => $si_tedadSafeData,
+                        "isbns" => !empty($si_shabakData) ? $si_shabakData : null, 
+                        "names" => !empty($si_titleData) ? $si_titleData : null, 
+                        "lang" => !empty($si_langData) ? $si_langData : null, 
+                        "publishers" => !empty($si_publishersData) ? $si_publishersData : null, 
+                        'creators' => !empty($si_creatorData) ? $si_creatorData : null,  
+                        "subjects" => !empty($si_subjectsData) ? $si_subjectsData : null, 
+                        "image" => !empty($si_imagesData) ? $si_imagesData : null, 
+                        "formats" => !empty($si_formatData) ? $si_formatData : null, 
+                        "covers" => !empty($si_coverData) ? $si_coverData : null, 
+                        "des" => !empty($si_descriptionData) ? $si_descriptionData : null, 
+                        "weights" => !empty($si_weightData) ? $si_weightData : null, 
+                        "numberPages" => !empty($si_tedadSafeData) ? $si_tedadSafeData : null, 
                         "publishDate" => (!empty($si_min_publish_date) && !empty($si_max_publish_date)) ? ' بین ' . $si_min_publish_date . ' تا ' . $si_max_publish_date : null,
-                        "printNumbers" => $si_printNumberData,
-                        "translate" => $si_translateData,
+                        "printNumbers" => !empty($si_printNumberData) ? $si_printNumberData : null, 
+                        "translate" => !empty($si_translateData) ? $si_translateData : null, 
                         "price" => (!empty($si_min_price_date) && !empty($si_max_price_date)) ? ' بین ' . priceFormat($si_min_price_date) . ' تا ' . priceFormat($si_max_price_date) . ' ریال ' : null,
                     ];
             }else{
@@ -805,24 +804,24 @@ class BookController extends Controller
                 $gisoom_subjectsData = array_unique(array_filter($gisoom_books->pluck('catText')->all()));
                 $gisoomData =
                     [
-                        "isbns10" => $gisoom_shabak10Data,
-                        "isbns13" => $gisoom_shabak13Data,
-                        "names" => $gisoom_titleData,
-                        "lang" => $gisoom_langData,
-                        "publishers" => $gisoom_publishersData,
-                        "creator"=> $gisoom_creatorData,
-                        "subjects" => $gisoom_subjectsData,
-                        "image" => $gisoom_imagesData,
-                        "circulation" => priceFormat($gisoom_circulationData),
-                        "dioCodes" => $gisoom_dioCodeData,
-                        "formats" => $gisoom_formatData,
-                        "creators" => $gisoom_editorData,
-                        "des" => $gisoom_descriptionData,
-                        "numberPages" => $gisoom_tedadSafeData,
+                        "isbns10" => !empty($gisoom_shabak10Data) ? $gisoom_shabak10Data : null, 
+                        "isbns13" => !empty($gisoom_shabak13Data) ? $gisoom_shabak13Data : null, 
+                        "names" => !empty($gisoom_titleData) ? $gisoom_titleData : null, 
+                        "lang" => !empty($gisoom_langData) ? $gisoom_langData : null, 
+                        "publishers" => !empty($gisoom_publishersData) ? $gisoom_publishersData : null, 
+                        "creator"=> !empty($gisoom_creatorData) ? $gisoom_creatorData : null, 
+                        "subjects" => !empty($gisoom_subjectsData) ? $gisoom_subjectsData : null, 
+                        "image" => !empty($gisoom_imagesData) ? $gisoom_imagesData : null, 
+                        "circulation" => !empty($gisoom_circulationData) ? priceFormat($gisoom_circulationData) : null, 
+                        "dioCodes" => !empty($gisoom_dioCodeData) ? $gisoom_dioCodeData : null, 
+                        "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null, 
+                        "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null, 
+                        "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null, 
+                        "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
-                        "printNumbers" => $gisoom_printNumberData,
-                        "translate" => $gisoom_translateData,
+                        "printNumbers" => !empty($gisoom_printNumberData) ? $gisoom_printNumberData : null, 
+                        "translate" => !empty($gisoom_translateData) ? $gisoom_translateData : null, 
                     ];
             }else{
                 $gisoomData = null;
@@ -891,24 +890,24 @@ class BookController extends Controller
                 $iranketab_rate_date = array_unique(array_filter($iranketab_books->pluck('rate')->all()));
                 $iranketabData =
                     [
-                        "isbns" => $iranketab_shabakData,
-                        "names" => $iranketab_titleData,
-                        "publishers" => $iranketab_publishersData,
-                        "subjects" => $iranketab_subjectsData,
-                        "image" => $iranketab_imagesData,
-                        "covers" => $iranketab_coverData,
-                        "formats" => $iranketab_formatData,
-                        "creators" => $iranketab_creatorsData,
-                        "des" => $iranketab_descriptionData,
-                        "features" => $iranketab_featuresData,
-                        "partsTexts" => $iranketab_partsTextData,
-                        "notes" => $iranketab_notesData,
-                        "numberPages" => $iranketab_tedadSafeData,
+                        "isbns" => !empty($iranketab_shabakData) ? $iranketab_shabakData : null, 
+                        "names" => !empty($iranketab_titleData) ? $iranketab_titleData : null, 
+                        "publishers" => !empty($iranketab_publishersData) ? $iranketab_publishersData : null, 
+                        "subjects" => !empty($iranketab_subjectsData) ? $iranketab_subjectsData : null, 
+                        "image" => !empty($iranketab_imagesData) ? $iranketab_imagesData : null, 
+                        "covers" => !empty($iranketab_coverData) ? $iranketab_coverData : null, 
+                        "formats" => !empty($iranketab_formatData) ? $iranketab_formatData : null, 
+                        "creators" => !empty($iranketab_creatorsData) ? $iranketab_creatorsData : null, 
+                        "des" => !empty($iranketab_descriptionData) ? $iranketab_descriptionData : null, 
+                        "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null, 
+                        "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null, 
+                        "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null, 
+                        "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ?' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date :null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ?' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' ریال ' : null,
-                        "printNumbers" => $iranketab_printNumberData,
-                        "translate" => $iranketab_translateData,
-                        "ratings" => $iranketab_rate_date,
+                        "printNumbers" => !empty($iranketab_printNumberData) ? $iranketab_printNumberData : null, 
+                        "translate" => !empty($iranketab_translateData) ? $iranketab_translateData : null, 
+                        "ratings" => !empty($iranketab_rate_date) ? $iranketab_rate_date : null, 
                     ];
             } else{
                 $iranketabData = null;
