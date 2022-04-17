@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Console\Commands\GetIranketab;
 use App\Http\Controllers\Controller;
+use App\Models\Author;
+use App\Models\AuthorBook30book;
 use App\Models\BiBookBiPublisher;
 use App\Models\Book30book;
 use App\Models\BookDigi;
@@ -454,7 +456,8 @@ class BookController extends Controller
     public function dossier(Request $request)
     {
 
-        $bookId = $request["bookId"];
+        // $bookId = $request["bookId"];
+        $bookId = 1624120;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
@@ -715,6 +718,7 @@ class BookController extends Controller
                     $subjects_array = explode("-|-",$subject_items);
                 }
                 $si_subjectsData = array_unique($subjects_array);
+                $si_creatorData =  Author::whereIn('id',AuthorBook30book::whereIn('book30book_id',$si_books->pluck('title')->all())->pluck('author_id')->all())->pluck('d_name')->all();
                 $si_publishersData = array_unique(array_filter($si_books->pluck('nasher')->all()));
                 $si_min_publish_date = $si_books->min('saleNashr');
                 $si_max_publish_date = $si_books->max('saleNashr');
@@ -734,6 +738,7 @@ class BookController extends Controller
                         "names" => $si_titleData,
                         "lang" => $si_langData,
                         "publishers" => $si_publishersData,
+                        'creators' =>$si_creatorData,
                         "subjects" => $si_subjectsData,
                         "image" => $si_imagesData,
                         "formats" => $si_formatData,
