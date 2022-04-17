@@ -456,8 +456,8 @@ class BookController extends Controller
     public function dossier(Request $request)
     {
 
-        // $bookId = $request["bookId"];
-        $bookId = 1624120;
+        $bookId = $request["bookId"];
+        // $bookId = 1624120;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
