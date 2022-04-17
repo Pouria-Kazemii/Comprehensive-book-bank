@@ -701,7 +701,7 @@ class BookController extends Controller
                 $digi_weightData = array_unique(array_filter($digi_books->pluck('vazn')->all()));
                 $digi_descriptionData = array_unique(array_filter($digi_books->pluck('desc')->all()));
                 if(!empty($digi_descriptionData)){
-                    $digi_descriptionData = $digi_descriptionData['0'];
+                    $digi_descriptionData = reset($digi_descriptionData);
                 }
                 $features_array = array();
                 foreach(array_unique($digi_books->pluck('features')->all()) as $feature_items){
@@ -710,7 +710,7 @@ class BookController extends Controller
                 $digi_featuresData = array_unique(array_filter($features_array));
                 $digi_imagesData = array_unique(array_filter($digi_books->pluck('images')->all()));
                 if(!empty($digi_imagesData)){
-                    $digi_imagesData = $digi_imagesData['0'];
+                    $digi_imagesData = reset($digi_imagesData);
                 }
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
                 $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
@@ -757,13 +757,13 @@ class BookController extends Controller
                 $si_translateData = array_unique(array_filter($si_books->pluck('tarjome')->all()));
                 $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
                 if(!empty($si_descriptionData)){
-                    $si_descriptionData = $si_descriptionData['0'];
+                    $si_descriptionData = reset($si_descriptionData);
                 }
                 $si_coverData = array_unique(array_filter($si_books->pluck('jeld')->all()));
                 $si_weightData = array_unique(array_filter($si_books->pluck('vazn')->all()));
                 $si_imagesData = array_unique(array_filter($si_books->pluck('image')->all()));
                 if(!empty($si_imagesData)){
-                    $si_imagesData = $si_imagesData['0'];
+                    $si_imagesData = reset($si_imagesData);
                 }
                 $si_min_price_date = $si_books->min('price');
                 $si_max_price_date = $si_books->max('price');
@@ -808,13 +808,13 @@ class BookController extends Controller
                 $gisoom_translateData = array_unique(array_filter($gisoom_books->pluck('tarjome')->all()));
                 $gisoom_descriptionData = array_unique(array_filter($gisoom_books->pluck('desc')->all()));
                 if(!empty($gisoom_descriptionData)){
-                    $gisoom_descriptionData = $gisoom_descriptionData['0'];
+                    $gisoom_descriptionData = reset($gisoom_descriptionData);
                 }
                 $gisoom_shabak10Data = array_unique(array_filter($gisoom_books->pluck('shabak10')->all()));
                 $gisoom_shabak13Data = array_unique(array_filter($gisoom_books->pluck('shabak13')->all()));
                 $gisoom_imagesData = array_unique(array_filter($gisoom_books->pluck('images')->all()));
                 if(!empty($gisoom_imagesData)){
-                    $gisoom_imagesData = $gisoom_imagesData['0'];
+                    $gisoom_imagesData = reset($gisoom_imagesData);
                 }
                 $gisoom_min_price_date = $gisoom_books->min('price');
                 $gisoom_max_price_date = $gisoom_books->max('price');
@@ -867,7 +867,7 @@ class BookController extends Controller
                 $iranketab_translateData = array_unique(array_filter($iranketab_books->pluck('traslate')->all()));
                 $iranketab_descriptionData = array_unique(array_filter($iranketab_books->pluck('desc')->all()));
                 if(!empty($iranketab_descriptionData)){
-                    $iranketab_descriptionData = $iranketab_descriptionData['0'];
+                    $iranketab_descriptionData = reset($iranketab_descriptionData);
                 }
                 $iranketab_featuresData = $iranketab_books->pluck('features')->first();
                 if(!empty($iranketab_featuresData )){
@@ -892,7 +892,7 @@ class BookController extends Controller
                 }
                 $iranketab_imagesData = array_unique(array_filter($images_array));
                 if(!empty($iranketab_imagesData)){
-                    $iranketab_imagesData = $iranketab_imagesData['0'];
+                    $iranketab_imagesData = reset($iranketab_imagesData);
                 }
                 $iranketab_min_price_date = $iranketab_books->min('price');
                 $iranketab_max_price_date = $iranketab_books->max('price');
