@@ -6,6 +6,7 @@ use App\Console\Commands\GetIranketab;
 use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\AuthorBook30book;
+use App\Models\AuthorBookdigi;
 use App\Models\BiBookBiPublisher;
 use App\Models\Book30book;
 use App\Models\BookDigi;
@@ -457,7 +458,7 @@ class BookController extends Controller
     {
 
         $bookId = $request["bookId"];
-        // $bookId = 770084;
+        $bookId = 1616172;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
@@ -614,11 +615,11 @@ class BookController extends Controller
                         "format" => $formatsData,
                         // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
                         "cover" =>  $coversData,
-                        "publishDate" => ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
+                        "publishDate" => $min_publish_date >0 && $max_publish_date >0 ? ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date) : null,
                         "printNumber" => $printNumber,
                         "circulation" => priceFormat($circulation),
-                        "price" => ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ',
-                        "des" => $book_description->xdescription,
+                        "price" => $min_coverPrice > 0 &&  $max_coverPrice >0 ? ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ' : null,
+                        "des" => !empty($book_description) ? $book_description->xdescription : null,
                     ];
             }
 
@@ -668,6 +669,30 @@ class BookController extends Controller
             if ($digi_books->count() > 0) {
                 $digi_titleData = array_unique(array_filter($digi_books->pluck('title')->all()));
                 $digi_publishersData = array_unique(array_filter($digi_books->pluck('nasher')->all()));
+                $digi_creatorAuthorData =  Author::whereIn('id',AuthorBookdigi::whereIn('book_digi_id',$digi_books->pluck('id')->all())->pluck('author_id')->all())->pluck('d_name')->all();
+               
+                $creators_array = array();
+                $exist_creators = array();
+                foreach($digi_creatorAuthorData as $creator_items){
+                    if (!in_array($creator_items, $exist_creators)) {
+                        $index_key = array_key_last($creators_array);
+                        $exist_creators[] = $creator_items;
+                        $creators_array[$index_key+1]['name'] = $creator_items;
+                        $creators_array[$index_key+1]['role'] = "نویسنده";  
+                    }
+                    
+                }
+                $digi_creatorPartnerData = array_unique(array_filter($digi_books->pluck('partnerArray')->all()));
+                foreach($digi_creatorPartnerData as $creator_items){
+                    if (!in_array($creator_items, $exist_creators)) {
+                        $index_key = array_key_last($creators_array);
+                        $exist_creators[] = $creator_items;
+                        $creators_array[$index_key+1]['name'] = $creator_items;
+                        $creators_array[$index_key+1]['role'] = "مترجم";  
+                    }
+                    
+                }
+                $digi_creatorsData = array_filter($creators_array);
                 $digi_formatData = array_unique(array_filter($digi_books->pluck('ghatechap')->all()));
                 $digi_shabakData = array_unique(array_filter($digi_books->pluck('shabak')->all()));
                 $digi_subjectsData = array_unique(array_filter($digi_books->pluck('cat')->all()));
@@ -684,7 +709,6 @@ class BookController extends Controller
                 $digi_imagesData = $digi_books->pluck('images')->first();
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
                 $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
-                $digi_creatorsData = array_unique(array_filter($digi_books->pluck('partnerArray')->all()));
                 $digiData =
                     [
                         "isbns" => $digi_shabakData,
