@@ -871,17 +871,23 @@ class BookController extends Controller
                 }
                 $iranketab_featuresData =  array_unique(array_filter($iranketab_books->pluck('features')->all()));
                 if(!empty($iranketab_featuresData )){
-                    $iranketab_featuresData= json_decode($iranketab_featuresData);
+                    foreach($iranketab_featuresData as $feature_items ){
+                        $iranketab_featuresData[] = json_decode($feature_items);
+                    }
                 }
                
                 $iranketab_partsTextData =  array_unique(array_filter($iranketab_books->pluck('partsText')->all()));
                 if(!empty($iranketab_partsTextData )){
-                    $iranketab_partsTextData= json_decode($iranketab_partsTextData);
+                    foreach($iranketab_partsTextData as $parttext_items){
+                        $iranketab_partsTextData[] = json_decode($parttext_items);
+                    }
                 }
                 
                 $iranketab_notesData =  array_unique(array_filter($iranketab_books->pluck('notes')->all()));
                 if(!empty($iranketab_notesData )){
-                    $iranketab_notesData= json_decode($iranketab_notesData);
+                    foreach($iranketab_notesData as $note_items){
+                        $iranketab_notesData[] = json_decode($note_items);
+                    }
                 }
                
                 $images_array = array();
