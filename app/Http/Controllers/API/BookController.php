@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Author;
 use App\Models\AuthorBook30book;
 use App\Models\AuthorBookdigi;
+use App\Models\AuthorBookgisoom;
 use App\Models\BiBookBiPublisher;
 use App\Models\Book30book;
 use App\Models\BookDigi;
@@ -787,6 +788,7 @@ class BookController extends Controller
                 $gisoom_editorData = array_unique(array_filter($gisoom_books->pluck('editor')->all()));
                 $gisoom_dioCodeData = array_unique(array_filter($gisoom_books->pluck('radeD')->all()));
                 $gisoom_publishersData = array_unique(array_filter($gisoom_books->pluck('nasher')->all()));
+                $gisoom_creatorData =  Author::whereIn('id',AuthorBookgisoom::whereIn('book_gisoom_id',$digi_books->pluck('id')->all())->pluck('author_id')->all())->pluck('d_name')->all();
                 $gisoom_min_publish_date = $gisoom_books->min('saleNashr');
                 $gisoom_max_publish_date = $gisoom_books->max('saleNashr');
                 $gisoom_printNumberData = array_unique(array_filter($gisoom_books->pluck('nobatChap')->all()));
@@ -808,6 +810,7 @@ class BookController extends Controller
                         "names" => $gisoom_titleData,
                         "lang" => $gisoom_langData,
                         "publishers" => $gisoom_publishersData,
+                        "creator"=> $gisoom_creatorData,
                         "subjects" => $gisoom_subjectsData,
                         "image" => $gisoom_imagesData,
                         "circulation" => priceFormat($gisoom_circulationData),
