@@ -735,7 +735,7 @@ class BookController extends Controller
             $si_books = Book30book::where('book_master_id', $bookId)->get();
             if ($si_books->count() > 0) {
                 $si_titleData = array_unique(array_filter($si_books->pluck('title')->all()));
-                $si_langData = array_unique(array_filter($si_books->pluck('lang')->all()));
+                $si_langData = array_unique(array_filter($si_books->pluck('lang')->first()));
                 $si_shabakData = array_unique(array_filter($si_books->pluck('shabak')->all()));
                 $subjects_array = array();
                 foreach(array_unique(array_filter($si_books->pluck('cats')->all())) as $subject_items){
@@ -752,7 +752,7 @@ class BookController extends Controller
                 $si_translateData = array_unique(array_filter($si_books->pluck('tarjome')->all()));
                 $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
                 $si_coverData = array_unique(array_filter($si_books->pluck('jeld')->all()));
-                $si_weightData = array_unique(array_filter($digi_books->pluck('vazn')->all()));
+                $si_weightData = array_unique(array_filter($si_books->pluck('vazn')->all()));
                 $si_imagesData = array_unique(array_filter($si_books->pluck('image')->all()));
                 $si_min_price_date = $si_books->min('price');
                 $si_max_price_date = $si_books->max('price');
