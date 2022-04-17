@@ -869,25 +869,17 @@ class BookController extends Controller
                 if(!empty($iranketab_descriptionData)){
                     $iranketab_descriptionData = reset($iranketab_descriptionData);
                 }
-                $iranketab_featuresData =  array_unique(array_filter($iranketab_books->pluck('features')->all()));
+                $iranketab_featuresData = $iranketab_books->pluck('features')->first();
                 if(!empty($iranketab_featuresData )){
-                    foreach($iranketab_featuresData as $feature_items ){
-                        $items = json_decode($feature_items);
-                        foreach($items as $itemss){
-                            if(!empty($itemss) AND $itemss!= null){
-                                $iranketab_featuresData [] =$itemss;
-                            }
-                        }
-                        
-                    }
+                    $iranketab_featuresData= json_decode($iranketab_featuresData);
                 }
                
-                $iranketab_partsTextData =  $iranketab_books->pluck('partsText')->first();
+                $iranketab_partsTextData = $iranketab_books->pluck('partsText')->first();
                 if(!empty($iranketab_partsTextData )){
                     $iranketab_partsTextData= json_decode($iranketab_partsTextData);
                 }
                 
-                $iranketab_notesData =  $iranketab_books->pluck('notes')->first();
+                $iranketab_notesData = $iranketab_books->pluck('notes')->first();
                 if(!empty($iranketab_notesData )){
                     $iranketab_notesData= json_decode($iranketab_notesData);
                 }
