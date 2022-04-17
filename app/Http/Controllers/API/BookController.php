@@ -882,12 +882,12 @@ class BookController extends Controller
                     }
                 }
                
-                $iranketab_partsTextData =  array_unique(array_filter($iranketab_books->pluck('partsText')->all()));
+                $iranketab_partsTextData =  $iranketab_books->pluck('partsText')->first();
                 if(!empty($iranketab_partsTextData )){
                     $iranketab_partsTextData= json_decode($iranketab_partsTextData);
                 }
                 
-                $iranketab_notesData =  array_unique(array_filter($iranketab_books->pluck('notes')->all()));
+                $iranketab_notesData =  $iranketab_books->pluck('notes')->first();
                 if(!empty($iranketab_notesData )){
                     $iranketab_notesData= json_decode($iranketab_notesData);
                 }
