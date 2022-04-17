@@ -458,7 +458,7 @@ class BookController extends Controller
     {
 
         $bookId = $request["bookId"];
-        $bookId = 1616172;
+        // $bookId = 1616172;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
