@@ -457,7 +457,7 @@ class BookController extends Controller
     {
 
         $bookId = $request["bookId"];
-        // $bookId = 1624120;
+        $bookId = 770084;
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
@@ -706,7 +706,7 @@ class BookController extends Controller
             }else{
                 $digiData = null;
             }
-
+            
             //----------------------------------------------30book------------------------------------//
             $si_books = Book30book::where('book_master_id', $bookId)->get();
             if ($si_books->count() > 0) {
@@ -718,7 +718,7 @@ class BookController extends Controller
                     $subjects_array = explode("-|-",$subject_items);
                 }
                 $si_subjectsData = array_unique($subjects_array);
-                $si_creatorData =  Author::whereIn('id',AuthorBook30book::whereIn('book30book_id',$si_books->pluck('title')->all())->pluck('author_id')->all())->pluck('d_name')->all();
+                $si_creatorData =  Author::whereIn('id',AuthorBook30book::whereIn('book30book_id',$si_books->pluck('id')->all())->pluck('author_id')->all())->pluck('d_name')->all();
                 $si_publishersData = array_unique(array_filter($si_books->pluck('nasher')->all()));
                 $si_min_publish_date = $si_books->min('saleNashr');
                 $si_max_publish_date = $si_books->max('saleNashr');
@@ -887,6 +887,11 @@ class BookController extends Controller
                 $iranketabData = null;
             }
            
+        }else{
+            $digiData = null;
+            $siData = null;
+            $gisoomData = null;
+            $iranketabData = null;
         }
         // response
         return response()->json(
