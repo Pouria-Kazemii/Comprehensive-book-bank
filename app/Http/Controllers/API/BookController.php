@@ -705,7 +705,7 @@ class BookController extends Controller
                 foreach(array_unique($digi_books->pluck('features')->all()) as $feature_items){
                     $features_array = explode(":|:",$feature_items);
                 }
-                $digi_featuresData = array_unique($features_array);
+                $digi_featuresData = array_unique(array_filter($features_array));
                 $digi_imagesData = $digi_books->pluck('images')->first();
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
                 $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
