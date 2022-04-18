@@ -24,3 +24,4 @@ Route::get('/v1/book/update_book_master_id_in_gissom/{limit}', [ChangeDataContro
 Route::get('/v1/book/update_book_master_id_in_digi/{limit}', [ChangeDataController::class, 'update_book_master_id_in_digi']);
 Route::get('/v1/book/update_book_master_id_in_30book/{limit}', [ChangeDataController::class, 'update_book_master_id_in_30book']);
 Route::get('/v1/book/update_book_master_id_in_iranketab/{limit}', [ChangeDataController::class, 'update_book_master_id_in_iranketab']);
+Route::get('/v1/book/update_partner_master_id_in_iranketab/{limit}', [ChangeDataController::class, 'update_partner_master_id_in_iranketab']);
