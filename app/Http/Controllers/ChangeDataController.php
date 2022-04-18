@@ -147,6 +147,7 @@ class ChangeDataController extends Controller
                     } else {
                         $book_master_id = -10;
                     }
+                    echo 'book_master_id : '.$book_master_id.'</br>';
                     DB::enableQueryLog();
                     BookIranketab::where('parentId', $iranketab_book->parentId)->update(['book_master_id' => $book_master_id]);
                     $query = DB::getQueryLog();
