@@ -10,6 +10,8 @@ use App\Models\BookirRules;
 use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookIranketab;
+use App\Models\BookIranKetabPartner;
+use App\Models\BookirPartner;
 use App\Models\BookK24;
 use Illuminate\Support\Facades\DB;
 
@@ -128,7 +130,6 @@ class ChangeDataController extends Controller
         $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '>', 0)->skip(0)->take($limit)->get();
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
-                echo 'id : '. $iranketab_book->id.' shabak : '. $iranketab_book->shabak.'</br>';
                 $search_shabak = $iranketab_book->shabak;
                 $main_book_info = BookirBook::where('xparent', '>=', -1)
                     ->where(function ($query) use ($search_shabak) {
@@ -150,6 +151,30 @@ class ChangeDataController extends Controller
                 
             }
             die("successfully update book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
+    
+    public function update_partner_master_id_in_iranketab($limit)
+    {
+        // iranketab
+        $iranketab_partners = BookIranKetabPartner::where('partner_master_id', 0)->skip(0)->take($limit)->get();
+        if ($iranketab_partners->count() != 0) {
+            foreach ($iranketab_partners as $iranketab_partner) {
+                echo 'id : '. $iranketab_partner->id.' shabak : '. $iranketab_partner->partnerName.'</br>';
+                $search_name = $iranketab_partner->partnerName;
+                $main_partner_info = BookirPartner::where('xcreatorname', $search_name)->orWhere('xname2', $search_name)->first();
+                if (!empty($main_partner_info)) {
+                    $partner_master_id = $main_partner_info->xid;
+                } else {
+                    $partner_master_id = -10;
+                }
+                echo 'partner_master_id : '.$partner_master_id.'</br>';
+                BookIranKetabPartner::where('id', $iranketab_partner->id)->update(['partner_master_id' => $partner_master_id]);
+                // $iranketab_book->update();
+            }
+            die("successfully update partner_master_id info");
         } else {
             die("nothing for update");
         }
