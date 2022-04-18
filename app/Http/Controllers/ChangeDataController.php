@@ -125,8 +125,7 @@ class ChangeDataController extends Controller
     public function update_book_master_id_in_iranketab($limit)
     {
         // iranketab
-        $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
-        // dd($iranketab_books);
+        $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '>', 0)->skip(0)->take($limit)->get();
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
                 $search_shabak = $iranketab_book->shabak;
@@ -134,29 +133,27 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
-                    // })->first();
+                        // })->first();
                     })->get();
-                   
-                    foreach($main_book_info as $item){
-                        if (!empty($item)) {
-                            if ($item->xparent == -1) {
-                                $book_master_id = $item->xid;
-                            } else {
-                                $book_master_id = $item->xparent;
-                            }
+
+                foreach ($main_book_info as $item) {
+                    if (!empty($item)) {
+                        if ($item->xparent == -1) {
+                            $book_master_id = $item->xid;
                         } else {
-                            $book_master_id = -10;
+                            $book_master_id = $item->xparent;
                         }
-                        
-                        BookIranketab::where('parentId',$iranketab_book->parentId)->update(['book_master_id'=>$book_master_id]);
-                        // $iranketab_book->update();
+                    } else {
+                        $book_master_id = -10;
                     }
-                 
+
+                    BookIranketab::where('parentId', $iranketab_book->parentId)->update(['book_master_id' => $book_master_id]);
+                    // $iranketab_book->update();
+                }
             }
             die("successfully update book_master_id info");
         } else {
             die("nothing for update");
         }
     }
-    
 }
