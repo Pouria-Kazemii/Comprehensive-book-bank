@@ -757,7 +757,7 @@ class BookController extends Controller
                 $si_printNumberData = array_unique(array_filter($si_books->pluck('nobatChap')->all()));
                 // $si_tedadSafeData = array_unique(array_filter($si_books->pluck('tedadSafe')->all()));
                 $si_min_tedadSafe = $si_books->min('tedadSafe');
-                $si_max_tedadSafe = $si_books->amx('tedadSafe');
+                $si_max_tedadSafe = $si_books->max('tedadSafe');
                 $si_formatData = array_unique(array_filter($si_books->pluck('ghatechap')->all()));
                 $si_translateData = array_unique(array_filter($si_books->pluck('tarjome')->all()));
                 $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
