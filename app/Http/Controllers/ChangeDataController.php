@@ -134,15 +134,13 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
-                        // })->first();
-                    })->get();
+                        })->first();
                 echo '<pre>'; print_r($main_book_info);
-                foreach ($main_book_info as $item) {
-                    if (!empty($item)) {
-                        if ($item->xparent == -1) {
-                            $book_master_id = $item->xid;
+                    if (!empty($main_book_info)) {
+                        if ($main_book_info->xparent == -1) {
+                            $book_master_id = $main_book_info->xid;
                         } else {
-                            $book_master_id = $item->xparent;
+                            $book_master_id = $main_book_info->xparent;
                         }
                     } else {
                         $book_master_id = -10;
@@ -151,9 +149,9 @@ class ChangeDataController extends Controller
                     DB::enableQueryLog();
                     BookIranketab::where('parentId', $iranketab_book->parentId)->update(['book_master_id' => $book_master_id]);
                     $query = DB::getQueryLog();
-                    var_dump( $query);
+                    // var_dump( $query);
                     // $iranketab_book->update();
-                }
+                
             }
             die("successfully update book_master_id info");
         } else {
