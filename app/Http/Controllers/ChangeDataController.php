@@ -136,7 +136,7 @@ class ChangeDataController extends Controller
                         $query->orWhere('xisbn2', $search_shabak);
                     // })->first();
                     })->get();
-                    var_dump($main_book_info);
+                    dd($main_book_info);
                 // if (!empty($main_book_info)) {
                 //     if ($main_book_info->xparent == -1) {
                 //         $book_master_id = $main_book_info->xid;
@@ -145,6 +145,10 @@ class ChangeDataController extends Controller
                 //     }
                 // } else {
                 //     $book_master_id = -10;
+                // }
+                // if(isset($book_master_id)){
+                //     echo '$book_master_id : '.$book_master_id.'</br>';
+
                 // }
                 // BookIranketab::where('parentId',$iranketab_book->parentId)->update(['book_master_id'=>$book_master_id]);
                 // $iranketab_book->update();
