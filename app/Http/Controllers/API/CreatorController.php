@@ -199,9 +199,9 @@ class CreatorController extends Controller
                 [
                     "name" => $creator->xcreatorname,
                     "roles" => $roles,
-                    "image" => $partnerInfo->partnerImage,
-                    "desc" => $partnerInfo->partnerDesc,
-                    "enName" => $partnerInfo->partnerEnName,
+                    "image" => !empty($partnerInfo->partnerImage) ? $partnerInfo->partnerImage : null,
+                    "desc" => !empty($partnerInfo->partnerDesc) ? $partnerInfo->partnerDesc : null,
+                    "enName" => !empty($partnerInfo->partnerEnName) ? $partnerInfo->partnerEnName : null,
                 ];
         }
 
