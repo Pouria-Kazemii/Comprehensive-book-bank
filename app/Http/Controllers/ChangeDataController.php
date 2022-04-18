@@ -128,6 +128,7 @@ class ChangeDataController extends Controller
         $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '>', 0)->skip(0)->take($limit)->get();
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
+                echo 'id : '. $iranketab_book->id.' shabak : '. $iranketab_book->shabak.'</br>';
                 $search_shabak = $iranketab_book->shabak;
                 $main_book_info = BookirBook::where('xparent', '>=', -1)
                     ->where(function ($query) use ($search_shabak) {
@@ -135,7 +136,7 @@ class ChangeDataController extends Controller
                         $query->orWhere('xisbn2', $search_shabak);
                         // })->first();
                     })->get();
-
+                echo '<pre>'; print_r($main_book_info);
                 foreach ($main_book_info as $item) {
                     if (!empty($item)) {
                         if ($item->xparent == -1) {
