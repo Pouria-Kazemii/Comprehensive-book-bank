@@ -713,7 +713,9 @@ class BookController extends Controller
                     $digi_imagesData = reset($digi_imagesData);
                 }
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
-                $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
+                // $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
+                $digi_min_tedadSafe = $digi_books->min('tedadSafe');
+                $digi_max_tedadSafe = $digi_books->max('tedadSafe');
                 $digiData =
                     [
                         "isbns" => !empty($digi_shabakData) ? $digi_shabakData : null,
@@ -729,7 +731,8 @@ class BookController extends Controller
                         "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
                         "weights" => !empty($digi_weightData) ? $digi_weightData: null,
                         "features" => !empty($digi_featuresData) ? $digi_featuresData : null, 
-                        "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        "numberPages" => (!empty($digi_min_tedadSafe) && !empty($digi_max_tedadSafe)) ? ' بین ' . $digi_min_tedadSafe . ' تا ' . $digi_max_tedadSafe : null,
                         "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null, 
                     ];
             }else{
@@ -752,7 +755,9 @@ class BookController extends Controller
                 $si_min_publish_date = $si_books->min('saleNashr');
                 $si_max_publish_date = $si_books->max('saleNashr');
                 $si_printNumberData = array_unique(array_filter($si_books->pluck('nobatChap')->all()));
-                $si_tedadSafeData = array_unique(array_filter($si_books->pluck('tedadSafe')->all()));
+                // $si_tedadSafeData = array_unique(array_filter($si_books->pluck('tedadSafe')->all()));
+                $si_min_tedadSafe = $si_books->min('tedadSafe');
+                $si_max_tedadSafe = $si_books->amx('tedadSafe');
                 $si_formatData = array_unique(array_filter($si_books->pluck('ghatechap')->all()));
                 $si_translateData = array_unique(array_filter($si_books->pluck('tarjome')->all()));
                 $si_descriptionData = array_unique(array_filter($si_books->pluck('desc')->all()));
@@ -780,7 +785,8 @@ class BookController extends Controller
                         "covers" => !empty($si_coverData) ? $si_coverData : null, 
                         "des" => !empty($si_descriptionData) ? $si_descriptionData : null, 
                         "weights" => !empty($si_weightData) ? $si_weightData : null, 
-                        "numberPages" => !empty($si_tedadSafeData) ? $si_tedadSafeData : null, 
+                        // "numberPages" => !empty($si_tedadSafeData) ? $si_tedadSafeData : null,
+                        "numberPages" => (!empty($si_min_tedadSafe) && !empty($si_max_tedadSafe)) ? ' بین ' . $si_min_tedadSafe . ' تا ' . $si_max_tedadSafe : null,
                         "publishDate" => (!empty($si_min_publish_date) && !empty($si_max_publish_date)) ? ' بین ' . $si_min_publish_date . ' تا ' . $si_max_publish_date : null,
                         "printNumbers" => !empty($si_printNumberData) ? $si_printNumberData : null, 
                         "translate" => !empty($si_translateData) ? $si_translateData : null, 
@@ -803,7 +809,9 @@ class BookController extends Controller
                 $gisoom_max_publish_date = $gisoom_books->max('saleNashr');
                 $gisoom_printNumberData = array_unique(array_filter($gisoom_books->pluck('nobatChap')->all()));
                 $gisoom_circulationData = array_unique(array_filter($gisoom_books->pluck('tiraj')->all()));
-                $gisoom_tedadSafeData = array_unique(array_filter($gisoom_books->pluck('tedadSafe')->all()));
+                // $gisoom_tedadSafeData = array_unique(array_filter($gisoom_books->pluck('tedadSafe')->all()));
+                $gisoom_min_tedadSafe = $gisoom_books->min('tedadSafe');
+                $gisoom_max_tedadSafe = $gisoom_books->max('tedadSafe');
                 $gisoom_formatData = array_unique(array_filter($gisoom_books->pluck('ghatechap')->all()));
                 $gisoom_translateData = array_unique(array_filter($gisoom_books->pluck('tarjome')->all()));
                 $gisoom_descriptionData = array_unique(array_filter($gisoom_books->pluck('desc')->all()));
@@ -834,7 +842,8 @@ class BookController extends Controller
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null, 
                         "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null, 
                         "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null, 
-                        "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        "numberPages" => (!empty($gisoom_min_tedadSafe) && !empty($gisoom_max_tedadSafe)) ? ' بین ' . $gisoom_min_tedadSafe . ' تا ' . $gisoom_max_tedadSafe : null,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
                         "printNumbers" => !empty($gisoom_printNumberData) ? $gisoom_printNumberData : null, 
@@ -860,7 +869,9 @@ class BookController extends Controller
                 $iranketab_min_publish_date = $iranketab_books->min('saleNashr');
                 $iranketab_max_publish_date = $iranketab_books->max('saleNashr');
                 $iranketab_printNumberData = array_unique(array_filter($iranketab_books->pluck('nobatChap')->all()));
-                $iranketab_tedadSafeData = array_unique(array_filter($iranketab_books->pluck('tedadSafe')->all()));
+                // $iranketab_tedadSafeData = array_unique(array_filter($iranketab_books->pluck('tedadSafe')->all()));
+                $iranketab_min_tedadSafe = $iranketab_books->min('tedadSafe');
+                $iranketab_max_tedadSafe = $iranketab_books->max('tedadSafe');
                 $iranketab_formatData = array_unique(array_filter($iranketab_books->pluck('ghatechap')->all()));
                 $iranketab_shabakData = array_unique(array_filter($iranketab_books->pluck('shabak')->all()));
                 $iranketab_coverData = array_unique(array_filter($iranketab_books->pluck('jeld')->all()));
@@ -925,7 +936,8 @@ class BookController extends Controller
                         "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null, 
                         "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null, 
                         "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null, 
-                        "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        "numberPages" => (!empty($iranketab_min_tedadSafe) && !empty($iranketab_max_tedadSafe)) ? ' بین ' . $iranketab_min_tedadSafe . ' تا ' . $iranketab_max_tedadSafe : null,
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ?' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date :null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ?' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' ریال ' : null,
                         "printNumbers" => !empty($iranketab_printNumberData) ? $iranketab_printNumberData : null, 
