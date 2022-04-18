@@ -125,9 +125,7 @@ class ChangeDataController extends Controller
     public function update_book_master_id_in_iranketab($limit)
     {
         // iranketab
-        // $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
-        // $iranketab_books = BookIranketab::where('shabak','9786002295224')->get();
-        $iranketab_books = BookIranketab::where('shabak','9786002295224')->get();
+        $iranketab_books = BookIranketab::where('book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
         // dd($iranketab_books);
         if ($iranketab_books->count() != 0) {
             foreach ($iranketab_books as $iranketab_book) {
@@ -140,8 +138,6 @@ class ChangeDataController extends Controller
                     })->get();
                    
                     foreach($main_book_info as $item){
-                        echo '<pre>'; print_r($item);
-                        // dd($main_book_info);
                         if (!empty($item)) {
                             if ($item->xparent == -1) {
                                 $book_master_id = $item->xid;
@@ -151,10 +147,8 @@ class ChangeDataController extends Controller
                         } else {
                             $book_master_id = -10;
                         }
-                        if(isset($book_master_id)){
-                            echo '$book_master_id : '.$book_master_id.'</br>';
-                        }
-                        // BookIranketab::where('parentId',$iranketab_book->parentId)->update(['book_master_id'=>$book_master_id]);
+                        
+                        BookIranketab::where('parentId',$iranketab_book->parentId)->update(['book_master_id'=>$book_master_id]);
                         // $iranketab_book->update();
                     }
                  
