@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BookIranKetabPartner;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
@@ -75,7 +76,7 @@ class CreatorController extends Controller
 
                     if ($subjectId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')")->count();
                     else if ($publisherId > 0) $bookCount = BookirBook::orderBy('xpublishdate', 'desc')->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId') and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->count();
-                    elseif ($mainCreatorId > 0 ) $bookCount =  BookirPartnerrule::where('xcreatorid', $creatorId)->whereRaw("xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$mainCreatorId') AND xcreatorid != $mainCreatorId")->count(); // add by kiani
+                    elseif ($mainCreatorId > 0) $bookCount =  BookirPartnerrule::where('xcreatorid', $creatorId)->whereRaw("xbookid In (Select xbookid From bookir_partnerrule Where xcreatorid='$mainCreatorId') AND xcreatorid != $mainCreatorId")->count(); // add by kiani
                     elseif ($subjectId == 0 and $publisherId == 0) $bookCount = BookirPartnerrule::where('xcreatorid', $creatorId)->count(); // add by kiani
                     else  $bookCount = 0;
 
@@ -83,9 +84,9 @@ class CreatorController extends Controller
                     $data[] =
                         [
                             "publisherId" => $publisherId,
-                            "publisherName" => $publisherId > 0 ? BookirPublisher::where('xid',$publisherId)->first()->xpublishername : "",
+                            "publisherName" => $publisherId > 0 ? BookirPublisher::where('xid', $publisherId)->first()->xpublishername : "",
                             "mainCreatorId" => $mainCreatorId,
-                            "mainCreatorName" => $mainCreatorId > 0 ? BookirPartner::where('xid',$mainCreatorId)->first()->xcreatorname : "",
+                            "mainCreatorName" => $mainCreatorId > 0 ? BookirPartner::where('xid', $mainCreatorId)->first()->xcreatorname : "",
                             "subjectId" => $subjectId,
                             "id" => $creator->xid,
                             "bookCount" => $bookCount,
@@ -108,13 +109,13 @@ class CreatorController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+            ],
+            $status
+        );
     }
 
     // search
@@ -140,13 +141,13 @@ class CreatorController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
     }
 
     // role
@@ -171,13 +172,13 @@ class CreatorController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
     }
 
     // detail
@@ -193,11 +194,14 @@ class CreatorController extends Controller
             $creatorId = $creator->xid;
 
             $roles = BookirRules::orderBy('xrole', 'asc')->whereRaw("xid In (Select xroleid From bookir_partnerrule Where xcreatorid='$creatorId')")->select('xrole as title')->get();
-
+            $partnerInfo = BookIranKetabPartner::where('partner_master_id', $creatorId)->first();
             $dataMaster =
                 [
                     "name" => $creator->xcreatorname,
                     "roles" => $roles,
+                    "image" => $partnerInfo->partnerImage,
+                    "desc" => $partnerInfo->partnerDesc,
+                    "enName" => $partnerInfo->partnerEnName,
                 ];
         }
 
@@ -205,13 +209,13 @@ class CreatorController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["master" => $dataMaster]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["master" => $dataMaster]
+            ],
+            $status
+        );
     }
 
     // annual activity
@@ -237,12 +241,12 @@ class CreatorController extends Controller
 
         // response
         return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["yearPrintCount" => $yearPrintCountData]
-                ],
-                $status
-            );
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["yearPrintCount" => $yearPrintCountData]
+            ],
+            $status
+        );
     }
 }
