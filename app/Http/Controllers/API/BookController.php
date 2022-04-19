@@ -896,9 +896,15 @@ class BookController extends Controller
                 }
                
                 $images_array = array();
-                foreach(array_unique($iranketab_books->pluck('images')->all()) as $image_items){
+                foreach($iranketab_books->pluck('images')->all() as $image_items){
                     if($image_items != null){
-                        $images_array = explode(" =|= ",$image_items);
+                        $index_key = array_key_last($images_array);
+                        $arr_images = explode(" =|= ",$image_items);
+                        foreach($arr_images as $arr_images_items){
+                            if($arr_images_items != "" AND $arr_images_items !=null){
+                                $images_array[$index_key + 1] = $arr_images_items;
+                            }
+                        }
                     }
                 }
                 $iranketab_imagesData = array_unique($images_array);
