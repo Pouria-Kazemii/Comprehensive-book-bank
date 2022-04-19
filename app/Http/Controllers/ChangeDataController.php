@@ -169,6 +169,10 @@ class ChangeDataController extends Controller
                     $partner_master_id = $main_partner_info->xid;
                 } else {
                     $search_name = str_replace(" ","",$search_name);
+                    $search_name = str_replace("ً.","",$search_name);
+                    $search_name = str_replace("ً-","",$search_name);
+                    $search_name = str_replace("ً_","",$search_name);
+                    $search_name = str_replace("ً+","",$search_name);
                     $search_name = str_replace("ً","",$search_name);
                     $search_name = str_replace("ٌ","",$search_name);   
                     $search_name = str_replace("ٍ","",$search_name);
@@ -185,6 +189,10 @@ class ChangeDataController extends Controller
                     $search_name = str_replace("ء","",$search_name);
                     $search_name = str_replace("ۀ","ه",$search_name);
                     $search_name = str_replace("سادات","",$search_name);
+                    $search_name = str_replace("السادات","",$search_name);
+                    $search_name = str_replace("حاج","",$search_name);
+                    $search_name = str_replace("حاجی","",$search_name);
+                    $search_name = str_replace("سید","",$search_name);
                     $search_name = str_replace("آ","ا",$search_name);
                     $search_name = str_replace("ئ","ی",$search_name);
                     $search_name = str_replace("ي","ی",$search_name);

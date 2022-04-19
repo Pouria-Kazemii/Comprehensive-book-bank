@@ -902,9 +902,9 @@ class BookController extends Controller
                     }
                 }
                 $iranketab_imagesData = array_unique(array_filter($images_array));
-                if(!empty($iranketab_imagesData)){
-                    $iranketab_imagesData = reset($iranketab_imagesData);
-                }
+                // if(!empty($iranketab_imagesData)){
+                //     $iranketab_imagesData = reset($iranketab_imagesData);
+                // }
                 $iranketab_min_price_date = $iranketab_books->min('price');
                 $iranketab_max_price_date = $iranketab_books->max('price');
                 $creators_array = array();

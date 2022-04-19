@@ -14,7 +14,7 @@ class AddPartnerMasterIdToBookiranketabPartnerTable extends Migration
     public function up()
     {
         Schema::table('bookiranketab_partner', function (Blueprint $table) {
-            $table->integer('partner_master_id')->nullable()->default(0);
+            $table->integer('partner_master_id')->nullable()->default(0)->index();
         });
     }
 
