@@ -901,7 +901,7 @@ class BookController extends Controller
                         $images_array = explode(" =|= ",$image_items);
                     }
                 }
-                $iranketab_imagesData = array_unique(array_filter($images_array));
+                $iranketab_imagesData = array_unique($images_array);
                 // if(!empty($iranketab_imagesData)){
                 //     $iranketab_imagesData = reset($iranketab_imagesData);
                 // }
