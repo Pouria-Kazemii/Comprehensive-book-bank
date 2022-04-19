@@ -207,7 +207,7 @@ class GetIranketab extends Command
                                                 $partnerEnName = str_replace($illegal_characters, $Allowed_characters, $partnerEnName);
                                                 $authorData['partnerEnName'] = trim(preg_replace("/\r|\n/", " ", mb_strtolower($partnerEnName, 'UTF-8')), " ");
                                                 $authorData['partnerDesc'] = $author_crawler->filter('body div.container div.container-fluid h5')->text();
-                                                $authorData['partnerImage'] = $author_crawler->filter('body div.container div.container-fluid img.img-responsive')->attr('src');
+                                                $authorData['partnerImage'] = 'https://www.iranketab.ir' .$author_crawler->filter('body div.container div.container-fluid img.img-responsive')->attr('src');
                                                 $authorData['partnerName'] = trim(preg_replace("/\r|\n/", " ", $author_crawler->filter('body div.container div.container-fluid h1')->text()), " ");
     
                                                 $author_info = BookIranKetabPartner::where('partnerId', $authorData['partnerId'])->first();

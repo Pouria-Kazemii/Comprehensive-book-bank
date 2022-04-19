@@ -168,7 +168,15 @@ class ChangeDataController extends Controller
                 if (!empty($main_partner_info)) {
                     $partner_master_id = $main_partner_info->xid;
                 } else {
-                    $partner_master_id = -10;
+                    $search_name = str_replace(" ","",$search_name);
+                    $search_name = str_replace("سادات","",$search_name);
+                    echo '$search_nam : '.$search_name.'</br>';
+                    $main_partner_info = BookirPartner::where('xcreatorname', $search_name)->orWhere('xname2', $search_name)->first();
+                    if (!empty($main_partner_info)) {
+                        $partner_master_id = $main_partner_info->xid;
+                    } else {
+                        $partner_master_id = -10;
+                    }
                 }
                 echo 'partner_master_id : '.$partner_master_id.'</br>';
                 BookIranKetabPartner::where('id', $iranketab_partner->id)->update(['partner_master_id' => $partner_master_id]);
