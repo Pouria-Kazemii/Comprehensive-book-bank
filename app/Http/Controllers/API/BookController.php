@@ -708,10 +708,18 @@ class BookController extends Controller
                     $features_array = explode(":|:",$feature_items);
                 }
                 $digi_featuresData = array_unique(array_filter($features_array));
-                $digi_imagesData = array_unique(array_filter($digi_books->pluck('images')->all()));
-                if(!empty($digi_imagesData)){
-                    $digi_imagesData = reset($digi_imagesData);
+                // $digi_imagesData = array_unique(array_filter($digi_books->pluck('images')->all()));
+                // if(!empty($digi_imagesData)){
+                //     $digi_imagesData = reset($digi_imagesData);
+                // }
+                $images_array = array();
+                foreach($digi_books->pluck('images')->all() as $image_items){
+                    if($image_items != null){
+                        $images_array[] = $image_items;
+                    }
                 }
+                $digi_imagesData = array_unique($images_array);
+
                 $digi_circulationData = array_unique($digi_books->pluck('count')->all());
                 // $digi_tedadSafeData = array_unique(array_filter($digi_books->pluck('tedadSafe')->all()));
                 $digi_min_tedadSafe = $digi_books->min('tedadSafe');
@@ -722,7 +730,7 @@ class BookController extends Controller
                         "names" => !empty($digi_titleData) ? $digi_titleData : null, 
                         "publishers" => !empty($digi_publishersData) ? $digi_publishersData : null,
                         "subjects" => !empty($digi_subjectsData) ? $digi_subjectsData : null, 
-                        "image" => !empty($digi_imagesData) ? $digi_imagesData : null,
+                        "images" => !empty($digi_imagesData) ? $digi_imagesData : null,
                         "formats" => !empty($digi_formatData) ? $digi_formatData : null,
                         "covers" => !empty($digi_coverData) ? $digi_coverData : null,
                         "circulation" => !empty($digi_circulationData) ? priceFormat($digi_circulationData) : null,
@@ -766,10 +774,18 @@ class BookController extends Controller
                 }
                 $si_coverData = array_unique(array_filter($si_books->pluck('jeld')->all()));
                 $si_weightData = array_unique(array_filter($si_books->pluck('vazn')->all()));
-                $si_imagesData = array_unique(array_filter($si_books->pluck('image')->all()));
-                if(!empty($si_imagesData)){
-                    $si_imagesData = reset($si_imagesData);
+                // $si_imagesData = array_unique(array_filter($si_books->pluck('image')->all()));
+                // if(!empty($si_imagesData)){
+                //     $si_imagesData = reset($si_imagesData);
+                // }
+                $images_array = array();
+                foreach($si_books->pluck('images')->all() as $image_items){
+                    if($image_items != null){
+                        $images_array[] = $image_items;
+                    }
                 }
+                $si_imagesData = array_unique($images_array);
+
                 $si_min_price_date = $si_books->min('price');
                 $si_max_price_date = $si_books->max('price');
                 $siData =
@@ -780,7 +796,7 @@ class BookController extends Controller
                         "publishers" => !empty($si_publishersData) ? $si_publishersData : null, 
                         'creators' => !empty($si_creatorData) ? $si_creatorData : null,  
                         "subjects" => !empty($si_subjectsData) ? $si_subjectsData : null, 
-                        "image" => !empty($si_imagesData) ? $si_imagesData : null, 
+                        "images" => !empty($si_imagesData) ? $si_imagesData : null, 
                         "formats" => !empty($si_formatData) ? $si_formatData : null, 
                         "covers" => !empty($si_coverData) ? $si_coverData : null, 
                         "des" => !empty($si_descriptionData) ? $si_descriptionData : null, 
@@ -820,10 +836,17 @@ class BookController extends Controller
                 }
                 $gisoom_shabak10Data = array_unique(array_filter($gisoom_books->pluck('shabak10')->all()));
                 $gisoom_shabak13Data = array_unique(array_filter($gisoom_books->pluck('shabak13')->all()));
-                $gisoom_imagesData = array_unique(array_filter($gisoom_books->pluck('images')->all()));
-                if(!empty($gisoom_imagesData)){
-                    $gisoom_imagesData = reset($gisoom_imagesData);
+                // $gisoom_imagesData = array_unique(array_filter($gisoom_books->pluck('images')->all()));
+                // if(!empty($gisoom_imagesData)){
+                //     $gisoom_imagesData = reset($gisoom_imagesData);
+                // }
+                $images_array = array();
+                foreach($gisoom_books->pluck('images')->all() as $image_items){
+                    if($image_items != null){
+                        $images_array[] = $image_items;
+                    }
                 }
+                $gisoom_imagesData = array_unique($images_array);
                 $gisoom_min_price_date = $gisoom_books->min('price');
                 $gisoom_max_price_date = $gisoom_books->max('price');
                 $gisoom_subjectsData = array_unique(array_filter($gisoom_books->pluck('catText')->all()));
@@ -836,7 +859,7 @@ class BookController extends Controller
                         "publishers" => !empty($gisoom_publishersData) ? $gisoom_publishersData : null, 
                         "creator"=> !empty($gisoom_creatorData) ? $gisoom_creatorData : null, 
                         "subjects" => !empty($gisoom_subjectsData) ? $gisoom_subjectsData : null, 
-                        "image" => !empty($gisoom_imagesData) ? $gisoom_imagesData : null, 
+                        "images" => !empty($gisoom_imagesData) ? $gisoom_imagesData : null, 
                         "circulation" => !empty($gisoom_circulationData) ? priceFormat($gisoom_circulationData) : null, 
                         "dioCodes" => !empty($gisoom_dioCodeData) ? $gisoom_dioCodeData : null, 
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null, 
@@ -934,7 +957,7 @@ class BookController extends Controller
                         "names" => !empty($iranketab_titleData) ? $iranketab_titleData : null, 
                         "publishers" => !empty($iranketab_publishersData) ? $iranketab_publishersData : null, 
                         "subjects" => !empty($iranketab_subjectsData) ? $iranketab_subjectsData : null, 
-                        "image" => !empty($iranketab_imagesData) ? $iranketab_imagesData : null, 
+                        "images" => !empty($iranketab_imagesData) ? $iranketab_imagesData : null, 
                         "covers" => !empty($iranketab_coverData) ? $iranketab_coverData : null, 
                         "formats" => !empty($iranketab_formatData) ? $iranketab_formatData : null, 
                         "creators" => !empty($iranketab_creatorsData) ? $iranketab_creatorsData : null, 
