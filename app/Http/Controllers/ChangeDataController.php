@@ -239,11 +239,16 @@ class ChangeDataController extends Controller
                         $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
                             return $isbn == $bookirBookParentItem;
                         });
-                        if ($filtered->count() > $strongBookCount) {
+                        if(($filtered->count() == $strongBookCount) AND  BookirBook::where('xid',$key)->first()->xparent = -1){
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                        }
+                            
+                        }elseif ($filtered->count() > $strongBookCount) {
+                            $strongBookCount  = $filtered->count();
+                            $strongBookIsbn  = $bookirBookParentItem;
+                            $strongBookId  = $key;
+                        }else 
                         echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
                     }
 
