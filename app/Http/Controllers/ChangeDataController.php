@@ -224,8 +224,8 @@ class ChangeDataController extends Controller
                 // dd($allBookirBooks);
                 
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-                var_dump($bookirBooksParent);
-                dd($bookirBooksParent);
+                // var_dump($bookirBooksParent);
+                // dd($bookirBooksParent);
                 $strong_book = 0;
                 foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
                     // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
