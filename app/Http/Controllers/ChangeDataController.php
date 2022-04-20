@@ -219,7 +219,7 @@ class ChangeDataController extends Controller
             $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
             foreach($allIranketabBooks as $allIranketabBookItem){
                 $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
-                $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all()); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 dd($allBookirBooks);
 
                 
