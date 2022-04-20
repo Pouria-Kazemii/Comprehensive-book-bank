@@ -227,7 +227,8 @@ class ChangeDataController extends Controller
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 // var_dump($bookirBooksParent);
                 // dd($bookirBooksParent);
-                $strong_book = 0;
+                $strongBookIsbn = '';
+                $strongBookCount = 0;
                 foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
                     // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
                     $allBookirBooksCollection = new Collection($allBookirBooksCollection);
@@ -235,11 +236,12 @@ class ChangeDataController extends Controller
                         return $isbn == $bookirBookParentItem;
                     });
                     echo 'isbn : '.$bookirBookParentItem .'count : '.$filtered->count().'</br>';
-                    if($filtered->count() > $strong_book ){  
-                        $strong_book  = $bookirBookParentItem; 
+                    if($filtered->count() > $strongBookCount ){  
+                        $strongBookCount  = $filtered->count(); 
+                        $strongBookIsbn  = $bookirBookParentItem; 
                     }
                 }
-               echo $strong_book;
+               echo 'isbn : '.$strongBookIsbn . 'count : '.$strongBookCount ;
                 // BookirBook::whereIN('xid',$allBookirBooks->xid)->where('xid','!=',BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->first()->xid)->update(['xtempparent'=>$strong_book]);
             }
 
