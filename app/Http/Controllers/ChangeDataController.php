@@ -216,45 +216,48 @@ class ChangeDataController extends Controller
         }
     }
 
-    public function consensus_similar_books($limit)
+    public function consensus_similar_books_by_iranketab_entitle($limit)
     {
-        // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
-        $allIranketabBooks = BookIranketab::where('enTitle', 'The Little Prince')->skip(0)->take($limit)->get();
-        foreach ($allIranketabBooks as $allIranketabBookItem) {
-            $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
-            $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-            $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
-            $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
+        $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->where('enTitle', '!=', '')->skip(0)->take($limit)->get();
+        // $allIranketabBooks = BookIranketab::where('enTitle', 'The Little Prince')->skip(0)->take($limit)->get();
+        if ($allIranketabBooks->count() != 0) {
+            foreach ($allIranketabBooks as $allIranketabBookItem) {
+                $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
+                $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
+                $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
 
-            $bookirBooksParent = $allBookirBooks->where('xparent', -1)->pluck('xisbn2', 'xid')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                // $bookirBooksParent = $allBookirBooks->where('xparent', -1)->pluck('xisbn2', 'xid')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                $bookirBooksParent = $allBookirBooks->pluck('xisbn2', 'xid')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
 
-            $strongBookIsbn = '';
-            $strongBookCount = 0;
-            foreach ($bookirBooksParent as $key => $bookirBookParentItem) { // پیدا کردن آیدی قوی تر
-                $allBookirBooksIsbnCollection = new Collection($allBookirBooksIsbnCollection);
-                $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
-                    return $isbn == $bookirBookParentItem;
-                });
-                if ($filtered->count() > $strongBookCount) {
-                    $strongBookCount  = $filtered->count();
-                    $strongBookIsbn  = $bookirBookParentItem;
-                    $strongBookId  = $key;
+                $strongBookIsbn = '';
+                $strongBookCount = 0;
+                foreach ($bookirBooksParent as $key => $bookirBookParentItem) { // پیدا کردن آیدی قوی تر
+                    $allBookirBooksIsbnCollection = new Collection($allBookirBooksIsbnCollection);
+                    $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
+                        return $isbn == $bookirBookParentItem;
+                    });
+                    if ($filtered->count() > $strongBookCount) {
+                        $strongBookCount  = $filtered->count();
+                        $strongBookIsbn  = $bookirBookParentItem;
+                        $strongBookId  = $key;
+                    }
+                    echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
                 }
-                echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount.'</br>';
 
+                DB::enableQueryLog();
+                try {
+                    BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
+                    BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
+                    BookIranketab::where('id',$allIranketabBookItem->id)->update(['temp_book_master_id' => $strongBookId]);
+                    echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount.'</br>';
+                } catch (Exception $Exception) {
+                    //throw $th;
+                    echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage().'</br>';
+                }
             }
-            
-            DB::enableQueryLog();
-            try {
-                BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
-                BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
-                echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
-
-            } catch (Exception $Exception) {
-                //throw $th;
-               echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage();
-            }
-           
+        } else {
+            echo 'nothing info by en_name in bookirbook table'.'</br>';
         }
     }
 }
