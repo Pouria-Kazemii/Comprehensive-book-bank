@@ -222,7 +222,7 @@ class ChangeDataController extends Controller
         // $allIranketabBooks = BookIranketab::where('enTitle', 'The Little Prince')->skip(0)->take($limit)->get();
         if ($allIranketabBooks->count() != 0) {
             foreach ($allIranketabBooks as $allIranketabBookItem) {
-                echo ' book_id : '.$allIranketabBookItem->id.' book name : '.$allIranketabBookItem->title.'</br>';
+                echo ' book_id : '.$allIranketabBookItem->id.' book name : '.$allIranketabBookItem->title.'  en book name : '.$allIranketabBookItem->enTitle.'</br>';
                 $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
                 $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
@@ -243,10 +243,9 @@ class ChangeDataController extends Controller
                         $strongBookIsbn  = $bookirBookParentItem;
                         $strongBookId  = $key;
                     }
-                    echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
+                    echo 'id : ' . $key . 'isbn : ' . $$bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
                 }
 
-                DB::enableQueryLog();
                 try {
                     BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
                     BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
