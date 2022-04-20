@@ -221,21 +221,21 @@ class ChangeDataController extends Controller
                 $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
                 $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 // dd($allBookirBooks);
-
                 
-                // $bookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 
-                dd($bookirBooksParent);
-                // $strong_book = 0;
-                // foreach($bookirBooks as $bookirBookItem){ // پیدا کردن آیدی قوی تر
-                //     $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
-                //     if($bookirBookIsbnCount > $strong_book ){  
-                //         $strong_book  = $bookirBookIsbnCount; 
-                //     }
-                // }
-                $counted = $bookirBooksParent->countBy()->sortDesc();
-                var_dump($counted);
+                $strong_book = 0;
+                foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
+                    // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
+                    $filtered = $allBookirBooks->pluck('xisbn2')->all()->filter(function ($value, $key) use ($bookirBookParentItem) {
+                        return $value == $bookirBookParentItem;
+                    });
+                    echo 'isbn : '.$bookirBookParentItem .'count : '.$filtered->count().'</br>';
+                    if($filtered->count() > $strong_book ){  
+                        $strong_book  = $bookirBookParentItem; 
+                    }
+                }
+               echo $strong_book;
                 // BookirBook::whereIN('xid',$allBookirBooks->xid)->where('xid','!=',BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->first()->xid)->update(['xtempparent'=>$strong_book]);
             }
 
