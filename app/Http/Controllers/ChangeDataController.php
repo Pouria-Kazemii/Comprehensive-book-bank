@@ -222,6 +222,7 @@ class ChangeDataController extends Controller
         // $allIranketabBooks = BookIranketab::where('enTitle', 'The Little Prince')->skip(0)->take($limit)->get();
         if ($allIranketabBooks->count() != 0) {
             foreach ($allIranketabBooks as $allIranketabBookItem) {
+                echo ' book_id : '.$allIranketabBookItem->id.' book name : '.$allIranketabBookItem->title.'</br>';
                 $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
                 $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
@@ -250,7 +251,7 @@ class ChangeDataController extends Controller
                     BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
                     BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
                     BookIranketab::where('id',$allIranketabBookItem->id)->update(['temp_book_master_id' => $strongBookId]);
-                    echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount.'</br>';
+                    echo 'update by info id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount.'</br>';
                 } catch (Exception $Exception) {
                     //throw $th;
                     echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage().'</br>';
