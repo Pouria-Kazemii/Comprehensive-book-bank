@@ -225,6 +225,8 @@ class ChangeDataController extends Controller
                 
                 // $bookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                
+                dd($bookirBooksParent);
                 // $strong_book = 0;
                 // foreach($bookirBooks as $bookirBookItem){ // پیدا کردن آیدی قوی تر
                 //     $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
@@ -233,6 +235,7 @@ class ChangeDataController extends Controller
                 //     }
                 // }
                 $counted = $bookirBooksParent->countBy()->sortDesc();
+                var_dump($counted);
                 // BookirBook::whereIN('xid',$allBookirBooks->xid)->where('xid','!=',BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->first()->xid)->update(['xtempparent'=>$strong_book]);
             }
 
