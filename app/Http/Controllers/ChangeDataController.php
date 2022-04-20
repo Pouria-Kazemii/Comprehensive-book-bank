@@ -240,18 +240,20 @@ class ChangeDataController extends Controller
                     $strongBookIsbn  = $bookirBookParentItem;
                     $strongBookId  = $key;
                 }
-            }
-            
-            DB::enableQueryLog();
-            try {
-                BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
-                BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
                 echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
 
-            } catch (Exception $Exception) {
-                //throw $th;
-               echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage();
             }
+            
+            // DB::enableQueryLog();
+            // try {
+            //     BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
+            //     BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
+            //     echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
+
+            // } catch (Exception $Exception) {
+            //     //throw $th;
+            //    echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage();
+            // }
            
         }
     }
