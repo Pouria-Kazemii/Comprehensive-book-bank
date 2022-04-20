@@ -15,6 +15,7 @@ use App\Models\BookirPartner;
 use App\Models\BookK24;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class ChangeDataController extends Controller
 {
@@ -218,7 +219,7 @@ class ChangeDataController extends Controller
     public function consensus_similar_books($limit)
     {
         // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
-        $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
+        $allIranketabBooks = BookIranketab::where('enTitle', 'The Little Prince')->skip(0)->take($limit)->get();
         foreach ($allIranketabBooks as $allIranketabBookItem) {
             $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
             $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
@@ -240,11 +241,18 @@ class ChangeDataController extends Controller
                     $strongBookId  = $key;
                 }
             }
-            echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
+            
             DB::enableQueryLog();
-            BookirBook::whereIN('xid', $allBookirBooksIdCollection)->where('xid', '!=', $strongBookId)->update(['xtempparent' => $strongBookId]);
-            $query = DB::getQueryLog();
-            dd($query);
+            try {
+                BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
+                BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
+                echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
+
+            } catch (Exception $Exception) {
+                //throw $th;
+               echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage();
+            }
+           
         }
     }
 }
