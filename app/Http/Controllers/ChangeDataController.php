@@ -213,4 +213,30 @@ class ChangeDataController extends Controller
             die("nothing for update");
         }
     }
+
+    public function Consensus_similar_books($limit){
+            // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
+            $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
+            foreach($allIranketabBooks as $allIranketabBookItem){
+                $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
+                $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all()); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                dd($allBookirBooks);
+
+                
+                // $bookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                // $strong_book = 0;
+                // foreach($bookirBooks as $bookirBookItem){ // پیدا کردن آیدی قوی تر
+                //     $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
+                //     if($bookirBookIsbnCount > $strong_book ){  
+                //         $strong_book  = $bookirBookIsbnCount; 
+                //     }
+                // }
+                $counted = $bookirBooksParent->countBy()->sortDesc();
+                // BookirBook::whereIN('xid',$allBookirBooks->xid)->where('xid','!=',BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->first()->xid)->update(['xtempparent'=>$strong_book]);
+            }
+
+        
+       
+    }
 }
