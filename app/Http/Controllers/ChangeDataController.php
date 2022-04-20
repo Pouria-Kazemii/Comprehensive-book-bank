@@ -13,6 +13,7 @@ use App\Models\BookIranketab;
 use App\Models\BookIranKetabPartner;
 use App\Models\BookirPartner;
 use App\Models\BookK24;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ChangeDataController extends Controller
@@ -229,6 +230,7 @@ class ChangeDataController extends Controller
                 $strong_book = 0;
                 foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
                     // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
+                    $allBookirBooksCollection = new Collection($allBookirBooksCollection);
                     $filtered = $allBookirBooksCollection->filter(function ($isbn) use ($bookirBookParentItem) {
                         return $isbn == $bookirBookParentItem;
                     });
