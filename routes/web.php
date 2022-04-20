@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BookController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChangeDataController;
 
@@ -25,3 +26,5 @@ Route::get('/v1/book/update_book_master_id_in_digi/{limit}', [ChangeDataControll
 Route::get('/v1/book/update_book_master_id_in_30book/{limit}', [ChangeDataController::class, 'update_book_master_id_in_30book']);
 Route::get('/v1/book/update_book_master_id_in_iranketab/{limit}', [ChangeDataController::class, 'update_book_master_id_in_iranketab']);
 Route::get('/v1/book/update_partner_master_id_in_iranketab/{limit}', [ChangeDataController::class, 'update_partner_master_id_in_iranketab']);
+Route::get('/dossier/{bookId}', [BookController::class, 'dossier']);
+Route::get('/consensus_similar_books/{limit}', [ChangeDataController::class, 'consensus_similar_books']);

@@ -214,7 +214,7 @@ class ChangeDataController extends Controller
         }
     }
 
-    public function Consensus_similar_books($limit){
+    public function consensus_similar_books($limit){
             // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
             $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
             foreach($allIranketabBooks as $allIranketabBookItem){
