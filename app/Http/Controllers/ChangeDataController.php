@@ -257,6 +257,7 @@ class ChangeDataController extends Controller
                         echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage() . '</br>';
                     }
                 } else {
+                    BookIranketab::where('id', $allIranketabBookItem->id)->update(['temp_book_master_id' => -10]);
                     echo 'nothing info in bookirbook table' . '</br>';
                 }
             }
