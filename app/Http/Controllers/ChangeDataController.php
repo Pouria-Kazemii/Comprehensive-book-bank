@@ -220,6 +220,7 @@ class ChangeDataController extends Controller
             foreach($allIranketabBooks as $allIranketabBookItem){
                 $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
                 $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+                $allBookirBooksCollection =  $allBookirBooks->pluck('xisbn2')->all();
                 // dd($allBookirBooks);
                 
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
@@ -227,7 +228,7 @@ class ChangeDataController extends Controller
                 $strong_book = 0;
                 foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
                     // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
-                    $filtered = $allBookirBooks->pluck('xisbn2')->all()->filter(function ($value, $key) use ($bookirBookParentItem) {
+                    $filtered = $allBookirBooksCollection->filter(function ($value, $key) use ($bookirBookParentItem) {
                         return $value == $bookirBookParentItem;
                     });
                     echo 'isbn : '.$bookirBookParentItem .'count : '.$filtered->count().'</br>';
