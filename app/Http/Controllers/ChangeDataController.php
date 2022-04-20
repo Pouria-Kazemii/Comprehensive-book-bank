@@ -136,68 +136,68 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
-                        })->first();
-                    if (!empty($main_book_info)) {
-                        if ($main_book_info->xparent == -1) {
-                            $book_master_id = $main_book_info->xid;
-                        } else {
-                            $book_master_id = $main_book_info->xparent;
-                        }
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $book_master_id = $main_book_info->xid;
                     } else {
-                        $book_master_id = -10;
+                        $book_master_id = $main_book_info->xparent;
                     }
-                    BookIranketab::where('parentId', $iranketab_book->parentId)->update(['book_master_id' => $book_master_id]);
-                    // var_dump( $query);
-                    // $iranketab_book->update();
-                
+                } else {
+                    $book_master_id = -10;
+                }
+                BookIranketab::where('parentId', $iranketab_book->parentId)->update(['book_master_id' => $book_master_id]);
+                // var_dump( $query);
+                // $iranketab_book->update();
+
             }
             die("successfully update book_master_id info");
         } else {
             die("nothing for update");
         }
     }
-    
+
     public function update_partner_master_id_in_iranketab($limit)
     {
         // iranketab
         $iranketab_partners = BookIranKetabPartner::where('partner_master_id', 0)->skip(0)->take($limit)->get();
         if ($iranketab_partners->count() != 0) {
             foreach ($iranketab_partners as $iranketab_partner) {
-                echo 'id : '. $iranketab_partner->id.' shabak : '. $iranketab_partner->partnerName.'</br>';
+                echo 'id : ' . $iranketab_partner->id . ' shabak : ' . $iranketab_partner->partnerName . '</br>';
                 $search_name = $iranketab_partner->partnerName;
                 $main_partner_info = BookirPartner::where('xcreatorname', $search_name)->orWhere('xname2', $search_name)->first();
                 if (!empty($main_partner_info)) {
                     $partner_master_id = $main_partner_info->xid;
                 } else {
-                    $search_name = str_replace(" ","",$search_name);
-                    $search_name = str_replace("ً.","",$search_name);
-                    $search_name = str_replace("ً-","",$search_name);
-                    $search_name = str_replace("ً_","",$search_name);
-                    $search_name = str_replace("ً+","",$search_name);
-                    $search_name = str_replace("ً","",$search_name);
-                    $search_name = str_replace("ٌ","",$search_name);   
-                    $search_name = str_replace("ٍ","",$search_name);
-                    $search_name = str_replace("،","",$search_name);
-                    $search_name = str_replace("؛","",$search_name);
-                    $search_name = str_replace(",","",$search_name);
-                    $search_name = str_replace("ّ","",$search_name);
-                    $search_name = str_replace("ِ","",$search_name);
-                    $search_name = str_replace("ُ","",$search_name);
-                    $search_name = str_replace("ة","ه",$search_name);
-                    $search_name = str_replace("ؤ","و",$search_name);
-                    $search_name = str_replace("إ","ا",$search_name);
-                    $search_name = str_replace("أ","ا",$search_name);
-                    $search_name = str_replace("ء","",$search_name);
-                    $search_name = str_replace("ۀ","ه",$search_name);
-                    $search_name = str_replace("سادات","",$search_name);
-                    $search_name = str_replace("السادات","",$search_name);
-                    $search_name = str_replace("حاج","",$search_name);
-                    $search_name = str_replace("حاجی","",$search_name);
-                    $search_name = str_replace("سید","",$search_name);
-                    $search_name = str_replace("آ","ا",$search_name);
-                    $search_name = str_replace("ئ","ی",$search_name);
-                    $search_name = str_replace("ي","ی",$search_name);
-                    echo '$search_nam : '.$search_name.'</br>';
+                    $search_name = str_replace(" ", "", $search_name);
+                    $search_name = str_replace("ً.", "", $search_name);
+                    $search_name = str_replace("ً-", "", $search_name);
+                    $search_name = str_replace("ً_", "", $search_name);
+                    $search_name = str_replace("ً+", "", $search_name);
+                    $search_name = str_replace("ً", "", $search_name);
+                    $search_name = str_replace("ٌ", "", $search_name);
+                    $search_name = str_replace("ٍ", "", $search_name);
+                    $search_name = str_replace("،", "", $search_name);
+                    $search_name = str_replace("؛", "", $search_name);
+                    $search_name = str_replace(",", "", $search_name);
+                    $search_name = str_replace("ّ", "", $search_name);
+                    $search_name = str_replace("ِ", "", $search_name);
+                    $search_name = str_replace("ُ", "", $search_name);
+                    $search_name = str_replace("ة", "ه", $search_name);
+                    $search_name = str_replace("ؤ", "و", $search_name);
+                    $search_name = str_replace("إ", "ا", $search_name);
+                    $search_name = str_replace("أ", "ا", $search_name);
+                    $search_name = str_replace("ء", "", $search_name);
+                    $search_name = str_replace("ۀ", "ه", $search_name);
+                    $search_name = str_replace("سادات", "", $search_name);
+                    $search_name = str_replace("السادات", "", $search_name);
+                    $search_name = str_replace("حاج", "", $search_name);
+                    $search_name = str_replace("حاجی", "", $search_name);
+                    $search_name = str_replace("سید", "", $search_name);
+                    $search_name = str_replace("آ", "ا", $search_name);
+                    $search_name = str_replace("ئ", "ی", $search_name);
+                    $search_name = str_replace("ي", "ی", $search_name);
+                    echo '$search_nam : ' . $search_name . '</br>';
                     $main_partner_info = BookirPartner::where('xcreatorname', $search_name)->orWhere('xname2', $search_name)->first();
                     if (!empty($main_partner_info)) {
                         $partner_master_id = $main_partner_info->xid;
@@ -205,7 +205,7 @@ class ChangeDataController extends Controller
                         $partner_master_id = -10;
                     }
                 }
-                echo 'partner_master_id : '.$partner_master_id.'</br>';
+                echo 'partner_master_id : ' . $partner_master_id . '</br>';
                 BookIranKetabPartner::where('id', $iranketab_partner->id)->update(['partner_master_id' => $partner_master_id]);
                 // $iranketab_book->update();
             }
@@ -215,37 +215,35 @@ class ChangeDataController extends Controller
         }
     }
 
-    public function consensus_similar_books($limit){
-            // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
-            $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
-            foreach($allIranketabBooks as $allIranketabBookItem){
-                $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
-                $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-                $allBookirBooksCollection =  $allBookirBooks->pluck('xisbn2')->all();
-                // dd($allBookirBooks);
-                
-                $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-                // var_dump($bookirBooksParent);
-                // dd($bookirBooksParent);
-                $strongBookIsbn = '';
-                $strongBookCount = 0;
-                foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
-                    // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
-                    $allBookirBooksCollection = new Collection($allBookirBooksCollection);
-                    $filtered = $allBookirBooksCollection->filter(function ($isbn) use ($bookirBookParentItem) {
-                        return $isbn == $bookirBookParentItem;
-                    });
-                    echo 'isbn : '.$bookirBookParentItem .'count : '.$filtered->count().'</br>';
-                    if($filtered->count() > $strongBookCount ){  
-                        $strongBookCount  = $filtered->count(); 
-                        $strongBookIsbn  = $bookirBookParentItem; 
-                    }
-                }
-               echo 'isbn : '.$strongBookIsbn . 'count : '.$strongBookCount ;
-                // BookirBook::whereIN('xid',$allBookirBooks->xid)->where('xid','!=',BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->first()->xid)->update(['xtempparent'=>$strong_book]);
-            }
+    public function consensus_similar_books($limit)
+    {
+        // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->skip(0)->take($limit)->get();
+        $allIranketabBooks = BookIranketab::where('enTitle', 'The Compound Effect')->skip(0)->take($limit)->get();
+        foreach ($allIranketabBooks as $allIranketabBookItem) {
+            $iranketabBooks = BookIranketab::where('enTitle', $allIranketabBookItem->enTitle)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
+            $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+            $allBookirBooksCollection =  $allBookirBooks->pluck('xisbn2')->all();
 
-        
-       
+            $bookirBooksParent = $allBookirBooks->where('xparent', -1)->pluck('xisbn2', 'xid')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
+
+            $strongBookIsbn = '';
+            $strongBookCount = 0;
+            foreach ($bookirBooksParent as $key => $bookirBookParentItem) { // پیدا کردن آیدی قوی تر
+                $allBookirBooksCollection = new Collection($allBookirBooksCollection);
+                $filtered = $allBookirBooksCollection->filter(function ($isbn) use ($bookirBookParentItem) {
+                    return $isbn == $bookirBookParentItem;
+                });
+                if ($filtered->count() > $strongBookCount) {
+                    $strongBookCount  = $filtered->count();
+                    $strongBookIsbn  = $bookirBookParentItem;
+                    $strongBookId  = $key;
+                }
+            }
+            echo 'id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount;
+            DB::enableQueryLog();
+            BookirBook::whereIN('xid', $allBookirBooksCollection)->where('xid', '!=', $strongBookId)->update(['xtempparent' => $strongBookId]);
+            $query = DB::getQueryLog();
+            dd($query);
+        }
     }
 }
