@@ -224,12 +224,13 @@ class ChangeDataController extends Controller
                 // dd($allBookirBooks);
                 
                 $bookirBooksParent = $allBookirBooks->where('xparent',-1)->pluck('xisbn2')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-                
+                var_dump($bookirBooksParent);
+                dd($bookirBooksParent);
                 $strong_book = 0;
                 foreach($bookirBooksParent as $bookirBookParentItem){ // پیدا کردن آیدی قوی تر
                     // $bookirBookIsbnCount = BookirBook::whereIN('xisbn2',$bookirBookItem->xisbn2)->count(); 
-                    $filtered = $allBookirBooksCollection->filter(function ($value, $key) use ($bookirBookParentItem) {
-                        return $value == $bookirBookParentItem;
+                    $filtered = $allBookirBooksCollection->filter(function ($isbn) use ($bookirBookParentItem) {
+                        return $isbn == $bookirBookParentItem;
                     });
                     echo 'isbn : '.$bookirBookParentItem .'count : '.$filtered->count().'</br>';
                     if($filtered->count() > $strong_book ){  
