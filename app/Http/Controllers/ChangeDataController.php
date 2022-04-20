@@ -220,7 +220,7 @@ class ChangeDataController extends Controller
             foreach($allIranketabBooks as $allIranketabBookItem){
                 $iranketabBooks = BookIranketab::where('enTitle',$allIranketabBookItem->enTitle)->where('shabak','!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با عنوان انگلیسی کتاب
                 $allBookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
-                dd($allBookirBooks);
+                // dd($allBookirBooks);
 
                 
                 // $bookirBooks = BookirBook::whereIN('xisbn2',$iranketabBooks->pluck('shabak')->all())->where('xparent',-1)->get(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان
