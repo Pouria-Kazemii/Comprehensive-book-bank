@@ -1113,4 +1113,10 @@ class BookController extends Controller
             $status
         );
     }
+
+
+    //advanced search
+    public function advanceSearch(Request $request){
+        dd($request);
+    }
 }
