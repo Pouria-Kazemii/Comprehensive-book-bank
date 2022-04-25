@@ -163,6 +163,8 @@ class BookController extends Controller
 
     //advanced search
     public function advanceSearch(Request $request){
+        return $request;
+        /*
         $where = '';
         $searchField = $request["searchField"];
         $comparisonOperators = $request["comparisonOperators"];
@@ -248,7 +250,7 @@ class BookController extends Controller
             $where = "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsId)";
         }
 
-        return $this->lists($request,false,false,$where);
+        return $this->lists($request,false,false,$where);*/
     }
     // list
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
