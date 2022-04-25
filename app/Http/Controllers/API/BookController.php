@@ -163,10 +163,11 @@ class BookController extends Controller
 
     //advanced search
     public function advanceSearch(Request $request){
-        echo '$request["searchField"] : '.$request["searchField"].'</br>';
-        echo '$request["comparisonOperators"] : '.$request["comparisonOperators"].'</br>';
-        echo '$request["searchValue"] : '.$request["searchValue"].'</br>';
-        echo '$request["logicalOperators"] : '.$request["logicalOperators"].'</br>';
+        var_dump($request);
+        // echo '$request["searchField"] : '.$request["searchField"].'</br>';
+        // echo '$request["comparisonOperators"] : '.$request["comparisonOperators"].'</br>';
+        // echo '$request["searchValue"] : '.$request["searchValue"].'</br>';
+        // echo '$request["logicalOperators"] : '.$request["logicalOperators"].'</br>';
         return $request;
         /*
         $where = '';
