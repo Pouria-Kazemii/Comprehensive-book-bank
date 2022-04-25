@@ -161,6 +161,95 @@ class BookController extends Controller
         return $this->lists($request, true, ($where == ""), $where, "", "", $creatorName);
     }
 
+    //advanced search
+    public function advanceSearch(Request $request){
+        $where = '';
+        $searchField = $request["searchField"];
+        $comparisonOperators = $request["comparisonOperators"];
+        $searchValue = $request["searchValue"];
+        $logicalOperators = $request["logicalOperators"];
+
+        // serach bby name  
+        if (($searchField == 'name') AND !empty($comparisonOperators) AND !empty($searchValue)){  // $books->where('xname', 'like', "%$name%");
+            if($comparisonOperators == 'like'){
+                $where = "where xname like %".$searchValue."%";
+            }else{
+                $where = "where xname ".$comparisonOperators." ".$searchValue."%";
+            }
+        } 
+        // search by isbn
+        if (($searchField == 'isbn') AND !empty($comparisonOperators) AND !empty($searchValue)){ // $books->where('xisbn2', '=', $isbn);
+            if($comparisonOperators == 'like'){
+                $where = "where xisbn2 like %".$searchValue."%";
+            }else{
+                $where = "where xisbn2 ".$comparisonOperators." ".$searchValue."%";
+            }
+        } 
+        // search by doi
+        if (($searchField == 'doi') AND !empty($comparisonOperators) AND !empty($searchValue)) { // $books->where('xdiocode', '=', $isbn);
+            if($comparisonOperators == 'like'){
+                $where = "where xdiocode like %".$searchValue."%";
+            }else{
+                $where = "where xdiocode ".$comparisonOperators." ".$searchValue."%";
+            }
+        }
+        // serach by publish date
+        if (($searchField == 'publishDate') AND !empty($comparisonOperators) AND !empty($searchValue)) { // $books->where('xpublishdate', '=', $isbn);
+            if($comparisonOperators == 'like'){
+                $where = "where xpublishdate like %".$searchValue."%";
+            }else{
+                $where = "where xpublishdate ".$comparisonOperators." ".$searchValue."%";
+            }
+        }
+        // serach by price
+        if (($searchField == 'price') AND !empty($comparisonOperators) AND !empty($searchValue)) { // $books->where('xcoverprice', '=', $isbn);
+            if($comparisonOperators == 'like'){
+                $where = "where xcoverprice like %".$searchValue."%";
+            }else{
+                $where = "where xcoverprice ".$comparisonOperators." ".$searchValue."%";
+            }
+        }
+        // search by xcirculation
+        if (($searchField == 'circulation') AND !empty($comparisonOperators) AND !empty($searchValue)) { // $books->where('xcirculation', '=', $isbn);
+            if($comparisonOperators == 'like'){
+                $where = "where xcirculation like %".$searchValue."%";
+            }else{
+                $where = "where xcirculation ".$comparisonOperators." ".$searchValue."%";
+            }
+        }
+
+        //search by publisher
+        if (($searchField == 'publisher')AND !empty($comparisonOperators) AND !empty($searchValue)) {
+            if($comparisonOperators == 'like'){
+                $publishersId = BookirPublisher::where('xpublishername',$comparisonOperators,'%'.$searchValue.'%')->pluck('xisbn2')->all();
+            }else{
+                $publishersId = BookirPublisher::where('xpublishername',$comparisonOperators,$searchValue)->pluck('xisbn2')->all();
+            }
+            $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersId)";
+        } 
+
+        //search by creator
+        if (($searchField == 'creator') AND !empty($comparisonOperators) AND !empty($searchValue)) {
+            if($comparisonOperators == 'like'){
+                $creatorsId = BookirPartner::where('xcreatorname',$comparisonOperators,'%'.$searchValue.'%')->pluck('xid')->all();
+            }else{
+                $creatorsId = BookirPartner::where('xcreatorname',$comparisonOperators,$searchValue)->pluck('xid')->all();
+            }
+            $where = "xid In (Select xbookid From bookir_partnerrule Where xcreatorid IN ($creatorsId)";
+        }
+        
+        // search by subject
+        if (($searchField == 'subject') AND !empty($comparisonOperators) AND !empty($searchValue)) {
+            if($comparisonOperators == 'like'){
+                $subjectsId = BookirSubject::where('xsubject',$comparisonOperators,'%'.$searchValue.'%')->pluck('xid')->all();
+            }else{
+                $subjectsId = BookirSubject::where('xsubject',$comparisonOperators,$searchValue)->pluck('xid')->all();
+            }
+            $where = "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsId)";
+        }
+
+        return $this->lists($request,false,false,$where);
+    }
     // list
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
@@ -1115,9 +1204,5 @@ class BookController extends Controller
     }
 
 
-    //advanced search
-    public function advanceSearch(Request $request){
-        return 'ok';
-        // dd($request);
-    }
+    
 }
