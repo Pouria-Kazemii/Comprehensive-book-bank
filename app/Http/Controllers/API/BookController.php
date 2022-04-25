@@ -1117,7 +1117,7 @@ class BookController extends Controller
 
     //advanced search
     public function advanceSearch(Request $request){
-        dd('ok');
+        return 'ok';
         // dd($request);
     }
 }
