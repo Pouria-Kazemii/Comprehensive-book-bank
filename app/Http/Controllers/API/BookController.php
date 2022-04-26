@@ -223,6 +223,7 @@ class BookController extends Controller
                 }
                 // serach by publish date
                 if (($searchField == 'publishDate') and !empty($comparisonOperators) and !empty($searchValue)) { // $books->where('xpublishdate', '=', $isbn);
+                    $searchValue =  Bookirbook::toGregorian($searchValue,'/','-');
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {

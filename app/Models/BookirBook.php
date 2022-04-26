@@ -55,4 +55,11 @@ class BookirBook extends Model
     {
         return $this->belongsTo(self::class, 'xid');
     }
+
+    public static function toGregorian($date,$input_delimiter,$output_delimiter)
+    {
+        $jdate_arr = explode($input_delimiter,$date);
+        $gdate = \Morilog\Jalali\CalendarUtils::toGregorian($jdate_arr['0'], $jdate_arr['1'], $jdate_arr['2']);
+        return $gdate['0'].$output_delimiter.$gdate['1'].$output_delimiter.$gdate['2'];
+    }
 }
