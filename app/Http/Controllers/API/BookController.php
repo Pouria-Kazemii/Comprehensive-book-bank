@@ -262,11 +262,16 @@ class BookController extends Controller
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                     }
                     if ($comparisonOperators == 'like') {
-                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, "'%", $searchValue . "'%")->pluck('xisbn2')->all();
+                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
+                        $publishersIdStr = implode(',', $publishersId);
+                        $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
+                  
                     } else {
-                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, $searchValue)->pluck('xisbn2')->all();
+                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
+                        $publishersIdStr = implode(',', $publishersId);
+                        $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
+                  
                     }
-                    $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersId)";
                 }
 
                 //search by creator
@@ -274,11 +279,11 @@ class BookController extends Controller
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
-                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, "'%", $searchValue . "'%")->pluck('xid')->all();
+                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
                         } else {
-                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, $searchValue)->pluck('xid')->all();
+                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
-                        $where .= "xid In (Select xbookid From bookir_partnerrule Where xcreatorid IN ($creatorsId)";
+                        $where .= "xid In (Select xbookid From bookir_partnerrule Where xcreatorid IN ($creatorsId))";
                     }
                 }
 
@@ -287,11 +292,11 @@ class BookController extends Controller
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
-                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, "'%", $searchValue . "'%")->pluck('xid')->all();
+                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
                         } else {
-                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, $searchValue)->pluck('xid')->all();
+                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
-                        $where .= "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsId)";
+                        $where .= "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsId))";
                     }
                 }
 
@@ -319,7 +324,7 @@ class BookController extends Controller
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
-
+        // DB::enableQueryLog();
         if (!$isNull) {
             // read books
             $books = BookirBook::orderBy('xpublishdate', 'desc');
@@ -380,6 +385,8 @@ class BookController extends Controller
             $totalRows = $books->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
+        // $query= DB::getQueryLog();
+        // var_dump($query);
 
         if ($data != null or $subjectTitle != "") $status = 200;
 
