@@ -263,15 +263,12 @@ class BookController extends Controller
                     }
                     if ($comparisonOperators == 'like') {
                         $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
-                        $publishersIdStr = implode(',', $publishersId);
-                        $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
-                  
                     } else {
                         $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
-                        $publishersIdStr = implode(',', $publishersId);
-                        $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
-                  
                     }
+                    $publishersIdStr = implode(',', $publishersId);
+                    $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
+              
                 }
 
                 //search by creator
@@ -283,7 +280,8 @@ class BookController extends Controller
                         } else {
                             $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
-                        $where .= "xid In (Select xbookid From bookir_partnerrule Where xcreatorid IN ($creatorsId))";
+                        $creatorsIdStr = implode(',', $creatorsId);
+                        $where .= "xid In (Select xbookid From bookir_partnerrule Where xcreatorid IN ($creatorsIdStr))";
                     }
                 }
 
@@ -296,7 +294,8 @@ class BookController extends Controller
                         } else {
                             $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
-                        $where .= "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsId))";
+                        $subjectsIdStr = implode(',', $subjectsId);
+                        $where .= "xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid IN ($subjectsIdStr))";
                     }
                 }
 
