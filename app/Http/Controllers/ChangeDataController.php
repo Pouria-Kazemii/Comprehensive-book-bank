@@ -239,17 +239,16 @@ class ChangeDataController extends Controller
                         $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
                             return $isbn == $bookirBookParentItem;
                         });
-                        if(($filtered->count() == $strongBookCount) AND  BookirBook::where('xid',$key)->first()->xparent = -1){
+                        if (($filtered->count() == $strongBookCount) and  BookirBook::where('xid', $key)->first()->xparent = -1) {
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                            
-                        }elseif ($filtered->count() > $strongBookCount) {
+                        } elseif ($filtered->count() > $strongBookCount) {
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                        }else 
-                        echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
+                        } else
+                            echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
                     }
 
                     try {
@@ -295,17 +294,16 @@ class ChangeDataController extends Controller
                         $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
                             return $isbn == $bookirBookParentItem;
                         });
-                        if(($filtered->count() == $strongBookCount) AND  BookirBook::where('xid',$key)->first()->xparent = -1){
+                        if (($filtered->count() == $strongBookCount) and  BookirBook::where('xid', $key)->first()->xparent = -1) {
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                            
-                        }elseif ($filtered->count() > $strongBookCount) {
+                        } elseif ($filtered->count() > $strongBookCount) {
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                        }else 
-                        echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
+                        } else
+                            echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
                     }
 
                     try {
@@ -327,23 +325,42 @@ class ChangeDataController extends Controller
         }
     }
 
-    public function update_tempparent_to_other_fields($limit){
+
+    public function merge_parentid_tempparentid($limit)
+    {
+        // update  by parent -1 old parent id
+        // $books = BookirBook::where('xtempparent', -1)->skip(0)->take($limit)->get();
+        $books = BookirBook::where('xid', 1629377)->skip(0)->take($limit)->get();
+        if ($books->count() != 0) {
+            foreach ($books as $bookItem) {
+                $all_old_parent = BookirBook::where('xtempparent', $bookItem->xid)->get()->pluck('xparent')->all();
+                dd($all_old_parent);
+                // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
+                // echo ' book_id : ' . $bookItem->id . ' book parentId : ' . $bookItem->parentId  .' book xtempparent : ' . $bookItem->xtempparent  . '</br>';
+                // BookirBook::where('xtempparent', 0)->where('xparent',$bookItem->parentId)->update(['xtempparent' => $bookItem->parentId]);
+
+            }
+        } else {
+            echo 'nothing record' . '</br>';
+        }
+    }
+
+    public function update_tempparent_to_other_fields($limit)
+    {
         $books = BookirBook::where('x', 0)->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
                 try {
-                    BookIranketab::where('book_master_id',$bookItem->xparent)->update(['book_master_id'=>$bookItem->temp_book_master_id]);
-                    BookGisoom::where('book_master_id',$bookItem->xparent)->update(['book_master_id'=>$bookItem->temp_book_master_id]);
-                    BookDigi::where('book_master_id',$bookItem->xparent)->update(['book_master_id'=>$bookItem->temp_book_master_id]);
-                    Book30book::where('book_master_id',$bookItem->xparent)->update(['book_master_id'=>$bookItem->temp_book_master_id]);
-                    BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent , 'x'=>1 ]);
+                    BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
+                    BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
+                    BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
+                    Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
+                    BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent, 'x' => 1]);
                 } catch (Exception $Exception) {
                     //throw $th;
                     echo " update book_master_id error " . $Exception->getMessage() . '</br>';
                 }
             }
         }
-
     }
-
 }
