@@ -29,5 +29,6 @@ Route::get('/v1/book/update_partner_master_id_in_iranketab/{limit}', [ChangeData
 Route::get('/dossier/{bookId}', [BookController::class, 'dossier']);
 // Route::get('/consensus_similar_books_by_iranketab_entitle/{limit}', [ChangeDataController::class, 'consensus_similar_books_by_iranketab_entitle']);
 Route::get('/consensus_similar_books_by_iranketab_parentId/{limit}', [ChangeDataController::class, 'consensus_similar_books_by_iranketab_parentId']);
+Route::get('/merge_parentid_tempparentid/{limit}', [ChangeDataController::class, 'merge_parentid_tempparentid']);
 
 
