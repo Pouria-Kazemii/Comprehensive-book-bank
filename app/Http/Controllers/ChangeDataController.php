@@ -339,7 +339,8 @@ class ChangeDataController extends Controller
                 // echo ' book_id : ' . $bookItem->id . ' book parentId : ' . $bookItem->parentId  .' book xtempparent : ' . $bookItem->xtempparent  . '</br>';
                 foreach($all_old_parents as $all_old_parent_item){
                     echo $all_old_parent_item.'</br>';
-                    BookirBook::where('xtempparent', 0)->where('xparent',$all_old_parent_item)->update(['xtempparent' => $all_old_parent_item]);
+                    // BookirBook::where('xtempparent', 0)->where('xparent',$all_old_parent_item)->update(['xtempparent' => $bookItem->xtempparent]);
+                    BookirBook::where('xparent',$all_old_parent_item)->update(['xtempparent' => $bookItem->xtempparent]);
                 }
 
             }
