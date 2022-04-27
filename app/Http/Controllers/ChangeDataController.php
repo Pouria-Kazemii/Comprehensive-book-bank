@@ -334,7 +334,7 @@ class ChangeDataController extends Controller
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
                 $all_old_parent = BookirBook::where('xtempparent', $bookItem->xid)->get()->pluck('xparent')->all();
-                dd($all_old_parent);
+                dd(array_unique($all_old_parent));
                 // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
                 // echo ' book_id : ' . $bookItem->id . ' book parentId : ' . $bookItem->parentId  .' book xtempparent : ' . $bookItem->xtempparent  . '</br>';
                 // BookirBook::where('xtempparent', 0)->where('xparent',$bookItem->parentId)->update(['xtempparent' => $bookItem->parentId]);
