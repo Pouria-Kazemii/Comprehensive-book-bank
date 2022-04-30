@@ -428,6 +428,8 @@ class ChangeDataController extends Controller
 
 
     public function check_old_xparent($from,$limit){
+        ini_set("memory_limit", "500M");
+        set_time_limit(0);
         echo 'start : '.date("H:i:s",time()).'</br>';
         $books = BookirBook::where('xparent', 0)->orderBy('xparent', 'ASC')->skip($from)->take($limit)->get();
         if ($books->count() != 0) {
