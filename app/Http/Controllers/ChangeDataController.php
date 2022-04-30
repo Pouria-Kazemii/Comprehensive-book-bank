@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book30book;
-use Illuminate\Http\Request;
-use App\Models\BookirBook;
-use App\Models\BookirPartnerrule;
-use App\Models\BookirRules;
-use App\Models\BookDigi;
-use App\Models\BookGisoom;
-use App\Models\BookIranketab;
-use App\Models\BookIranKetabPartner;
-use App\Models\BookirPartner;
+use Exception;
 use App\Models\BookK24;
+use App\Models\BookDigi;
+use App\Models\Book30book;
+use App\Models\BookGisoom;
+use App\Models\BookirBook;
+use App\Models\BookirRules;
+use Illuminate\Http\Request;
+use App\Models\BookIranketab;
+use App\Models\BookirPartner;
+use App\Models\BookirPartnerrule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Exception;
+use App\Models\BookIranKetabPartner;
 
 class ChangeDataController extends Controller
 {
@@ -352,17 +352,17 @@ class ChangeDataController extends Controller
     public function update_tempparent_to_other_fields($limit)
     {
         // $books = BookirBook::where('x', 0)->skip(0)->take($limit)->get();
-        $books = BookirBook::where('xname', 'like', "%اثر مرکب%")->where('xtempparent','!=',0)->get();
+        $books = BookirBook::where('xname', 'like', "%شازده کوچولو%")->where('xtempparent','!=',0)->get();
 
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
                 try {
-                    BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
-                    BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
-                    BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
-                    Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->temp_book_master_id]);
-                    BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent, 'x' => 1]);
-                    // BookirBook::where('xid', $bookItem->xid)->update(['xpare                                                 nt' =>  $bookItem->xtempparent]);
+                    BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                    BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                    BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                    Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                    BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
+                    // BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  $bookItem->xtempparent]);
                 } catch (Exception $Exception) {
                     //throw $th;
                     echo " update book_master_id error " . $Exception->getMessage() . '</br>';
@@ -370,4 +370,5 @@ class ChangeDataController extends Controller
             }
         }
     }
+            // BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent, 'x' => 1]);
 }
