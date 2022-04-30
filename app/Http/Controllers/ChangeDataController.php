@@ -432,7 +432,7 @@ class ChangeDataController extends Controller
         $books = BookirBook::where('xparent', 0)->orderBy('xparent', 'ASC')->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
-                $search = BookirBook::where('xparent', $bookItem->xid)->first();
+                $search = BookirBook::where('xparent', $bookItem->xid)->get();
                 if ($search->count() != 0) {
                     DB::enableQueryLog();
                     BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  -1]);
