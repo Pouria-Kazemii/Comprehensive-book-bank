@@ -389,4 +389,40 @@ class ChangeDataController extends Controller
         echo 'end : '.date("H:i:s",time()).'</br>';
 
     }
+    public function update_tempparent_to_other_fields_desc($limit)
+    {
+        echo 'start : '.date("H:i:s",time()).'</br>';
+        $books = BookirBook::where('xmerge', 0)->orderBy('xtempparent', 'DESC')->skip(0)->take($limit)->get();
+        if ($books->count() != 0) {
+            foreach ($books as $bookItem) {
+                if($bookItem->xtempparent > 0){
+                    try {
+                        BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo " update book_master_id error " . $Exception->getMessage() . '</br>';
+                    }
+                }elseif($bookItem->xtempparent == -1){
+                    try {
+                        BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -1]);
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo " update book_master_id error " . $Exception->getMessage() . '</br>';
+                    }
+                }else{
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -10]);
+
+                }
+               
+            }
+        }
+        echo 'end : '.date("H:i:s",time()).'</br>';
+
+    }
 }
