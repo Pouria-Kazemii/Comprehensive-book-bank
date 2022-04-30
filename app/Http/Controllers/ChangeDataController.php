@@ -354,7 +354,7 @@ class ChangeDataController extends Controller
 
     public function update_tempparent_to_other_fields($limit)
     {
-        $books = BookirBook::where('xmerge', 0)->orderBy('xtempparent', ' ASC')->skip(0)->take($limit)->get();
+        $books = BookirBook::where('xmerge', 0)->orderBy('xtempparent', 'ASC')->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
                 if($bookItem->xtempparent > 0){
