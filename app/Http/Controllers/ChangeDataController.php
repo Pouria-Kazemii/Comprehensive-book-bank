@@ -307,13 +307,13 @@ class ChangeDataController extends Controller
                     }
 
                     try {
-                        DB::enableQueryLog();
+                        // DB::enableQueryLog();
                         BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
                         BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
                         BookIranketab::where('id', $allIranketabBookItem->id)->update(['temp_book_master_id' => $strongBookId]);
                         echo 'update by info id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
-                        $query = DB::getQueryLog();
-                        dd($query);
+                        // $query = DB::getQueryLog();
+                        // dd($query);
                     } catch (Exception $Exception) {
                         //throw $th;
                         echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage() . '</br>';
