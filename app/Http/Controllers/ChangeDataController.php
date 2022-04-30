@@ -446,11 +446,11 @@ class ChangeDataController extends Controller
         }
         echo 'end : '.date("H:i:s",time()).'</br>';
     }
-    public function check_old_xparent2($limit){
+    public function check_old_xparent2($from,$limit){
         ini_set("memory_limit", "500M");
         set_time_limit(0);
         echo 'start : '.date("H:i:s",time()).'</br>';
-        $books = BookirBook::where('xparent','>', 0)->take($limit)->get()->pluck('xparent')->all();
+        $books = BookirBook::where('xparent','>', 0)->skip($from)->take($limit)->get()->pluck('xparent')->all();
         $books = array_unique($books);
         if(!empty($books)){
             BookirBook::whereIN('xid', $books)->update(['xparent' =>  -1]);

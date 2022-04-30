@@ -34,6 +34,6 @@ Route::get('/merge_parentid_tempparentid/{limit}', [ChangeDataController::class,
 // Route::get('/update_tempparent_to_other_fields_desc/{limit}', [ChangeDataController::class, 'update_tempparent_to_other_fields_desc']);
 // Route::get('/check_old_xparent/{limit}', [ChangeDataController::class, 'check_old_xparent']);
 Route::get('/check_old_xparent/{from}/{limit}', [ChangeDataController::class, 'check_old_xparent']);
-Route::get('/check_old_xparent2/{limit}', [ChangeDataController::class, 'check_old_xparent2']);
+Route::get('/check_old_xparent2/{from}/{limit}', [ChangeDataController::class, 'check_old_xparent2']);
 
 
