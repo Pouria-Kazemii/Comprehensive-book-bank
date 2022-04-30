@@ -16,6 +16,7 @@ use App\Models\BookirPartnerrule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\BookIranKetabPartner;
+use DateTime;
 
 class ChangeDataController extends Controller
 {
@@ -354,6 +355,7 @@ class ChangeDataController extends Controller
 
     public function update_tempparent_to_other_fields($limit)
     {
+        echo 'start : '.date("H:i:s",time()).'</br>';
         $books = BookirBook::where('xmerge', 0)->orderBy('xtempparent', 'ASC')->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
@@ -384,5 +386,7 @@ class ChangeDataController extends Controller
                
             }
         }
+        echo 'end : '.date("H:i:s",time()).'</br>';
+
     }
 }
