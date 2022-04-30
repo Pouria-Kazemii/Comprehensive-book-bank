@@ -365,8 +365,8 @@ class ChangeDataController extends Controller
                         BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
                         BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
                         Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent,'xmerge' =>  1]);
-                        // BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
                     } catch (Exception $Exception) {
                         //throw $th;
                         echo " update book_master_id error " . $Exception->getMessage() . '</br>';
@@ -401,8 +401,8 @@ class ChangeDataController extends Controller
                         BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
                         BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
                         Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent,'xmerge' =>  1]);
-                        // BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
                     } catch (Exception $Exception) {
                         //throw $th;
                         echo " update book_master_id error " . $Exception->getMessage() . '</br>';
