@@ -272,8 +272,8 @@ class ChangeDataController extends Controller
 
     public function consensus_similar_books_by_iranketab_parentId($limit)
     {
-        $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->where('enTitle', '!=', '')->skip(0)->take($limit)->get();
-        // $allIranketabBooks = BookIranketab::where('parentId', 1017)->skip(0)->take($limit)->get();
+        // $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->where('enTitle', '!=', '')->skip(0)->take($limit)->get();
+        $allIranketabBooks = BookIranketab::where('parentId', 433)->skip(0)->take($limit)->get();
         if ($allIranketabBooks->count() != 0) {
             foreach ($allIranketabBooks as $allIranketabBookItem) {
                 // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
@@ -307,10 +307,13 @@ class ChangeDataController extends Controller
                     }
 
                     try {
+                        DB::enableQueryLog();
                         BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xtempparent' => $strongBookId]);
                         BookirBook::where('xid', $strongBookId)->update(['xtempparent' => -1]);
                         BookIranketab::where('id', $allIranketabBookItem->id)->update(['temp_book_master_id' => $strongBookId]);
                         echo 'update by info id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
+                        $query = DB::getQueryLog();
+                        dd($query);
                     } catch (Exception $Exception) {
                         //throw $th;
                         echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage() . '</br>';
