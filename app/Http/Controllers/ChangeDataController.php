@@ -329,7 +329,7 @@ class ChangeDataController extends Controller
     }
 
 
-    public function merge_parentid_tempparentid($limit)
+   /* public function merge_parentid_tempparentid($limit)
     {
         // update  by parent -1 old parent id
         $books = BookirBook::Where('xname','like','%شازده کوچولو%')->where('xtempparent', -1)->skip(0)->take($limit)->get();
@@ -350,28 +350,39 @@ class ChangeDataController extends Controller
         } else {
             echo 'nothing record' . '</br>';
         }
-    }
+    }*/
 
     public function update_tempparent_to_other_fields($limit)
     {
-        // $books = BookirBook::where('x', 0)->skip(0)->take($limit)->get();
-        $books = BookirBook::where('xname', 'like', "%شازده کوچولو%")->where('xtempparent','!=',0)->get();
-
+        $books = BookirBook::where('xmerge', 0)->orderBy('xtempparent', 'DESC')->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
-                try {
-                    BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                    BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                    BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                    Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
-                    BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
-                    // BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  $bookItem->xtempparent]);
-                } catch (Exception $Exception) {
-                    //throw $th;
-                    echo " update book_master_id error " . $Exception->getMessage() . '</br>';
+                if($bookItem->xtempparent > 0){
+                    try {
+                        BookIranketab::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookGisoom::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookDigi::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        Book30book::where('book_master_id', $bookItem->xparent)->update(['book_master_id' => $bookItem->xtempparent]);
+                        BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo " update book_master_id error " . $Exception->getMessage() . '</br>';
+                    }
+                }elseif($bookItem->xtempparent == -1){
+                    try {
+                        BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  $bookItem->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -1]);
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo " update book_master_id error " . $Exception->getMessage() . '</br>';
+                    }
+                }else{
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -10]);
+
                 }
+               
             }
         }
     }
-            // BookirBook::where('xparent', $bookItem->xparent)->update(['xparent' =>  $bookItem->xtempparent, 'x' => 1]);
 }
