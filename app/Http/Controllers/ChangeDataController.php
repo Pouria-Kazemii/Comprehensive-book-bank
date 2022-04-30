@@ -427,17 +427,17 @@ class ChangeDataController extends Controller
     }
 
 
-    public function check_old_xparent($limit){
+    public function check_old_xparent($from,$limit){
         echo 'start : '.date("H:i:s",time()).'</br>';
-        $books = BookirBook::where('xparent', 0)->orderBy('xparent', 'ASC')->skip(0)->take($limit)->get();
+        $books = BookirBook::where('xparent', 0)->orderBy('xparent', 'ASC')->skip($from)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
                 $search = BookirBook::where('xparent', $bookItem->xid)->get();
                 if ($search->count() != 0) {
-                    DB::enableQueryLog();
+                    // DB::enableQueryLog();
                     BookirBook::where('xid', $bookItem->xid)->update(['xparent' =>  -1]);
-                    $query = DB::getQueryLog();
-                    var_dump($query);
+                    // $query = DB::getQueryLog();
+                    // var_dump($query);
                 }
 
             }
