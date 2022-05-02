@@ -414,12 +414,12 @@ class BookController extends Controller
 
         if (!$isNull) {
             // read books
-            $books = BookirBook::orderBy('xpublishdate', 'desc')->orderBy('xprintnumber', 'DESC')->orderBy('xcoverprice ', 'DESC');
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            $books = $books->skip($offset)->take($pageRows)->get();
+            $books = $books->skip($offset)->take($pageRows)->orderBy('xprintnumber', 'DESC')->orderBy('xcoverprice ', 'DESC')->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
                     if ($book->xparent == -1 or  $book->xparent == 0) {
