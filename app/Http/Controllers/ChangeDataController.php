@@ -66,6 +66,38 @@ class ChangeDataController extends Controller
             die("nothing for update");
         }
     }
+    public function update_temp_book_master_id_in_gissom($limit)
+    {
+        //gisoom table
+        $gisoom_books = BookGisoom::where('temp_book_master_id', 0)->where('shabak10', '!=', NULL)->where('shabak13', '!=', NULL)->skip(0)->take($limit)->get();
+        if ($gisoom_books->count() != 0) {
+            foreach ($gisoom_books as $gisoom_book) {
+                $search_shabak = $gisoom_book->shabak10;
+                $search_shabak1 = $gisoom_book->shabak13;
+                $main_book_info = BookirBook::where('xparent', '>=', -1)
+                    ->where(function ($query) use ($search_shabak, $search_shabak1) {
+                        $query->where('xisbn', $search_shabak);
+                        $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn', $search_shabak1);
+                        $query->orWhere('xisbn2', $search_shabak1);
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $gisoom_book->temp_book_master_id = $main_book_info->xid;
+                    } else {
+                        $gisoom_book->temp_book_master_id = $main_book_info->xparent;
+                    }
+                } else {
+                    $gisoom_book->temp_book_master_id = -10;
+                }
+
+                $gisoom_book->update();
+            }
+            die("successfully update temp_book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
 
     public function update_book_master_id_in_digi($limit)
     {
@@ -92,6 +124,36 @@ class ChangeDataController extends Controller
                 $digi_book->update();
             }
             die("successfully update book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
+
+    public function update_temp_book_master_id_in_digi($limit)
+    {
+        //digi
+        $digi_books = BookDigi::where('temp_book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
+        if ($digi_books->count() != 0) {
+            foreach ($digi_books as $digi_book) {
+                $search_shabak = $digi_book->shabak;
+                $main_book_info = BookirBook::where('xparent', '>=', -1)
+                    ->where(function ($query) use ($search_shabak) {
+                        $query->where('xisbn', $search_shabak);
+                        $query->orWhere('xisbn2', $search_shabak);
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $digi_book->temp_book_master_id = $main_book_info->xid;
+                    } else {
+                        $digi_book->temp_book_master_id = $main_book_info->xparent;
+                    }
+                } else {
+                    $digi_book->temp_book_master_id = -10;
+                }
+
+                $digi_book->update();
+            }
+            die("successfully update temp_book_master_id info");
         } else {
             die("nothing for update");
         }
@@ -127,6 +189,36 @@ class ChangeDataController extends Controller
         }
     }
 
+    public function update_temp_book_master_id_in_30book($limit)
+    {
+        // 30book
+        $c_books = Book30book::where('temp_book_master_id', 0)->where('shabak', '!=', NULL)->skip(0)->take($limit)->get();
+        if ($c_books->count() != 0) {
+            foreach ($c_books as $c_book) {
+                $search_shabak = $c_book->shabak;
+                $main_book_info = BookirBook::where('xparent', '>=', -1)
+                    ->where(function ($query) use ($search_shabak) {
+                        $query->where('xisbn', $search_shabak);
+                        $query->orWhere('xisbn2', $search_shabak);
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $c_book->temp_book_master_id = $main_book_info->xid;
+                    } else {
+                        $c_book->temp_book_master_id = $main_book_info->xparent;
+                    }
+                } else {
+                    $c_book->temp_book_master_id = -10;
+                }
+
+                $c_book->update();
+            }
+            die("successfully update temp_book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
+
     public function update_book_master_id_in_iranketab($limit)
     {
         // iranketab
@@ -154,6 +246,38 @@ class ChangeDataController extends Controller
 
             }
             die("successfully update book_master_id info");
+        } else {
+            die("nothing for update");
+        }
+    }
+
+    public function update_temp_book_master_id_in_iranketab($limit)
+    {
+        // iranketab
+        $iranketab_books = BookIranketab::where('temp_book_master_id', 0)->where('shabak', '>', 0)->skip(0)->take($limit)->get();
+        if ($iranketab_books->count() != 0) {
+            foreach ($iranketab_books as $iranketab_book) {
+                $search_shabak = $iranketab_book->shabak;
+                $main_book_info = BookirBook::where('xparent', '>=', -1)
+                    ->where(function ($query) use ($search_shabak) {
+                        $query->where('xisbn', $search_shabak);
+                        $query->orWhere('xisbn2', $search_shabak);
+                    })->first();
+                if (!empty($main_book_info)) {
+                    if ($main_book_info->xparent == -1) {
+                        $book_master_id = $main_book_info->xid;
+                    } else {
+                        $book_master_id = $main_book_info->xparent;
+                    }
+                } else {
+                    $book_master_id = -10;
+                }
+                BookIranketab::where('parentId', $iranketab_book->parentId)->update(['temp_book_master_id' => $book_master_id]);
+                // var_dump( $query);
+                // $iranketab_book->update();
+
+            }
+            die("successfully update temp_book_master_id info");
         } else {
             die("nothing for update");
         }
