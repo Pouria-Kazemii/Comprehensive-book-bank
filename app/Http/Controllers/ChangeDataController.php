@@ -359,7 +359,7 @@ class ChangeDataController extends Controller
         $books = BookirBook::where('xmerge', 0)->skip(0)->take($limit)->get();
         if ($books->count() != 0) {
             foreach ($books as $bookItem) {
-                if ($bookItem->xtempparent < -1) {
+                if ($bookItem->xparent < -1) {
                     BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
                     BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -1]);
                 } elseif ($bookItem->xtempparent == 0) {
