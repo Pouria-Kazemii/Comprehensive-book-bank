@@ -280,7 +280,7 @@ class ChangeDataController extends Controller
                 // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
                 echo ' book_id : ' . $allIranketabBookItem->id . ' book parentId : ' . $allIranketabBookItem->parentId  . '</br>';
                 $iranketabBooks = BookIranketab::where('parentId', $allIranketabBookItem->parentId)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با parentId
-                $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
+                $allBookirBooks = BookirBook::where('xparent','>=',-1)->whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
                 if ($allBookirBooks->count() != 0) {
                     $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
                     $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
@@ -329,30 +329,6 @@ class ChangeDataController extends Controller
         }
     }
 
-
-    /* public function merge_parentid_tempparentid($limit)
-    {
-        // update  by parent -1 old parent id
-        $books = BookirBook::Where('xname','like','%شازده کوچولو%')->where('xtempparent', -1)->skip(0)->take($limit)->get();
-        // $books = BookirBook::where('xid', 1434936)->skip(0)->take($limit)->get();
-        if ($books->count() != 0) {
-            foreach ($books as $bookItem) {
-                $all_old_parent = BookirBook::where('xtempparent', $bookItem->xid)->where('xparent','!=',-1)->get()->pluck('xparent')->all();
-                $all_old_parents = array_unique($all_old_parent);
-                // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
-                // echo ' book_id : ' . $bookItem->id . ' book parentId : ' . $bookItem->parentId  .' book xtempparent : ' . $bookItem->xtempparent  . '</br>';
-                foreach($all_old_parents as $all_old_parent_item){
-                    echo $all_old_parent_item.'</br>';
-                    // BookirBook::where('xtempparent', 0)->where('xparent',$all_old_parent_item)->update(['xtempparent' => $bookItem->xtempparent]);
-                    BookirBook::where('xid',$all_old_parent_item)->orWhere('xparent',$all_old_parent_item)->update(['xtempparent' => $bookItem->xid]);
-                }
-
-            }
-        } else {
-            echo 'nothing record' . '</br>';
-        }
-    }*/
-
     public function merge_parentid_tempparentid($limit)
     {
         echo 'start : ' . date("H:i:s", time()) . '</br>';
@@ -362,13 +338,20 @@ class ChangeDataController extends Controller
                 if ($bookItem->xparent < -1) {
                     BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
                     BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -1]);
-                } elseif ($bookItem->xtempparent == 0) {
-                    BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
-                    BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
-                } elseif ($bookItem->xtempparent == -1 or $bookItem->xtempparent > 0) {
+                }elseif ($bookItem->xtempparent == -1 or $bookItem->xtempparent > 0) {
                     BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xtempparent]);
                     BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
-                }
+                } elseif ($bookItem->xtempparent == 0) {
+                    $suggest_parent = BookirBook::where('xparent',$bookItem->xparent)->where('xmergeparent','>',0)->first();
+                    var_dump($suggest_parent);
+                    if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  2]);
+                    }else{
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                    }
+                } 
             }
         }
         echo 'end : ' . date("H:i:s", time()) . '</br>';
