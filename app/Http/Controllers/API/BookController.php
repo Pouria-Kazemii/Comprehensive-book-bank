@@ -414,7 +414,7 @@ class BookController extends Controller
 
         if (!$isNull) {
             // read books
-            $books = BookirBook::orderBy('xpublishdate', 'desc')->orderBy('xprintnumber','desc');
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
