@@ -344,7 +344,7 @@ class ChangeDataController extends Controller
                 } elseif ($bookItem->xtempparent == 0) {
                     if($bookItem->xparent > 0){
                         $suggest_parent = BookirBook::where('xparent',$bookItem->xparent)->where('xmergeparent','>',0)->first();
-                        var_dump($suggest_parent);
+                        // var_dump($suggest_parent);
                         if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
                             BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
                             BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  2]);
