@@ -373,6 +373,49 @@ class ChangeDataController extends Controller
         }
         echo 'end : ' . date("H:i:s", time()) . '</br>';
     }
+    public function merge_parentid_tempparentid_desc($limit)
+    {
+        echo 'start : ' . date("H:i:s", time()) . '</br>';
+        $books = BookirBook::where('xmerge', 0)->orderBy('xid','DESC')->skip(0)->take($limit)->get();
+        if ($books->count() != 0) {
+            foreach ($books as $bookItem) {
+                if ($bookItem->xparent < -1) {
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  -1]);
+                }elseif ($bookItem->xtempparent == -1 or $bookItem->xtempparent > 0) {
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xtempparent]);
+                    BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                } elseif ($bookItem->xtempparent == 0) {
+                    if($bookItem->xparent == -1){
+                        $suggest_parent = BookirBook::where('xparent',$bookItem->xid)->where('xtempparent','>',0)->first();
+                        // var_dump($suggest_parent);
+                        if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  2]);
+                        }else{
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  3]);
+                        }
+                    }elseif($bookItem->xparent > 0){
+                        $suggest_parent = BookirBook::where('xparent',$bookItem->xparent)->where('xtempparent','>',0)->first();
+                        // var_dump($suggest_parent);
+                        if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  4]);
+                        }else{
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  5]);
+                        }
+                    }else{
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  6]);
+                    }
+                    
+                } 
+            }
+        }
+        echo 'end : ' . date("H:i:s", time()) . '</br>';
+    }
 
    /* public function update_tempparent_to_other_fields($limit)
     {
