@@ -342,15 +342,21 @@ class ChangeDataController extends Controller
                     BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xtempparent]);
                     BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
                 } elseif ($bookItem->xtempparent == 0) {
-                    $suggest_parent = BookirBook::where('xparent',$bookItem->xparent)->where('xmergeparent','>',0)->first();
-                    var_dump($suggest_parent);
-                    if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
-                        BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
-                        BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  2]);
+                    if($bookItem->xparent > 0){
+                        $suggest_parent = BookirBook::where('xparent',$bookItem->xparent)->where('xmergeparent','>',0)->first();
+                        var_dump($suggest_parent);
+                        if(!empty($suggest_parent) and !empty($suggest_parent->xtempparent)){
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $suggest_parent->xtempparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  2]);
+                        }else{
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
+                            BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
+                        }
                     }else{
                         BookirBook::where('xid', $bookItem->xid)->update(['xmergeparent' =>  $bookItem->xparent]);
                         BookirBook::where('xid', $bookItem->xid)->update(['xmerge' =>  1]);
                     }
+                    
                 } 
             }
         }
