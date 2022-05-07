@@ -331,7 +331,7 @@ class BookController extends Controller
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            $books->groupBy('xisbn');
+            $books->groupBy('xparent')->orderBy('xparent');
             $books = $books->skip($offset)->take($pageRows)->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
