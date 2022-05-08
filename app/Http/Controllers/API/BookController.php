@@ -1262,4 +1262,24 @@ class BookController extends Controller
             $status
         );
     }
+
+    public function mergeBookDossier(Request $reques){
+        $mergeBookDossierId = (isset($request["mergeBookDossierId"])) ? $request["mergeBookDossierId"] : "";
+        $data = null;
+        $status = 404;
+        foreach($mergeBookDossierId as $item){
+            echo $item;
+        }
+
+
+
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $mergeBookDossierId]
+            ],
+            $status
+        );
+    }
 }
