@@ -20,6 +20,8 @@ use App\Models\BookirPublisher;
 use App\Models\BookirSubject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Exception;
 
 class BookController extends Controller
 {
@@ -223,7 +225,7 @@ class BookController extends Controller
                 }
                 // serach by publish date
                 if (($searchField == 'publishDate') and !empty($comparisonOperators) and !empty($searchValue)) { // $books->where('xpublishdate', '=', $isbn);
-                    $searchValue =  Bookirbook::toGregorian($searchValue,'/','-');
+                    $searchValue =  Bookirbook::toGregorian($searchValue, '/', '-');
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
@@ -240,7 +242,7 @@ class BookController extends Controller
                         if ($comparisonOperators == 'like') {
                             $where .= " xcoverprice like '%" . $searchValue . "%'";
                         } else {
-                            $where .= " xcoverprice " . $comparisonOperators .  $searchValue ;
+                            $where .= " xcoverprice " . $comparisonOperators .  $searchValue;
                         }
                     }
                 }
@@ -252,7 +254,7 @@ class BookController extends Controller
                     if ($comparisonOperators == 'like') {
                         $where .= " xcirculation like '%" . $searchValue . "%'";
                     } else {
-                        $where .= " xcirculation " . $comparisonOperators . $searchValue ;
+                        $where .= " xcirculation " . $comparisonOperators . $searchValue;
                     }
                 }
 
@@ -262,13 +264,12 @@ class BookController extends Controller
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                     }
                     if ($comparisonOperators == 'like') {
-                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
+                        $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, "%" . $searchValue . "%")->get()->pluck('xid')->all();
                     } else {
                         $publishersId = BookirPublisher::where('xpublishername', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                     }
                     $publishersIdStr = implode(',', $publishersId);
                     $where .= "xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid IN ($publishersIdStr))";
-              
                 }
 
                 //search by creator
@@ -276,7 +277,7 @@ class BookController extends Controller
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
-                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
+                            $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, "%" . $searchValue . "%")->get()->pluck('xid')->all();
                         } else {
                             $creatorsId = BookirPartner::where('xcreatorname', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
@@ -290,7 +291,7 @@ class BookController extends Controller
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
-                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, "%". $searchValue . "%")->get()->pluck('xid')->all();
+                            $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, "%" . $searchValue . "%")->get()->pluck('xid')->all();
                         } else {
                             $subjectsId = BookirSubject::where('xsubject', $comparisonOperators, $searchValue)->get()->pluck('xid')->all();
                         }
@@ -1263,14 +1264,50 @@ class BookController extends Controller
         );
     }
 
-    public function mergeBookDossier(Request $reques){
+    public function mergeBookDossier(Request $reques)
+    {
         $mergeBookDossierId = (isset($request["mergeBookDossierId"])) ? $request["mergeBookDossierId"] : "";
         $data = null;
         $status = 404;
-       var_dump( $mergeBookDossierId);
 
+        $allBookirBooks = BookirBook::whereIN('xparent', $mergeBookDossierId)->get(); 
+        $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
+        if ($allBookirBooks->count() != 0) {
+            $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
+            $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
 
+            $bookirBooksParent = $allBookirBooks->pluck('xisbn2', 'xid')->all();
 
+            $strongBookIsbn = '';
+            $strongBookCount = 0;
+            foreach ($bookirBooksParent as $key => $bookirBookParentItem) { // پیدا کردن آیدی قوی تر
+                $allBookirBooksIsbnCollection = new Collection($allBookirBooksIsbnCollection);
+                $filtered = $allBookirBooksIsbnCollection->filter(function ($isbn) use ($bookirBookParentItem) {
+                    return $isbn == $bookirBookParentItem;
+                });
+                if (($filtered->count() == $strongBookCount) and  BookirBook::where('xid', $key)->first()->xparent = -1) {
+                    $strongBookCount  = $filtered->count();
+                    $strongBookIsbn  = $bookirBookParentItem;
+                    $strongBookId  = $key;
+                } elseif ($filtered->count() > $strongBookCount) {
+                    $strongBookCount  = $filtered->count();
+                    $strongBookIsbn  = $bookirBookParentItem;
+                    $strongBookId  = $key;
+                } else
+                    echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
+            }
+
+            try {
+                BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xrequestmerge' => $strongBookId]);
+                BookirBook::where('xid', $strongBookId)->update(['xrequestmerge' => -1]);
+                echo 'update by info id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
+            } catch (Exception $Exception) {
+                //throw $th;
+                echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage() . '</br>';
+            }
+        } else {
+            echo 'nothing info in bookirbook table' . '</br>';
+        }
         return response()->json(
             [
                 "status" => $status,
