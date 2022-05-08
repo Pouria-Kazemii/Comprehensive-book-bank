@@ -1267,9 +1267,7 @@ class BookController extends Controller
         $mergeBookDossierId = (isset($request["mergeBookDossierId"])) ? $request["mergeBookDossierId"] : "";
         $data = null;
         $status = 404;
-        foreach($mergeBookDossierId as $item){
-            echo $item;
-        }
+       var_dump( $mergeBookDossierId);
 
 
 
