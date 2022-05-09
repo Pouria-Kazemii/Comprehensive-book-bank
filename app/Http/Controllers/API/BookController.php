@@ -1264,13 +1264,12 @@ class BookController extends Controller
         );
     }
 
-    public function mergeBookDossier(Request $reques)
+    public function mergeBookDossier(Request $request)
     {
         $mergeBookDossierId = (isset($request["mergeBookDossierId"])) ? $request["mergeBookDossierId"] : "";
-        $data = null;
         $status = 404;
 
-        $allBookirBooks = BookirBook::whereIN('xparent', $mergeBookDossierId)->get(); 
+        $allBookirBooks = BookirBook::whereIN('xparent', $mergeBookDossierId)->get();
         $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
         if ($allBookirBooks->count() != 0) {
             $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
@@ -1293,26 +1292,25 @@ class BookController extends Controller
                     $strongBookCount  = $filtered->count();
                     $strongBookIsbn  = $bookirBookParentItem;
                     $strongBookId  = $key;
-                } else
-                    echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
+                }
             }
 
             try {
                 BookirBook::whereIN('xid', $allBookirBooksIdCollection)->update(['xrequestmerge' => $strongBookId]);
                 BookirBook::where('xid', $strongBookId)->update(['xrequestmerge' => -1]);
-                echo 'update by info id : ' . $strongBookId . 'isbn : ' . $strongBookIsbn . 'count : ' . $strongBookCount . '</br>';
+                $result = 'TRUE';
             } catch (Exception $Exception) {
                 //throw $th;
-                echo " update bookirbook temp_book_master_id exception error " . $Exception->getMessage() . '</br>';
+                $result = $Exception->getMessage();
             }
+            $status = 200;
         } else {
-            echo 'nothing info in bookirbook table' . '</br>';
+            $result = 'FALSE';
         }
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $mergeBookDossierId]
+                "result" => $result
             ],
             $status
         );

@@ -428,7 +428,7 @@ class ChangeDataController extends Controller
                             $strongBookCount  = $filtered->count();
                             $strongBookIsbn  = $bookirBookParentItem;
                             $strongBookId  = $key;
-                        } else
+                        }
                             echo 'id : ' . $key . 'isbn : ' . $bookirBookParentItem . 'count : ' . $filtered->count()  . '</br>';
                     }
 
