@@ -1296,7 +1296,8 @@ class BookController extends Controller
             }
 
             try {
-                BookirBook::whereIN('xid', $mergeBookDossierId)->orwhere('xparent', $mergeBookDossierId)->update(['xrequestmerge' => $strongBookId]);
+                BookirBook::whereIN('xparent', $mergeBookDossierId)->update(['xrequestmerge' => $strongBookId]);
+                BookirBook::whereIN('xid', $mergeBookDossierId)->update(['xrequestmerge' => $strongBookId]);
                 BookirBook::where('xid', $strongBookId)->update(['xrequestmerge' => -1]);
                 $result = 'TRUE';
             } catch (Exception $Exception) {
