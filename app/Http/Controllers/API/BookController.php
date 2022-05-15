@@ -1316,4 +1316,30 @@ class BookController extends Controller
             $status
         );
     }
+
+    public function separateFromBookDossier(){
+        $separateFromBookDossierId = (isset($request["separateFromBookDossierId"])) ? $request["separateFromBookDossierId"] : "";
+        $status = 404;
+
+        $allBookirBooks = BookirBook::whereIN('xid', $separateFromBookDossierId)->get();
+        if ($allBookirBooks->count() != 0) {
+            try {
+                BookirBook::whereIN('xid', $separateFromBookDossierId)->update(['xparent' => -1,'xrequestmerge'=>1]);
+                $result = 'TRUE';
+            } catch (Exception $Exception) {
+                //throw $th;
+                $result = $Exception->getMessage();
+            }
+            $status = 200;
+        } else {
+            $result = 'FALSE';
+        }
+        return response()->json(
+            [
+                "status" => $status,
+                "result" => $result
+            ],
+            $status
+        );
+    }
 }
