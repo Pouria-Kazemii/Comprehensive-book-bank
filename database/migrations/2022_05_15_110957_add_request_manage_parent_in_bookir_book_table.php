@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddRequestMergeInBookirBookTable extends Migration
+class AddRequestManageParentInBookirBookTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,7 @@ class AddRequestMergeInBookirBookTable extends Migration
     public function up()
     {
         Schema::table('bookir_book', function (Blueprint $table) {
-            $table->integer('xrequestmerge')->nullable()->default(0)->index();
+            $table->integer('xrequest_manage_parent')->nullable()->default(0)->index();
         });
     }
 
@@ -26,7 +26,7 @@ class AddRequestMergeInBookirBookTable extends Migration
     public function down()
     {
         Schema::table('bookir_book', function (Blueprint $table) {
-            $table->dropColumn('xrequestmerge');
+            $table->dropColumn('xrequest_manage_parent');
         });
     }
 }

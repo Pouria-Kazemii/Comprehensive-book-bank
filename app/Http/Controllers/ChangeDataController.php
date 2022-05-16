@@ -405,7 +405,7 @@ class ChangeDataController extends Controller
                 echo ' book_id : ' . $allIranketabBookItem->id . ' book parentId : ' . $allIranketabBookItem->parentId  . '</br>';
                 $iranketabBooks = BookIranketab::where('parentId', $allIranketabBookItem->parentId)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با parentId
                 // $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
-                $allBookirBooks = BookirBook::where('xparent','>=',-1)->whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
+                $allBookirBooks = BookirBook::where('xparent','>=',-1)->where('xrequest_manage_parent','!=',1)->whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
                 if ($allBookirBooks->count() != 0) {
                     $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
                     $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();

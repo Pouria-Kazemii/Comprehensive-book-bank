@@ -43,7 +43,7 @@ Route::post('/v1/book/find/creator-publisher', 'API\BookController@findByCreator
 Route::post('/v1/book/find/shared-creators', 'API\BookController@findBySharedCreators');
 Route::post('/v1/book/advance-search', 'API\BookController@advanceSearch');
 Route::post('/v1/book/merge-book-dossier', 'API\BookController@mergeBookDossier');
-Route::post('/v1//book/separate-from-book-dossier', 'API\BookController@separateFromBookDossier');
+Route::post('/v1/book/separate-from-book-dossier', 'API\BookController@separateFromBookDossier');
 
 Route::post('/v1/creator/find', 'API\CreatorController@find');
 Route::post('/v1/creator/find/subject', 'API\CreatorController@findBySubject');

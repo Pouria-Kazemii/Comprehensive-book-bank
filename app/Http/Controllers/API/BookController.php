@@ -1296,9 +1296,9 @@ class BookController extends Controller
             }
 
             try {
-                BookirBook::whereIN('xparent', $mergeBookDossierId)->update(['xparent' => $strongBookId,'xrequestmerge'=>1]);
-                BookirBook::whereIN('xid', $mergeBookDossierId)->update(['xparent' => $strongBookId,'xrequestmerge'=>1]);
-                BookirBook::where('xid', $strongBookId)->update(['xparent' => -1,'xrequestmerge'=>1]);
+                BookirBook::whereIN('xparent', $mergeBookDossierId)->update(['xparent' => $strongBookId,'xrequest_manage_parent'=>1]);
+                BookirBook::whereIN('xid', $mergeBookDossierId)->update(['xparent' => $strongBookId,'xrequest_manage_parent'=>1]);
+                BookirBook::where('xid', $strongBookId)->update(['xparent' => -1,'xrequest_manage_parent'=>1]);
                 $result = 'TRUE';
             } catch (Exception $Exception) {
                 //throw $th;
@@ -1317,14 +1317,14 @@ class BookController extends Controller
         );
     }
 
-    public function separateFromBookDossier(){
+    public function separateFromBookDossier(Request $request){
         $separateFromBookDossierId = (isset($request["separateFromBookDossierId"])) ? $request["separateFromBookDossierId"] : "";
         $status = 404;
 
         $allBookirBooks = BookirBook::whereIN('xid', $separateFromBookDossierId)->get();
         if ($allBookirBooks->count() != 0) {
             try {
-                BookirBook::whereIN('xid', $separateFromBookDossierId)->update(['xparent' => -1,'xrequestmerge'=>1]);
+                BookirBook::whereIN('xid', $separateFromBookDossierId)->update(['xparent' => -1,'xrequest_manage_parent'=>1]);
                 $result = 'TRUE';
             } catch (Exception $Exception) {
                 //throw $th;
