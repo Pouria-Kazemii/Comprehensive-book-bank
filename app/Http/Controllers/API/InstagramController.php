@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Http\Request;
 
 class InstagramController extends Controller
 {
-    public function test()
+    public function test(Request $request)
     {
-
         $curl = curl_init();
-
         curl_setopt_array($curl, [
             CURLOPT_URL => "https://instagram47.p.rapidapi.com/public_post_comments?shortcode=CU4lZWkojkY",
             CURLOPT_RETURNTRANSFER => true,
