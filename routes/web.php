@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookController;
-use App\Http\Controllers\Api\InstagramController;
+use App\Http\Controllers\API\InstagramController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChangeDataController;
 
