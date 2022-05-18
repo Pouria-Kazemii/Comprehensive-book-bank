@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookController;
+use App\Http\Controllers\Api\InstagramController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChangeDataController;
 
@@ -36,5 +37,6 @@ Route::get('/merge_parentid_tempparentid_desc/{limit}', [ChangeDataController::c
 // Route::get('/check_old_xparent/{limit}', [ChangeDataController::class, 'check_old_xparent']);
 // Route::get('/check_old_xparent/{from}/{limit}', [ChangeDataController::class, 'check_old_xparent']);
 // Route::get('/check_old_xparent2/{from}/{limit}', [ChangeDataController::class, 'check_old_xparent2']);
+Route::get('/test_insta_api', [InstagramController::class, 'test']);
 
 
