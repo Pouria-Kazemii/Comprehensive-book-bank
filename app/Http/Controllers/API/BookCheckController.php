@@ -12,7 +12,7 @@ class BookCheckController extends Controller
 {
     public function check()
     {
-        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate', 'DESC')->take(1)->get();
+        $books = BookirBook::where('xparent', '=', '0')->where('xrequest_manage_parent','!=',1)->orderBy('xpublishdate', 'DESC')->take(1)->get();
         if($books != null)
         {
             foreach ($books as $book)
@@ -24,7 +24,7 @@ class BookCheckController extends Controller
 
     public function checkReverse()
     {
-        $books = BookirBook::where('xparent', '=', '0')->orderBy('xpublishdate')->take(100)->get();
+        $books = BookirBook::where('xparent', '=', '0')->where('xrequest_manage_parent','!=',1)->orderBy('xpublishdate')->take(100)->get();
         if($books != null)
         {
             foreach ($books as $book)
@@ -70,7 +70,7 @@ class BookCheckController extends Controller
         $whereCreator = ($whereCreator != "") ? "and (".rtrim($whereCreator, " or ").")" : "";
 
         //
-        $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
+        $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and xrequest_manage_parent!='1' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
         if($similarBooks != null)
         {
             foreach ($similarBooks as $similarBook)
@@ -81,7 +81,7 @@ class BookCheckController extends Controller
 
         if($whereCreator != "")
         {
-            $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' $whereCreator")->get();
+            $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and xrequest_manage_parent!='1' $whereCreator")->get();
             if($similarBooks != null)
             {
                 foreach ($similarBooks as $similarBook)
@@ -93,7 +93,7 @@ class BookCheckController extends Controller
 
         //
 //                BookirBook::where('xid', $id)->update(['xparent' => -1]);
-        BookirBook::where('xid', '=', $id)->where('xparent', '=', '0')->update(['xparent' => -1]);
+        BookirBook::where('xid', '=', $id)->where('xparent', '=', '0')->where('xrequest_manage_parent','!=',1)->update(['xparent' => -1]);
     }
 
     // read & check ---> bookk24
