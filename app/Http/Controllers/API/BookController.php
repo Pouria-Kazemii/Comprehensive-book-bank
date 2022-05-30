@@ -382,11 +382,12 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->groupBy('xisbn');
-            $totalRows = $books->count();
+            $books->get();
+            $booksIds = $books->pluck('xid')->all();
+            $totalRows =  count($booksIds);
+  
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
-        // $query= DB::getQueryLog();
-        // var_dump($query);
 
         if ($data != null or $subjectTitle != "") $status = 200;
 
