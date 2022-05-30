@@ -381,7 +381,7 @@ class BookController extends Controller
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            $books->groupBy('xisbn');
+            $books->groupBy('xparent');
             $books->get();
             $booksIds = $books->pluck('xid')->all();
             $totalRows =  count($booksIds);
@@ -469,7 +469,7 @@ class BookController extends Controller
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            $books->groupBy('xisbn');
+            // $books->groupBy('xisbn');
             $totalRows = $books->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
