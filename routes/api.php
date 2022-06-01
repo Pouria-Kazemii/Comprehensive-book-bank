@@ -32,7 +32,9 @@ Route::get('/v1/book/check', 'API\BookCheckController@check');
 
 Route::post('/v1/book/find', 'API\BookController@find');
 Route::post('/v1/book/find/publisher', 'API\BookController@findByPublisher');
+Route::post('/v1/export-excel-book/find/publisher', 'API\BookController@exportExcelBookFindByPublisher');
 Route::post('/v1/book/find/creator', 'API\BookController@findByCreator');
+Route::post('/v1/export-excel-book/find/creator', 'API\BookController@exportExcelBookFindByCreator');
 Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
 Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
 Route::post('/v1/book/detail', 'API\BookController@detail');
