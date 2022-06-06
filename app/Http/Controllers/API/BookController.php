@@ -540,7 +540,7 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             // $books->orderBy('xisbn');
-            $books->limit(100);
+            // $books->limit(100);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
@@ -555,18 +555,18 @@ class BookController extends Controller
                     }
                     //publishers
                     $publishers = null;
-                    $bookPublisherlists = BiBookBiPublisher::where('bi_book_xid',$book->xid)->get();
-                    $bookPublishers = BookirPublisher::whereIn('xid', $bookPublisherlists->pluck('bi_publisher_xid')->all())->get();
+                    // $bookPublisherlists = BiBookBiPublisher::where('bi_book_xid',$book->xid)->get();
+                    // $bookPublishers = BookirPublisher::whereIn('xid', $bookPublisherlists->pluck('bi_publisher_xid')->all())->get();
                     // $bookPublishers = DB::table('bi_book_bi_publisher')
                     //     ->where('bi_book_xid', '=', $book->xid)
                     //     ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
                     //     ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                     //     ->get();
-                    if ($bookPublishers != null and count($bookPublishers) > 0) {
-                        foreach ($bookPublishers as $bookPublisher) {
-                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
-                        }
-                    }
+                    // if ($bookPublishers != null and count($bookPublishers) > 0) {
+                    //     foreach ($bookPublishers as $bookPublisher) {
+                    //         $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                    //     }
+                    // }
                     //subjects
                     $subjects = null;
                     $bookSubjects = BookirSubject::whereIn('xid', $subjectIds->where('bi_book_xid', $book->xid)->pluck('bi_subject_xid')->all())->get();
