@@ -542,7 +542,9 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                
+                $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
+                $translatorIds = BookirPartnerrule::where('xroleid', 2)->get();
+                $imagerIds = BookirPartnerrule::where('xroleid', 20)->get();
                 foreach ($books as $book) {
                     if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
@@ -573,8 +575,8 @@ class BookController extends Controller
 
                     //authors
                     $authors = null;
-                    $authorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 1)->get(); // writer
-                    $bookAuthors = BookirPartner::where('xid', $authorIds->pluck('xcreatorid')->all())->get();
+                    // $authorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 1)->get(); // writer
+                    $bookAuthors = BookirPartner::where('xid', $authorIds->where('xbookid',$book->xid)->pluck('xcreatorid')->all())->get();
                     if ($bookAuthors != null and count($bookAuthors) > 0) {
                         foreach ($bookAuthors as $bookAuthor) {
                             $authors[] = ["id" => $bookAuthor->xid, "name" => $bookAuthor->xcreatorname];
@@ -583,8 +585,8 @@ class BookController extends Controller
 
                     //translator
                     $translators = null;
-                    $translatorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 2)->get();
-                    $bookTranslators = BookirPartner::where('xid', $translatorIds->pluck('xcreatorid')->all())->get();
+                    // $translatorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 2)->get();
+                    $bookTranslators = BookirPartner::where('xid', $translatorIds->where('xbookid',$book->xid)->pluck('xcreatorid')->all())->get();
                     if ($bookTranslators != null and count($bookTranslators) > 0) {
                         foreach ($bookTranslators as $bookTranslator) {
                             $translators[] = ["id" => $bookTranslator->xid, "name" => $bookTranslator->xcreatorname];
@@ -593,8 +595,8 @@ class BookController extends Controller
 
                     //imager
                     $imagers = null;
-                    $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
-                    $bookImagers = BookirPartner::where('xid', $imagerIds->pluck('xcreatorid')->all())->get();
+                    // $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
+                    $bookImagers = BookirPartner::where('xid', $imagerIds->where('xbookid',$book->xid)->pluck('xcreatorid')->all())->get();
                     if ($bookImagers != null and count($bookImagers) > 0) {
                         foreach ($bookImagers as $bookImager) {
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
