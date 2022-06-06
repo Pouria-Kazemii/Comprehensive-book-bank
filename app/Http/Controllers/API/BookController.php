@@ -534,13 +534,13 @@ class BookController extends Controller
         // DB::enableQueryLog();
         if (!$isNull) {
             // read books
-            $books = BookirBook::orderBy('xisbn');
+            $books = BookirBook::orderBy('xpublishdate', 'desc');
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             // $books->orderBy('xisbn');
-            $books->groupBy('xparent');
+            $books->limit(500);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
