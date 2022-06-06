@@ -540,7 +540,7 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             // $books->orderBy('xisbn');
-            $books->limit(500);
+            $books->limit(100);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
