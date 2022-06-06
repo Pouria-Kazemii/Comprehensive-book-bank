@@ -25,7 +25,8 @@ class ExcelController extends Controller
     }
     public static function booklist($mainResult,$file_name,$sheet_name)
     {
-        $requestFormat = 'xlsx';
+        // $requestFormat = 'xlsx';
+        $requestFormat = 'csv';
         // end give send data
         $records = $mainResult->data->list;
         foreach ($records as $key => $value) {
