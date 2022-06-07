@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\BookController;
+use App\Http\Controllers\API\BookController;
 use App\Http\Controllers\API\InstagramController;
 use App\Http\Controllers\API\CrawlerKetabirController;
 use Illuminate\Support\Facades\Route;
