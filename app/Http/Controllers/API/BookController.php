@@ -32,9 +32,10 @@ class BookController extends Controller
     {
         return $this->lists($request);
     }
-    public function exportExcelBookFindByPublisherWeb(Request $request){
+    public function exportExcelBookFindByPublisherWeb(){
        
-        $request["publisherId"] = 26;
+        echo 'inja';
+        /*$request["publisherId"] = 26;
         $where = $this->findByPublisherSelect($request);
         $result = $this->exportLists($request, true, ($where == ""), $where);
         $mainResult = $result->getData();
@@ -45,7 +46,7 @@ class BookController extends Controller
         //    return response()->json($response);
         } else {
             return $mainResult->status;
-        }
+        }*/
     }
     // find by publisher
     public function exportExcelBookFindByPublisher(Request $request){
