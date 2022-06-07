@@ -32,7 +32,21 @@ class BookController extends Controller
     {
         return $this->lists($request);
     }
-
+    public function exportExcelBookFindByPublisherWeb(Request $request){
+       
+        $request["publisherId"] = 26;
+        $where = $this->findByPublisherSelect($request);
+        $result = $this->exportLists($request, true, ($where == ""), $where);
+        $mainResult = $result->getData();
+        if ($mainResult->status == 200) {
+            $publisherInfo = BookirPublisher::where('xid',$request["publisherId"])->first();
+            dd($publisherInfo);
+        //     $response = ExcelController::booklist($mainResult,'کتب ناشر' . time(),$publisherInfo->xpublishername);
+        //    return response()->json($response);
+        } else {
+            return $mainResult->status;
+        }
+    }
     // find by publisher
     public function exportExcelBookFindByPublisher(Request $request){
         $where = $this->findByPublisherSelect($request);
