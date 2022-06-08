@@ -34,7 +34,7 @@ class BookController extends Controller
     }
     public function exportExcelBookFindByPublisherWeb($publisherId){
        
-        
+        echo 'start : ' . date("H:i:s", time()) . '</br>';
         $request["publisherId"] = $publisherId;
         // $where = $this->findByPublisherSelect($request);
         $publisherId = $request["publisherId"];
@@ -198,6 +198,7 @@ class BookController extends Controller
         } else {
             return $mainResult->status;
         }*/
+        echo 'end : ' . date("H:i:s", time()) . '</br>';
     }
     // find by publisher
     public function exportExcelBookFindByPublisher(Request $request){
