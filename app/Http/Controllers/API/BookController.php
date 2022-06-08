@@ -36,6 +36,9 @@ class BookController extends Controller
        
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $request["publisherId"] = $publisherId;
+        $request["bookId"]  =0 ;
+        $request["name"] = '';
+        $request["isbn"] = '';
         // $where = $this->findByPublisherSelect($request);
         $publisherId = $request["publisherId"];
         $bookId = $request["bookId"];
