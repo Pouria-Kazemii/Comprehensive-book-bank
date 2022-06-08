@@ -78,25 +78,26 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                // $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
-                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1])->get()->toArray();
+                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
                 $collection = collect($partnerInfo);
-                // dd($collection);
                 foreach ($books as $book) {
                     $foreachBookId = $book->xid;
                     $authorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
-                        if ($value['xbookid'] == $foreachBookId and $value['xbookid'] == 1) {
+                        if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 1) {
                             return $value['xcreatorid'];
                         }
                     });
-                    // dd($filtered);
-                    // $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
 
-                    // $authorCollection = $collection->where('xbookid', $book->xid)->all();
-                    // dd($authorCollection);
-                    // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
-                    // $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
-                    // $foreachBookId =$book->xid;
+                    $translatorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
+                        if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 2) {
+                            return $value['xcreatorid'];
+                        }
+                    });
+                    $imagerFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
+                        if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 20) {
+                            return $value['xcreatorid'];
+                        }
+                    });
                     if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
                     } else {
@@ -132,11 +133,11 @@ class BookController extends Controller
                             $authors[] = ["id" => $bookAuthor->xid, "name" => $bookAuthor->xcreatorname];
                         }
                     }
-                    /*  
+                    
                     //translator
                     $translators = null;
                     // $translatorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 2)->get();
-                    $bookTranslators = BookirPartner::whereIn('xid', $translatorCollection)->get();
+                    $bookTranslators = BookirPartner::whereIn('xid', $translatorFiltered)->get();
                     if ($bookTranslators != null and count($bookTranslators) > 0) {
                         foreach ($bookTranslators as $bookTranslator) {
                             $translators[] = ["id" => $bookTranslator->xid, "name" => $bookTranslator->xcreatorname];
@@ -146,14 +147,13 @@ class BookController extends Controller
                     //imager
                     $imagers = null;
                    // $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
-                    $bookImagers = BookirPartner::where('xid', $imagerCollection)->get();
+                    $bookImagers = BookirPartner::where('xid', $imagerFiltered)->get();
                     if ($bookImagers != null and count($bookImagers) > 0) {
                         foreach ($bookImagers as $bookImager) {
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
                         }
                     }
-                    */
-
+                    
                     //
                     $data[] =
                         [
@@ -175,8 +175,8 @@ class BookController extends Controller
                             "doi" => $book->xdiocode,
                             // "subjects" => $subjects,
                             "authors" => $authors,
-                            // "translators" => $translators,
-                            // "imagers" => $imagers,
+                            "translators" => $translators,
+                            "imagers" => $imagers,
                         ];
                 }
             }
