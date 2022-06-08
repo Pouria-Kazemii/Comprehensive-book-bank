@@ -147,7 +147,7 @@ class BookController extends Controller
                     //imager
                     $imagers = null;
                    // $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
-                    $bookImagers = BookirPartner::where('xid', $imagerFiltered)->get();
+                    $bookImagers = BookirPartner::whereIn('xid', $imagerFiltered)->get();
                     if ($bookImagers != null and count($bookImagers) > 0) {
                         foreach ($bookImagers as $bookImager) {
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
