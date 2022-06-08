@@ -87,7 +87,7 @@ class BookController extends Controller
                             return $value['xcreatorid'];
                         }
                     });
-
+                    $authorFiltered = $authorFiltered->pluck('xcreatorid')->all();
                     $translatorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
                         if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 2) {
                             return $value['xcreatorid'];
