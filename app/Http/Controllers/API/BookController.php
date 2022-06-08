@@ -159,7 +159,7 @@ class BookController extends Controller
                             "id" => $book->xid,
                             "dossier_id" => $dossier_id,
                             "name" => $book->xname,
-                            "publishers" => $publishers,
+                            // "publishers" => $publishers,
                             "language" => $book->xlang,
                             "year" => BookirBook::getShamsiYear($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
