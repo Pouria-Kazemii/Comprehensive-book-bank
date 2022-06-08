@@ -76,7 +76,7 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->orderBy('xisbn');
-            $books->limit(50);
+            $books->limit(30);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
@@ -191,14 +191,14 @@ class BookController extends Controller
         if ($data != null or $subjectTitle != "") $status = 200;
         echo 'end : ' . date("H:i:s", time()) . '</br>';
         // response
-        return response()->json(
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
+        // return response()->json(
+        //     [
+        //         "status" => $status,
+        //         "message" => $status == 200 ? "ok" : "not found",
+        //         "data" => ["list" => $data]
+        //     ],
+        //     $status
+        // );
         /*$mainResult = $result->getData();
         if ($mainResult->status == 200) {
             $publisherInfo = BookirPublisher::where('xid',$request["publisherId"])->first();
