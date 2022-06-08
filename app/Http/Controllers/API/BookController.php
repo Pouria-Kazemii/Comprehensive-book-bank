@@ -77,11 +77,13 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
+                // $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
+                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1])->get()->toArray();
                 $collection = collect($partnerInfo);
                 // dd($collection);
                 foreach ($books as $book) {
-                    $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
+                    // $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
+                    $authorCollection = $collection->where('xbookid', $book->xid)->all();
                     dd($authorCollection);
                     // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
