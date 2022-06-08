@@ -77,8 +77,8 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                // $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
-                // $authorCollection = collect($authorIds);
+                $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
+                $authorCollection = collect($authorIds);
                 // $translatorIds = BookirPartnerrule::where('xroleid', 2)->get();
                 // $translatorCollection = collect($translatorIds);
                 // $imagerIds = BookirPartnerrule::where('xroleid', 20)->get();
@@ -111,7 +111,7 @@ class BookController extends Controller
                         foreach ($bookSubjects as $bookSubject) {
                             $subjects[] = ["id" => $bookSubject->xid, "name" => $bookSubject->xsubject];
                         }
-                    }
+                    }*/
 
                     //authors
                     $authors = null;
@@ -126,7 +126,7 @@ class BookController extends Controller
                             $authors[] = ["id" => $bookAuthor->xid, "name" => $bookAuthor->xcreatorname];
                         }
                     }
-
+/*
                     //translator
                     $translators = null;
                     $translatorFiltered = $translatorCollection->filter(function ($value, $key)  use ($foreachBookId){
@@ -184,14 +184,14 @@ class BookController extends Controller
         if ($data != null or $subjectTitle != "") $status = 200;
 
         // response
-        return response()->json(
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
+        // return response()->json(
+        //     [
+        //         "status" => $status,
+        //         "message" => $status == 200 ? "ok" : "not found",
+        //         "data" => ["list" => $data]
+        //     ],
+        //     $status
+        // );
         /*$mainResult = $result->getData();
         if ($mainResult->status == 200) {
             $publisherInfo = BookirPublisher::where('xid',$request["publisherId"])->first();
