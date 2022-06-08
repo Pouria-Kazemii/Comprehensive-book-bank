@@ -41,7 +41,7 @@ Route::get('/merge_parentid_tempparentid_desc/{limit}', [ChangeDataController::c
 // Route::get('/check_old_xparent2/{from}/{limit}', [ChangeDataController::class, 'check_old_xparent2']);
 Route::get('/test_insta_api', [InstagramController::class, 'test']);
 Route::get('/publisher_list', [CrawlerKetabirController::class, 'publisher_list']);
-Route::get('/export', [BookController::class, 'exportExcelBookFindByPublisherWeb']);
+Route::get('/export/{publisherId}', [BookController::class, 'exportExcelBookFindByPublisherWeb']);
 
 
 
