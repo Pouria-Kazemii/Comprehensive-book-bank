@@ -82,7 +82,15 @@ class BookController extends Controller
                 $collection = collect($partnerInfo);
                 // dd($collection);
                 foreach ($books as $book) {
+                    $bbId = $book->xid;
+                    $filtered = $collection->filter(function ($value,$key) use ($bbId) {
+                       if($value['xbookid'] == $bbId){
+                        return $value;
+                       }
+                    }); 
+                    dd($filtered);
                     // $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
+                   
                     $authorCollection = $collection->where('xbookid', $book->xid)->all();
                     dd($authorCollection);
                     // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
