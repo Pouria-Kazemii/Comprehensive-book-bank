@@ -85,7 +85,7 @@ class BookController extends Controller
                     $collection_data[$key]["xroleid"] = $item->xroleid;
                 }
                 $collection = collect($collection_data);
-
+                dd($collection);
                 foreach ($books as $book) {
                     $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     dd($authorCollection);
