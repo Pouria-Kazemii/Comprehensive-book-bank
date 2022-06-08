@@ -540,7 +540,8 @@ class BookController extends Controller
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            $books->orderBy('xisbn');
+            // $books->orderBy('xisbn');
+            $books->where('xpublishdate','<','2020-01-01')->where('xpublishdate','>','2019-01-01');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
@@ -557,10 +558,10 @@ class BookController extends Controller
                         ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                         ->get();*/
                     $publisherIds = BiBookBiPublisher::where('bi_book_xid', $book->xid)->get();
-                    $bookPublishers =  BookirPublisher::where('xid', $publisherIds->pluck('bi_publisher_xid')->all())->get();
+                    $bookPublishers =  BookirPublisher::whereIn('xid', $publisherIds->pluck('bi_publisher_xid')->all())->get();
                     if ($bookPublishers != null and count($bookPublishers) > 0) {
                         foreach ($bookPublishers as $bookPublisher) {
-                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                            $publishers[] = ["id" => $bookPublisher->xid, "name" => $bookPublisher->xpublishername];
                         }
                     }
                     //subjects
