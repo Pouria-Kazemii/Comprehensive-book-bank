@@ -84,19 +84,20 @@ class BookController extends Controller
                     $foreachBookId = $book->xid;
                     $authorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
                         if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 1) {
-                            return $value['xcreatorid'];
+                            return $value;
                         }
                     });
                     $authorFiltered = $authorFiltered->pluck('xcreatorid')->all();
+                    echo '<pre>'; print_r($authorFiltered);
                     $translatorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
                         if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 2) {
-                            return $value['xcreatorid'];
+                            return $value;
                         }
                     });
                     $translatorFiltered = $translatorFiltered->pluck('xcreatorid')->all();
                     $imagerFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
                         if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 20) {
-                            return $value['xcreatorid'];
+                            return $value;
                         }
                     });
                     $imagerFiltered = $imagerFiltered->pluck('xcreatorid')->all();
