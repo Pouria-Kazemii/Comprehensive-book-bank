@@ -116,7 +116,9 @@ class BookController extends Controller
                     //authors
                     $authors = null;
                     $authorFiltered = $authorCollection->filter(function ($value, $key)  use ($foreachBookId){
-                        return data_get($value, 'xbookid') == $foreachBookId;
+                        if($value['xbookid'] == $foreachBookId) {
+                            return $value;
+                        }
                     });
 
                     // $authorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 1)->get(); // writer
