@@ -93,11 +93,13 @@ class BookController extends Controller
                             return $value['xcreatorid'];
                         }
                     });
+                    $translatorFiltered = $translatorFiltered->pluck('xcreatorid')->all();
                     $imagerFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
                         if ($value['xbookid'] == $foreachBookId and $value['xroleid'] == 20) {
                             return $value['xcreatorid'];
                         }
                     });
+                    $imagerFiltered = $imagerFiltered->pluck('xcreatorid')->all();
                     if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
                     } else {
@@ -126,7 +128,6 @@ class BookController extends Controller
                     }*/
 
                     //authors
-                    dd($authorFiltered);
                     $authors = null;
                     $bookAuthors = BookirPartner::whereIn('xid', $authorFiltered)->get();
                     if ($bookAuthors != null and count($bookAuthors) > 0) {
