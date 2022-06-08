@@ -76,6 +76,7 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->orderBy('xisbn');
+            $books->limit(50);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
