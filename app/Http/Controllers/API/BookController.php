@@ -81,7 +81,7 @@ class BookController extends Controller
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
             $creatorInfo = BookirPartner::where('xid', $request["creatorId"])->first();
-            $response = ExcelController::booklist($mainResult, 'کتب پدیدآورنده' . time(), $creatorInfo->xcreatorname);
+            $response = ExcelController::booklist($mainResult, 'کتب پدیدآورنده' . time(), mb_substr($creatorInfo->xcreatorname, 0, 30, 'UTF-8'));
             return response()->json($response);
         } else {
             return $mainResult->status;
@@ -529,6 +529,8 @@ class BookController extends Controller
     {
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $yearStart = (isset($request["yearStart"]) && $request["yearStart"] != 0 ) ?  BookirBook::toGregorian($request["yearStart"].'-01-01','-','-') : "";
+        $yearEnd = (isset($request["yearEnd"]) && $request["yearEnd"] != 0 ) ? BookirBook::toGregorian($request["yearEnd"].'-12-29','-','-') : "";
         $data = null;
         $status = 404;
 
@@ -540,8 +542,9 @@ class BookController extends Controller
             if ($name != "") $books->where('xname', 'like', "%$name%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
-            // $books->orderBy('xisbn');
-            $books->where('xpublishdate','<','2020-01-01')->where('xpublishdate','>','2019-01-01');
+            if ($yearStart != "") $books->where('xpublishdate','>=',$yearStart);
+            if ($yearEnd != "") $books->where('xpublishdate','=<',$yearEnd);
+            $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
@@ -552,11 +555,6 @@ class BookController extends Controller
                     }
                     //publishers
                     $publishers = null;
-                    /*$bookPublishers = DB::table('bi_book_bi_publisher')
-                        ->where('bi_book_xid', '=', $book->xid)
-                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
-                        ->get();*/
                     $publisherIds = BiBookBiPublisher::where('bi_book_xid', $book->xid)->get();
                     $bookPublishers =  BookirPublisher::whereIn('xid', $publisherIds->pluck('bi_publisher_xid')->all())->get();
                     if ($bookPublishers != null and count($bookPublishers) > 0) {
