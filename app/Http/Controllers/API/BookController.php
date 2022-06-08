@@ -83,8 +83,8 @@ class BookController extends Controller
                 foreach ($books as $book) {
                     $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // dd($authorCollection);
-                    $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
-                    $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
+                    // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
+                    // $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $foreachBookId =$book->xid;
                     if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
@@ -121,7 +121,7 @@ class BookController extends Controller
                             $authors[] = ["id" => $bookAuthor->xid, "name" => $bookAuthor->xcreatorname];
                         }
                     }
-
+                    /*  
                     //translator
                     $translators = null;
                     // $translatorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 2)->get();
@@ -141,6 +141,7 @@ class BookController extends Controller
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
                         }
                     }
+                    */
 
                     //
                     $data[] =
@@ -163,8 +164,8 @@ class BookController extends Controller
                             "doi" => $book->xdiocode,
                             // "subjects" => $subjects,
                             "authors" => $authors,
-                            "translators" => $translators,
-                            "imagers" => $imagers,
+                            // "translators" => $translators,
+                            // "imagers" => $imagers,
                         ];
                 }
             }
