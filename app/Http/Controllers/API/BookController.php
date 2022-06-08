@@ -77,12 +77,12 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
-                $authorCollection = collect($authorIds);
-                $translatorIds = BookirPartnerrule::where('xroleid', 2)->get();
-                $translatorCollection = collect($translatorIds);
-                $imagerIds = BookirPartnerrule::where('xroleid', 20)->get();
-                $imagerCollection = collect($imagerIds);
+                // $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
+                // $authorCollection = collect($authorIds);
+                // $translatorIds = BookirPartnerrule::where('xroleid', 2)->get();
+                // $translatorCollection = collect($translatorIds);
+                // $imagerIds = BookirPartnerrule::where('xroleid', 20)->get();
+                // $imagerCollection = collect($imagerIds);
 
                 foreach ($books as $book) {
                     $foreachBookId =$book->xid;
@@ -92,7 +92,7 @@ class BookController extends Controller
                         $dossier_id = $book->xparent;
                     }
                     //publishers
-                    $publishers = null;
+                  /*  $publishers = null;
                     $bookPublishers = DB::table('bi_book_bi_publisher')
                         ->where('bi_book_xid', '=', $book->xid)
                         ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
@@ -151,7 +151,7 @@ class BookController extends Controller
                         foreach ($bookImagers as $bookImager) {
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
                         }
-                    }
+                    }*/
 
                     //
                     $data[] =
@@ -172,10 +172,10 @@ class BookController extends Controller
                             "image" => ($book->ximgeurl != '../Images/nopic.jpg')? $book->ximgeurl : '',
                             "description" => $book->xdescription,
                             "doi" => $book->xdiocode,
-                            "subjects" => $subjects,
-                            "authors" => $authors,
-                            "translators" => $translators,
-                            "imagers" => $imagers,
+                            // "subjects" => $subjects,
+                            // "authors" => $authors,
+                            // "translators" => $translators,
+                            // "imagers" => $imagers,
                         ];
                 }
             }
