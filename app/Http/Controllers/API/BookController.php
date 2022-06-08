@@ -59,7 +59,7 @@ class BookController extends Controller
         }
 
         // $result = $this->exportLists($request, true, ($where == ""), $where);
-        $isNull = true;
+        $isNull = false;
         $subjectTitle = '';
         $name = (isset($request["name"])) ? $request["name"] : "";
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
