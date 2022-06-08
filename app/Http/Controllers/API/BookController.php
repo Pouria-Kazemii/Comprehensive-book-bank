@@ -77,7 +77,7 @@ class BookController extends Controller
             $books->orderBy('xisbn');
             $books = $books->get();
             if ($books != null and count($books) > 0) {
-                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get(); // writer
+                $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->all(); 
                 dd($partnerInfo);
                 foreach ($partnerInfo as $key => $item) {
                     $collection_data[$key]["id"] = $item->xid;
