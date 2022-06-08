@@ -126,6 +126,7 @@ class BookController extends Controller
                     }*/
 
                     //authors
+                    dd($authorFiltered);
                     $authors = null;
                     $bookAuthors = BookirPartner::whereIn('xid', $authorFiltered)->get();
                     if ($bookAuthors != null and count($bookAuthors) > 0) {
