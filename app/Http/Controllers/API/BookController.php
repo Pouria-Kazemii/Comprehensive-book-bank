@@ -78,7 +78,7 @@ class BookController extends Controller
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $authorIds = BookirPartnerrule::where('xroleid', 1)->get(); // writer
-                $authorCollection = collect($authorIds);
+                $authorCollection = new Collection($authorIds);
                 // $translatorIds = BookirPartnerrule::where('xroleid', 2)->get();
                 // $translatorCollection = collect($translatorIds);
                 // $imagerIds = BookirPartnerrule::where('xroleid', 20)->get();
