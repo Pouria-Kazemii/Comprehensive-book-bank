@@ -82,7 +82,7 @@ class BookController extends Controller
                 // dd($collection);
                 foreach ($books as $book) {
                     $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
-                    // dd($authorCollection);
+                    dd($authorCollection);
                     // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $foreachBookId =$book->xid;
