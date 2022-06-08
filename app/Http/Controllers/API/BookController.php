@@ -78,7 +78,6 @@ class BookController extends Controller
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
-                // dd($partnerInfo);
                 $collection = collect($partnerInfo);
                 // dd($collection);
                 foreach ($books as $book) {
