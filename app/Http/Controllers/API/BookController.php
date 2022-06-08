@@ -32,7 +32,7 @@ class BookController extends Controller
     {
         return $this->lists($request);
     }
-    public function exportExcelBookFindByPublisherWeb($publisherId)
+    public function exportExcelBookFindByPublisherWeb($publisherId,$limit)
     {
 
         echo 'start : ' . date("H:i:s", time()) . '</br>';
@@ -76,7 +76,7 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->orderBy('xisbn');
-            $books->limit(30);
+            $books->limit($limit);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 $partnerInfo = BookirPartnerrule::whereIn('xroleid', [1, 2 , 20])->get()->toArray();
