@@ -32,11 +32,12 @@ class BookController extends Controller
     {
         return $this->lists($request);
     }
-    public function exportExcelBookFindByPublisherWeb($publisherId){
-       
+    public function exportExcelBookFindByPublisherWeb($publisherId)
+    {
+
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $request["publisherId"] = $publisherId;
-        $request["bookId"]  =0 ;
+        $request["bookId"]  = 0;
         $request["name"] = '';
         $request["isbn"] = '';
         // $where = $this->findByPublisherSelect($request);
@@ -82,17 +83,17 @@ class BookController extends Controller
                 $collection = collect($partnerInfo);
                 // dd($collection);
                 foreach ($books as $book) {
-                    $bbId = $book->xid;
-                    $filtered = $collection->filter(function ($value,$key) use ($bbId) {
-                       if($value['xbookid'] == $bbId){
-                        return $value;
-                       }
-                    }); 
-                    dd($filtered);
+                    $foreachBookId = $book->xid;
+                    $authorFiltered = $collection->filter(function ($value, $key) use ($foreachBookId) {
+                        if ($value['xbookid'] == $foreachBookId and $value['xbookid'] == 1) {
+                            return $value['xcreatorid'];
+                        }
+                    });
+                    // dd($filtered);
                     // $authorCollection = $collection->where('xroleid',  1)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
-                   
-                    $authorCollection = $collection->where('xbookid', $book->xid)->all();
-                    dd($authorCollection);
+
+                    // $authorCollection = $collection->where('xbookid', $book->xid)->all();
+                    // dd($authorCollection);
                     // $translatorCollection = $collection->where('xroleid',  2)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $imagerCollection = $collection->where('xroleid',  20)->where('xbookid', $book->xid)->pluck('xcreatorid')->all();
                     // $foreachBookId =$book->xid;
@@ -102,7 +103,7 @@ class BookController extends Controller
                         $dossier_id = $book->xparent;
                     }
                     //publishers
-                  /*  $publishers = null;
+                    /*  $publishers = null;
                     $bookPublishers = DB::table('bi_book_bi_publisher')
                         ->where('bi_book_xid', '=', $book->xid)
                         ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
@@ -125,7 +126,7 @@ class BookController extends Controller
 
                     //authors
                     $authors = null;
-                    $bookAuthors = BookirPartner::whereIn('xid', $authorCollection)->get();
+                    $bookAuthors = BookirPartner::whereIn('xid', $authorFiltered)->get();
                     if ($bookAuthors != null and count($bookAuthors) > 0) {
                         foreach ($bookAuthors as $bookAuthor) {
                             $authors[] = ["id" => $bookAuthor->xid, "name" => $bookAuthor->xcreatorname];
@@ -169,7 +170,7 @@ class BookController extends Controller
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
-                            "image" => ($book->ximgeurl != '../Images/nopic.jpg')? $book->ximgeurl : '',
+                            "image" => ($book->ximgeurl != '../Images/nopic.jpg') ? $book->ximgeurl : '',
                             "description" => $book->xdescription,
                             "doi" => $book->xdiocode,
                             // "subjects" => $subjects,
@@ -201,17 +202,17 @@ class BookController extends Controller
         } else {
             return $mainResult->status;
         }*/
-       
     }
     // find by publisher
-    public function exportExcelBookFindByPublisher(Request $request){
+    public function exportExcelBookFindByPublisher(Request $request)
+    {
         $where = $this->findByPublisherSelect($request);
         $result = $this->exportLists($request, true, ($where == ""), $where);
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
-            $publisherInfo = BookirPublisher::where('xid',$request["publisherId"])->first();
-            $response = ExcelController::booklist($mainResult,'کتب ناشر' . time(),$publisherInfo->xpublishername);
-           return response()->json($response);
+            $publisherInfo = BookirPublisher::where('xid', $request["publisherId"])->first();
+            $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), $publisherInfo->xpublishername);
+            return response()->json($response);
         } else {
             return $mainResult->status;
         }
@@ -249,9 +250,9 @@ class BookController extends Controller
         $result = $this->exportLists($request, true, ($where == ""), $where);
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
-            $creatorInfo = BookirPartner::where('xid',$request["creatorId"])->first();
-            $response = ExcelController::booklist($mainResult,'کتب پدیدآورنده' . time(),$creatorInfo->xcreatorname);
-           return response()->json($response);
+            $creatorInfo = BookirPartner::where('xid', $request["creatorId"])->first();
+            $response = ExcelController::booklist($mainResult, 'کتب پدیدآورنده' . time(), $creatorInfo->xcreatorname);
+            return response()->json($response);
         } else {
             return $mainResult->status;
         }
@@ -720,7 +721,7 @@ class BookController extends Controller
                 $imagerCollection = collect($imagerIds);
 
                 foreach ($books as $book) {
-                    $foreachBookId =$book->xid;
+                    $foreachBookId = $book->xid;
                     if ($book->xparent == -1 or  $book->xparent == 0) {
                         $dossier_id = $book->xid;
                     } else {
@@ -750,7 +751,7 @@ class BookController extends Controller
 
                     //authors
                     $authors = null;
-                    $authorFiltered = $authorCollection->filter(function ($value, $key)  use ($foreachBookId){
+                    $authorFiltered = $authorCollection->filter(function ($value, $key)  use ($foreachBookId) {
                         return data_get($value, 'xbookid') == $foreachBookId;
                     });
 
@@ -764,7 +765,7 @@ class BookController extends Controller
 
                     //translator
                     $translators = null;
-                    $translatorFiltered = $translatorCollection->filter(function ($value, $key)  use ($foreachBookId){
+                    $translatorFiltered = $translatorCollection->filter(function ($value, $key)  use ($foreachBookId) {
                         return data_get($value, 'xbookid') == $foreachBookId;
                     });
                     // $translatorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 2)->get();
@@ -777,7 +778,7 @@ class BookController extends Controller
 
                     //imager
                     $imagers = null;
-                    $imagersFiltered = $imagerCollection->filter(function ($value, $key)  use ($foreachBookId){
+                    $imagersFiltered = $imagerCollection->filter(function ($value, $key)  use ($foreachBookId) {
                         return data_get($value, 'xbookid') == $foreachBookId;
                     });
                     // $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
@@ -804,7 +805,7 @@ class BookController extends Controller
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
-                            "image" => ($book->ximgeurl != '../Images/nopic.jpg')? $book->ximgeurl : '',
+                            "image" => ($book->ximgeurl != '../Images/nopic.jpg') ? $book->ximgeurl : '',
                             "description" => $book->xdescription,
                             "doi" => $book->xdiocode,
                             "subjects" => $subjects,
