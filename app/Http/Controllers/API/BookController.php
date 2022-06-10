@@ -39,14 +39,13 @@ class BookController extends Controller
         $where = $this->findByPublisherSelect($request);
         $result = $this->exportLists($request, true, ($where == ""), $where);
         $mainResult = $result->getData();
-        return $mainResult;
-        // if ($mainResult->status == 200) {
-        //     $publisherInfo = BookirPublisher::where('xid', $request["publisherId"])->first();
-        //     $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), mb_substr($publisherInfo->xpublishername, 0, 30, 'UTF-8'));
-        //     return response()->json($response);
-        // } else {
-        //     return $mainResult->status;
-        // }
+        if ($mainResult->status == 200) {
+            $publisherInfo = BookirPublisher::where('xid', $request["publisherId"])->first();
+            $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), mb_substr($publisherInfo->xpublishername, 0, 30, 'UTF-8'));
+            return response()->json($response);
+        } else {
+            return $mainResult->status;
+        }
     }
     public function findByPublisher(Request $request)
     {
@@ -534,7 +533,7 @@ class BookController extends Controller
         $yearEnd = (isset($request["yearEnd"]) && $request["yearEnd"] != 0 ) ? BookirBook::toGregorian($request["yearEnd"].'-12-29','-','-') : "";
         $data = null;
         $status = 404;
-
+        
         // DB::enableQueryLog();
         if (!$isNull) {
             // read books
@@ -544,9 +543,10 @@ class BookController extends Controller
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             if ($yearStart != "") $books->where('xpublishdate','>=',$yearStart);
-            if ($yearEnd != "") $books->where('xpublishdate','=<',$yearEnd);
+            if ($yearEnd != "") $books->where('xpublishdate','<=',$yearEnd);
             $books->orderBy('xisbn');
             $books = $books->get();
+            
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
                     if ($book->xparent == -1 or  $book->xparent == 0) {
