@@ -39,13 +39,14 @@ class BookController extends Controller
         $where = $this->findByPublisherSelect($request);
         $result = $this->exportLists($request, true, ($where == ""), $where);
         $mainResult = $result->getData();
-        if ($mainResult->status == 200) {
-            $publisherInfo = BookirPublisher::where('xid', $request["publisherId"])->first();
-            $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), mb_substr($publisherInfo->xpublishername, 0, 30, 'UTF-8'));
-            return response()->json($response);
-        } else {
-            return $mainResult->status;
-        }
+        return $mainResult;
+        // if ($mainResult->status == 200) {
+        //     $publisherInfo = BookirPublisher::where('xid', $request["publisherId"])->first();
+        //     $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), mb_substr($publisherInfo->xpublishername, 0, 30, 'UTF-8'));
+        //     return response()->json($response);
+        // } else {
+        //     return $mainResult->status;
+        // }
     }
     public function findByPublisher(Request $request)
     {
