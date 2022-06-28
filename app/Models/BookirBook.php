@@ -8,7 +8,7 @@ use Morilog\Jalali\Jalalian;
 
 class BookirBook extends Model
 {
-    protected $fillable = ['xid', 'xdocid', 'xsiteid', 'xpageurl', 'xname', 'xdoctype', 'xpagecount', 'xformat', 'xcover', 'xprintnumber', 'xcirculation', 'xcovernumber', 'xcovercount', 'xapearance', 'xisbn', 'xisbn2', 'xpublishdate', 'xcoverprice', 'xminprice', 'xcongresscode', 'xdiocode', 'xlang', 'xpublishplace', 'xdescription', 'xweight', 'ximgeurl', 'xpdfurl', 'xregdate', 'xissubject', 'xiscreator', 'xispublisher', 'xislibrary', 'xistag', 'xisseller', 'xname2', 'xisname', 'xisdoc', 'xisdoc2', 'xiswater', 'xwhite', 'xblack', 'xparent'];
+    protected $fillable = ['xid', 'xdocid', 'xsiteid', 'xpageurl', 'xname', 'xdoctype', 'xpagecount', 'xformat', 'xcover', 'xprintnumber', 'xcirculation', 'xcovernumber', 'xcovercount', 'xapearance', 'xisbn', 'xisbn2','xisbn3', 'xpublishdate', 'xcoverprice', 'xminprice', 'xcongresscode', 'xdiocode', 'xlang', 'xpublishplace', 'xdescription', 'xweight', 'ximgeurl', 'xpdfurl', 'xregdate', 'xissubject', 'xiscreator', 'xispublisher', 'xislibrary', 'xistag', 'xisseller', 'xname2', 'xisname', 'xisdoc', 'xisdoc2', 'xiswater', 'xwhite', 'xblack', 'xparent'];
     protected $table = 'bookir_book';
     protected $primaryKey = 'xid';
     public $timestamps = false;
@@ -62,4 +62,17 @@ class BookirBook extends Model
         $gdate = \Morilog\Jalali\CalendarUtils::toGregorian($jdate_arr['0'], $jdate_arr['1'], $jdate_arr['2']);
         return $gdate['0'].$output_delimiter.$gdate['1'].$output_delimiter.$gdate['2'];
     }
+
+    public function publishers(){
+        return $this->belongsToMany(BookirPublisher::class,'bi_book_bi_publisher','bi_book_xid','bi_publisher_xid');
+    }
+    public function subjects(){
+        return $this->belongsToMany(BookirSubject::class,'bi_book_bi_subject','bi_book_xid','bi_subject_xid');
+    }
+    public function partnersRoles(){
+        return $this->belongsToMany(bookirpartner::class,'bookir_partnerrule','xbookid','xcreatorid')->withPivot('xbookid', 'xcreatorid','xroleid');
+    }
+
+
+
 }

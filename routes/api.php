@@ -30,7 +30,9 @@ Route::get('/v1/book/check', 'API\BookCheckController@check');
 //    }
 //);
 
+Route::post('/v1/book/save', 'API\BookController@store');
 Route::post('/v1/book/find', 'API\BookController@find');
+Route::post('/v1/book/find-isbn', 'API\BookController@findIsbn');
 Route::post('/v1/book/find/publisher', 'API\BookController@findByPublisher');
 Route::post('/v1/export-excel-book/find/publisher', 'API\BookController@exportExcelBookFindByPublisher');
 Route::post('/v1/book/find/creator', 'API\BookController@findByCreator');
@@ -38,6 +40,7 @@ Route::post('/v1/export-excel-book/find/creator', 'API\BookController@exportExce
 Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
 Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
 Route::post('/v1/book/detail', 'API\BookController@detail');
+Route::get('/v1/book/info/{id}', 'API\BookController@info');
 Route::post('/v1/book/dossier', 'API\BookController@dossier');
 Route::post('/v1/book/market', 'API\BookController@market');
 Route::post('/v1/book/search/dio', 'API\BookController@searchDio');
@@ -82,3 +85,11 @@ Route::post('/v1/report/creator-subject', 'API\ReportController@creatorSubject')
 Route::post('/v1/report/creator-publisher', 'API\ReportController@creatorPublisher');
 Route::post('/v1/report/creator-aggregation', 'API\ReportController@creatorAggregation');
 Route::post('/v1/report/dio', 'API\ReportController@dio');
+
+
+Route::post('/v1/role/search', 'API\RoleController@search');
+Route::post('/v1/bookLanguage/list/', 'API\BookLanguageController@list');
+Route::get('/v1/bookFormat/list/', 'API\BookFormatController@list');
+Route::get('/v1/bookCover/list/', 'API\BookCoverController@list');
+
+
