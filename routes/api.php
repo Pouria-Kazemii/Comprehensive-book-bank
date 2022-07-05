@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/v1/user/login', 'API\UserController@login');
+Route::post('/v1/user/auth', 'API\UserController@auth');
 
 //Route::get('/v1/book/find', 'API\BookController@find');
 //Route::get('/v1/book/check', 'API\BookController@checkBookK24');
