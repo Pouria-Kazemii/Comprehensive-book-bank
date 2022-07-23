@@ -53,20 +53,22 @@ class CreatorController extends Controller
     // list
     public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
-        $name = (isset($request["name"])) ? $request["name"] : "";
         $roleId = (isset($request["roleId"])) ? $request["roleId"] : "";
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xcreatorname";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         if (!$isNull) {
             // read books
-            $creators = BookirPartner::orderBy('xcreatorname', 'asc');
-            if ($name != "") $creators->where('xcreatorname', 'like', "%$name%");
+            $creators = BookirPartner::orderBy($column, $sortDirection);
+            if ($searchText != "") $creators->where('xcreatorname', 'like', "%$searchText%");
             if ($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
             if ($where != "") $creators->whereRaw($where);
             $creators = $creators->skip($offset)->take($pageRows)->get();
@@ -98,8 +100,8 @@ class CreatorController extends Controller
             }
 
             //
-            $creators = BookirPartner::orderBy('xcreatorname', 'asc');
-            if ($name != "") $creators->where('xcreatorname', 'like', "%$name%");
+            $creators = BookirPartner::orderBy($column, $sortDirection);
+            if ($searchText != "") $creators->where('xcreatorname', 'like', "%$searchText%");
             if ($roleId > 0) $creators->whereRaw("xid In (Select xcreatorid From bookir_partnerrule Where xroleid='$roleId')");
             if ($where != "") $creators->whereRaw($where);
             $totalRows = $creators->count();

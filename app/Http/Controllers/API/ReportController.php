@@ -19,9 +19,15 @@ class ReportController extends Controller
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xdiocode";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+
+
         $data = null;
         $status = 404;
-        $pageRows = 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -30,7 +36,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books = BookirBook::orderBy($column, $sortDirection );
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
@@ -85,20 +91,29 @@ class ReportController extends Controller
         $dio = (isset($request["dio"])) ? $request["dio"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xdiocode";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books = BookirBook::orderBy($column, $sortDirection);
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($dio != "") $books->where("xdiocode", "=", "$dio");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
-        $books = $books->get(); // get list
+        // $books = $books->get(); // get list
+        $books = $books->skip($offset)->take($pageRows)->get();
+
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -111,7 +126,7 @@ class ReportController extends Controller
         {
             foreach ($dioData as $dio)
             {
-                $books = BookirBook::orderBy('xdiocode', 'asc');
+                $books = BookirBook::orderBy($column, $sortDirection);
                 $books->whereRaw("xdiocode='$dio' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
                 if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
                 if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
@@ -165,7 +180,9 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishdate";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $dioData = null;
         $status = 404;
@@ -180,7 +197,7 @@ class ReportController extends Controller
         // read
         if($dio != "")
         {
-            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            $books = BookirBook::orderBy($column , $sortDirection);
             $books->where("xdiocode", "=", "$dio");
             // if($translate == 1) $books->where("xlang", "!=", "فارسی");
             if($translate == 1) $books->where("is_translate", 2);
@@ -194,6 +211,11 @@ class ReportController extends Controller
             {
                 foreach ($books as $book)
                 {
+                    if ($book->xparent == -1 or  $book->xparent == 0) {
+                        $dossier_id = $book->xid;
+                    } else {
+                        $dossier_id = $book->xparent;
+                    }
                     $publishers = null;
 
                     $bookPublishers = DB::table('bi_book_bi_publisher')
@@ -213,6 +235,7 @@ class ReportController extends Controller
                     $data[] =
                         [
                             "id" => $book->xid,
+                            "dossier_id" => $dossier_id,
                             "name" => $book->xname,
                             "publishers" => $publishers,
                             "language" => $book->xlang,
@@ -251,10 +274,12 @@ class ReportController extends Controller
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishdate";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -265,7 +290,7 @@ class ReportController extends Controller
         // read
         if($publisherId > 0)
         {
-            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            $books = BookirBook::orderBy( $column, $sortDirection);
 //            $books->whereRaw("xparent='-1' and xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
@@ -353,11 +378,13 @@ class ReportController extends Controller
         $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xdiocode";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
-        $dioData = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50; 
+        $dioData = null;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -366,7 +393,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books = BookirBook::orderBy($column,$sortDirection);
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($subjectId > 0) $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
@@ -428,15 +455,20 @@ class ReportController extends Controller
         $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xsubject";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
-        $subjectsData = null;
         $status = 404;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50; 
+        $subjectsData = null;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $subjects = BookirSubject::orderBy('xsubject', 'asc');
+        $subjects = BookirSubject::orderBy($column,$sortDirection);
         $subjects->whereRaw("xid In (Select bi_subject_xid From bi_book_bi_subject Where bi_book_xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId'))");
         if($subjectId > 0) $subjects->where("xid", "=", $subjectId);
         $subjects = $subjects->get(); // get list
@@ -463,6 +495,7 @@ class ReportController extends Controller
                     {
                         $data[$subjectId] = array
                         (
+                            "id" => $subjectId,
                             "title" => $subjectTitle,
                             "countTitle" => 1 + ((isset($data[$subjectId])) ? $data[$subjectId]["countTitle"] : 0),
                             "circulation" => $book->xcirculation + ((isset($data[$subjectId])) ? $data[$subjectId]["circulation"] : 0),
@@ -502,15 +535,20 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishername";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
-        $publishersData = null;
         $status = 404;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $publishersData = null;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $publishers = BookirPublisher::orderBy('xpublishername', 'asc');
+        $publishers = BookirPublisher::orderBy($column,$sortDirection);
         $publishers->whereRaw("xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId'))");
         $publishers = $publishers->get(); // get list
         if($publishers != null and count($publishers) > 0)
@@ -579,11 +617,15 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+        
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishdate";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
-        $dioData = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+
+        $dioData = null;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -594,7 +636,7 @@ class ReportController extends Controller
         // read
         if($subjectId > 0)
         {
-            $books = BookirBook::orderBy('xpublishdate', 'desc');
+            $books = BookirBook::orderBy($column,$sortDirection);
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
             // if($translate == 1) $books->where("xlang", "!=", "فارسی");
             if($translate == 1) $books->where("is_translate", 2);
@@ -661,7 +703,13 @@ class ReportController extends Controller
         $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xdiocode";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+
+
         $data = null;
         $dioData = null;
         $status = 404;
@@ -674,7 +722,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $books = BookirBook::orderBy('xdiocode', 'asc');
+        $books = BookirBook::orderBy($column,$sortDirection);
         $books->whereRaw("xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId')");
         if($subjectId > 0) $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
@@ -735,10 +783,14 @@ class ReportController extends Controller
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xbookid";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+
         $data = null;
         $status = 404;
-        $pageRows = 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -749,7 +801,8 @@ class ReportController extends Controller
         // read
         if($publisherId > 0)
         {
-            $creatorRoles = BookirPartnerrule::orderBy('xbookid', 'asc');
+            $creatorRoles = BookirPartnerrule::orderBy($column, $sortDirection);
+            // DB::enableQueryLog();
             $creatorRoles->whereRaw("xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
             if($yearStart != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate >= '$yearStart')");
             if($yearEnd != "") $creatorRoles->whereRaw("xbookid In (Select xid From bookir_book Where xpublishdate <= '$yearEnd')");
@@ -758,7 +811,10 @@ class ReportController extends Controller
             $creatorRoles->join('bookir_book', 'bookir_partnerrule.xbookid', '=', 'bookir_book.xid');
             $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid', 'bookir_partnerrule.xbookid');
             $creatorRoles->select('bookir_book.xlang as xlang', 'bookir_book.xcirculation as xcirculation', 'bookir_partnerrule.xbookid as xbookid', 'bookir_partnerrule.xroleid as xroleid', 'bookir_partnerrule.xcreatorid as xcreatorid', 'bookir_partner.xcreatorname as xcreatorname', 'bookir_rules.xrole as xrole');
+           
             $totalRows = count($creatorRoles->get()); // get total records count
+        //     $query = DB::getQueryLog();
+        //    return $query;
             $creatorRoles = $creatorRoles->skip($offset)->take($pageRows)->get(); // get list
             if($creatorRoles != null and count($creatorRoles) > 0)
             {
@@ -798,6 +854,14 @@ class ReportController extends Controller
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+
+
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishername";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+
+
         $data = null;
         $publishersData = null;
         $status = 404;
@@ -806,7 +870,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-        $publishers = BookirPublisher::orderBy('xpublishername', 'asc');
+        $publishers = BookirPublisher::orderBy($column,$sortDirection);
         $publishers->whereRaw("xid In (Select bi_publisher_xid From bi_book_bi_publisher Where bi_book_xid In (Select xbookid From bookir_partnerrule Where xcreatorid='$creatorId'))");
         $publishers = $publishers->get(); // get list
         if($publishers != null and count($publishers) > 0)

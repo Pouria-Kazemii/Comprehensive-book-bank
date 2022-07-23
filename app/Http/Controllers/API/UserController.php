@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Validator;
+
 
 class UserController extends Controller
 {
@@ -97,6 +100,151 @@ class UserController extends Controller
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'مشکل در ارسال پیامک'], 500);
+        }
+    }
+
+    // find
+    public function find(Request $request)
+    {
+        return $this->lists($request);
+    }
+
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
+    {
+
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "name";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $data = null;
+        $status = 404;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $totalRows = 0;
+        $totalPages = 0;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        // DB::enableQueryLog();
+        if (!$isNull) {
+            // read users
+            $users = User::orderBy($column, $sortDirection);
+            if ($searchText != "") $users->where('name', 'like', "%$searchText%");
+            if ($where != "") $users->whereRaw($where);
+            $users = $users->skip($offset)->take($pageRows)->get();
+            if ($users != null and count($users) > 0) {
+                foreach ($users as $user) {
+                    //
+                    $data[] =
+                        [
+                            "id" => $user->id,
+                            "name" => $user->name,
+                            "phone" => $user->phone,
+                            "email" => $user->email,
+                        ];
+                }
+            }
+
+            //
+            $users = User::orderBy($column, $sortDirection);
+            if ($searchText != "") $users->where('name', 'like', "%$searchText%");
+            if ($where != "") $users->whereRaw($where);
+            $countusers = $users->get();
+            $totalRows =  count($countusers);
+            $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
+        }
+        //  $query = DB::getQueryLog();
+        // return $query;
+
+        if ($data != null or $subjectTitle != "") $status = 200;
+
+        // response
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+            ],
+            $status
+        );
+    }
+
+    public function store(Request $request)
+    {
+       
+        $validator = Validator::make(
+            $request->all(), 
+            [
+                'name' => 'required|string|max:191',
+                'phone' => 'required|string|max:11|min:11',
+                'email' => 'required|email|max:191|unique:users',
+                'password' => 'required|string|min:6|confirmed',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
+        }else{
+            try{
+                $user = User::create([
+                    'name' => $request->get('name'),
+                    'phone' => $request->get('phone'),
+                    'email' => $request->get('email'),
+                    'password' => Hash::make($request->get('password')),
+                ]);
+                return response()->json([
+                    'message'=>'ok',
+                    'status'=>200
+                ]);
+            }catch(\Exception $e){
+                return response()->json([
+                    'message'=>$e->getMessage()
+                ],500);
+            }
+        }
+
+    }
+    public function info($userId){
+        $status = 404;
+        $user = User::findOrFail($userId);
+        if ($user != null) $status = 200;
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => $user
+            ],
+            $status
+        );
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $validator = Validator::make(
+            $request->all(), 
+            [
+                'name' => 'required|string|max:255',
+                'phone' => 'required|string|min:11|max:11',
+                'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+                'password' => 'nullable|string|min:6|confirmed',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
+        }else{
+            $user->name = $request->get('name');
+            $user->phone = $request->get('phone');
+            $user->email = $request->get('email');
+            if($request->get('password') != ''){
+                $user->password = Hash::make($request->get('password'));
+            }
+            try{
+                $user->update();
+                return response()->json(['message'=>'ok','status'=>200]);
+            }catch(\Exception $e){
+                return response()->json([
+                    'message'=>'Something goes wrong while creating a user!!'
+                ],500);
+            }
         }
     }
 }

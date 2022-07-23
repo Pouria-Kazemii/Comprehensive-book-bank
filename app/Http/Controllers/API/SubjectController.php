@@ -12,16 +12,18 @@ class SubjectController extends Controller
     // list subject
     public function find(Request $request)
     {
-        $title = $request["title"];
-        $currentPageNumber = $request["currentPageNumber"];
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xsubject";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0; 
         $data = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read books
-        $subjects = BookirSubject::orderBy('xsubject', 'asc');
-        if($title != "") $subjects->where('xsubject', 'like', "%$title%");
+        $subjects = BookirSubject::orderBy($column, $sortDirection);
+        if($searchText != "") $subjects->where('xsubject', 'like', "%$searchText%");
         $subjects = $subjects->skip($offset)->take($pageRows)->get();
         if($subjects != null and count($subjects) > 0)
         {
@@ -38,8 +40,8 @@ class SubjectController extends Controller
         }
 
         //
-        $subjects = BookirSubject::orderBy('xsubject', 'asc');
-        if($title != "") $subjects->where('xsubject', 'like', "%$title%");
+        $subjects = BookirSubject::orderBy($column, $sortDirection);
+        if($searchText != "") $subjects->where('xsubject', 'like', "%$searchText%");
         $totalRows = $subjects->count();
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 

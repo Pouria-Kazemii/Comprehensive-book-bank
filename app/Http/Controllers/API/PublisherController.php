@@ -43,20 +43,22 @@ class PublisherController extends Controller
     // list
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "",$creatorId ="")
     {
-        $name = (isset($request["name"])) ? $request["name"] : "";
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishername";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
         $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
         $data = null;
         $status = 404;
-        $pageRows = 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         if (!$isNull) {
             // read books
-            $publishers = BookirPublisher::orderBy('xpublishername', 'asc')->where('xpublishername', '!=', '');
+            $publishers = BookirPublisher::orderBy($column, $sortDirection)->where('xpublishername', '!=', '');
             //            if($defaultWhere) $publishers->where('xparent', '=', '-1');
-            if ($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if ($searchText != "") $publishers->where('xpublishername', 'like', "%$searchText%");
             if ($where != "") $publishers->whereRaw($where);
             $publishers = $publishers->skip($offset)->take($pageRows)->get();
             if ($publishers != null and count($publishers) > 0) {
@@ -72,9 +74,9 @@ class PublisherController extends Controller
             }
 
             //
-            $publishers = BookirPublisher::orderBy('xpublishername', 'asc')->where('xpublishername', '!=', '');
+            $publishers = BookirPublisher::orderBy($column, $sortDirection)->where('xpublishername', '!=', '');
             //            if($defaultWhere) $publishers->where('xparent', '=', '-1');
-            if ($name != "") $publishers->where('xpublishername', 'like', "%$name%");
+            if ($searchText != "") $publishers->where('xpublishername', 'like', "%$searchText%");
             if ($where != "") $publishers->whereRaw($where);
             $totalRows = $publishers->count();
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
