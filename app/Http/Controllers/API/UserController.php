@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,53 +13,36 @@ use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Validator;
 
-
 class UserController extends Controller
 {
-    public function __construct()
+    public function authenticate(Request $request)
     {
-    }
-
-    // login
-    public function auth(Request $request)
-    {
-        $status = 401;
-        $message = "error";
-        $data = null;
-        $email = $request->input("email", "");
-        $password = $request->input("password", "");
-
         $credentials = $request->only('email', 'password');
-        // $user = User::where('email', $request->email)->first();
+
         try {
-            if (! $token = JWTAuth::attempt($credentials)) {
-            // if (!$user || !Hash::check($request->password, $user->password)) {
+            if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json(['error' => 'invalid_credentials'], 400);
             }
             try {
                 $sms_code = rand(1000, 9999);
-                $resultSendSms =$this->sendSmsCode($sms_code);
+                $resultSendSms = $this->sendSmsCode($sms_code);
                 return $resultSendSms;
-                
-              
             } catch (JWTException $e) {
                 return response()->json(['error' => 'مشکل در ارسال پیامک'], 500);
-
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'مشکل در ساخن توکن'], 500);
         }
-
-
+        // return response()->json(compact('token'));
     }
     public function login(Request $request)
     {
-     
+
         $user = User::where('email', $request->email)->first();
-        if($user != NULL){
+        if ($user != NULL) {
             if ($user->sms_code === $request->smsCode) {
                 //todo get authenticated user here 
-                if (! $token = JWTAuth::fromUser($user)) {
+                if (!$token = JWTAuth::fromUser($user)) {
                     return response()->json(['error' => 'invalid_credentials'], 400);
                 }
                 $user->sms_code = NULL;
@@ -72,12 +56,11 @@ class UserController extends Controller
                 );
             }
         }
-      
+
         return response()->json(
-            ['message'=> 'کد وارد شده نامعتبر می باشد.'], 
+            ['message' => 'کد وارد شده نامعتبر می باشد.'],
             500
         );
-  
     }
 
     protected function sendSmsCode($sms_code)
@@ -86,16 +69,16 @@ class UserController extends Controller
             $user = Auth::user();
             $user->sms_code = $sms_code;
             $user->update();
-             //send sms code
-             $username= env('SMS_PANEL_USERNAME');
-             $password= env('SMS_PANEL_PASSWORD');
-             $from= env('SMS_PANEL_NUMBER');
-             $content = urlencode("کد ورود به بانک جامع کتاب : $sms_code" );
-             $url = env('SMS_PANEL_URL')."?from=$from&to=$user->phone&username=$username&password=$password&message=$content";
-             $res = file_get_contents($url);
-            if($res){
+            //send sms code
+            $username = env('SMS_PANEL_USERNAME');
+            $password = env('SMS_PANEL_PASSWORD');
+            $from = env('SMS_PANEL_NUMBER');
+            $content = urlencode("کد ورود به بانک جامع کتاب : $sms_code");
+            $url = env('SMS_PANEL_URL') . "?from=$from&to=$user->phone&username=$username&password=$password&message=$content";
+            $res = file_get_contents($url);
+            if ($res) {
                 return response()->json(['message' => 'ok'], 200);
-            }else{
+            } else {
                 return response()->json(['error' => 'مشکل در ارسال پیامک'], 500);
             }
         } catch (JWTException $e) {
@@ -168,9 +151,9 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-       
+
         $validator = Validator::make(
-            $request->all(), 
+            $request->all(),
             [
                 'name' => 'required|string|max:191',
                 'phone' => 'required|string|max:11|min:11',
@@ -181,8 +164,8 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
-        }else{
-            try{
+        } else {
+            try {
                 $user = User::create([
                     'name' => $request->get('name'),
                     'phone' => $request->get('phone'),
@@ -190,18 +173,18 @@ class UserController extends Controller
                     'password' => Hash::make($request->get('password')),
                 ]);
                 return response()->json([
-                    'message'=>'ok',
-                    'status'=>200
+                    'message' => 'ok',
+                    'status' => 200
                 ]);
-            }catch(\Exception $e){
+            } catch (\Exception $e) {
                 return response()->json([
-                    'message'=>$e->getMessage()
-                ],500);
+                    'message' => $e->getMessage()
+                ], 500);
             }
         }
-
     }
-    public function info($userId){
+    public function info($userId)
+    {
         $status = 404;
         $user = User::findOrFail($userId);
         if ($user != null) $status = 200;
@@ -219,32 +202,76 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $validator = Validator::make(
-            $request->all(), 
+            $request->all(),
             [
                 'name' => 'required|string|max:255',
                 'phone' => 'required|string|min:11|max:11',
-                'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
                 'password' => 'nullable|string|min:6|confirmed',
             ]
         );
 
         if ($validator->fails()) {
             return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
-        }else{
+        } else {
             $user->name = $request->get('name');
             $user->phone = $request->get('phone');
             $user->email = $request->get('email');
-            if($request->get('password') != ''){
+            if ($request->get('password') != '') {
                 $user->password = Hash::make($request->get('password'));
             }
-            try{
+            try {
                 $user->update();
-                return response()->json(['message'=>'ok','status'=>200]);
-            }catch(\Exception $e){
+                return response()->json(['message' => 'ok', 'status' => 200]);
+            } catch (\Exception $e) {
                 return response()->json([
-                    'message'=>'Something goes wrong while creating a user!!'
-                ],500);
+                    'message' => 'Something goes wrong while creating a user!!'
+                ], 500);
             }
         }
+    }
+
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+
+        $user = User::create([
+            'name' => $request->get('name'),
+            'email' => $request->get('email'),
+            'password' => Hash::make($request->get('password')),
+        ]);
+
+        $token = JWTAuth::fromUser($user);
+
+        return response()->json(compact('user', 'token'), 201);
+    }
+
+    public function getAuthenticatedUser()
+    {
+        try {
+
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['user_not_found'], 404);
+            }
+        } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+            return response()->json(['token_expired'], $e->getStatusCode());
+        } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+            return response()->json(['token_invalid'], $e->getStatusCode());
+        } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+            return response()->json(['token_absent'], $e->getStatusCode());
+        }
+
+        return response()->json(compact('user'));
     }
 }

@@ -19,76 +19,101 @@ class CreateBookFormatsTable extends Migration
             $table->string('name',30)->collation('utf8_persian_ci');
             $table->timestamps();
         });
-        $covers = array(
+        $formats = array(
             array(
-                'name' => 'شومیز',
+                'name' => 'وزیری',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'گالینگور',
+                'name' => 'رقعی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'سلفون',
+                'name' => 'جیبی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'کارتی',
+                'name' => 'پالتویی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'کاغذی',
+                'name' => 'خشتی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'مقوایی',
+                'name' => 'رحلی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'گلاسه',
+                'name' => 'بیاضی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'زرکوب',
+                'name' => 'جعبه ای',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'شومیز خارجی',
+                'name' => 'بغلی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'پلاستیکی',
+                'name' => 'جانمازی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'سلفون خارجی',
+                'name' => 'سلطانی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'چوبی',
+                'name' => 'ربعی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'پارچه ای',
+                'name' => 'جیبی پالتویی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
-            )
+            ),
+            array(
+                'name' => 'رحلی کوچک',
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ),
+            array(
+                'name' => 'آلبومی',
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ),
+            array(
+                'name' => '۱/۲ جیبی',
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ),
+            array(
+                'name' => '۱/۴ جیبی',
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ),
+            array(
+                'name' => 'رقعی پالتویی',
+                'created_at' => new DateTime(),
+                'updated_at' => new DateTime(),
+            ),
         );
-        DB::table('book_formats')->insert($covers);
+        DB::table('book_formats')->insert($formats);
     }
-
+    
     /**
      * Reverse the migrations.
      *

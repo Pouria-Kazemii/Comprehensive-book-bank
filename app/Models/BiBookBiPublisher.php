@@ -10,4 +10,6 @@ class BiBookBiPublisher extends Model
     protected $fillable = ['xid', 'bi_book_xid', 'bi_publisher_xid'];
     protected $table = 'bi_book_bi_publisher';
     public $timestamps = false;
+
+    
 }

@@ -72,8 +72,8 @@ class SubjectController extends Controller
             {
                 $data[] =
                     [
-                        "id" => $subject->xid,
-                        "value" => $subject->xsubject,
+                        "value" => $subject->xid,
+                        "label" => $subject->xsubject,
                     ];
             }
 

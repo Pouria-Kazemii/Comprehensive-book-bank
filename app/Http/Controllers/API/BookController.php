@@ -27,13 +27,8 @@ use Illuminate\Support\Collection;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Validator;
 use Exception;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
-use Lcobucci\JWT\Token;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use JWTAuth;
-use Tymon\JWTAuth\JWTAuth as JWTAuthJWTAuth;
+
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BookController extends Controller
 {
@@ -219,12 +214,12 @@ class BookController extends Controller
         $possibilityEmptyLogicalOperator = true;
         $beforeLogicalOperator = '';
         foreach ($request['search'] as $key => $item) {
-            if(gettype($item) != 'array'){
+            if (gettype($item) != 'array') {
                 $search_item = json_decode($item, true);
-            }else{
+            } else {
                 $search_item = $item;
             }
-            
+
             if (!empty($search_item)) {
                 //    unset($search_item);
                 //    $search_item = array();
@@ -421,7 +416,7 @@ class BookController extends Controller
                             "printNumber" => $book->xprintnumber,
                             "circulation" => priceFormat($book->xcirculation),
                             "format" => $book->xformat,
-                            "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                            "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
@@ -511,7 +506,7 @@ class BookController extends Controller
                             "printNumber" => $book->xprintnumber,
                             "circulation" => priceFormat($book->xcirculation),
                             "format" => $book->xformat,
-                            "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                            "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
@@ -635,7 +630,7 @@ class BookController extends Controller
                             "printNumber" => $book->xprintnumber,
                             "circulation" => priceFormat($book->xcirculation),
                             "format" => $book->xformat,
-                            "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                            "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                             "pageCount" => $book->xpagecount,
                             "isbn" => $book->xisbn,
                             "price" => priceFormat($book->xcoverprice),
@@ -713,11 +708,21 @@ class BookController extends Controller
                     $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role" => $partner->role];
                 }
             }
+            $isbn = array();
+            if (isset($book->xisbn) and !empty($book->xisbn)) {
+                $isbn[] = $book->xisbn;
+            }
+            if (isset($book->xisbn2) and !empty($book->xisbn2)) {
+                $isbn[] = $book->xisbn2;
+            }
+            if (isset($book->xisbn3) and !empty($book->xisbn3)) {
+                $isbn[] = $book->xisbn3;
+            }
 
             //
             $dataMaster =
                 [
-                    "isbn" => $book->xisbn,
+                    "isbns" => $isbn,
                     "name" => $book->xname,
                     "dioCode" => $book->xdiocode,
                     "publishers" => $publishersData,
@@ -726,10 +731,10 @@ class BookController extends Controller
                     "image" => $book->ximgeurl,
                     "publishPlace" => $book->xpublishplace,
                     "format" => $book->xformat,
-                    "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
-                    "circulation" => $book->circulation,
+                    "circulation" => $book->xcirculation,
                     "price" => priceFormat($book->xcoverprice),
                     "des" => $book->xdescription,
                 ];
@@ -826,11 +831,11 @@ class BookController extends Controller
                 ->where('xbookid', '=', $book->xid)
                 ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                 ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
-                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role')
+                ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xid as role_id', 'bookir_rules.xrole as role')
                 ->get();
             if ($bookPartnerRules != null and count($bookPartnerRules) > 0) {
                 foreach ($bookPartnerRules as $partner) {
-                    $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role" => $partner->role];
+                    $creatorsData[] = ["id" => $partner->id, "name" => $partner->name, "role_id" => $partner->role_id,  "role" => $partner->role];
                 }
             }
 
@@ -846,15 +851,15 @@ class BookController extends Controller
                     "publishers" => $publishersData,
                     "subjects" => $subjectsData,
                     "creators" => $creatorsData,
-                    "image" => $book->ximgeurl,
+                    "image" => ($book->xreg_userid) ? env('APP_URL') . $book->ximgeurl : $book->ximgeurl,
                     "publishPlace" => $book->xpublishplace,
                     "format" => $book->xformat,
-                    "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                    "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                     "publishDate" => BookirBook::convertMiladi2Shamsi($book->xpublishdate),
                     "printNumber" => $book->xprintnumber,
                     "pageCount" => $book->xpagecount,
                     "weight" => $book->xweight,
-                    "circulation" => $book->circulation,
+                    "circulation" => $book->xcirculation,
                     "price" => $book->xcoverprice,
                     "des" => $book->xdescription,
                 ];
@@ -1069,7 +1074,7 @@ class BookController extends Controller
                         "publishPlace" => $publishPlaceData,
                         // "format" => $book->xformat,
                         "format" => $formatsData,
-                        // "cover" => $book->xcover != null and $book->xcover != "null" ? $book->xcover : "",
+                        // "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                         "cover" =>  $coversData,
                         "publishDate" => $min_publish_date > 0 && $max_publish_date > 0 ? ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date) : null,
                         "printNumber" => $printNumber,
@@ -1571,15 +1576,14 @@ class BookController extends Controller
 
     public function mergeBookDossier(Request $request)
     {
-        if(isset($request["mergeBookDossierId"])){
+        if (isset($request["mergeBookDossierId"])) {
             $mergeBookDossierArray =  array();
-            foreach($request["mergeBookDossierId"] as $key=>$item){
+            foreach ($request["mergeBookDossierId"] as $key => $item) {
                 $mergeBookDossierArray[$key] =   json_decode($item);
-    
             }
             $mergeBookDossierArrayCollection = new Collection($mergeBookDossierArray);
             $mergeBookDossierId = $mergeBookDossierArrayCollection->pluck('dossier_id')->all();
-        }else{
+        } else {
             $mergeBookDossierId = '';
         }
         // $mergeBookDossierId = (isset($request["mergeBookDossierId"])) ? $request["mergeBookDossierId"] : "";
@@ -1636,18 +1640,17 @@ class BookController extends Controller
 
     public function separateFromBookDossier(Request $request)
     {
-        if(isset($request["separateFromBookDossierId"])){
+        if (isset($request["separateFromBookDossierId"])) {
             $separateFromBookDossierArray =  array();
-            foreach($request["separateFromBookDossierId"] as $key=>$item){
+            foreach ($request["separateFromBookDossierId"] as $key => $item) {
                 $separateFromBookDossierArray[$key] =   json_decode($item);
-    
             }
             $separateFromBookDossierArrayCollection = new Collection($separateFromBookDossierArray);
             $separateFromBookDossierId = $separateFromBookDossierArrayCollection->pluck('id')->all();
-        }else{
+        } else {
             $separateFromBookDossierId = '';
         }
-       
+
         // $separateFromBookDossierId = (isset($request["separateFromBookDossierId"])) ? $request["separateFromBookDossierId"] : "";
         $status = 404;
 
@@ -1672,159 +1675,444 @@ class BookController extends Controller
             $status
         );
     }
+
+    /*public function isbn3ToIsbn($isbn) افزودن خط تیره قانون پیچیده ایی داره 
+    {
+        if (strlen($isbn) == 13) {
+            $isbn = substr_replace($isbn, '-', 3, 0);
+            $isbn = substr_replace($isbn, '-', 6, 0);
+            $isbn = substr_replace($isbn, '-', 11, 0);
+            $isbn = substr_replace($isbn, '-', 15, 0);
+            return $isbn;
+        }
+    }*/
     public function store(Request $request)
     {
+        $token = JWTAuth::getToken();
+        $user = JWTAuth::toUser($token);
         $validator = Validator::make(
             $request->all(),
             [
                 'name' => 'required|string|max:191',
-                'isbn2' => 'required|string|max:10',
-                'isbn3' => 'required|string|min:10',
+                'isbn2' => 'nullable|required_without:isbn3|string|max:10',
+                'isbn3' => 'nullable|required_without:isbn2|string|min:10',
                 'coverPrice' => 'required|numeric',
+                'pageCount' => 'required|numeric',
+                'weight' => 'required|numeric',
+                'printNumber' => 'required|numeric',
+                // 'circulation' => 'required|numeric',
+                'publishDate' => 'required|date_format:Y-m-d',
+                'publisherId' => 'nullable|required_without:newPublisher|numeric',
+                'newPublisher' => 'nullable|required_without:publisherId|string',
             ]
         );
 
         if ($validator->fails()) {
             return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
         } else {
-            // BookirBook::where('xisbn2', $request->get('isbn2'))->orwhere('xisbn3', $request->get('isbn3'))->get();
-            $publishDate = '';
-            if (!empty($request->get('publishDate')) && $request->get('publishDate') != "undefined") { // $books->where('xpublishdate', '=', $isbn);
-                $publishDate =  Bookirbook::toGregorian($request->get('publishDate'), '/', '-');
-            }
-            $book = new BookirBook([
-                'xdocid' => 0,
-                'xsiteid' => 1,
-                'xpageurl' => '', // uniqe
-                'xpageurl2' => '',
-                'xname' => $request->get('name'),
-                'xdoctype' => 1,
-                'xpagecount' => $request->get('pageCount'),
-                'xformat' => $request->get('format'),
-                'xcover' => $request->get('cover'),
-                'xprintnumber' => $request->get('printNumber'),
-                'xcirculation' => $request->get('circulation'),
-                'xcovernumber' => 0,
-                'xcovercount' => 0,
-                'xapearance' => '',
-                'xisbn' => '',
-                'xisbn2' => $request->get('isbn2'),
-                'xisbn3' => $request->get('isbn3'),
-                'xpublishdate' => $publishDate,
-                'xcoverprice' => $request->get('coverPrice'),
-                'xminprice' => '',
-                'xcongresscode' => '',
-                'xdiocode' => $request->get('doiCode'),
-                'xlang' => $request->get('lang'),
-                'xpublishplace' => $request->get('publishPlace'),
-                'xdescription' => $request->get('description'),
-                'xweight' => $request->get('weight'),
-                'ximgeurl' => '',
-                'xpdfurl' => '',
-                'xregdate' => time(),
-                'xissubject' => !empty($request->get('subjectId')) ? 1 : 0,
-                'xiscreator' => !empty($request->get('creatorId')) ? 1 : 0,
-                'xispublisher' => !empty($request->get('publisherId')) or  !empty($request->get('newPublisher')) ? 1 : 0,
-                'xislibrary' => 0,
-                'xistag' => 0,
-                'xisseller' => 0,
-                'xname2' => str_replace(' ', '', $request->get('name')),
-                'xisname' => !empty($request->get('name')) ? 1 : 0,
-                'xisdoc' => 0,
-                'xisdoc2' => 0,
-                'xiswater' => 0,
-                'xwhite' => 0,
-                'xblack' => 0,
-                'xparent ' => -1
-            ]);
 
-            // partner and role
-            $partner_array = array();
-            $roleId = explode(',', $request->get('roleId'));
-            $creatorId = explode(',', $request->get('creatorId'));
-            if (isset($roleId) and !empty($roleId) and isset($creatorId) and !empty($creatorId)) {
-                for ($i = 0; $i < count($roleId); $i++) {
-                    if (!empty($roleId) && !empty($creatorId)) {
-                        if (isset($roleId[$i]) && !empty($roleId[$i] && isset($creatorId[$i]) && !empty($creatorId[$i]))) {
-                            $partner_array[$i]['xcreatorid'] = $creatorId[$i];
-                            $partner_array[$i]['xroleid'] = $roleId[$i];
+            $checkIssetBookQuery = BookirBook::where('xprintnumber', $request->get('printNumber'))->where('xcoverprice', $request->get('coverPrice'));
+            $checkIssetBookQuery->where(function ($query) use ($request) {
+                $query->where('xisbn2', $request->get('isbn2'))
+                    ->orwhere('xisbn3', $request->get('isbn3'));
+            });
+            $checkIssetBookReault = $checkIssetBookQuery->first();
+            if (isset($checkIssetBookReault->xid) and $checkIssetBookReault->xid != NULL) {
+                return response()->json(['message' => 'کتاب با اطلاعات شابک و نوبت چاپ و قیمت مذکور قبلا ثبت شده است .', 'status' => 409]);
+            } else {
+                $publishDate = '';
+                if (!empty($request->get('publishDate')) && $request->get('publishDate') != "undefined") { // $books->where('xpublishdate', '=', $isbn);
+                    $publishDate =  Bookirbook::toGregorian($request->get('publishDate'), '-', '-');
+                }
+                $book = new BookirBook([
+                    'xdocid' => 0,
+                    'xsiteid' => 1,
+                    'xpageurl' => '', // uniqe
+                    'xpageurl2' => '',
+                    'xname' => $request->get('name'),
+                    'xdoctype' => 1,
+                    'xpagecount' => $request->get('pageCount'),
+                    'xformat' => $request->get('format'),
+                    'xcover' => $request->get('cover'),
+                    'xprintnumber' => $request->get('printNumber'),
+                    'xcirculation' => $request->get('circulation'),
+                    'xcovernumber' => 0,
+                    'xcovercount' => 0,
+                    'xapearance' => '',
+                    // 'xisbn' => ($request->get('isbn3')) ? $this->isbn3ToIsbn($request->get('isbn3')) : null,
+                    'xisbn2' => $request->get('isbn2'),
+                    'xisbn3' => $request->get('isbn3'),
+                    'xpublishdate' => $publishDate,
+                    'xcoverprice' => $request->get('coverPrice'),
+                    'xminprice' => '',
+                    'xcongresscode' => '',
+                    'xdiocode' => $request->get('doiCode'),
+                    'xlang' => $request->get('lang'),
+                    'xpublishplace' => $request->get('publishPlace'),
+                    'xdescription' => $request->get('description'),
+                    'xweight' => $request->get('weight'),
+                    'ximgeurl' => '',
+                    'xpdfurl' => '',
+                    'xregdate' => time(),
+                    'xissubject' => !empty($request->get('subjectId')) ? 1 : 0,
+                    'xiscreator' => !empty($request->get('creatorId')) ? 1 : 0,
+                    'xispublisher' => !empty($request->get('publisherId')) or  !empty($request->get('newPublisher')) ? 1 : 0,
+                    'xislibrary' => 0,
+                    'xistag' => 0,
+                    'xisseller' => 0,
+                    'xname2' => str_replace(' ', '', $request->get('name')),
+                    'xisname' => !empty($request->get('name')) ? 1 : 0,
+                    'xisdoc' => 0,
+                    'xisdoc2' => 0,
+                    'xiswater' => 0,
+                    'xwhite' => 0,
+                    'xblack' => 0,
+                    'xparent ' => -1,
+                    'xreg_userid' => $user->id
+                ]);
+
+                // partner and role
+                $partner_array = array();
+                // $roleId = explode(',', $request->get('roleId'));
+                // $creatorId = explode(',', $request->get('creatorId'));
+                $roleInfo = $request->get('roleId');
+                $creatorInfo = $request->get('creatorId');
+
+
+                // if (isset($roleInfo) and !empty($roleInfo) and isset($creatorInfo) and !empty($creatorInfo)) {
+                //     for ($i = 0; $i < count($roleInfo); $i++) {
+                //         if (!empty($roleInfo) && !empty($roleInfo)) {
+                //             if (isset($roleInfo[$i]) && !empty($roleInfo[$i] && isset($creatorInfo[$i]) && !empty($creatorInfo[$i])) && $roleInfo[$i]['row_id'] == $creatorInfo[$i]['row_id']) {
+                //                 $partner_array[$i]['xcreatorid'] = $creatorInfo[$i]['id'];
+                //                 $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
+                //             }
+                //         }
+                //     }
+                // }
+                if (isset($roleInfo) and !empty($roleInfo) and isset($creatorInfo) and !empty($creatorInfo)) {
+                    for ($i = 0; $i < count($roleInfo); $i++) {
+                        if (!empty($roleInfo) && !empty($roleInfo)) {
+                            if (isset($creatorInfo) && !empty($creatorInfo)) {
+                                foreach($creatorInfo as $creatorInfoItem){
+                                    if($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']){
+                                        $partner_array[$i]['xcreatorid'] = $creatorInfoItem['id'];
+                                        $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
+                                    }
+                                   
+                                }
+                            }
                         }
                     }
                 }
-            }
-            // publisher
-            if (!empty($request->get('newPublisher'))) {
-                $selectedPartnerInfo = BookirPublisher::where('xpublishername', $request->get('newPublisher'))->first();
-                if (isset($selectedPartnerInfo) and $selectedPartnerInfo != NULL) {  // isset publisher
-                    $publisherId = $selectedPartnerInfo->xid;
-                } else {
-                    $bookirpublisherModel = new BookirPublisher([
-                        'xtabletype' => 0,
-                        'xsiteid' => 0,
-                        'xparentid' => 0,
-                        'xpageurl' => '',
-                        'xpublishername' => $request->get('newPublisher'),
-                        'xmanager' => '',
-                        'xactivity' => '',
-                        'xplace' => '',
-                        'xaddress' => '',
-                        'xpobox' => '',
-                        'xzipcode' => '',
-                        'xphone' => '',
-                        'xcellphone' => '',
-                        'xfax' => '',
-                        'xlastupdate' => 0,
-                        'xtype' => '',
-                        'xpermitno' => '',
-                        'xemail' => '',
-                        'xisbnid' => '',
-                        'xfoundingdate' => '',
-                        'xispos' => '',
-                        'ximageurl' => '',
-                        'xregdate' => time(),
-                        'xpublishername2' => str_replace(' ', '', $request->get('newPublisher')),
-                        'xiswiki' => 0,
-                        'xismajma' => 0,
-                        'xisname' => !empty($request->get('newPublisher')) ? 1 : 0,
-                        'xsave' => '',
-                        'xwhite' => 0,
-                        'xblack' => 0,
-                        // 'xreg_userid' => ,
+                // publisher
+                if (!empty($request->get('newPublisher'))) {
+                    $selectedPartnerInfo = BookirPublisher::where('xpublishername', $request->get('newPublisher'))->first();
+                    if (isset($selectedPartnerInfo) and $selectedPartnerInfo != NULL) {  // isset publisher
+                        $publisherId = $selectedPartnerInfo->xid;
+                    } else {
+                        $bookirpublisherModel = new BookirPublisher([
+                            'xtabletype' => 0,
+                            'xsiteid' => 0,
+                            'xparentid' => 0,
+                            'xpageurl' => '',
+                            'xpublishername' => $request->get('newPublisher'),
+                            'xmanager' => '',
+                            'xactivity' => '',
+                            'xplace' => '',
+                            'xaddress' => '',
+                            'xpobox' => '',
+                            'xzipcode' => '',
+                            'xphone' => '',
+                            'xcellphone' => '',
+                            'xfax' => '',
+                            'xlastupdate' => 0,
+                            'xtype' => '',
+                            'xpermitno' => '',
+                            'xemail' => '',
+                            'xisbnid' => '',
+                            'xfoundingdate' => '',
+                            'xispos' => '',
+                            'ximageurl' => '',
+                            'xregdate' => time(),
+                            'xpublishername2' => str_replace(' ', '', $request->get('newPublisher')),
+                            'xiswiki' => 0,
+                            'xismajma' => 0,
+                            'xisname' => !empty($request->get('newPublisher')) ? 1 : 0,
+                            'xsave' => '',
+                            'xwhite' => 0,
+                            'xblack' => 0,
+                            'xreg_userid' => $user->id,
 
-                    ]);
-                    $bookirpublisherModel->save();
-                    $publisherId = $bookirpublisherModel->xid;
-                }
-            }
-
-            DB::transaction(function () use ($request, $book, $partner_array, $publisherId) {
-                try {
-                    $book->save();
-                    $book->publishers()->sync($publisherId);
-                    $book->subjects()->sync($request->get('subjectId'));
-                    if (isset($partner_array) and !empty($partner_array)) {
-                        $book->partnersRoles()->sync($partner_array);
+                        ]);
+                        $bookirpublisherModel->save();
+                        $publisherId = $bookirpublisherModel->xid;
                     }
-
-                    // upload image
-                    if ($request->has('bookCoverImage') && $request->has('bookCoverImage') != 'undefined') {
-                        $imageName =  $book->xid . '.' . $request->bookCoverImage->extension();
-                        $request->file('bookCoverImage')->storeAs(config('global.book_image_path'), $imageName);
-                        $imageAddress = str_replace('public', 'storage', config('global.book_image_path')) . '/' . $imageName;
-                        $book->ximgeurl = $imageAddress;
-                        //resize
-                        $this->createThumbnail($imageAddress, 300, 420);
-                        $book->update();
-                    }
-                } catch (Exception $Exception) {
-                    //throw $th;
-                    echo $Exception->getMessage();
-                    // return redirect(route('person-create', app()->getLocale()))->with('warning', $Exception->getMessage());
+                } elseif (!empty($request->get('publisherId'))) {
+                    $publisherId  = $request->get('publisherId');
                 }
-            });
+
+                // subject
+                $bookSubjectIds = array();
+                $subjectInfo = $request->get('subjectId');
+                if (!empty($subjectInfo)) {
+                    for ($i = 0; $i < count($subjectInfo); $i++) {
+                        $bookSubjectIds[$i] = $subjectInfo[$i]['value'];
+                    }
+                }
+
+                DB::transaction(function () use ($request, $book, $partner_array, $publisherId, $bookSubjectIds) {
+                    try {
+                        $book->save();
+                        $book->publishers()->sync($publisherId);
+                        $book->subjects()->sync($bookSubjectIds);
+                        if (isset($partner_array) and !empty($partner_array)) {
+                            $book->partnersRoles()->sync($partner_array);
+                        }
+
+                        // upload image
+                        if ($request->has('bookCoverImage') && $request->bookCoverImage != 'undefined') {
+                            $imageName =  $book->xid . '.' . $request->bookCoverImage->extension();
+                            $request->file('bookCoverImage')->storeAs(config('global.book_image_path'), $imageName);
+                            $imageAddress = str_replace('public', 'storage', config('global.book_image_path')) . '/' . $imageName;
+                            $book->ximgeurl = $imageAddress;
+                            //resize
+                            $this->createThumbnail($imageAddress, 300, 420);
+                            $book->update();
+                        }
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo $Exception->getMessage();
+                        // return redirect(route('person-create', app()->getLocale()))->with('warning', $Exception->getMessage());
+                    }
+                });
+                return response()->json(['message' => 'ok', 'book_id' => $book->xid, 'status' => 200]);
+            }
         }
     }
 
+    public function update(Request $request, $id)
+    {
+        $token = JWTAuth::getToken();
+        $user = JWTAuth::toUser($token);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'name' => 'required|string|max:191',
+                'isbn2' => 'nullable|required_without:isbn3|string|max:10',
+                'isbn3' => 'nullable|required_without:isbn2|string|min:10',
+                'coverPrice' => 'required|numeric',
+                'pageCount' => 'required|numeric',
+                'weight' => 'required|numeric',
+                'printNumber' => 'required|numeric',
+                // 'circulation' => 'required|numeric',
+                'publishDate' => 'required|date_format:Y-m-d',
+                'publisherId' => 'nullable|required_without:newPublisher|numeric',
+                'newPublisher' => 'nullable|required_without:publisherId|string',
+            ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
+        } else {
+            DB::enableQueryLog();
+            $checkIssetBookQuery = BookirBook::where('xid', '!=', $id)->where('xprintnumber', $request->get('printNumber'))->where('xcoverprice', $request->get('coverPrice'));
+            $checkIssetBookQuery->where(function ($query) use ($request) {
+                $query->where('xisbn2', $request->get('isbn2'))
+                    ->orwhere('xisbn3', $request->get('isbn3'));
+            });
+            $checkIssetBookReault = $checkIssetBookQuery->first();
+            if (isset($checkIssetBookReault->xid) and $checkIssetBookReault->xid != NULL) {
+                return response()->json(['message' => 'کتاب با اطلاعات شابک و نوبت چاپ و قیمت مذکور قبلا ثبت شده است .', 'status' => 409]);
+            } else {
+                $publishDate = '';
+                if (!empty($request->get('publishDate')) && $request->get('publishDate') != "undefined") { // $books->where('xpublishdate', '=', $isbn);
+                    $publishDate =  Bookirbook::toGregorian($request->get('publishDate'), '-', '-');
+                }
+                $book = BookirBook::findOrFail($id);
+                $book->xname = $request->get('name');
+                $book->xpagecount = $request->get('pageCount');
+                $book->xformat = $request->get('format');
+                $book->xcover = $request->get('cover');
+                $book->xprintnumber = $request->get('printNumber');
+                $book->xcirculation = $request->get('circulation');
+                // $book->xisbn = ($request->get('isbn3')) ? $this->isbn3ToIsbn($request->get('isbn3')) : null;
+                $book->xisbn2 = $request->get('isbn2');
+                $book->xisbn3 = $request->get('isbn3');
+                $book->xpublishdate = $publishDate;
+                $book->xcoverprice = $request->get('coverPrice');
+                $book->xdiocode = $request->get('doiCode');
+                $book->xlang = $request->get('lang');
+                $book->xpublishplace = $request->get('publishPlace');
+                $book->xdescription = $request->get('description');
+                $book->xweight = $request->get('weight');
+                $book->xissubject = empty($request->get('subjectId')) ? 1 : 0;
+                $book->xiscreator = !empty($request->get('creatorId')) ? 1 : 0;
+                $book->xispublisher = !empty($request->get('publisherId')) or  !empty($request->get('newPublisher')) ? 1 : 0;
+                $book->xname2 = str_replace(' ', '', $request->get('name'));
+                $book->xisname = !empty($request->get('name')) ? 1 : 0;
+
+                $partner_array = array();
+                // $roleId = explode(',', $request->get('roleId'));
+                // $creatorId = explode(',', $request->get('creatorId'));
+                $roleInfo = $request->get('roleId');
+                $creatorInfo = $request->get('creatorId');
+
+
+                // if (isset($roleInfo) and !empty($roleInfo) and isset($creatorInfo) and !empty($creatorInfo)) {
+                //     for ($i = 0; $i < count($roleInfo); $i++) {
+                //         if (!empty($roleInfo) && !empty($roleInfo)) {
+                //             if (isset($roleInfo[$i]) && !empty($roleInfo[$i] && isset($creatorInfo[$i]) && !empty($creatorInfo[$i])) && $roleInfo[$i]['row_id'] == $creatorInfo[$i]['row_id']) {
+                //                 $partner_array[$i]['xcreatorid'] = $creatorInfo[$i]['id'];
+                //                 $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
+                //             }
+                //         }
+                //     }
+                // }
+
+                if (isset($roleInfo) and !empty($roleInfo) and isset($creatorInfo) and !empty($creatorInfo)) {
+                    for ($i = 0; $i < count($roleInfo); $i++) {
+                        if (!empty($roleInfo) && !empty($roleInfo)) {
+                            if (isset($creatorInfo) && !empty($creatorInfo)) {
+                                foreach($creatorInfo as $creatorInfoItem){
+                                    if($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']){
+                                        $partner_array[$i]['xcreatorid'] = $creatorInfoItem['id'];
+                                        $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
+                                    }
+                                   
+                                }
+                            }
+                        }
+                    }
+                }
+                // publisher
+                if (!empty($request->get('newPublisher'))) {
+                    $selectedPartnerInfo = BookirPublisher::where('xpublishername', $request->get('newPublisher'))->first();
+                    if (isset($selectedPartnerInfo) and $selectedPartnerInfo != NULL) {  // isset publisher
+                        $publisherId = $selectedPartnerInfo->xid;
+                    } else {
+                        $bookirpublisherModel = new BookirPublisher([
+                            'xtabletype' => 0,
+                            'xsiteid' => 0,
+                            'xparentid' => 0,
+                            'xpageurl' => '',
+                            'xpublishername' => $request->get('newPublisher'),
+                            'xmanager' => '',
+                            'xactivity' => '',
+                            'xplace' => '',
+                            'xaddress' => '',
+                            'xpobox' => '',
+                            'xzipcode' => '',
+                            'xphone' => '',
+                            'xcellphone' => '',
+                            'xfax' => '',
+                            'xlastupdate' => 0,
+                            'xtype' => '',
+                            'xpermitno' => '',
+                            'xemail' => '',
+                            'xisbnid' => '',
+                            'xfoundingdate' => '',
+                            'xispos' => '',
+                            'ximageurl' => '',
+                            'xregdate' => time(),
+                            'xpublishername2' => str_replace(' ', '', $request->get('newPublisher')),
+                            'xiswiki' => 0,
+                            'xismajma' => 0,
+                            'xisname' => !empty($request->get('newPublisher')) ? 1 : 0,
+                            'xsave' => '',
+                            'xwhite' => 0,
+                            'xblack' => 0,
+                            'xreg_userid' => $user->id,
+
+                        ]);
+                        $bookirpublisherModel->save();
+                        $publisherId = $bookirpublisherModel->xid;
+                    }
+                } elseif (!empty($request->get('publisherId'))) {
+                    $publisherId  = $request->get('publisherId');
+                }
+
+                // subject
+                $bookSubjectIds = array();
+                $subjectInfo = $request->get('subjectId');
+                if (!empty($subjectInfo)) {
+                    for ($i = 0; $i < count($subjectInfo); $i++) {
+                        $bookSubjectIds[$i] = $subjectInfo[$i]['value'];
+                    }
+                }
+
+
+                DB::transaction(function () use ($request, $book, $partner_array, $publisherId, $bookSubjectIds) {
+                    try {
+                        $book->update();
+                        $book->publishers()->sync($publisherId);
+                        $book->subjects()->sync($bookSubjectIds);
+                        if (isset($partner_array) and !empty($partner_array)) {
+                            $book->partnersRoles()->sync($partner_array);
+                        }
+
+                        // upload image
+                        if ($request->has('bookCoverImage') && $request->bookCoverImage != 'undefined') {
+                            $imageName =  $book->xid . '.' . $request->bookCoverImage->extension();
+                            $request->file('bookCoverImage')->storeAs(config('global.book_image_path'), $imageName);
+                            $imageAddress = str_replace('public', 'storage', config('global.book_image_path')) . '/' . $imageName;
+                            $book->ximgeurl = $imageAddress;
+
+                            //resize
+                            $this->createThumbnail($imageAddress, 300, 420);
+                            $book->update();
+                        }
+                    } catch (Exception $Exception) {
+                        //throw $th;
+                        echo $Exception->getMessage();
+                        // return redirect(route('person-create', app()->getLocale()))->with('warning', $Exception->getMessage());
+                    }
+                });
+                return response()->json(['message' => 'ok', 'book_id' => $book->xid, 'status' => 200]);
+            }
+        }
+    }
+
+    public function validation10DigitShabk($isbn){
+        if(strlen($isbn) == 10){
+            $sum = 0;
+            $counter = 10;
+            for ($i = 0; $i < strlen($isbn); $i++){
+                $sum += $isbn[$i]*$counter;
+                $counter--;
+            }
+            if(fmod($sum,11) == 0){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+        
+    }
+
+    public function validation13DigitShabk($isbn){
+        if(strlen($isbn) == 13){
+            $sum = 0;
+            $even = 1;
+            $odd = 3;
+            for ($i = 0; $i < strlen($isbn); $i++){
+                if(fmod($i,2)==1){
+                    $sum += $isbn[$i]*$odd;
+                }elseif(fmod($i,2)==0){
+                    $sum += $isbn[$i]*$even;
+                }
+            }
+            if(fmod($sum,10) == 0){
+                return true;
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+       
+    }
 
     public function createThumbnail($path, $width, $height)
     {

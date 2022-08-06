@@ -22,95 +22,70 @@ class CreateBookCoversTable extends Migration
 
         $covers = array(
             array(
-                'name' => 'وزیری',
+                'name' => 'شومیز',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'رقعی',
+                'name' => 'گالینگور',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'جیبی',
+                'name' => 'سلفون',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'پالتویی',
+                'name' => 'کارتی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'خشتی',
+                'name' => 'کاغذی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'رحلی',
+                'name' => 'مقوایی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'بیاضی',
+                'name' => 'گلاسه',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'جعبه ای',
+                'name' => 'زرکوب',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'بغلی',
+                'name' => 'شومیز خارجی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'جانمازی',
+                'name' => 'پلاستیکی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'سلطانی',
+                'name' => 'سلفون خارجی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'ربعی',
+                'name' => 'چوبی',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
             array(
-                'name' => 'جیبی پالتویی',
+                'name' => 'پارچه ای',
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
-            ),
-            array(
-                'name' => 'رحلی کوچک',
-                'created_at' => new DateTime(),
-                'updated_at' => new DateTime(),
-            ),
-            array(
-                'name' => 'آلبومی',
-                'created_at' => new DateTime(),
-                'updated_at' => new DateTime(),
-            ),
-            array(
-                'name' => '۱/۲ جیبی',
-                'created_at' => new DateTime(),
-                'updated_at' => new DateTime(),
-            ),
-            array(
-                'name' => '۱/۴ جیبی',
-                'created_at' => new DateTime(),
-                'updated_at' => new DateTime(),
-            ),
-            array(
-                'name' => 'رقعی پالتویی',
-                'created_at' => new DateTime(),
-                'updated_at' => new DateTime(),
-            ),
+            )
         );
         DB::table('book_covers')->insert($covers);
     }
