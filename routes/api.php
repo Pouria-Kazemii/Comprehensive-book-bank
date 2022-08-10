@@ -74,6 +74,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::post('/v1/subject/find', 'API\SubjectController@find');
     Route::post('/v1/subject/search', 'API\SubjectController@search');
+    Route::post('/v1/subject/searchForSelectComponent', 'API\SubjectController@searchForSelectComponent');
 
     Route::post('/v1/publisher/search', 'API\PublisherController@search');
     Route::post('/v1/publisher/find', 'API\PublisherController@find');

@@ -72,6 +72,40 @@ class SubjectController extends Controller
             {
                 $data[] =
                     [
+                        "id" => $subject->xid,
+                        "value" => $subject->xsubject,
+                    ];
+            }
+
+            $status = 200;
+        }
+
+        // response
+        return response()->json
+        (
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["list" => $data]
+            ],
+            $status
+        );
+    }
+
+    public function searchForSelectComponent(Request $request)
+    {
+        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
+        $data = null;
+        $status = 404;
+
+        // read
+        $subjects = BookirSubject::where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord%")->orderBy('xsubject', 'asc')->get();
+        if($subjects != null and count($subjects) > 0)
+        {
+            foreach ($subjects as $subject)
+            {
+                $data[] =
+                    [
                         "value" => $subject->xid,
                         "label" => $subject->xsubject,
                     ];
