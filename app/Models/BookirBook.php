@@ -74,8 +74,9 @@ class BookirBook extends Model
         return $this->belongsToMany(BookirSubject::class,'bi_book_bi_subject','bi_book_xid','bi_subject_xid');
     }
     public function partnersRoles(){
-        return $this->belongsToMany(bookirpartner::class,'bookir_partnerrule','xbookid','xcreatorid')->withPivot('xbookid', 'xcreatorid','xroleid');
+        return $this->belongsToMany(BookirPartner::class,'bookir_partnerrule','xbookid','xcreatorid')->withPivot('xbookid', 'xcreatorid','xroleid');
     }
+    
 
 
 
