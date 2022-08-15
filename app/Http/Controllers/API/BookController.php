@@ -378,7 +378,8 @@ class BookController extends Controller
         // DB::enableQueryLog();
         if (!$isNull) {
             // read books
-            $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
+            $books = BookirBook::orderBy($column, $sortDirection);
+            // $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
@@ -398,25 +399,25 @@ class BookController extends Controller
                         $dossier_id = $book->xparent;
                     }
                     //publishers
-                    // $publishers = null;
-                    // $bookPublishers = DB::table('bi_book_bi_publisher')
-                    //     ->where('bi_book_xid', '=', $book->xid)
-                    //     ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                    //     ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
-                    //     ->get();
-                    // if ($bookPublishers != null and count($bookPublishers) > 0) {
-                    //     foreach ($bookPublishers as $bookPublisher) {
-                    //         $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
-                    //     }
-                    // }
-                    //
+                    $publishers = null;
+                    $bookPublishers = DB::table('bi_book_bi_publisher')
+                        ->where('bi_book_xid', '=', $book->xid)
+                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                        ->get();
+                    if ($bookPublishers != null and count($bookPublishers) > 0) {
+                        foreach ($bookPublishers as $bookPublisher) {
+                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                        }
+                    }
+                    
                     $data[] =
                         [
                             "id" => $book->xid,
                             "dossier_id" => $dossier_id,
                             "name" => $book->xname,
-                            // "publishers" => $publishers,
-                            "publishers" => $book->publishers,
+                            "publishers" => $publishers,
+                            // "publishers" => $book->publishers,
                             "language" => $book->xlang,
                             "year" => BookirBook::getShamsiYearMonth($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
