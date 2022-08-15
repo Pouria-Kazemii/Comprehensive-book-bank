@@ -65,17 +65,17 @@ class SubjectController extends Controller
         $status = 404;
 
         // read
-        $subjects = BookirSubject::where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord%")->orderBy('xsubject', 'asc')->get();
+        $subjects = BookirSubject::select('xid as id','xsubject as value')->where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord%")->orderBy('xsubject', 'asc')->get();
         if($subjects != null and count($subjects) > 0)
         {
-            foreach ($subjects as $subject)
-            {
-                $data[] =
-                    [
-                        "id" => $subject->xid,
-                        "value" => $subject->xsubject,
-                    ];
-            }
+            // foreach ($subjects as $subject)
+            // {
+            //     $data[] =
+            //         [
+            //             "id" => $subject->xid,
+            //             "value" => $subject->xsubject,
+            //         ];
+            // }
 
             $status = 200;
         }
@@ -99,17 +99,17 @@ class SubjectController extends Controller
         $status = 404;
 
         // read
-        $subjects = BookirSubject::where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord%")->orderBy('xsubject', 'asc')->get();
+        $subjects = BookirSubject::select('xid as value','xsubject as label')->where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord%")->orderBy('xsubject', 'asc')->get();
         if($subjects != null and count($subjects) > 0)
         {
-            foreach ($subjects as $subject)
-            {
-                $data[] =
-                    [
-                        "value" => $subject->xid,
-                        "label" => $subject->xsubject,
-                    ];
-            }
+            // foreach ($subjects as $subject)
+            // {
+                // $data[] =
+                //     [
+                //         "value" => $subject->xid,
+                //         "label" => $subject->xsubject,
+                //     ];
+            // }
 
             $status = 200;
         }
@@ -120,7 +120,7 @@ class SubjectController extends Controller
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $subjects]
             ],
             $status
         );
