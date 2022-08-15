@@ -378,13 +378,18 @@ class BookController extends Controller
         // DB::enableQueryLog();
         if (!$isNull) {
             // read books
-            $books = BookirBook::orderBy($column, $sortDirection);
+            $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->groupBy('xparent')->orderBy('xparent');
+             // give count ///////////////////
+            $countBooks = $books->get();
+            $totalRows =  count($countBooks);
+            /////give result //////////////////
             $books = $books->skip($offset)->take($pageRows)->get();
+            // $data = $books;
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
                     if ($book->xparent == -1 or  $book->xparent == 0) {
@@ -393,24 +398,25 @@ class BookController extends Controller
                         $dossier_id = $book->xparent;
                     }
                     //publishers
-                    $publishers = null;
-                    $bookPublishers = DB::table('bi_book_bi_publisher')
-                        ->where('bi_book_xid', '=', $book->xid)
-                        ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-                        ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
-                        ->get();
-                    if ($bookPublishers != null and count($bookPublishers) > 0) {
-                        foreach ($bookPublishers as $bookPublisher) {
-                            $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
-                        }
-                    }
+                    // $publishers = null;
+                    // $bookPublishers = DB::table('bi_book_bi_publisher')
+                    //     ->where('bi_book_xid', '=', $book->xid)
+                    //     ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                    //     ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
+                    //     ->get();
+                    // if ($bookPublishers != null and count($bookPublishers) > 0) {
+                    //     foreach ($bookPublishers as $bookPublisher) {
+                    //         $publishers[] = ["id" => $bookPublisher->id, "name" => $bookPublisher->name];
+                    //     }
+                    // }
                     //
                     $data[] =
                         [
                             "id" => $book->xid,
                             "dossier_id" => $dossier_id,
                             "name" => $book->xname,
-                            "publishers" => $publishers,
+                            // "publishers" => $publishers,
+                            "publishers" => $book->publishers,
                             "language" => $book->xlang,
                             "year" => BookirBook::getShamsiYearMonth($book->xpublishdate),
                             "printNumber" => $book->xprintnumber,
@@ -428,14 +434,14 @@ class BookController extends Controller
             }
 
             //
-            $books = BookirBook::orderBy($column, $sortDirection);
-            // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')");
-            if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
-            if ($isbn != "") $books->where('xisbn', '=', $isbn);
-            if ($where != "") $books->whereRaw($where);
-            $books->groupBy('xparent');
-            $countBooks = $books->get();
-            $totalRows =  count($countBooks);
+            // $books = BookirBook::orderBy($column, $sortDirection);
+            // // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')");
+            // if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
+            // if ($isbn != "") $books->where('xisbn', '=', $isbn);
+            // if ($where != "") $books->whereRaw($where);
+            // $books->groupBy('xparent');
+            // $countBooks = $books->get();
+            // $totalRows =  count($countBooks);
             $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
         }
 
