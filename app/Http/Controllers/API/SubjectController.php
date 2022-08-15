@@ -65,7 +65,7 @@ class SubjectController extends Controller
         $status = 404;
 
         // read
-        $subjects = BookirSubject::select('xid as id','xsubject as value')->where('xsubject', '!=', '')->where('xsubject', 'like', "%$searchWord")->orderBy('xsubject', 'asc')->get();
+        $subjects = BookirSubject::select('xid as id','xsubject as value')->where('xsubject', '!=', '')->where('xsubject', 'like', "$searchWord%")->orderBy('xsubject', 'asc')->get();
         if($subjects != null and count($subjects) > 0)
         {
             // foreach ($subjects as $subject)
