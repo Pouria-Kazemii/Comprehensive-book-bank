@@ -150,6 +150,7 @@ class BookController extends Controller
 
     public function findByCreatorOfPublisher(Request $request)
     {
+       
         $publisherId = $request["publisherId"];
         $creatorId = $request["creatorId"];
         if ($publisherId == 0) {
@@ -184,10 +185,11 @@ class BookController extends Controller
             $creator_books_array = $creator_books->pluck('xbookid')->all();
             $creator_books_array =  array_unique($creator_books_array);
             $creator_books_string = implode(",", $creator_books_array);
-            $where = ($publisherId != "" and $creatorId != "") ? "xid In ($creator_books_string)" : "";
+            $where = ($publisherId != "" or $creatorId != "") ? "xid In ($creator_books_string)" : "";
 
-            return $this->lists($request, true, ($where == ""), $where, "", $publisherName, $creatorName);
+             return $this->lists($request,true, ($where == ""), $where, "", $publisherName, $creatorName);           
         }
+      
     }
 
     public function findBySharedCreators(Request $request)
