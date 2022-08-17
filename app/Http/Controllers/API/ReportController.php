@@ -798,39 +798,7 @@ class ReportController extends Controller
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
-
-        /*$r = BookirPublisher::select('xid','xpublishername')
-        ->with('books->creators')
-        ->whereHas('books', function (Builder $query) use ($yearStart,$yearEnd) {
-            $query->where('xpublishdate', '>=', "$yearStart");
-            $query->where('xpublishdate', '<=', "$yearEnd");
-        })
-        
-        ->where('xid',$publisherId)->get();*/
-        // DB::enableQueryLog();
-        $query = BookirBook::with(array('publishers:xpublishername','partnersRoles'));
-        $query->whereHas('publishers', function (Builder $query) use ($publisherId) {
-            $query->where('bi_publisher_xid',$publisherId);
-        });
-        if($yearStart !=""){
-            $query->where('xpublishdate', '>=', "$yearStart");
-        }
-        if($yearEnd !=""){
-            $query->where('xpublishdate', '<=', "$yearEnd");
-        }
-        // $query->groupBy('xcreatorid');
-
-        // if (isset($column) and $column != NULL and isset($sortDirection) and $sortDirection != NULL) {
-        //     $query->orderBy($column, $sortDirection);
-        // }
-        if (isset($offset) and isset($pageRows) and $pageRows != NULL) {
-            $query = $query->skip($offset)->take($pageRows);
-        }
-        $records = $query->get();
-        // $query = DB::getQueryLog();
-        // return $query;
-        return $records;
-        /*
+                
         // read
         if($publisherId > 0)
         {
@@ -845,10 +813,7 @@ class ReportController extends Controller
             // $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid', 'bookir_partnerrule.xbookid');
             $creatorRoles->groupBy('bookir_partnerrule.xcreatorid', 'bookir_partnerrule.xroleid');
             $creatorRoles->select('bookir_book.xlang as xlang', 'bookir_book.xcirculation as xcirculation', 'bookir_partnerrule.xbookid as xbookid', 'bookir_partnerrule.xroleid as xroleid', 'bookir_partnerrule.xcreatorid as xcreatorid', 'bookir_partner.xcreatorname as xcreatorname', 'bookir_rules.xrole as xrole');
-           
             $totalRows = count($creatorRoles->get()); // get total records count
-        //     $query = DB::getQueryLog();
-        //    return $query;
             $creatorRoles = $creatorRoles->skip($offset)->take($pageRows)->get(); // get list
             if($creatorRoles != null and count($creatorRoles) > 0)
             {
@@ -880,7 +845,7 @@ class ReportController extends Controller
                 "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
-        );*/
+        );
     }
 
     // creator aggregation
