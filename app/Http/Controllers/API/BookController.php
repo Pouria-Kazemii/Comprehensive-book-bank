@@ -128,7 +128,7 @@ class BookController extends Controller
         $bookId = $request["bookId"];
         $searchText = $request["searchText"];
         // $bookId = 13349;
-        $where = "xname like '%$searchText%' Or xid='$bookId' or xparent='$bookId'";
+        $where = "xid='$bookId' or xparent='$bookId'";
 
         return $this->listsWithOutGroupby($request, true, ($where == ""), $where);
     }
