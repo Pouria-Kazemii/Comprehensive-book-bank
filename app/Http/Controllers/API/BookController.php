@@ -126,7 +126,6 @@ class BookController extends Controller
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
-        $searchText = $request["searchText"];
         // $bookId = 13349;
         $where = "xid='$bookId' or xparent='$bookId'";
 
