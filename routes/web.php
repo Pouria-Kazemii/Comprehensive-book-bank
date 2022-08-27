@@ -5,6 +5,7 @@ use App\Http\Controllers\API\InstagramController;
 use App\Http\Controllers\API\CrawlerKetabirController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChangeDataController;
+use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\ExcelController;
 
 /*
@@ -42,6 +43,7 @@ Route::get('/merge_parentid_tempparentid_desc/{limit}', [ChangeDataController::c
 Route::get('/test_insta_api', [InstagramController::class, 'test']);
 Route::get('/publisher_list', [CrawlerKetabirController::class, 'publisher_list']);
 Route::get('/export/{publisherId}/{limit}', [BookController::class, 'exportExcelBookFindByPublisherWeb']);
+Route::get('correct_isbns', [CronjobController::class, 'correct_isbns']);
 
 
 
