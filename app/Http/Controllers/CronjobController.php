@@ -11,7 +11,7 @@ class CronjobController extends Controller
     public function correct_isbns()
     {
         echo 'start : ' . date("Y/m/d H:i:s");
-        $books =  BookirBook::where('checkIsbn', 0)->limit(1000)->get();
+        $books =  BookirBook::where('checkIsbn', 0)->limit(10000)->get();
         if (isset($books) and !empty($books)) {
             foreach ($books as $book) {
                 unset($updateData);
