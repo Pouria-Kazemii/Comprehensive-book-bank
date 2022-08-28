@@ -39,6 +39,7 @@ class BookCheckController extends Controller
         $id = $book->xid;
         $isbn = $book->xisbn;
         $isbn2 = $book->xisbn2;
+        $isbn3 = $book->xisbn3;
         $name = $book->xname;
         $publisherIds = null;
         $where = "";
@@ -70,7 +71,7 @@ class BookCheckController extends Controller
         $whereCreator = ($whereCreator != "") ? "and (".rtrim($whereCreator, " or ").")" : "";
 
         //
-        $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and xrequest_manage_parent!='1' and ((xisbn='$isbn' or xisbn2='$isbn2') $where)")->get();
+        $similarBooks = BookirBook::whereRaw("xid!='$id' and xparent='0' and xrequest_manage_parent!='1' and ((xisbn='$isbn' or xisbn2='$isbn2' or xisbn3='$isbn3') $where)")->get();
         if($similarBooks != null)
         {
             foreach ($similarBooks as $similarBook)

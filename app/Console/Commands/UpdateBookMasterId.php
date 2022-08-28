@@ -54,8 +54,10 @@ class UpdateBookMasterId extends Command
                     ->where(function ($query) use ($search_shabak, $search_shabak1) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                         $query->orWhere('xisbn', $search_shabak1);
                         $query->orWhere('xisbn2', $search_shabak1);
+                        $query->orWhere('xisbn3', $search_shabak1);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {

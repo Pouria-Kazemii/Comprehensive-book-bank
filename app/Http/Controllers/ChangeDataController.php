@@ -46,8 +46,10 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak, $search_shabak1) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                         $query->orWhere('xisbn', $search_shabak1);
                         $query->orWhere('xisbn2', $search_shabak1);
+                        $query->orWhere('xisbn3', $search_shabak1);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -78,8 +80,10 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak, $search_shabak1) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                         $query->orWhere('xisbn', $search_shabak1);
                         $query->orWhere('xisbn2', $search_shabak1);
+                        $query->orWhere('xisbn3', $search_shabak1);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -110,6 +114,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -140,6 +145,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -170,6 +176,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -200,6 +207,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -230,6 +238,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -262,6 +271,7 @@ class ChangeDataController extends Controller
                     ->where(function ($query) use ($search_shabak) {
                         $query->where('xisbn', $search_shabak);
                         $query->orWhere('xisbn2', $search_shabak);
+                        $query->orWhere('xisbn3', $search_shabak);
                     })->first();
                 if (!empty($main_book_info)) {
                     if ($main_book_info->xparent == -1) {
@@ -349,12 +359,22 @@ class ChangeDataController extends Controller
         if ($allIranketabBooks->count() != 0) {
             foreach ($allIranketabBooks as $allIranketabBookItem) {
                 // echo ' book_id : ' . $allIranketabBookItem->id . ' book name : ' . $allIranketabBookItem->title . '  en book name : ' . $allIranketabBookItem->enTitle . '</br>';
-                echo ' book_id : ' . $allIranketabBookItem->id . ' book parentId : ' . $allIranketabBookItem->parentId  . '</br>';
+                // echo ' book_id : ' . $allIranketabBookItem->id . ' book parentId : ' . $allIranketabBookItem->parentId  . '</br>';
                 $iranketabBooks = BookIranketab::where('parentId', $allIranketabBookItem->parentId)->where('shabak', '!=', '')->get(); // پیدا کردن رکوردها ایران کتاب با parentId
                 // $allBookirBooks = BookirBook::whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
-                $allBookirBooks = BookirBook::where('xparent','>=',-1)->where('xrequest_manage_parent','!=',1)->whereIN('xisbn2', $iranketabBooks->pluck('shabak')->all())->get(); // پیدا کردن شابک های کتاب های با parentId
+                $allBookirBooks = BookirBook::where('xparent','>=',-1)->where('xrequest_manage_parent','!=',1);
+                $allBookirBooks->where(function($query) use($iranketabBooks){
+                    $query->whereIN('xisbn', $iranketabBooks->pluck('shabak'));
+                    $query->OrwhereIN('xisbn2', $iranketabBooks->pluck('shabak'));
+                    $query->OrwhereIN('xisbn3', $iranketabBooks->pluck('shabak'));
+                })->all()->get(); // پیدا کردن شابک های کتاب های با parentId
                 if ($allBookirBooks->count() != 0) {
-                    $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
+                    $allBookirBooksIsbn1Collection =  $allBookirBooks->pluck('xisbn')->all();
+                    $allBookirBooksIsbn2Collection =  $allBookirBooks->pluck('xisbn2')->all();
+                    $allBookirBooksIsbn3Collection =  $allBookirBooks->pluck('xisbn3')->all();
+                    $allBookirBooksIsbn2_3Collection = array_merge($allBookirBooksIsbn2Collection,$allBookirBooksIsbn3Collection);
+                    $allBookirBooksIsbnCollection = array_merge($allBookirBooksIsbn1Collection,$allBookirBooksIsbn2_3Collection);
+
                     $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
 
                     // $bookirBooksParent = $allBookirBooks->where('xparent', -1)->pluck('xisbn2', 'xid')->all(); // پیدا کردن شابک های کتاب های با نام انگلیسی یکسان

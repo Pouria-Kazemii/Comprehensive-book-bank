@@ -637,6 +637,7 @@ class ReportController extends Controller
         // read
         if($subjectId > 0)
         {
+            DB::enableQueryLog();
             $books = BookirBook::orderBy($column,$sortDirection);
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
             // if($translate == 1) $books->where("xlang", "!=", "فارسی");
@@ -679,6 +680,9 @@ class ReportController extends Controller
                         ];
                 }
             }
+
+            $query = DB::getQueryLog();
+            return $query;
         }
 
         //

@@ -253,13 +253,14 @@ class BookController extends Controller
                     }
                 }
                 // search by isbn
-                if (($searchField == 'isbn2') and !empty($comparisonOperators) and !empty($searchValue)) { // $books->where('xisbn2', '=', $isbn);
+                if (($searchField == 'isbn2') and !empty($comparisonOperators) and !empty($searchValue)) {
+                   // $books->where('xisbn2', '=', $isbn);
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
-                            $where .= " xisbn2 like '%" . $searchValue . "%'";
+                            $where .= " xisbn like '%" . $searchValue . "%' Or xisbn2 like '%" . $searchValue . "%' Or xisbn3 like '%" . $searchValue . "%'";
                         } else {
-                            $where .= " xisbn2 " . $comparisonOperators . " '" . $searchValue . "'";
+                            $where .= "  xisbn2 like '%" . $comparisonOperators . "%' Or xisbn2 " . $comparisonOperators . " '" . $searchValue . "' OR xisbn3 " . $comparisonOperators . " '" . $searchValue . "'";
                         }
                     }
                 }
@@ -359,8 +360,6 @@ class BookController extends Controller
                 }
             }
         }
-
-
         return $this->lists($request, false, false, $where);
     }
     // list
@@ -384,7 +383,7 @@ class BookController extends Controller
             // $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
-            if ($isbn != "") $books->where('xisbn2', '=', $isbn);
+            if ($isbn != "") $books->where('xisbn2', '=', $isbn)->orWhere('xisbn3', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->groupBy('xparent')->orderBy('xparent');
              // give count ///////////////////
@@ -480,7 +479,7 @@ class BookController extends Controller
             $books = BookirBook::orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
-            if ($isbn != "") $books->where('xisbn2', '=', $isbn);
+            if ($isbn != "") $books->where('xisbn2', '=', $isbn)->orWhere('xisbn3', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books = $books->skip($offset)->take($pageRows)->get();
             if ($books != null and count($books) > 0) {
@@ -564,7 +563,7 @@ class BookController extends Controller
             $books = BookirBook::orderBy('xpublishdate', 'desc');
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($name != "") $books->where('xname', 'like', "%$name%");
-            if ($isbn != "") $books->where('xisbn2', '=', $isbn);
+            if ($isbn != "") $books->where('xisbn2', '=', $isbn)->orWhere('xisbn3', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             if ($yearStart != "") $books->where('xpublishdate', '>=', $yearStart);
             if ($yearEnd != "") $books->where('xpublishdate', '<=', $yearEnd);
@@ -1487,12 +1486,14 @@ class BookController extends Controller
         if ($book != null and $book->xid > 0) {
             $isbn = $book->xisbn;
             $isbn2 = $book->xisbn2;
+            $isbn3 = $book->xisbn3;
         }
 
         if ($isbn != "") {
             // read books of digi
             $books = BookDigi::where('shabak', '=', $isbn);
             if ($isbn2 != "") $books->orwhere('shabak', '=', $isbn2);
+            if ($isbn3 != "") $books->orwhere('shabak', '=', $isbn3);
             $books = $books->get();
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
@@ -1602,7 +1603,9 @@ class BookController extends Controller
         $allBookirBooks = BookirBook::whereIN('xid', $mergeBookDossierId)->get();
         $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
         if ($allBookirBooks->count() != 0) {
-            $allBookirBooksIsbnCollection =  $allBookirBooks->pluck('xisbn2')->all();
+            $allBookirBooksIsbn2Collection =  $allBookirBooks->pluck('xisbn2')->all();
+            $allBookirBooksIsbn3Collection =  $allBookirBooks->pluck('xisbn3')->all();
+            $allBookirBooksIsbnCollection = array_merge($allBookirBooksIsbn2Collection,$allBookirBooksIsbn3Collection);
             $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
 
             $bookirBooksParent = $allBookirBooks->pluck('xisbn2', 'xid')->all();
