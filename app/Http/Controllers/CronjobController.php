@@ -38,7 +38,13 @@ class CronjobController extends Controller
             }
         }
 
-       /* DB::table('bookir_book')->where('checkIsbn',0)->orderBy('xid')->chunk(100, function ($books) {
+        echo '</br>';
+        echo 'end : ' . date("Y/m/d H:i:s");
+    }
+    public function correct_isbns_with_chunk()
+    {
+        echo 'start : ' . date("Y/m/d H:i:s");
+        DB::table('bookir_book')->orderBy('xid')->chunk(100, function ($books) {
             foreach ($books as $book) {
                 unset($updateData);
                 if (!empty($book->xisbn2) and (strlen($book->xisbn2 > 10))) {
@@ -56,13 +62,11 @@ class CronjobController extends Controller
                     $updateData['xisbn2'] = NULL;
                 }
                 if (isset($updateData) and !empty($updateData)) {
-                    DB::enableQueryLog();
                     $updateData['checkIsbn'] = 1;
                     BookirBook::where('xid', $book->xid)->update($updateData);
-                    $query = DB::getQueryLog();
                 }
             }
-        }); */
+        }); 
 
         echo '</br>';
         echo 'end : ' . date("Y/m/d H:i:s");
