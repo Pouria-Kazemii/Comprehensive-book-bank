@@ -98,14 +98,8 @@ class CronjobController extends Controller
             $searchBookId = $book_info->xparent;
         }
         $books =  BookirBook::with('publishers', 'partnersRoles', 'children')->where('xid',$searchBookId)->get();
-        // $query = DB::getQueryLog();
-        // echo '<pre>'; print_r($query);
-        // dd($query);
-        // dd($books);
-        // die('stop');
         if (isset($books) and !empty($books)) {
             foreach ($books as $book) {
-                // echo '$book->xid : '.$book->xid.'</br>';
                 //reset book circulation year record
                 CirculationTemp::where('xbook_id', $book->xid)->delete();
                 $circulationTempModel = new CirculationTemp([
@@ -117,10 +111,7 @@ class CronjobController extends Controller
                 $circulationTempModel->save();
                 // children 
                 if ($book->children()->exists()) {
-                    // dd($book->children);
-                    // echo '$book->xcirculation  : '. $book->xid . '******' .BookirBook::getShamsiYear($book->xpublishdate) .'=>'.$book->xcirculation.'</br>';
                     foreach ($book->children as $book_children) {
-                        // echo 'book_children->xcirculation : '. $book_children->xid . '******'.BookirBook::getShamsiYear($book_children->xpublishdate) .'=>'.$book_children->xcirculation.'</br>';
                         $selectedCirculationTempInfo = CirculationTemp::where('xbook_id', $book->xid)->where('xyear', BookirBook::getShamsiYear($book_children->xpublishdate))->first();
                         if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
                             $selectedCirculationTempInfo->xcirculations_count =  $selectedCirculationTempInfo->xcirculations_count + $book_children->xcirculation;
@@ -142,17 +133,12 @@ class CronjobController extends Controller
 
                 // publisher
                 if ($book->publishers()->exists()) {
-                    // dd($book->publishers);
                     foreach ($book->publishers as $book_publishers) {
-                        // echo $book_publishers->xid;
-                        // echo '<br>';
                         $books_of_book_publishers = BookirPublisher::with('books')->where('xid', $book_publishers->xid)->get(); // کتاب های ناشران کتاب
                         if (isset($books_of_book_publishers) and !empty($books_of_book_publishers)) {
                             foreach ($books_of_book_publishers as $books_of_book_publisher) { // کتاب های ناشر کتاب
                                 if ($books_of_book_publisher->books()->exists()) {
                                     CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->delete();
-                                    // dd($books_of_book_publisher);
-                                    // dd($books_of_book_publisher->books);
                                     foreach($books_of_book_publisher->books as $publisher_books){
                                         $selectedCirculationTempInfo = CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->where('xyear', BookirBook::getShamsiYear($publisher_books->xpublishdate))->first();
                                         if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
@@ -186,18 +172,15 @@ class CronjobController extends Controller
 
                 // author
                 if ($book->partnersRoles()->exists()) {
-                    //  dd($book->partnersRoles);
                     foreach ($book->partnersRoles as $book_authors) {
-                        // echo $book_authors->xid;
-                        // echo '<br>';
                         $books_of_book_authors = BookirPartner::with('books')->where('xid', $book_authors->xid)->get(); // کتاب های پدیدآورندگان کتاب
                         if (isset($books_of_book_authors) and !empty($books_of_book_authors)) {
                             foreach ($books_of_book_authors as $books_of_book_author) { // کتاب های پدیدآورنده کتاب
                                 if ($books_of_book_author->books()->exists()) {
+                                    echo '<pre>'; print_r($books_of_book_author->books);
                                     CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->delete();
-                                    // dd($books_of_book_publisher);
-                                    // dd($books_of_book_author->books);
                                     foreach($books_of_book_author->books as $author_books){
+                                        DB::enableQueryLog();
                                         $selectedCirculationTempInfo = CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->where('xyear', BookirBook::getShamsiYear($author_books->xpublishdate))->first();
                                         if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
                                             $selectedCirculationTempInfo->xbooks_count =  $selectedCirculationTempInfo->xbooks_count +1;
@@ -220,6 +203,8 @@ class CronjobController extends Controller
                                             ]);
                                             $circulationTempModel->save();
                                         }
+                                        $query = DB::getQueryLog();
+                                        echo '<pre>'; print_r($query);
                                     }
                                 }
                             }
