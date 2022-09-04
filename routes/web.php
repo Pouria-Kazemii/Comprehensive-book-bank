@@ -44,7 +44,8 @@ Route::get('/test_insta_api', [InstagramController::class, 'test']);
 Route::get('/publisher_list', [CrawlerKetabirController::class, 'publisher_list']);
 Route::get('/export/{publisherId}/{limit}', [BookController::class, 'exportExcelBookFindByPublisherWeb']);
 Route::get('correct_isbns', [CronjobController::class, 'correct_isbns']);
-Route::get('correct_isbns_with_chunk', [CronjobController::class, 'correct_isbns_with_chunk']);
+// Route::get('correct_isbns_with_chunk', [CronjobController::class, 'correct_isbns_with_chunk']);
+Route::get('fill_circulation_temp_table', [CronjobController::class, 'fill_circulation_temp_table']);
 
 
 
