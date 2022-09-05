@@ -178,7 +178,7 @@ class CronjobController extends Controller
                         if (isset($books_of_book_authors) and !empty($books_of_book_authors)) {
                             foreach ($books_of_book_authors as $books_of_book_author) { // کتاب های پدیدآورنده کتاب
                                 if ($books_of_book_author->books()->exists()) {
-\                                    CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->delete();
+                                    CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->delete();
                                     foreach($books_of_book_author->books as $author_books){
                                         $selectedCirculationTempInfo = CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->where('xyear', BookirBook::getShamsiYear($author_books->xpublishdate))->first();
                                         if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
