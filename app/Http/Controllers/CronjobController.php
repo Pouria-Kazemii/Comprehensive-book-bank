@@ -13,6 +13,8 @@ class CronjobController extends Controller
 {
     public function correct_isbns()
     {
+        echo 'stop 1401/6/14';
+        /*
         echo 'start : ' . date("Y/m/d H:i:s");
         $books =  BookirBook::where('checkIsbn', 0)->limit(10000)->get();
         if (isset($books) and !empty($books)) {
@@ -33,20 +35,20 @@ class CronjobController extends Controller
                     $updateData['xisbn2'] = NULL;
                 }
                 if (isset($updateData) and !empty($updateData)) {
-                    DB::enableQueryLog();
                     $updateData['checkIsbn'] = 1;
                     BookirBook::where('xid', $book->xid)->update($updateData);
-                    $query = DB::getQueryLog();
                 }
             }
         }
 
         echo '</br>';
         echo 'end : ' . date("Y/m/d H:i:s");
+        */
     }
     public function correct_isbns_with_chunk()
     {
-        echo 'start : ' . date("Y/m/d H:i:s");
+        echo 'It was not used';
+        /*echo 'start : ' . date("Y/m/d H:i:s");
         DB::table('bookir_book')->orderBy('xid')->chunk(100, function ($books) {
             foreach ($books as $book) {
                 unset($updateData);
@@ -72,7 +74,7 @@ class CronjobController extends Controller
         });
 
         echo '</br>';
-        echo 'end : ' . date("Y/m/d H:i:s");
+        echo 'end : ' . date("Y/m/d H:i:s");*/
     }
     public function fill_circulation_temp_table(){
         echo 'start : ' . date("Y/m/d H:i:s");
@@ -90,7 +92,6 @@ class CronjobController extends Controller
 
     public function check_book_circulation($book_id)
     {
-        // DB::enableQueryLog();
         $book_info = BookirBook::where('xid',$book_id)->first();
         if($book_info->xparent == -1 ){
             $searchBookId = $book_info->xid;
@@ -177,10 +178,8 @@ class CronjobController extends Controller
                         if (isset($books_of_book_authors) and !empty($books_of_book_authors)) {
                             foreach ($books_of_book_authors as $books_of_book_author) { // کتاب های پدیدآورنده کتاب
                                 if ($books_of_book_author->books()->exists()) {
-                                    echo '<pre>'; print_r($books_of_book_author->books);
-                                    CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->delete();
+\                                    CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->delete();
                                     foreach($books_of_book_author->books as $author_books){
-                                        DB::enableQueryLog();
                                         $selectedCirculationTempInfo = CirculationTemp::where('xauthor_id', $books_of_book_author->xid)->where('xyear', BookirBook::getShamsiYear($author_books->xpublishdate))->first();
                                         if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
                                             $selectedCirculationTempInfo->xbooks_count =  $selectedCirculationTempInfo->xbooks_count +1;
@@ -203,8 +202,6 @@ class CronjobController extends Controller
                                             ]);
                                             $circulationTempModel->save();
                                         }
-                                        $query = DB::getQueryLog();
-                                        echo '<pre>'; print_r($query);
                                     }
                                 }
                             }
