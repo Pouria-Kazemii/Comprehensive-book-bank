@@ -76,9 +76,9 @@ class CronjobController extends Controller
         echo '</br>';
         echo 'end : ' . date("Y/m/d H:i:s");*/
     }
-    public function fill_circulation_temp_table($limit){
-        echo 'start : ' . date("Y/m/d H:i:s");
-        $books = BookirBook::where('check_circulation' , 0)->limit($limit)->get();
+    public function fill_circulation_temp_table(){
+        // echo 'start : ' . date("Y/m/d H:i:s");
+        $books = BookirBook::where('check_circulation' , 0)->limit(1)->get();
         if(isset($books) AND !empty($books)){
             foreach($books as $book){
                 $this->check_book_circulation($book->xid);
@@ -86,7 +86,7 @@ class CronjobController extends Controller
                 $book->update();
             }
         }
-        echo 'end : ' . date("Y/m/d H:i:s");
+        // echo 'end : ' . date("Y/m/d H:i:s");
 
     }
 
