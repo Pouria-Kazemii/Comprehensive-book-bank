@@ -37,6 +37,7 @@ class CirculationTemp extends Command
      */
     public function handle()
     {
-        app()->call('App\Http\Controllers\CronjobController@fill_circulation_temp_table');
+        // app()->call('App\Http\Controllers\CronjobController@fill_circulation_temp_table');
+        app()->call('App\Http\Controllers\CronjobController@fast_fill_circulation_temp_table');
     }
 }
