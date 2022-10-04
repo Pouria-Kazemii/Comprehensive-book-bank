@@ -353,34 +353,32 @@ class CronjobController extends Controller
                     try {
                         foreach ($books_of_book_publishers as $books_of_book_publisher) { // کتاب های ناشر کتاب
                             if ($books_of_book_publisher->books()->exists()) {
-                                $publisher_circulation_temp_info = CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->get();
-                                if (isset($publisher_circulation_temp_info) and !empty($publisher_circulation_temp_info)) {
-                                } else {
-                                    foreach ($books_of_book_publisher->books as $publisher_books) {
-                                        $selectedCirculationTempInfo = CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->where('xyear', BookirBook::getShamsiYear($publisher_books->xpublishdate))->first();
-                                        if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
-                                            $selectedCirculationTempInfo->xbooks_count =  $selectedCirculationTempInfo->xbooks_count + 1;
-                                            if ($publisher_books->xprintnumber == 1) {
-                                                $selectedCirculationTempInfo->xfirst_edition_books_count = $selectedCirculationTempInfo->xfirst_edition_books_count + 1;
-                                            }
-                                            $selectedCirculationTempInfo->xcirculations_count =  $selectedCirculationTempInfo->xcirculations_count + $publisher_books->xcirculation;
-                                            if ($publisher_books->xprintnumber == 1) {
-                                                $selectedCirculationTempInfo->xfirst_edition_circulations_count = $selectedCirculationTempInfo->xfirst_edition_circulations_count + $publisher_books->xcirculation;
-                                            }
-                                            $selectedCirculationTempInfo->update();
-                                        } else {
-                                            $circulationTempModel = new CirculationTemp([
-                                                'xpublisher_id' => $books_of_book_publisher->xid,
-                                                'xbooks_count' => 1,
-                                                'xfirst_edition_books_count' => ($publisher_books->xprintnumber == 1) ? 1 : 0,
-                                                'xcirculations_count' => $publisher_books->xcirculation,
-                                                'xfirst_edition_circulations_count' => ($publisher_books->xprintnumber == 1) ? $publisher_books->xcirculation : 0,
-                                                'xyear' => BookirBook::getShamsiYear($publisher_books->xpublishdate),
-                                            ]);
-                                            $circulationTempModel->save();
+                                CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->delete();
+                                foreach ($books_of_book_publisher->books as $publisher_books) {
+                                    $selectedCirculationTempInfo = CirculationTemp::where('xpublisher_id', $books_of_book_publisher->xid)->where('xyear', BookirBook::getShamsiYear($publisher_books->xpublishdate))->first();
+                                    if (isset($selectedCirculationTempInfo) and !empty($selectedCirculationTempInfo)) {
+                                        $selectedCirculationTempInfo->xbooks_count =  $selectedCirculationTempInfo->xbooks_count + 1;
+                                        if ($publisher_books->xprintnumber == 1) {
+                                            $selectedCirculationTempInfo->xfirst_edition_books_count = $selectedCirculationTempInfo->xfirst_edition_books_count + 1;
                                         }
+                                        $selectedCirculationTempInfo->xcirculations_count =  $selectedCirculationTempInfo->xcirculations_count + $publisher_books->xcirculation;
+                                        if ($publisher_books->xprintnumber == 1) {
+                                            $selectedCirculationTempInfo->xfirst_edition_circulations_count = $selectedCirculationTempInfo->xfirst_edition_circulations_count + $publisher_books->xcirculation;
+                                        }
+                                        $selectedCirculationTempInfo->update();
+                                    } else {
+                                        $circulationTempModel = new CirculationTemp([
+                                            'xpublisher_id' => $books_of_book_publisher->xid,
+                                            'xbooks_count' => 1,
+                                            'xfirst_edition_books_count' => ($publisher_books->xprintnumber == 1) ? 1 : 0,
+                                            'xcirculations_count' => $publisher_books->xcirculation,
+                                            'xfirst_edition_circulations_count' => ($publisher_books->xprintnumber == 1) ? $publisher_books->xcirculation : 0,
+                                            'xyear' => BookirBook::getShamsiYear($publisher_books->xpublishdate),
+                                        ]);
+                                        $circulationTempModel->save();
                                     }
                                 }
+                                
                             }
                         }
                     } catch (Exception $Exception) {
