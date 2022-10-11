@@ -378,7 +378,6 @@ class CronjobController extends Controller
                                         $circulationTempModel->save();
                                     }
                                 }
-                                
                             }
                         }
                     } catch (Exception $Exception) {
