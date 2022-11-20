@@ -345,7 +345,7 @@ class CronjobController extends Controller
         });
     }
 
-    public function fill_publisher_circulation_temp_table()
+    public function fill_publisher_circulation_temp_table() // start in 2022-11-20
     {
         BookirPublisher::with('books')->chunk(10, function ($books_of_book_publishers) { // کتاب های ناشران کتاب
             if (isset($books_of_book_publishers) and !empty($books_of_book_publishers)) {
