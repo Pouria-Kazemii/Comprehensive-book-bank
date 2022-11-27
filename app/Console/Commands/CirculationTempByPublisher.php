@@ -4,14 +4,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class CirculationTemp extends Command
+class CirculationTempByPublisher extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'fill_temp_table:circulation';
+    protected $signature = 'fill_circulation_temp_table_by_publisher';
 
     /**
      * The console command description.
@@ -37,8 +37,6 @@ class CirculationTemp extends Command
      */
     public function handle()
     {
-        // app()->call('App\Http\Controllers\CronjobController@fill_circulation_temp_table');
-        app()->call('App\Http\Controllers\CronjobController@fast_fill_circulation_temp_table');
-        // app()->call('App\Http\Controllers\CronjobController@fill_publisher_circulation_temp_table');  // fill only publisher
+        app()->call('App\Http\Controllers\CronjobController@fill_publisher_circulation_temp_table');  // fill only publisher
     }
 }

@@ -287,7 +287,7 @@ class CrawlerKetabirController extends Controller
                                 if (isset($partner_array) and !empty($partner_array)) {
                                     $bookSelectedInfo->partnersRoles()->sync($partner_array);
                                 }
-
+                                $bookData['check_circulation']=0;
                                 $bookSelectedInfo->update($bookData);
                             }
                         }
