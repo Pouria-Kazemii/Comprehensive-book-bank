@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookirPartner extends Model
 {
-    protected $fillable = ['xid', 'xcreatorname', 'xiswiki', 'xname2', 'xisname', 'xregdate', 'xwhite', 'xblack', 'xketabir_id'];
+    protected $fillable = ['xid', 'xcreatorname', 'xiswiki', 'xname2', 'xisname', 'xregdate', 'xwhite', 'xblack', 'xketabir_id','xstatus'];
     protected $table = 'bookir_partner';
     protected $primaryKey = 'xid';
 
