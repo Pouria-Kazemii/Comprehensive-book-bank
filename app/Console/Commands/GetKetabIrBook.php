@@ -18,7 +18,7 @@ class GetKetabIrBook extends Command
      *
      * @var string
      */
-    protected $description = 'fill bookirbook - bookirpublisher - bookirauthor -.. tables';
+    protected $description = 'fill bookirbook - bookirpublisher - bookirauthor tables';
 
     /**
      * Create a new command instance.
@@ -37,7 +37,7 @@ class GetKetabIrBook extends Command
      */
     public function handle()
     {
-        app()->call('App\Http\Controllers\api\CrawlerKetabirController@publisher_list');  
+        app()->call('App\Http\Controllers\API\CrawlerKetabirController@publisher_list');  
 
     }
 }
