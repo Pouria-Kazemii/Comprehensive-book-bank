@@ -26,35 +26,39 @@ class CrawlerKetabirController extends Controller
     public function publisher_list()
     {
         $crawlerSize = 1;
+        // $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Ketabir-%')->where('type', 2)->orderBy('end', 'desc')->first();
+        // if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
+        // else $startC = 1;
+        // $endC   = $startC + $crawlerSize;
+        // CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-' . $crawlerSize, 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
-        $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Ketabir-%')->where('type', 2)->orderBy('end', 'desc')->first();
-        if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
-        else $startC = 1;
-        $endC   = $startC + $crawlerSize;
-        CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-' . $crawlerSize, 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-
-        $publisherList = PublisherLinks::skip($startC)->take($crawlerSize)->get();
-        $publisherList = $publisherList->pluck('pub_name')->all();
-        foreach ($publisherList as $publisherName) {
+        $publisherSelected = PublisherLinks::where('xcheck_status',0)->orderBy('idd','asc')->get();
+        // $publisherList = $publisherSelected->pluck('pub_name')->all();
+        foreach ($publisherSelected as $publisherItem) {
             // $publisherName = '%DA%86%D8%B4%D9%85%D9%87';
             // https://msapi.ketab.ir/search/?query=%DB%8C%D9%88%D8%B4%DB%8C%D8%AA%D8%A7&user-id=7c670b656dcf818b70166e2a98aa2d6d&limit=14
-            $publisherName = urlencode($publisherName);
+            $publisherName = urlencode($publisherItem->pub_name);
             // die('stop');
             $userId = '7c670b656dcf818b70166e2a98aa2d6d';
             $from = 0;
             $limit = 14;
-            $url = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$from";
+            $url = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=1&from=0";
             $client = new Client(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
             $response = file_get_contents($url);
             $response = json_decode($response, true);
-            // echo '<pre>'; print_r($response);
 
             if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
-
                 $total_book =  $response['result']['groups']['printableBook']['total'];
                 for ($start = 0; $start <= $total_book; $start += $limit) {
-                    echo $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
-                    $response = file_get_contents($newUrl);
+                    $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
+                    // $response = file_get_contents($newUrl);
+                    $curl_handle = curl_init();
+                    curl_setopt($curl_handle, CURLOPT_URL, $newUrl);
+                    curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+                    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+                    $response = curl_exec($curl_handle);
+                    curl_close($curl_handle);
+        
                     if (isset($response) and !empty($response)) {
                         $response = json_decode($response, true);
 
@@ -293,7 +297,11 @@ class CrawlerKetabirController extends Controller
                         }
                     }
                 }
+                PublisherLinks::where('idd',$publisherItem->idd)->update(['xcheck_status'=>1]);
             }
+
+            
+
         }
     }
 
