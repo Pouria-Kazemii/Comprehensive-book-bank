@@ -44,275 +44,287 @@ class CrawlerKetabirController extends Controller
             $limit = 14;
             $url = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=1&from=0";
             $client = new Client(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
-            $response = file_get_contents($url);
-            $response = json_decode($response, true);
 
-            if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
-                $total_book =  $response['result']['groups']['printableBook']['total'];
-                for ($start = 0; $start <= $total_book; $start += $limit) {
-                    $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
-                    // $response = file_get_contents($newUrl);
-                    $curl_handle = curl_init();
-                    curl_setopt($curl_handle, CURLOPT_URL, $newUrl);
-                    curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
-                    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-                    $response = curl_exec($curl_handle);
-                    curl_close($curl_handle);
 
-                    if (isset($response) and !empty($response)) {
-                        $response = json_decode($response, true);
+            if ($this->get_http_response_code($url) != "200") {
+                echo "no url : " . $url . '</br>';
+            } else {
+                $response = @file_get_contents($url);
+                if (isset($response) and !empty($response)) {
+                    $response = json_decode($response, true);
+                    if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
+                        $total_book =  $response['result']['groups']['printableBook']['total'];
+                        for ($start = 0; $start <= $total_book; $start += $limit) {
+                            $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
+                            // $response = file_get_contents($newUrl);
+                            $curl_handle = curl_init();
+                            curl_setopt($curl_handle, CURLOPT_URL, $newUrl);
+                            curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+                            curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+                            $response = curl_exec($curl_handle);
+                            curl_close($curl_handle);
 
-                        // book info //
-                        if (isset($response['result']['groups']['printableBook']['items']) and !empty($response['result']['groups']['printableBook']['items'])) {
+                            if (isset($response) and !empty($response)) {
+                                $response = json_decode($response, true);
 
-                            foreach ($response['result']['groups']['printableBook']['items'] as $key_book => $book_items) {
-                                unset($bookData);
-                                unset($partner_array);
-                                $bookData = array();
-                                $partner_array = array();
-                                $bookId =  str_replace('Book-', '', $book_items['id']);
-                                $bookData['xname'] =  trim($book_items['book_title']);
-                                if (empty($bookData['xname'])) {
-                                    $bookData['xisname'] = 0;
-                                } else {
-                                    $bookData['xisname'] = 1;
-                                }
-                                $bookData['xname2'] =  str_replace(' ', '', $book_items['book_title']);
-                                $bookData['xpagecount'] =  $book_items['book_page_count'];
-                                $bookData['xcover'] =  $book_items['book_cover_type'];
-                                $bookData['xcoverprice'] =  $book_items['book_cover_price'];
-                                $bookData['xprintnumber'] =  $book_items['book_print_version'];
-                                $bookData['ximgeurl'] =  $book_items['image'];
+                                // book info //
+                                if (isset($response['result']['groups']['printableBook']['items']) and !empty($response['result']['groups']['printableBook']['items'])) {
 
-                                // $bookData['entity_type'] =  $book_items['entity_type'];
-                                $bookData['book_publisher'] =  $book_items['book_publisher'];
-
-                                // publisher info ///
-                                $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'], $bookData['book_publisher'], $client, $userId, $limit, $from);
-
-                                ////////////////////////////book page info ////////////////////////////////////////
-                                if (isset($book_items['url']) and !empty($book_items['url'])) {
-                                    $bookCrawlUrl = 'https://ketab.ir/book/' . $book_items['url'];
-                                    $bookData['xpageurl2'] =  $bookCrawlUrl;
-                                    try {
-                                        $crawler = $client->request('GET', $bookCrawlUrl);
-                                        $status_code = $client->getInternalResponse()->getStatusCode();
-                                    } catch (\Exception $e) {
-                                        $crawler = null;
-                                        $status_code = 500;
-                                    }
-
-                                    if ($status_code == 200 and $crawler->filterXPath('//main[contains(@class, "container")]')->count() >= 0) {
-
-                                        if ($crawler->filter('div.col-md-9 div.card-body a')->count() > 0) {
-                                            $bookData['xpdfurl'] = $crawler->filter('div.col-md-9 div.card-body a')->attr('href');
+                                    foreach ($response['result']['groups']['printableBook']['items'] as $key_book => $book_items) {
+                                        unset($bookData);
+                                        unset($partner_array);
+                                        $bookData = array();
+                                        $partner_array = array();
+                                        $bookId =  str_replace('Book-', '', $book_items['id']);
+                                        $bookData['xname'] =  trim($book_items['book_title']);
+                                        if (empty($bookData['xname'])) {
+                                            $bookData['xisname'] = 0;
                                         } else {
-                                            $bookData['xpdfurl'] = '';
+                                            $bookData['xisname'] = 1;
                                         }
+                                        $bookData['xname2'] =  str_replace(' ', '', $book_items['book_title']);
+                                        $bookData['xpagecount'] =  $book_items['book_page_count'];
+                                        $bookData['xcover'] =  $book_items['book_cover_type'];
+                                        $bookData['xcoverprice'] =  $book_items['book_cover_price'];
+                                        $bookData['xprintnumber'] =  $book_items['book_print_version'];
+                                        $bookData['ximgeurl'] =  $book_items['image'];
 
-                                        //////////////////////////////////book subject ///////////////////////////////////
-                                        if ($crawler->filter('small.text-muted')->count() > 0) {
-                                            $book_subject = $crawler->filter('small.text-muted');
-                                        }
+                                        // $bookData['entity_type'] =  $book_items['entity_type'];
+                                        $bookData['book_publisher'] =  $book_items['book_publisher'];
 
-                                        if ($crawler->filter('table.table-striped tr')->count() > 0) {
-                                            foreach ($crawler->filter('table.table-striped tr') as $tr) {
-                                                $tr_crawler = new Crawler($tr);
+                                        // publisher info ///
+                                        $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'], $bookData['book_publisher'], $client, $userId, $limit, $from);
 
-                                                ///////////////////////////  book partner ///////////////////////////////
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'پدیدآور') {
-                                                    $book_partner =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                        ////////////////////////////book page info ////////////////////////////////////////
+                                        if (isset($book_items['url']) and !empty($book_items['url'])) {
+                                            $bookCrawlUrl = 'https://ketab.ir/book/' . $book_items['url'];
+                                            $bookData['xpageurl2'] =  $bookCrawlUrl;
+                                            try {
+                                                $crawler = $client->request('GET', $bookCrawlUrl);
+                                                $status_code = $client->getInternalResponse()->getStatusCode();
+                                            } catch (\Exception $e) {
+                                                $crawler = null;
+                                                $status_code = 500;
+                                            }
+
+                                            if ($status_code == 200 and $crawler->filterXPath('//main[contains(@class, "container")]')->count() >= 0) {
+
+                                                if ($crawler->filter('div.col-md-9 div.card-body a')->count() > 0) {
+                                                    $bookData['xpdfurl'] = $crawler->filter('div.col-md-9 div.card-body a')->attr('href');
+                                                } else {
+                                                    $bookData['xpdfurl'] = '';
                                                 }
-                                                if (isset($book_partner) and !empty($book_partner)) {
-                                                    unset($partner_info);
-                                                    $partner_info = array();
-                                                    if (str_contains($book_partner, '-')) { // چندتا
-                                                        $book_partner_list =  explode('-', $book_partner);
-                                                        foreach ($book_partner_list as $partner_key => $partner_items) {
-                                                            if (str_contains($partner_items, ':')) {
-                                                                $partner_info_array =  explode(':', $partner_items);
-                                                                $partner_info[$partner_key]['role'] = trim($partner_info_array['0']);
-                                                                $partner_info[$partner_key]['name'] = trim($partner_info_array['1']);
+
+                                                //////////////////////////////////book subject ///////////////////////////////////
+                                                if ($crawler->filter('small.text-muted')->count() > 0) {
+                                                    $book_subject = $crawler->filter('small.text-muted');
+                                                }
+
+                                                if ($crawler->filter('table.table-striped tr')->count() > 0) {
+                                                    foreach ($crawler->filter('table.table-striped tr') as $tr) {
+                                                        $tr_crawler = new Crawler($tr);
+
+                                                        ///////////////////////////  book partner ///////////////////////////////
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'پدیدآور') {
+                                                            $book_partner =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                        }
+                                                        if (isset($book_partner) and !empty($book_partner)) {
+                                                            unset($partner_info);
+                                                            $partner_info = array();
+                                                            if (str_contains($book_partner, '-')) { // چندتا
+                                                                $book_partner_list =  explode('-', $book_partner);
+                                                                foreach ($book_partner_list as $partner_key => $partner_items) {
+                                                                    if (str_contains($partner_items, ':')) {
+                                                                        $partner_info_array =  explode(':', $partner_items);
+                                                                        $partner_info[$partner_key]['role'] = trim($partner_info_array['0']);
+                                                                        $partner_info[$partner_key]['name'] = trim($partner_info_array['1']);
+                                                                    }
+                                                                }
+                                                            } else { // یکی
+                                                                if (str_contains($book_partner, ':')) {
+                                                                    $partner_info_array =  explode(':', $book_partner);
+                                                                    $partner_info[0]['role'] = trim($partner_info_array['0']);
+                                                                    $partner_info[0]['name'] = trim($partner_info_array['1']);
+                                                                }
                                                             }
                                                         }
-                                                    } else { // یکی
-                                                        if (str_contains($book_partner, ':')) {
-                                                            $partner_info_array =  explode(':', $book_partner);
-                                                            $partner_info[0]['role'] = trim($partner_info_array['0']);
-                                                            $partner_info[0]['name'] = trim($partner_info_array['1']);
+                                                        //////////////////////////////////////////////////////////////////////////
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'شابک') {
+                                                            $bookData['xisbn'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                        }
+                                                        if (isset($bookData['xisbn']) and !empty($bookData['xisbn'])) {
+                                                            if (strlen(str_replace('-', '', $bookData['xisbn']) <= 10)) {
+                                                                $bookData['xisbn2'] = str_replace('-', '', $bookData['xisbn']);
+                                                            }
+                                                            if (strlen(str_replace('-', '', $bookData['xisbn']) > 10)) {
+                                                                $bookData['xisbn3'] = str_replace('-', '', $bookData['xisbn']);
+                                                            }
+                                                        }
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'تاریخ نشر') {
+                                                            $publish_date =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                            $jalali_publish_date = mb_substr($publish_date, 0, 4) . '/' . mb_substr($publish_date, 4, 2) . '/' . mb_substr($publish_date, 6, 2);
+                                                            $bookData['xpublishdate'] =  BookirBook::toGregorian($jalali_publish_date, '/', '-');
+                                                        }
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'کد دیویی') {
+                                                            $bookData['xdiocode'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                        }
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'زبان کتاب') {
+                                                            $bookData['xlang'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                        }
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'محل نشر') {
+                                                            $bookData['xpublishplace'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                        }
+                                                        if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'توضیحات') {
+                                                            if (str_contains(trim($tr_crawler->filterXPath('//td[2]')->text()), 'ترجمه')) {
+                                                                $bookData['is_translate'] = 2;
+                                                            } elseif (str_contains(trim($tr_crawler->filterXPath('//td[2]')->text()), 'تالیف')) {
+                                                                $bookData['is_translate'] = 1;
+                                                            }
                                                         }
                                                     }
                                                 }
-                                                //////////////////////////////////////////////////////////////////////////
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'شابک') {
-                                                    $bookData['xisbn'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
+                                                if ($crawler->filter('div.col-md-12 div.card-body p')->count() > 0) {
+                                                    $bookData['xdescription'] = $crawler->filter('div.col-md-12 div.card-body p')->text();
+                                                } else {
+                                                    $bookData['xdescription'] = '';
                                                 }
-                                                if (isset($bookData['xisbn']) and !empty($bookData['xisbn'])) {
-                                                    if (strlen(str_replace('-', '', $bookData['xisbn']) <= 10)) {
-                                                        $bookData['xisbn2'] = str_replace('-', '', $bookData['xisbn']);
-                                                    }
-                                                    if (strlen(str_replace('-', '', $bookData['xisbn']) > 10)) {
-                                                        $bookData['xisbn3'] = str_replace('-', '', $bookData['xisbn']);
-                                                    }
-                                                }
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'تاریخ نشر') {
-                                                    $publish_date =  trim($tr_crawler->filterXPath('//td[2]')->text());
-                                                    $jalali_publish_date = mb_substr($publish_date, 0, 4) . '/' . mb_substr($publish_date, 4, 2) . '/' . mb_substr($publish_date, 6, 2);
-                                                    $bookData['xpublishdate'] =  BookirBook::toGregorian($jalali_publish_date, '/', '-');
-                                                }
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'کد دیویی') {
-                                                    $bookData['xdiocode'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
-                                                }
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'زبان کتاب') {
-                                                    $bookData['xlang'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
-                                                }
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'محل نشر') {
-                                                    $bookData['xpublishplace'] =  trim($tr_crawler->filterXPath('//td[2]')->text());
-                                                }
-                                                if (trim($tr_crawler->filterXPath('//td[1]')->text()) == 'توضیحات') {
-                                                    if (str_contains(trim($tr_crawler->filterXPath('//td[2]')->text()), 'ترجمه')) {
-                                                        $bookData['is_translate'] = 2;
-                                                    } elseif (str_contains(trim($tr_crawler->filterXPath('//td[2]')->text()), 'تالیف')) {
-                                                        $bookData['is_translate'] = 1;
-                                                    }
-                                                }
+
+                                                $bookData['xregdate'] = time();
                                             }
                                         }
-                                        if ($crawler->filter('div.col-md-12 div.card-body p')->count() > 0) {
-                                            $bookData['xdescription'] = $crawler->filter('div.col-md-12 div.card-body p')->text();
+                                        $bookData['xispublisher'] = 1;
+                                        $bookSelectedInfo = BookirBook::where('xpageurl', 'like', "%=$bookId%")->orWhere('xpageurl2', $bookData['xpageurl2'])->first();
+                                        if (empty($bookSelectedInfo)) {
+                                            bookirbook::create($bookData);
+                                            $bookSelectedInfo = BookirBook::where('xpageurl', 'like', "%=$bookId%")->orWhere('xpageurl2', $bookData['xpageurl2'])->first();
+                                        }
+
+
+                                        ///////////////////////////////////////////subject///////////////////////////////////////////////////
+
+                                        unset($book_subject_id);
+                                        if (isset($book_subject) and !empty($book_subject)) {
+                                            foreach ($book_subject->filter('span') as $subject_items) {
+                                                unset($row);
+                                                $row = new Crawler($subject_items);
+                                                $book_subject_item = $row->filter('span')->text('');
+
+                                                $bookSubjectData['xsubject'] = $book_subject_item;
+                                                $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_item);
+                                                $bookSubjectData['xregdate'] = time();
+                                                $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_item)->first();
+                                                if (empty($BookSubjectSelectedInfo)) {
+                                                    BookirSubject::create($bookSubjectData);
+                                                    $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_item)->first();
+                                                }
+                                                if (isset($BookSubjectSelectedInfo->xid) and !empty($BookSubjectSelectedInfo->xid)) {
+                                                    $book_subject_id[] = $BookSubjectSelectedInfo->xid;
+                                                }
+                                            }
+                                            $bookData['xissubject'] = 1;
                                         } else {
-                                            $bookData['xdescription'] = '';
+                                            $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
+                                            if (empty($biBookSubjectSelected)) {
+                                                $bookData['xissubject'] = 0;
+                                            } else {
+                                                $bookData['xissubject'] = 1;
+                                            }
                                         }
-
-                                        $bookData['xregdate'] = time();
-                                    }
-                                }
-                                $bookData['xispublisher'] = 1;
-                                $bookSelectedInfo = BookirBook::where('xpageurl', 'like', "%=$bookId%")->orWhere('xpageurl2', $bookData['xpageurl2'])->first();
-                                if (empty($bookSelectedInfo)) {
-                                    bookirbook::create($bookData);
-                                    $bookSelectedInfo = BookirBook::where('xpageurl', 'like', "%=$bookId%")->orWhere('xpageurl2', $bookData['xpageurl2'])->first();
-                                }
-
-
-                                ///////////////////////////////////////////subject///////////////////////////////////////////////////
-
-                                unset($book_subject_id);
-                                if (isset($book_subject) and !empty($book_subject)) {
-                                    foreach ($book_subject->filter('span') as $subject_items) {
-                                        unset($row);
-                                        $row = new Crawler($subject_items);
-                                        $book_subject_item = $row->filter('span')->text('');
-
-                                        $bookSubjectData['xsubject'] = $book_subject_item;
-                                        $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_item);
-                                        $bookSubjectData['xregdate'] = time();
-                                        $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_item)->first();
-                                        if (empty($BookSubjectSelectedInfo)) {
-                                            BookirSubject::create($bookSubjectData);
-                                            $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_item)->first();
-                                        }
-                                        if (isset($BookSubjectSelectedInfo->xid) and !empty($BookSubjectSelectedInfo->xid)) {
-                                            $book_subject_id[] = $BookSubjectSelectedInfo->xid;
-                                        }
-                                    }
-                                    $bookData['xissubject'] = 1;
-                                } else {
-                                    $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
-                                    if (empty($biBookSubjectSelected)) {
-                                        $bookData['xissubject'] = 0;
-                                    } else {
-                                        $bookData['xissubject'] = 1;
-                                    }
-                                }
-                                /*
-                                if (isset($book_items['book_subject']) and !empty($book_items['book_subject'])) {
-                                    foreach ($book_items['book_subject'] as $book_subject_items) {
-                                        $bookSubjectData['xsubject'] = $book_subject_items;
-                                        $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_items);
-                                        $bookSubjectData['xregdate'] = time();
-                                        $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
-                                        if (empty($BookSubjectSelectedInfo)) {
-                                            BookirSubject::create($bookSubjectData);
-                                            $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
-                                        }
-                                        $bookData['xissubject'] = 1;
-                                    }
-                                } else {
-                                    $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
-                                    if (empty($biBookSubjectSelected)) {
-                                        $bookData['xissubject'] = 0;
-                                    } else {
-                                        $bookData['xissubject'] = 1;
-                                    }
-                                } 
-                                */
-                                ///////////////////////////////////////  partner ///////////////////////////////////////////////
-                                if (isset($partner_info) and !empty($partner_info)) {
-                                    foreach ($partner_info as $partner_key => $partner_item) {
-                                        /// partner role
-                                        $role_info = BookirRules::where('xrole', $partner_item['role'])->first();
-                                        if (empty($role_info)) {
-                                            $roleData = array(
-                                                'xrole' => $partner_item['role'],
-                                                'xregdate' => time()
-                                            );
-                                            BookirRules::create($roleData);
-                                            $role_info = BookirRules::where('xrole', $partner_item['role'])->first();
-                                        }
-                                        /// partner name
-                                        if (str_contains($partner_item['name'], '،')) {
-                                            $author_arr = explode('،', $partner_item['name']);
-                                            $authorName = rtrim(ltrim($author_arr[1] . ' ' . $author_arr[0]));
+                                        /*
+                                        if (isset($book_items['book_subject']) and !empty($book_items['book_subject'])) {
+                                            foreach ($book_items['book_subject'] as $book_subject_items) {
+                                                $bookSubjectData['xsubject'] = $book_subject_items;
+                                                $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_items);
+                                                $bookSubjectData['xregdate'] = time();
+                                                $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
+                                                if (empty($BookSubjectSelectedInfo)) {
+                                                    BookirSubject::create($bookSubjectData);
+                                                    $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
+                                                }
+                                                $bookData['xissubject'] = 1;
+                                            }
                                         } else {
-                                            $authorName = $partner_item['name'];
+                                            $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
+                                            if (empty($biBookSubjectSelected)) {
+                                                $bookData['xissubject'] = 0;
+                                            } else {
+                                                $bookData['xissubject'] = 1;
+                                            }
+                                        } 
+                                        */
+                                        ///////////////////////////////////////  partner ///////////////////////////////////////////////
+                                        if (isset($partner_info) and !empty($partner_info)) {
+                                            foreach ($partner_info as $partner_key => $partner_item) {
+                                                /// partner role
+                                                $role_info = BookirRules::where('xrole', $partner_item['role'])->first();
+                                                if (empty($role_info)) {
+                                                    $roleData = array(
+                                                        'xrole' => $partner_item['role'],
+                                                        'xregdate' => time()
+                                                    );
+                                                    BookirRules::create($roleData);
+                                                    $role_info = BookirRules::where('xrole', $partner_item['role'])->first();
+                                                }
+                                                /// partner name
+                                                if (str_contains($partner_item['name'], '،')) {
+                                                    $author_arr = explode('،', $partner_item['name']);
+                                                    $authorName = rtrim(ltrim($author_arr[1] . ' ' . $author_arr[0]));
+                                                } else {
+                                                    $authorName = $partner_item['name'];
+                                                }
+
+                                                $bookAuthorData['xcreatorname'] = $authorName;
+                                                $bookAuthorData['xname2'] = str_replace(' ', '', $authorName);
+                                                $bookAuthorData['xregdate'] = time();
+                                                $bookAuthorData['xstatus'] = -10;
+                                                $bookAuthorSelectedInfo = BookirPartner::where('xcreatorname', $authorName)->where('xstatus', -10)->first(); // این اشتباه است و باید پدیدآورنده دقیق سلکت زده بشه 
+                                                if (empty($bookAuthorSelectedInfo)) {
+                                                    BookirPartner::create($bookAuthorData);
+                                                    $bookAuthorSelectedInfo = BookirPartner::where('xcreatorname', $authorName)->where('xstatus', -10)->first(); // این اشتباه است و باید پدیدآورنده دقیق سلکت زده بشه 
+                                                }
+                                                $partner_array[$partner_key]['xcreatorid'] = $bookAuthorSelectedInfo->xid;
+                                                $partner_array[$partner_key]['xroleid'] = $role_info->xid;
+                                                $bookData['xiscreator'] = 1;
+                                            }
+                                        } else {
+                                            $bookAuthorSelectedInfo = BookirPartnerrule::where('xbookid', $bookSelectedInfo->xid)->first();
+                                            if (empty($bookAuthorSelectedInfo)) {
+                                                $bookData['xiscreator'] = 0;
+                                            } else {
+                                                $bookData['xiscreator'] = 1;
+                                            }
                                         }
 
-                                        $bookAuthorData['xcreatorname'] = $authorName;
-                                        $bookAuthorData['xname2'] = str_replace(' ', '', $authorName);
-                                        $bookAuthorData['xregdate'] = time();
-                                        $bookAuthorData['xstatus'] = -10;
-                                        $bookAuthorSelectedInfo = BookirPartner::where('xcreatorname', $authorName)->where('xstatus', -10)->first(); // این اشتباه است و باید پدیدآورنده دقیق سلکت زده بشه 
-                                        if (empty($bookAuthorSelectedInfo)) {
-                                            BookirPartner::create($bookAuthorData);
-                                            $bookAuthorSelectedInfo = BookirPartner::where('xcreatorname', $authorName)->where('xstatus', -10)->first(); // این اشتباه است و باید پدیدآورنده دقیق سلکت زده بشه 
+
+                                        ///////////////////////////////////////////////////////////////////////////////////////////
+
+                                        if (isset($publisherTableId) and !empty($publisherTableId)) {
+                                            $bookSelectedInfo->publishers()->sync($publisherTableId);
                                         }
-                                        $partner_array[$partner_key]['xcreatorid'] = $bookAuthorSelectedInfo->xid;
-                                        $partner_array[$partner_key]['xroleid'] = $role_info->xid;
-                                        $bookData['xiscreator'] = 1;
+                                        // sync book and subject
+                                        if (isset($book_subject_id) and !empty($book_subject_id)) {
+                                            $bookSelectedInfo->subjects()->sync($book_subject_id);
+                                        }
+
+                                        if (isset($partner_array) and !empty($partner_array)) {
+                                            $bookSelectedInfo->partnersRoles()->sync($partner_array);
+                                        }
+                                        $bookData['check_circulation'] = 0;
+                                        $bookSelectedInfo->update($bookData);
                                     }
-                                } else {
-                                    $bookAuthorSelectedInfo = BookirPartnerrule::where('xbookid', $bookSelectedInfo->xid)->first();
-                                    if (empty($bookAuthorSelectedInfo)) {
-                                        $bookData['xiscreator'] = 0;
-                                    } else {
-                                        $bookData['xiscreator'] = 1;
-                                    }
                                 }
-
-
-                                ///////////////////////////////////////////////////////////////////////////////////////////
-
-                                if (isset($publisherTableId) and !empty($publisherTableId)) {
-                                    $bookSelectedInfo->publishers()->sync($publisherTableId);
-                                }
-                                // sync book and subject
-                                if (isset($book_subject_id) and !empty($book_subject_id)) {
-                                    $bookSelectedInfo->subjects()->sync($book_subject_id);
-                                }
-
-                                if (isset($partner_array) and !empty($partner_array)) {
-                                    $bookSelectedInfo->partnersRoles()->sync($partner_array);
-                                }
-                                $bookData['check_circulation'] = 0;
-                                $bookSelectedInfo->update($bookData);
                             }
                         }
+                        PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
                     }
                 }
-                PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
             }
         }
+    }
+    public function get_http_response_code($url)
+    {
+        $headers = get_headers($url);
+        return substr($headers[0], 9, 3);
     }
 
     public function find_publisher($response, $book_publisher, $client, $userId, $limit, $from)
