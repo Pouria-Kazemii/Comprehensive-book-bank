@@ -927,7 +927,7 @@ class BookController extends Controller
     // book info with crawler info
     public function detailWithCrawlerInfo($isbn)
     {
-
+        // $isbn = $request["isbn"];
         $dataMaster = null;
         $yearPrintCountData = null;
         $publisherPrintCountData = null;
@@ -936,12 +936,13 @@ class BookController extends Controller
         // read books
         $book = BookirBook::where('xisbn', '=', $isbn)->orWhere('xisbn2','=',$isbn)->orWhere('xisbn3','=',$isbn)->first();
         if (!empty($book)) {
-            if($book->xparent == -1){
-                $bookId = $book->xid;
-            }elseif ($book->xparent != -1 and $book->xparent != 0) { // found leader
+            if ($book->xparent != -1 and $book->xparent != 0) { // found leader
                 $book = BookirBook::where('xid', '=', $book->xparent)->first();
                 $bookId = $book->xid;
+            }else{
+                    $bookId = $book->xid;
             }
+
             //SELECT clidren id 
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();

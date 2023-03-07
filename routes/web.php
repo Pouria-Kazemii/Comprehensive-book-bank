@@ -46,6 +46,7 @@ Route::get('/export/{publisherId}/{limit}', [BookController::class, 'exportExcel
 Route::get('correct_isbns', [CronjobController::class, 'correct_isbns']);
 // Route::get('correct_isbns_with_chunk', [CronjobController::class, 'correct_isbns_with_chunk']);
 Route::get('fill_circulation_temp_table/{limit}', [CronjobController::class, 'fill_circulation_temp_table']);
+Route::get('v1/book/detail_with_crawler_info/{isbn}', [BookController::class, 'detailWithCrawlerInfo']);
 
 
 

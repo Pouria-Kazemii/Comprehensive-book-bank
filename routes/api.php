@@ -48,7 +48,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
     Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
     Route::post('/v1/book/detail', 'API\BookController@detail');
-    Route::get('/v1/book/detail_with_crawler_info/{isbn}', 'API\BookController@detailWithCrawlerInfo');
     Route::get('/v1/book/info/{id}', 'API\BookController@info');
     Route::post('/v1/book/dossier', 'API\BookController@dossier');
     Route::post('/v1/book/market', 'API\BookController@market');
