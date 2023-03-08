@@ -48,6 +48,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/book/find/ver', 'API\BookController@findByVer');
     Route::post('/v1/book/find/subject', 'API\BookController@findBySubject');
     Route::post('/v1/book/detail', 'API\BookController@detail');
+    Route::get('/v1/book/detail_with_crawler_info/{isbn}', 'API\BookController@detailWithCrawlerInfo');
     Route::get('/v1/book/info/{id}', 'API\BookController@info');
     Route::post('/v1/book/dossier', 'API\BookController@dossier');
     Route::post('/v1/book/market', 'API\BookController@market');
@@ -57,6 +58,11 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/book/advance-search', 'API\BookController@advanceSearch');
     Route::post('/v1/book/merge-book-dossier', 'API\BookController@mergeBookDossier');
     Route::post('/v1/book/separate-from-book-dossier', 'API\BookController@separateFromBookDossier');
+    Route::post('/v1/book/annual-activity-circulation', 'API\BookController@annualActivityByCirculation');
+    Route::post('/v1/book/annual-activity-first-edition-circulation', 'API\BookController@annualActivityFirstEditionByCirculation');
+    Route::post('/v1/book/best-selling', 'API\BookController@bestSelling');
+    Route::post('/v1/book/best-selling-by-year', 'API\BookController@bestSellingByYear');
+    Route::post('/v1/book/find-best-selling-by-publisher', 'API\BookController@findBestSellingBypublisher');
 
     Route::post('/v1/user/find', 'API\UserController@find');
     Route::post('/v1/user/save', 'API\UserController@store');
@@ -67,10 +73,17 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/creator/find/subject', 'API\CreatorController@findBySubject');
     Route::post('/v1/creator/find/publisher', 'API\CreatorController@findByPublisher');
     Route::post('/v1/creator/role', 'API\CreatorController@role');
-    Route::post('/v1/creator/annual-activity', 'API\CreatorController@annualActivity');
+    Route::post('/v1/creator/annual-activity-title', 'API\CreatorController@annualActivityByTitle');
+    Route::post('/v1/creator/annual-activity-first-edition-title', 'API\CreatorController@annualActivityFirstEditionByTitle');
+    Route::post('/v1/creator/annual-activity-circulation', 'API\CreatorController@annualActivityByCirculation');
+    Route::post('/v1/creator/annual-activity-first-edition-circulation', 'API\CreatorController@annualActivityFirstEditionByCirculation');
     Route::post('/v1/creator/detail', 'API\CreatorController@detail');
     Route::post('/v1/creator/search', 'API\CreatorController@search');
     Route::post('/v1/creator/find/creator', 'API\CreatorController@findByCreator');
+    Route::post('/v1/creator/most-active-by-year', 'API\CreatorController@mostActiveByYear');
+    Route::post('/v1/creator/most-active', 'API\CreatorController@mostActive');
+    Route::post('/v1/creator/most-active-by-first-edition-books', 'API\CreatorController@mostActiveByFirstEditionBooks');
+    Route::post('/v1/creator/most-active-by-first-edition-books-by-year', 'API\CreatorController@mostActiveByFirstEditionBooksByYear');
 
     Route::post('/v1/subject/find', 'API\SubjectController@find');
     Route::post('/v1/subject/search', 'API\SubjectController@search');
@@ -82,10 +95,16 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/publisher/find/creator', 'API\PublisherController@findByCreator');
     Route::post('/v1/publisher/detail', 'API\PublisherController@detail');
     Route::post('/v1/publisher/annual-activity-title', 'API\PublisherController@annualActivityByTitle');
+    Route::post('/v1/publisher/annual-activity-first-edition-title', 'API\PublisherController@annualActivityFirstEditionByTitle');
     Route::post('/v1/publisher/annual-activity-circulation', 'API\PublisherController@annualActivityByCirculation');
+    Route::post('/v1/publisher/annual-activity-first-edition-circulation', 'API\PublisherController@annualActivityFirstEditionByCirculation');
     Route::post('/v1/publisher/translate-authorship', 'API\PublisherController@translateAuthorship');
     Route::post('/v1/publisher/statistic-subject', 'API\PublisherController@statisticSubject');
     Route::post('/v1/publisher/publisher-role', 'API\PublisherController@publisherRole');
+    Route::post('/v1/publisher/most-active-by-year', 'API\PublisherController@mostActiveByYear');
+    Route::post('/v1/publisher/most-active', 'API\PublisherController@mostActive');
+    Route::post('/v1/publisher/most-active-by-first-edition-books', 'API\PublisherController@mostActiveByFirstEditionBooks');
+    Route::post('/v1/publisher/most-active-by-first-edition-books-by-year', 'API\PublisherController@mostActiveByFirstEditionBooksByYear');
 
 
     Route::post('/v1/report/publisher', 'API\ReportController@publisher');
