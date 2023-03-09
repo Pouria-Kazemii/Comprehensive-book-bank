@@ -36,7 +36,7 @@ Route::get('/v1/book/check', 'API\BookCheckController@check');
 Route::group(['middleware' => ['jwt.verify']], function () {
 
 
-    Route::get('user', 'UserController@getAuthenticatedUser');
+    Route::get('user', 'API\UserController@getAuthenticatedUser');
     Route::post('/v1/book/save', 'API\BookController@store');
     Route::post('/v1/book/update/{id}', 'API\BookController@update');
     Route::post('/v1/book/find', 'API\BookController@find');
