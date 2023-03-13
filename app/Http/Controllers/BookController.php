@@ -66,6 +66,10 @@ class BookController extends Controller
         return bookResorce::collection($books);
     }
 
+    public function test(){
+        echo time();
+    }
+
     // book info with crawler info
     public function detailWithCrawlerInfo($isbn)
     {
