@@ -981,8 +981,8 @@ class BookController extends Controller
                     ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                     ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
                     ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role', 'bookir_rules.xid as role_id')
-                    ->groupBy('id')
-                    ->orderBy('role_id')
+                    ->groupBy('bookir_partner.xid')
+                    ->orderBy('bookir_rules.xid')
                     ->get();
 
                 if ($bookPartnerRules != null and count($bookPartnerRules) > 0) {
@@ -1528,8 +1528,8 @@ class BookController extends Controller
                     ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
                     ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
                     ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role', 'bookir_rules.xid as role_id')
-                    ->groupBy('id')
-                    ->orderBy('role_id')
+                    ->groupBy('bookir_partner.xid')
+                    ->orderBy('bookir_rules.xid')
                     ->get();
 
                 if ($bookPartnerRules != null and count($bookPartnerRules) > 0) {
