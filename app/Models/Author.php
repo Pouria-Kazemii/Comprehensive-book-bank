@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Author extends Model
 {
     protected $table = 'author';
-    protected $fillable = ['f_name','l_name','d_name', 'country'];
+    protected $fillable = ['f_name','l_name','d_name', 'country', 'role'];
 
     static protected $specialChars = array("T", ";", "-");
     static protected $ignorWords = array("به اهتمام", "ترجمه", "تاًلیف" , "نوشته " ,"تالیف", "نگارش", "مترجم");
@@ -21,6 +21,18 @@ class Author extends Model
     public function books()
     {
         return $this->belongsToMany(BOOK::class);
+    }
+    public function BookGisoom()
+    {
+        return $this->belongsToMany(BookGisoom::class);
+    }
+    public function Book30book()
+    {
+        return $this->belongsToMany(Book30book::class);
+    }
+    public function BookK24()
+    {
+        return $this->belongsToMany(BookK24::class);
     }
     static public function authorSeprator($authorStr){
 
