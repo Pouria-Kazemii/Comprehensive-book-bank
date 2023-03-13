@@ -234,8 +234,8 @@ class BookController extends Controller
                         "cover" =>  $coversData,
                         "publishDate" => $min_publish_date > 0 && $max_publish_date > 0 ? ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date) : null,
                         "printNumber" => $printNumber,
-                        // "circulation" => priceFormat($circulation),
-                        // "price" => $min_coverPrice > 0 &&  $max_coverPrice > 0 ? ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ' : null,
+                        "circulation" => priceFormat($circulation),
+                        "price" => $min_coverPrice > 0 &&  $max_coverPrice > 0 ? ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ' : null,
                         "des" => !empty($book_description) ? $book_description->xdescription : null,
                     ];
             }
