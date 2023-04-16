@@ -2491,7 +2491,7 @@ class BookController extends Controller
         if ($validator->fails()) {
             return response()->json(['validation_errors' => $validator->errors()->messages(), 'status' => 422]);
         } else {
-            DB::enableQueryLog();
+            //DB::enableQueryLog();
             $checkIssetBookQuery = BookirBook::where('xid', '!=', $id)->where('xprintnumber', $request->get('printNumber'))->where('xcoverprice', $request->get('coverPrice'));
             $checkIssetBookQuery->where(function ($query) use ($request) {
                 $query->where('xisbn2', $request->get('isbn2'))
