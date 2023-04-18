@@ -1569,6 +1569,7 @@ class BookController extends Controller
                 $book_description = $book_des->orderBy('xdescription', 'DESC')->first();
 
                 //xcover
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $coversData = '';
                 $book_cover = BookirBook::select('xcover')->where('xcover', '!=', '')->where('xcover', '!=', 'null');
                 $book_cover = $book_cover->where(function ($query) use ($book) {
@@ -1584,6 +1585,7 @@ class BookController extends Controller
                 }
 
                 //format
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $formatsData = '';
                 $book_format = BookirBook::select('xformat')->where('xformat', '!=', '')->where('xformat', '!=', 'null');
                 $book_format = $book_format->where(function ($query) use ($book) {
