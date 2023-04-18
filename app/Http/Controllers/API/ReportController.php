@@ -46,13 +46,13 @@ class ReportController extends Controller
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
         $books->select("xcirculation", "xlang", "xdiocode");
         $books->selectRaw("REPLACE(REPLACE(REPLACE(xdiocode, '-', ''), ' ', ''), '.', '') as diocode");
-       // $books->groupBy("diocode");
+        $books->groupBy("diocode");
         $totalRows = count($books->get()); //$books->count(); // get total records count
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
 
         $query = DB::getQueryLog();
-        dd($query);
-        die('stop');
+        // dd($query);
+       return $query;
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
