@@ -16,6 +16,7 @@ class ReportController extends Controller
     // publisher
     public function publisher(Request $request)
     {
+        die('in test');
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
