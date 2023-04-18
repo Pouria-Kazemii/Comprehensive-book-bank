@@ -38,7 +38,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
-       // DB::enableQueryLog();
+        DB::enableQueryLog();
 
         $books = BookirBook::orderBy($column, $sortDirection );
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
@@ -50,9 +50,9 @@ class ReportController extends Controller
         $totalRows = count($books->get()); //$books->count(); // get total records count
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
 
-        // $query = DB::getQueryLog();
-        // dd($query);
-        // die('stop');
+        $query = DB::getQueryLog();
+        dd($query);
+        die('stop');
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
