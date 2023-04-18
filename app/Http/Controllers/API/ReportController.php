@@ -16,7 +16,7 @@ class ReportController extends Controller
     // publisher
     public function publisher(Request $request)
     {
-        DB::enableQueryLog();
+        
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -38,19 +38,21 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
+       // DB::enableQueryLog();
+
         $books = BookirBook::orderBy($column, $sortDirection );
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
         if($yearEnd != "") $books->where("xpublishdate", "<=", "$yearEnd");
         $books->select("xcirculation", "xlang", "xdiocode");
         $books->selectRaw("REPLACE(REPLACE(REPLACE(xdiocode, '-', ''), ' ', ''), '.', '') as diocode");
-        $books->groupBy("diocode");
+       // $books->groupBy("diocode");
         $totalRows = count($books->get()); //$books->count(); // get total records count
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
 
-        $query = DB::getQueryLog();
-        dd($query);
-        die('stop');
+        // $query = DB::getQueryLog();
+        // dd($query);
+        // die('stop');
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
