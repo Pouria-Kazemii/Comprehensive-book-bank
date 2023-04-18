@@ -16,7 +16,7 @@ class ReportController extends Controller
     // publisher
     public function publisher(Request $request)
     {
-        die('in test');
+        DB::enableQueryLog();
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -47,6 +47,10 @@ class ReportController extends Controller
         $books->groupBy("diocode");
         $totalRows = count($books->get()); //$books->count(); // get total records count
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
+
+        $query = DB::getQueryLog();
+        dd($query);
+        die('stop');
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
