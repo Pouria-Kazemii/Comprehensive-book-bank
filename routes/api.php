@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::get('/check_campaign', function () {
+Route::get('/v1/check_campaign', function () {
     echo 'api for test cors campain';
 });
 Route::post('/v1/user/login', 'API\UserController@login');
