@@ -323,7 +323,7 @@ class CrawlerKetabirController extends Controller
                     }
                 }
             }
-        }
+        } 
         echo 'end : ' . date("H:i:s", time()) . '</br>';
 
     }
