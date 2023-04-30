@@ -66,7 +66,7 @@ class BookController extends Controller
         return bookResorce::collection($books);
     }
 
-    // book info with crawler info
+     // book info with crawler info
     public function detailWithCrawlerInfo($isbn)
     {
         // $isbn = $request["isbn"];
@@ -77,7 +77,7 @@ class BookController extends Controller
 
         // read books
         $book = BookirBook::where('xisbn', '=', $isbn)->orWhere('xisbn2','=',$isbn)->orWhere('xisbn3','=',$isbn)->first();
-        if (!empty($book)) {
+        if ($book != null and $book->xid > 0) {
             if ($book->xparent != -1 and $book->xparent != 0) { // found leader
                 $book = BookirBook::where('xid', '=', $book->xparent)->first();
                 $bookId = $book->xid;
@@ -92,10 +92,11 @@ class BookController extends Controller
                 $publishersData = null;
                 $subjectsData = null;
                 $creatorsData = null;
-
+                
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $bookPublishers = DB::table('bi_book_bi_publisher')
                     ->whereIn('bi_book_xid', $dossier_book_id)
-                    ->join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+                    ->leftjoin('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
                     ->select('bookir_publisher.xid as id', 'bookir_publisher.xpublishername as name')
                     ->groupBy('id')
                     ->get();
@@ -105,7 +106,7 @@ class BookController extends Controller
                         $publishersData[] = ["id" => $bookPublisher->id, "name" => ' ' . $bookPublisher->name . ' '];
                     }
                 }
-
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $bookSubjects = DB::table('bi_book_bi_subject')
                     ->whereIn('bi_book_xid', $dossier_book_id)
                     ->join('bookir_subject', 'bi_book_bi_subject.bi_subject_xid', '=', 'bookir_subject.xid')
@@ -118,10 +119,12 @@ class BookController extends Controller
                     }
                 }
 
+                // sql_mode=only_full_group_by;
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $bookPartnerRules = DB::table('bookir_partnerrule')
                     ->whereIn('xbookid', $dossier_book_id)
-                    ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
-                    ->join('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
+                    ->leftJoin('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
+                    ->leftJoin('bookir_rules', 'bookir_partnerrule.xroleid', '=', 'bookir_rules.xid')
                     ->select('bookir_partner.xid as id', 'bookir_partner.xcreatorname as name', 'bookir_rules.xrole as role', 'bookir_rules.xid as role_id')
                     ->groupBy('id')
                     ->orderBy('role_id')
@@ -152,6 +155,7 @@ class BookController extends Controller
 
                 //xcover
                 $coversData = '';
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $book_cover = BookirBook::select('xcover')->where('xcover', '!=', '')->where('xcover', '!=', 'null');
                 $book_cover = $book_cover->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -167,6 +171,7 @@ class BookController extends Controller
 
                 //format
                 $formatsData = '';
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $book_format = BookirBook::select('xformat')->where('xformat', '!=', '')->where('xformat', '!=', 'null');
                 $book_format = $book_format->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -190,6 +195,7 @@ class BookController extends Controller
 
                 //publish place 
                 $publishPlaceData = '';
+                DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
                 $publish_place = $publish_place->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -251,6 +257,7 @@ class BookController extends Controller
             }
 
             // read books for publisher PrintCount
+            DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
             $books = DB::table('bookir_book')
                 ->where('bookir_book.xid', '=', $bookId)->orwhere('bookir_book.xparent', '=', $bookId)
                 ->join('bi_book_bi_publisher', 'bi_book_bi_publisher.bi_book_xid', '=', 'bookir_book.xid')

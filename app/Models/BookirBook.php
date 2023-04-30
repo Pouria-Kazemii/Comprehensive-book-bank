@@ -8,7 +8,7 @@ use Morilog\Jalali\Jalalian;
 
 class BookirBook extends Model
 {
-    protected $fillable = ['xid', 'xdocid', 'xsiteid', 'xpageurl', 'xpageurl2', 'xname', 'xdoctype', 'xpagecount', 'xformat', 'xcover', 'xprintnumber', 'xcirculation', 'xcovernumber', 'xcovercount', 'xapearance', 'xisbn', 'xisbn2','xisbn3', 'xpublishdate', 'xcoverprice', 'xminprice', 'xcongresscode', 'xdiocode', 'xlang', 'xpublishplace', 'xdescription', 'xweight', 'ximgeurl', 'xpdfurl', 'xregdate', 'xissubject', 'xiscreator', 'xispublisher', 'xislibrary', 'xistag', 'xisseller', 'xname2', 'xisname', 'xisdoc', 'xisdoc2', 'xiswater', 'xwhite', 'xblack', 'xparent','xreg_userid'];
+    protected $fillable = ['xid', 'xdocid', 'xsiteid', 'xpageurl', 'xpageurl2', 'xname', 'xdoctype', 'xpagecount', 'xformat', 'xcover', 'xprintnumber', 'xcirculation', 'xcovernumber', 'xcovercount', 'xapearance', 'xisbn', 'xisbn2','xisbn3', 'xpublishdate', 'xcoverprice', 'xminprice', 'xcongresscode', 'xdiocode', 'xlang', 'xpublishplace', 'xdescription', 'xweight', 'ximgeurl', 'xpdfurl', 'xregdate', 'xissubject', 'xiscreator', 'xispublisher', 'xislibrary', 'xistag', 'xisseller', 'xname2', 'xisname', 'xisdoc', 'xisdoc2', 'xiswater', 'xwhite', 'xblack', 'xparent','xreg_userid','check_circulation'];
     protected $table = 'bookir_book';
     protected $primaryKey = 'xid';
     public $timestamps = false;
@@ -75,6 +75,10 @@ class BookirBook extends Model
     }
     public function partnersRoles(){
         return $this->belongsToMany(BookirPartner::class,'bookir_partnerrule','xbookid','xcreatorid')->withPivot('xbookid', 'xcreatorid','xroleid');
+    }
+
+    public function circulation(){
+        return $this->belongsTo(CirculationTemp::class,'xid','xbook_id');
     }
     
 

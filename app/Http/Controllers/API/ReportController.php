@@ -16,6 +16,7 @@ class ReportController extends Controller
     // publisher
     public function publisher(Request $request)
     {
+        
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -37,6 +38,7 @@ class ReportController extends Controller
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
 
         // read
+        DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         $books = BookirBook::orderBy($column, $sortDirection );
         $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
         if($yearStart != "") $books->where("xpublishdate", ">=", "$yearStart");
@@ -46,6 +48,7 @@ class ReportController extends Controller
         $books->groupBy("diocode");
         $totalRows = count($books->get()); //$books->count(); // get total records count
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
+
         if($books != null and count($books) > 0)
         {
             foreach ($books as $book)
@@ -321,6 +324,7 @@ class ReportController extends Controller
 
                     if($where != "")
                     {
+                        DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                         $creators = DB::table('bookir_partnerrule')
                             ->whereRaw($where)
                             ->join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
@@ -637,7 +641,7 @@ class ReportController extends Controller
         // read
         if($subjectId > 0)
         {
-            DB::enableQueryLog();
+            // DB::enableQueryLog();
             $books = BookirBook::orderBy($column,$sortDirection);
             $books->whereRaw("xid In (Select bi_book_xid From bi_book_bi_subject Where bi_subject_xid='$subjectId')");
             // if($translate == 1) $books->where("xlang", "!=", "فارسی");
@@ -681,8 +685,8 @@ class ReportController extends Controller
                 }
             }
 
-            $query = DB::getQueryLog();
-            return $query;
+            // $query = DB::getQueryLog();
+            // return $query;
         }
 
         //
@@ -806,6 +810,7 @@ class ReportController extends Controller
         // read
         if($publisherId > 0)
         {
+            DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
             $creatorRoles = BookirPartnerrule::orderBy($column, $sortDirection);
             // DB::enableQueryLog();
             $creatorRoles->whereRaw("xbookid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')");
