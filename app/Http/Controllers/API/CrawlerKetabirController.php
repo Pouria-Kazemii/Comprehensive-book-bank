@@ -25,6 +25,7 @@ class CrawlerKetabirController extends Controller
 
     public function publisher_list()
     {
+        echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
         // $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Ketabir-%')->where('type', 2)->orderBy('end', 'desc')->first();
         // if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
@@ -323,6 +324,8 @@ class CrawlerKetabirController extends Controller
                 }
             }
         }
+        echo 'end : ' . date("H:i:s", time()) . '</br>';
+
     }
     public function get_http_response_code($url)
     {
