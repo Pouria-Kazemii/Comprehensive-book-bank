@@ -35,6 +35,8 @@ class CrawlerKetabirController extends Controller
         $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'asc')->limit(1)->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
+            echo 'publisher id : '. $publisherItem->idd;
+            echo '</br>';
             // $publisherName = '%DA%86%D8%B4%D9%85%D9%87';
             // https://msapi.ketab.ir/search/?query=%DB%8C%D9%88%D8%B4%DB%8C%D8%AA%D8%A7&user-id=7c670b656dcf818b70166e2a98aa2d6d&limit=14
             $publisherName = urlencode($publisherItem->pub_name);
@@ -55,7 +57,8 @@ class CrawlerKetabirController extends Controller
                     if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
                         $total_book =  $response['result']['groups']['printableBook']['total'];
                         for ($start = 0; $start <= $total_book; $start += $limit) {
-                            $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
+                           echo  $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
+                           echo '</br>';
                             // $response = file_get_contents($newUrl);
                             $curl_handle = curl_init();
                             curl_setopt($curl_handle, CURLOPT_URL, $newUrl);
