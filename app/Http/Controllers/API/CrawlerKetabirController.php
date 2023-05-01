@@ -319,12 +319,13 @@ class CrawlerKetabirController extends Controller
                                 }
                             }
                         }
-                        PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
                     }
                 }
             }
-        } 
-        echo 'end : ' . date("H:i:s", time()) . '</br>';
+            PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
+
+        }
+                echo 'start : ' . date("H:i:s", time()) . '</br>';
 
     }
     public function get_http_response_code($url)
