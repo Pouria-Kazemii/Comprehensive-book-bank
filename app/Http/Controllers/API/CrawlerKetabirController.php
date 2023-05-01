@@ -25,6 +25,8 @@ class CrawlerKetabirController extends Controller
 
     public function publisher_list()
     {
+        DB::statement("SET sql_mode=''");
+
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
         // $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Ketabir-%')->where('type', 2)->orderBy('end', 'desc')->first();
