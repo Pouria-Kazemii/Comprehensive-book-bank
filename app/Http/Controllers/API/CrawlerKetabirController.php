@@ -35,9 +35,10 @@ class CrawlerKetabirController extends Controller
         // $endC   = $startC + $crawlerSize;
         // CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-' . $crawlerSize, 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->limit(1)->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
+            PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 2]);
             echo 'publisher id : '. $publisherItem->idd;
             echo '</br>';
             // $publisherName = '%DA%86%D8%B4%D9%85%D9%87';
@@ -53,6 +54,8 @@ class CrawlerKetabirController extends Controller
 
             if ($this->get_http_response_code($url) != "200") {
                 echo "no url : " . $url . '</br>';
+                PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 3]);
+
             } else {
                 $response = @file_get_contents($url);
                 if (isset($response) and !empty($response)) {
@@ -99,7 +102,9 @@ class CrawlerKetabirController extends Controller
                                         $bookData['book_publisher'] =  $book_items['book_publisher'];
 
                                         // publisher info ///
-                                        $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'], $bookData['book_publisher'], $client, $userId, $limit, $from);
+                                        if(isset($response['result']['groups']['publisher']['items']) AND !empty($response['result']['groups']['publisher']['items'])){
+                                            $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'], $bookData['book_publisher'], $client, $userId, $limit, $from);
+                                        }
 
                                         ////////////////////////////book page info ////////////////////////////////////////
                                         if (isset($book_items['url']) and !empty($book_items['url'])) {
@@ -323,8 +328,8 @@ class CrawlerKetabirController extends Controller
                         }
                     }
                 }
+                PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
             }
-            PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
 
         }
                 echo 'start : ' . date("H:i:s", time()) . '</br>';
