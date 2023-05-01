@@ -25,6 +25,8 @@ class CrawlerKetabirController extends Controller
 
     public function publisher_list()
     {
+        DB::statement("SET sql_mode=''");
+
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
         // $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Ketabir-%')->where('type', 2)->orderBy('end', 'desc')->first();
@@ -33,7 +35,7 @@ class CrawlerKetabirController extends Controller
         // $endC   = $startC + $crawlerSize;
         // CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-' . $crawlerSize, 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'asc')->limit(1)->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->limit(1)->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
             echo 'publisher id : '. $publisherItem->idd;
@@ -319,12 +321,13 @@ class CrawlerKetabirController extends Controller
                                 }
                             }
                         }
-                        PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
                     }
                 }
             }
-        } 
-        echo 'end : ' . date("H:i:s", time()) . '</br>';
+            PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 1]);
+
+        }
+                echo 'start : ' . date("H:i:s", time()) . '</br>';
 
     }
     public function get_http_response_code($url)
