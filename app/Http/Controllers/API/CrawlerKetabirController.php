@@ -35,7 +35,7 @@ class CrawlerKetabirController extends Controller
         // $endC   = $startC + $crawlerSize;
         // CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-' . $crawlerSize, 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'asc')->limit(1)->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->limit(1)->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
             echo 'publisher id : '. $publisherItem->idd;
