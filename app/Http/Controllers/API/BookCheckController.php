@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class BookCheckController extends Controller
 {
-    public function find(Request $request){
+    public function exist(Request $request){
         // return $request;
         $shabak = $request["shabak"];
         $publish_date = $request["publishdate"];
