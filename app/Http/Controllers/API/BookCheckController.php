@@ -7,9 +7,53 @@ use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
 
 class BookCheckController extends Controller
 {
+    public function exist(Request $request){
+        // return $request;
+        $shabak = $request["shabak"];
+        $publish_date = $request["publishdate"];
+        // DB::enableQueryLog();
+
+        if ($shabak == '' && $publish_date == ''){
+            return response()->json(['error'=>'BAD REQUEST','error_code'=>'2002','result_count'=>0 , 'result'=>''], 400);
+        }
+        $books='';
+        if ($shabak != '' && $publish_date != ''){
+            $books = BookirBook::where('xpublishdate',$publish_date)
+            ->where(function ($query) use ($shabak) {
+                $query->where('xisbn',$shabak);
+                $query->orWhere('xisbn2',$shabak);
+                $query->orWhere('xisbn3',$shabak);
+            })->get();
+        }
+        $resultArray = array();
+        if($books != ''){
+            foreach($books as $book){
+                $temp['id'] = $book->xid;
+                $temp['title'] = $book->xname;
+                $resultArray[] = $temp;
+            }
+           
+        }
+
+        // $query = DB::getQueryLog();
+        // dd($query);
+        $resultCount = count($resultArray);
+       
+        if($resultCount == 0){
+            return response()->json(['error'=>'NOT FOUND','error_code'=>'2001','result_count'=>0 , 'result'=>''], 404);
+        }else{
+            return response()->json(['error'=>'','result_count'=>$resultCount ,'results'=>$resultArray]);
+        }
+
+       
+    }
     public function check()
     {
         $books = BookirBook::where('xparent', '=', '0')->where('xrequest_manage_parent','!=',1)->orderBy('xpublishdate', 'DESC')->take(1)->get();
