@@ -4,8 +4,10 @@ namespace App\Exports;
 use App\Models\BookirBook;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class TopAuthorExport implements FromCollection
+
+class TopAuthorExport implements FromCollection,WithHeadings
 {
     public function __construct($startDate, $endDate, $dio, $limit)
     {
@@ -39,7 +41,7 @@ class TopAuthorExport implements FromCollection
         }
         $report = $report->Join('bookir_partnerrule', 'bookir_book.xid', '=', 'bookir_partnerrule.xbookid')
             ->Join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
-            ->select('bookir_partner.xcreatorname as creator_name', DB::raw("SUM(bookir_book.xcirculation) as sum_circulation"))
+            ->select('bookir_partner.xid as creator_id','bookir_partner.xcreatorname as creator_name', DB::raw("SUM(bookir_book.xcirculation) as sum_circulation"))
             ->groupBy('xcreatorid')
             ->orderBy('Sum_circulation', 'desc')
             ->skip(0)->take($this->limit)->get();
@@ -47,5 +49,10 @@ class TopAuthorExport implements FromCollection
         // $queries = DB::getQueryLog();
         // dd($queries);
         return $report;
+    }
+
+    public function headings(): array
+    {
+        return ["آیدی پدیدآورنده", "پدیدآورنده","مجموع تیراژ"];
     }
 }

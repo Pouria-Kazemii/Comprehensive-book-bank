@@ -4,8 +4,10 @@ namespace App\Exports;
 use App\Models\BookirBook;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class TopPublisherExport implements FromCollection
+
+class TopPublisherExport implements FromCollection,WithHeadings
 {
     public function __construct($startDate, $endDate, $dio, $limit)
     {
@@ -23,7 +25,7 @@ class TopPublisherExport implements FromCollection
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         $report = DB::table('bookir_book')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd);
-        if (!empty($diocode)) {
+        if (!empty($diocode) and $diocode != 0) {
             $diocode_arr = explode(',', $diocode);
             // dd($diocode_arr);
             $report = $report->where(function ($query) use($diocode_arr) {
@@ -51,7 +53,7 @@ class TopPublisherExport implements FromCollection
 
     public function headings(): array
     {
-        return ["publisher_id", "publisher", "publisher manager","sum circulation"];
+        return ["آیدی انتشارات", "انتشارات", "مدیریت انتشارات","مجموع تیراژ"];
     }
 
     
