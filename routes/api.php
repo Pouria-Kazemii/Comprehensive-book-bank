@@ -20,6 +20,7 @@ Route::post('/v1/user/auth', 'API\UserController@authenticate');
 //Route::get('/v1/book/check', 'API\BookController@checkBookK24');
 Route::get('/v1/book/check', 'API\BookCheckController@check');
 Route::get('/v1/book/exist', 'API\BookCheckController@exist');
+Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');
 
 
 
