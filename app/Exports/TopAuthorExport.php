@@ -5,7 +5,7 @@ use App\Models\BookirBook;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class TopPublisherExport implements FromCollection
+class TopAuthorExport implements FromCollection
 {
     public function __construct($startDate, $endDate, $dio, $limit)
     {
@@ -23,7 +23,7 @@ class TopPublisherExport implements FromCollection
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         $report = DB::table('bookir_book')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd);
-        if (!empty($diocode)) {
+        if (!empty($diocode) AND $diocode != 0) {
             $diocode_arr = explode(',', $diocode);
             // dd($diocode_arr);
             $report = $report->where(function ($query) use($diocode_arr) {
@@ -37,10 +37,10 @@ class TopPublisherExport implements FromCollection
                 }
             });
         }
-        $report = $report->Join('bi_book_bi_publisher', 'bookir_book.xid', '=', 'bi_book_bi_publisher.bi_book_xid')
-            ->Join('bookir_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
-            ->select('bi_book_bi_publisher.bi_publisher_xid as publisher_id', 'bookir_publisher.xpublishername as publisher_name', 'bookir_publisher.xmanager as manager', DB::raw("SUM(bookir_book.xcirculation) as sum_circulation"))
-            ->groupBy('bi_publisher_xid')
+        $report = $report->Join('bookir_partnerrule', 'bookir_book.xid', '=', 'bookir_partnerrule.xbookid')
+            ->Join('bookir_partner', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
+            ->select('bookir_partner.xcreatorname as creator_name', DB::raw("SUM(bookir_book.xcirculation) as sum_circulation"))
+            ->groupBy('xcreatorid')
             ->orderBy('Sum_circulation', 'desc')
             ->skip(0)->take($this->limit)->get();
 
@@ -48,11 +48,4 @@ class TopPublisherExport implements FromCollection
         // dd($queries);
         return $report;
     }
-
-    public function headings(): array
-    {
-        return ["publisher_id", "publisher", "publisher manager","sum circulation"];
-    }
-
-    
 }

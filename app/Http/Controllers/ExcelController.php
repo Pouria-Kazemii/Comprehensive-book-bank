@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Session;
 use App\Models\BookirBook;
 use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TopPublisherExport;
+use App\Exports\TopAuthorExport;
 
 
 class ExcelController extends Controller
@@ -23,6 +25,18 @@ class ExcelController extends Controller
     function __construct()
     {
     }
+
+    public function exportExcelTopPublisher($startDate,$endDate,$dio,$limit){
+
+       return Excel::download(new TopPublisherExport($startDate,$endDate,$dio,$limit), 'انتشارات برتر'.time().'.xlsx');
+    }
+
+    public function exportExcelTopAuthor($startDate,$endDate,$dio,$limit){
+
+       return Excel::download(new TopAuthorExport($startDate,$endDate,$dio,$limit), 'پدیدآورنده های برتر'.time().'.xlsx');
+    }
+
+
     public static function booklist($mainResult,$file_name,$sheet_name)
     {
         $requestFormat = 'xlsx';
