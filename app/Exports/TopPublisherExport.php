@@ -20,7 +20,7 @@ class TopPublisherExport implements FromCollection
         $yearEnd = (isset($this->endDate) && $this->endDate != 0) ? BookirBook::toGregorian($this->endDate . '-12-29', '-', '-') : "";
         $diocode = $this->dio;
         $data = array();
-        DB::enableQueryLog();
+        // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         $report = DB::table('bookir_book')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd);
         if (!empty($diocode)) {
@@ -44,8 +44,8 @@ class TopPublisherExport implements FromCollection
             ->orderBy('Sum_circulation', 'desc')
             ->skip(0)->take($this->limit)->get();
 
-        $queries = DB::getQueryLog();
-        dd($queries);
+        // $queries = DB::getQueryLog();
+        // dd($queries);
         return $report;
     }
 }
