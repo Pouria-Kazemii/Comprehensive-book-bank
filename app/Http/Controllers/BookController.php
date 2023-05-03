@@ -13,18 +13,11 @@ use App\Models\BookDigi;
 use App\Models\BookGisoom;
 use App\Models\BookIranketab;
 use App\Models\BookirBook;
-use App\Models\BiBookBiPublisher;
-use App\Models\BookirPublisher;
-use App\Models\BiBookBiSubject;
-use App\Models\BookirSubject;
-use App\Models\BookirPartnerrule;
-use App\Models\BookirPartner;
 use App\Models\Library\Library;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\TopPublisherExport;
+
 
 
 
@@ -87,11 +80,11 @@ class BookController extends Controller
                 $bookId = $book->xid;
             }
 
-            //SELECT clidren id
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
                 $publishersData = null;
+                //SELECT clidren id
                 $subjectsData = null;
                 $creatorsData = null;
 
@@ -625,11 +618,7 @@ class BookController extends Controller
         );
     }
 
-    public function exportExcelTopPublisher($startDate,$endDate,$dio,$limit){
-
-        // Excel::download(new TopPublisherExport($startDate,$endDate,$dio,$limit), 'انتشارات برتر'.time().'.xlsx');
-       return Excel::download(new TopPublisherExport($startDate,$endDate,$dio,$limit), 'انتشارات برتر'.time().'.xlsx');
-    }
+    
   
 
 }

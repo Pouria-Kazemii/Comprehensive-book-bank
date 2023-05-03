@@ -48,7 +48,8 @@ Route::get('correct_isbns', [CronjobController::class, 'correct_isbns']);
 // Route::get('correct_isbns_with_chunk', [CronjobController::class, 'correct_isbns_with_chunk']);
 Route::get('fill_circulation_temp_table/{limit}', [CronjobController::class, 'fill_circulation_temp_table']);
 Route::get('detail_with_crawler_info/{isbn}', [BookController::class, 'detailWithCrawlerInfo']);
-Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [BookController::class, 'exportExcelTopPublisher']);
+Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopPublisher']);
+Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopAuthor']);
 
 
 
