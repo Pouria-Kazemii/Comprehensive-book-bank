@@ -258,7 +258,7 @@ class CrawlerKetabirController extends Controller
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->where('idd',2)->limit(1)->orderBy('idd', 'desc')->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
             PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 2]);
