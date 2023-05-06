@@ -38,6 +38,8 @@ class ExcelController extends Controller
     }
 
     public function exportExcelParentBook($startDate,$endDate,$dio){
+        ini_set("memory_limit", "500M");
+        set_time_limit(0);
         return Excel::download(new ParentBookExport($startDate,$endDate,$dio), 'تعداد عنوان کتاب'.time().'.xlsx');
      }
  
