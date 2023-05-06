@@ -45,10 +45,11 @@ class ParentBookExport implements FromCollection, WithHeadings
             $collection->push($result);
 
         }
-        return $collection;
+        // return $collection;
+        dd($collection);
         // $queries = DB::getQueryLog();
         // dd($result);
- 
+
     }
 
     public function headings(): array

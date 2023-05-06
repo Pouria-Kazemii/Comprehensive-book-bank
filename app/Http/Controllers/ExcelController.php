@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\CollectionExport;
 use App\Exports\ChartExport;
-use App\Exports\UserExport;
+use App\Exports\CollectionExport;
 use App\Exports\Export;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use App\Models\BookirBook;
-use App\Models\User;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\TopPublisherExport;
-use App\Exports\TopAuthorExport;
 use App\Exports\ParentBookExport;
-
+use App\Exports\TopAuthorExport;
+use App\Exports\TopPublisherExport;
+use App\Exports\UserExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ExcelController extends Controller
 {
@@ -23,29 +18,29 @@ class ExcelController extends Controller
      *
      * @return void
      */
-    function __construct()
+    public function __construct()
     {
     }
 
-    public function exportExcelTopPublisher($startDate,$endDate,$dio,$limit){
+    public function exportExcelTopPublisher($startDate, $endDate, $dio, $limit)
+    {
 
-       return Excel::download(new TopPublisherExport($startDate,$endDate,$dio,$limit), 'انتشارات برتر'.time().'.xlsx');
+        return Excel::download(new TopPublisherExport($startDate, $endDate, $dio, $limit), 'انتشارات برتر' . time() . '.xlsx');
     }
 
-    public function exportExcelTopAuthor($startDate,$endDate,$dio,$limit){
+    public function exportExcelTopAuthor($startDate, $endDate, $dio, $limit)
+    {
 
-       return Excel::download(new TopAuthorExport($startDate,$endDate,$dio,$limit), 'پدیدآورنده های برتر'.time().'.xlsx');
+        return Excel::download(new TopAuthorExport($startDate, $endDate, $dio, $limit), 'پدیدآورنده های برتر' . time() . '.xlsx');
     }
 
-    public function exportExcelParentBook($startDate,$endDate,$dio){
-        ini_set("memory_limit", "500M");
-        set_time_limit(0);
-        return Excel::download(new ParentBookExport($startDate,$endDate,$dio), 'تعداد عنوان کتاب'.time().'.xlsx');
-     }
- 
+    public function exportExcelParentBook($startDate, $endDate, $dio)
+    {
+        // return Excel::download(new ParentBookExport($startDate,$endDate,$dio), 'تعداد عنوان کتاب'.time().'.xlsx');
+        Excel::download(new ParentBookExport($startDate, $endDate, $dio), 'تعداد عنوان کتاب' . time() . '.xlsx');
+    }
 
-
-    public static function booklist($mainResult,$file_name,$sheet_name)
+    public static function booklist($mainResult, $file_name, $sheet_name)
     {
         $requestFormat = 'xlsx';
         // end give send data
@@ -90,7 +85,6 @@ class ExcelController extends Controller
             }
             $final_records[$key]['publisher'] = $publishersStr;
 
-
             $final_records[$key]['isbn'] = $value->isbn;
             $final_records[$key]['doi'] = $value->doi;
             $final_records[$key]['print_number'] = $value->printNumber;
@@ -130,7 +124,7 @@ class ExcelController extends Controller
             "pic_address" => 'آدرس عکس',
         );
 
-        $response =  ExcelController::create_excel($header_column_data, $final_records, $file_name, $sheet_name, $requestFormat);
+        $response = ExcelController::create_excel($header_column_data, $final_records, $file_name, $sheet_name, $requestFormat);
 
         return $response;
     }
@@ -200,9 +194,9 @@ class ExcelController extends Controller
         // $excel->setMergeCells(['A1:I1']);
         // $excel->setBorders(['A2:D5' => '#000000']);
         $file_content = Excel::raw($excel, $format);
-        $response =  array(
+        $response = array(
             'name' => $file_name . '.' . $requestFormat, //no extention needed
-            'file' => "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," . base64_encode($file_content) //mime type of used format
+            'file' => "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," . base64_encode($file_content), //mime type of used format
         );
         return $response;
     }
@@ -229,11 +223,11 @@ class ExcelController extends Controller
         // $format = 'csv';
         //    Set the header
         $row = [[
-            "id" =>  __('id'),
+            "id" => __('id'),
             "nickname" => __('User'),
             "gender_text" => __('Type'),
             "mobile" => 'mobile phone numbder',
-            "addtime" => 'create time'
+            "addtime" => 'create time',
         ]];
         //   Data
         $list = [
@@ -242,19 +236,19 @@ class ExcelController extends Controller
                 "nickname" => 'Zhang San',
                 "gender_text" => 'Male',
                 "mobile" => '18812345678',
-                "addtime" => '2019-11-21 '
+                "addtime" => '2019-11-21 ',
             ],
             2 => [
                 "id" => '2',
                 "nickname" => 'Li Si',
                 "gender_text" => 'Female',
                 "mobile" => '18812349999',
-                "addtime" => '2019-11-21 '
-            ]
+                "addtime" => '2019-11-21 ',
+            ],
         ];
 
         // 　　　　Execute export
-        $excel =  ExcelController::create_excel($row, $list, $file_name, $sheet_name, $requestFormat);
+        $excel = ExcelController::create_excel($row, $list, $file_name, $sheet_name, $requestFormat);
         return Excel::download($excel, $file_name . '.' . $requestFormat);
     }
 }
