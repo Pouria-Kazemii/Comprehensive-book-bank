@@ -13,6 +13,7 @@ use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TopPublisherExport;
 use App\Exports\TopAuthorExport;
+use App\Exports\ParentBookExport;
 
 
 class ExcelController extends Controller
@@ -35,6 +36,11 @@ class ExcelController extends Controller
 
        return Excel::download(new TopAuthorExport($startDate,$endDate,$dio,$limit), 'پدیدآورنده های برتر'.time().'.xlsx');
     }
+
+    public function exportExcelParentBook($startDate,$endDate,$dio){
+        return Excel::download(new ParentBookExport($startDate,$endDate,$dio), 'تعداد عنوان کتاب'.time().'.xlsx');
+     }
+ 
 
 
     public static function booklist($mainResult,$file_name,$sheet_name)
