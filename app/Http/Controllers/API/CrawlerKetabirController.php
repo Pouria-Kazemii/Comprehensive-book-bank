@@ -286,6 +286,7 @@ class CrawlerKetabirController extends Controller
                         $total_book = $response['result']['groups']['printableBook']['total'];
                         for ($start = 0; $start <= $total_book; $start += $limit) {
                             echo $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
+                            PublisherLinks::where('idd', $publisherItem->idd)->update(['offset_crawler' => $start]);
                             echo '</br>';
                             // $response = file_get_contents($newUrl);
                             $curl_handle = curl_init();
