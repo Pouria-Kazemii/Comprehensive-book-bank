@@ -21,11 +21,10 @@ use Symfony\Component\HttpClient\HttpClient;
 class CrawlerKetabirController extends Controller
 {
     public function crawler_ketabir_with_circulation($id, Request $request) // without publisher info
-
     {
-
         DB::statement("SET sql_mode=''");
         $bookSelectedInfo = BookirBook::findOrFail($id);
+        
         $bookId = str_replace('Book-', '', $request->id);
         $page_url = $request->url;
         $book_publisher = $request->book_publisher;
@@ -69,8 +68,6 @@ class CrawlerKetabirController extends Controller
 
                     if ($crawler->filter('div.col-md-9 div.card-body a')->count() > 0) {
                         $bookSelectedInfo->xpdfurl = $crawler->filter('div.col-md-9 div.card-body a')->attr('href');
-                    } else {
-                        $bookSelectedInfo->xpdfurl = '';
                     }
 
                     //////////////////////////////////book subject ///////////////////////////////////
@@ -143,8 +140,6 @@ class CrawlerKetabirController extends Controller
                     }
                     if ($crawler->filter('div.col-md-12 div.card-body p')->count() > 0) {
                         $bookSelectedInfo->xdescription = $crawler->filter('div.col-md-12 div.card-body p')->text();
-                    } else {
-                        $bookSelectedInfo->xdescription = '';
                     }
 
                     $bookSelectedInfo->xregdate = time();
@@ -239,10 +234,10 @@ class CrawlerKetabirController extends Controller
                 $bookSelectedInfo->partnersRoles()->sync($partner_array);
             }
             $bookSelectedInfo->check_circulation = 0;
-            if($bookSelectedInfo->xisbn != ''){
+            if ($bookSelectedInfo->xisbn != '') {
                 $bookSelectedInfo->update();
             }
-           
+
             return 'ok';
 
         } else {
@@ -257,7 +252,7 @@ class CrawlerKetabirController extends Controller
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->where('idd',1731)->orderBy('idd', 'desc')->limit(1)->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
             PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 2]);
@@ -283,7 +278,8 @@ class CrawlerKetabirController extends Controller
                     $response = json_decode($response, true);
                     if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
                         $total_book = $response['result']['groups']['printableBook']['total'];
-                        for ($start = 182; $start <= 182; $start += $limit) {
+                        PublisherLinks::where('idd', $publisherItem->idd)->update(['total_crawler' => $total_book]);
+                        for ($start = 0; $start <= $total_book; $start += $limit) {
                             echo $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
                             PublisherLinks::where('idd', $publisherItem->idd)->update(['offset_crawler' => $start]);
                             echo '</br>';
@@ -318,12 +314,24 @@ class CrawlerKetabirController extends Controller
                                             } else {
                                                 $bookSelectedInfo->xisname = 1;
                                             }
-                                            $bookSelectedInfo->xname2 = str_replace(' ', '', $book_items['book_title']);
-                                            $bookSelectedInfo->xpagecount = $book_items['book_page_count'];
-                                            $bookSelectedInfo->xcover = $book_items['book_cover_type'];
-                                            $bookSelectedInfo->xcoverprice = $book_items['book_cover_price'];
-                                            $bookSelectedInfo->xprintnumber = $book_items['book_print_version'];
-                                            $bookSelectedInfo->ximgeurl = $book_items['image'];
+                                            if (isset($book_items['book_title']) and !empty($book_items['book_title'])) {
+                                                $bookSelectedInfo->xname2 = str_replace(' ', '', $book_items['book_title']);
+                                            }
+                                            if (isset($book_items['book_page_count']) and $book_items['book_page_count'] > 0) {
+                                                $bookSelectedInfo->xpagecount = $book_items['book_page_count'];
+                                            }
+                                            if (isset($book_items['book_cover_type']) and $book_items['book_cover_type'] != null) {
+                                                $bookSelectedInfo->xcover = $book_items['book_cover_type'];
+                                            }
+                                            if (isset($book_items['book_cover_price']) and $book_items['book_cover_price'] > 0) {
+                                                $bookSelectedInfo->xcoverprice = $book_items['book_cover_price'];
+                                            }
+                                            if (isset($book_items['book_print_version']) and $book_items['book_print_version'] > 0) {
+                                                $bookSelectedInfo->xprintnumber = $book_items['book_print_version'];
+                                            }
+                                            if (isset($book_items['image']) and $book_items['image'] != '') {
+                                                $bookSelectedInfo->ximgeurl = $book_items['image'];
+                                            }
 
                                             // $bookData['entity_type'] =  $book_items['entity_type'];
                                             $book_publisher = $book_items['book_publisher'];
@@ -341,8 +349,6 @@ class CrawlerKetabirController extends Controller
                                                 if ($status_code == 200 and $crawler->filterXPath('//main[contains(@class, "container")]')->count() >= 0) {
                                                     if ($crawler->filter('div.col-md-9 div.card-body a')->count() > 0) {
                                                         $bookSelectedInfo->xpdfurl = $crawler->filter('div.col-md-9 div.card-body a')->attr('href');
-                                                    } else {
-                                                        $bookSelectedInfo->xpdfurl = '';
                                                     }
 
                                                     //////////////////////////////////book subject ///////////////////////////////////
@@ -415,9 +421,7 @@ class CrawlerKetabirController extends Controller
                                                     }
                                                     if ($crawler->filter('div.col-md-12 div.card-body p')->count() > 0) {
                                                         $bookSelectedInfo->xdescription = $crawler->filter('div.col-md-12 div.card-body p')->text();
-                                                    } else {
-                                                        $bookSelectedInfo->xdescription = '';
-                                                    }
+                                                    } 
                                                     $bookSelectedInfo->xregdate = time();
                                                 }
 
@@ -425,11 +429,11 @@ class CrawlerKetabirController extends Controller
 
                                             // publisher info ///
                                             if (isset($response['result']['groups']['publisher']['items']) and !empty($response['result']['groups']['publisher']['items'])) {
-                                                $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'],$book_publisher, $client, $userId, $limit, $from);
+                                                $publisherTableId = $this->find_publisher($response['result']['groups']['publisher']['items'], $book_publisher, $client, $userId, $limit, $from);
                                             }
 
                                             $bookSelectedInfo->xispublisher = 1;
-                                           
+
                                             ///////////////////////////////////////////subject///////////////////////////////////////////////////
 
                                             unset($book_subject_id);
@@ -462,24 +466,24 @@ class CrawlerKetabirController extends Controller
                                             }
                                             /*
                                             if (isset($book_items['book_subject']) and !empty($book_items['book_subject'])) {
-                                                foreach ($book_items['book_subject'] as $book_subject_items) {
-                                                    $bookSubjectData['xsubject'] = $book_subject_items;
-                                                    $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_items);
-                                                    $bookSubjectData['xregdate'] = time();
-                                                    $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
-                                                    if (empty($BookSubjectSelectedInfo)) {
-                                                        BookirSubject::create($bookSubjectData);
-                                                        $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
-                                                    }
-                                                    $bookData['xissubject'] = 1;
-                                                    }
-                                                    } else {
-                                                    $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
-                                                    if (empty($biBookSubjectSelected)) {
-                                                    $bookData['xissubject'] = 0;
-                                                    } else {
-                                                    $bookData['xissubject'] = 1;
-                                                }
+                                            foreach ($book_items['book_subject'] as $book_subject_items) {
+                                            $bookSubjectData['xsubject'] = $book_subject_items;
+                                            $bookSubjectData['xsubjectname2'] = str_replace(' ', '', $book_subject_items);
+                                            $bookSubjectData['xregdate'] = time();
+                                            $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
+                                            if (empty($BookSubjectSelectedInfo)) {
+                                            BookirSubject::create($bookSubjectData);
+                                            $BookSubjectSelectedInfo = BookirSubject::where('xsubject', $book_subject_items)->first();
+                                            }
+                                            $bookData['xissubject'] = 1;
+                                            }
+                                            } else {
+                                            $biBookSubjectSelected = BiBookBiSubject::where('bi_book_xid', $bookSelectedInfo->xid)->first();
+                                            if (empty($biBookSubjectSelected)) {
+                                            $bookData['xissubject'] = 0;
+                                            } else {
+                                            $bookData['xissubject'] = 1;
+                                            }
                                             }
                                              */
                                             ///////////////////////////////////////  partner ///////////////////////////////////////////////
@@ -527,7 +531,6 @@ class CrawlerKetabirController extends Controller
 
                                             ///////////////////////////////////////////////////////////////////////////////////////////
 
-                                            
                                             $bookSelectedInfo->check_circulation = 0;
                                             // echo '<pre>'; print_r($bookSelectedInfo);
                                             $bookSelectedInfo->save();
