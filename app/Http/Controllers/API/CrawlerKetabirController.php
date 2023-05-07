@@ -239,7 +239,6 @@ class CrawlerKetabirController extends Controller
                 $bookSelectedInfo->partnersRoles()->sync($partner_array);
             }
             $bookSelectedInfo->check_circulation = 0;
-            return $bookSelectedInfo;
             if($bookSelectedInfo->xisbn != ''){
                 $bookSelectedInfo->update();
             }
@@ -258,7 +257,7 @@ class CrawlerKetabirController extends Controller
         echo 'start : ' . date("H:i:s", time()) . '</br>';
         $crawlerSize = 1;
 
-        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->orderBy('idd', 'desc')->get();
+        $publisherSelected = PublisherLinks::where('xcheck_status', 0)->where('idd',1731)->orderBy('idd', 'desc')->limit(1)->get();
         // $publisherList = $publisherSelected->pluck('pub_name')->all();
         foreach ($publisherSelected as $publisherItem) {
             PublisherLinks::where('idd', $publisherItem->idd)->update(['xcheck_status' => 2]);
@@ -284,7 +283,7 @@ class CrawlerKetabirController extends Controller
                     $response = json_decode($response, true);
                     if (isset($response['result']['groups']['printableBook']['total']) and !empty($response['result']['groups']['printableBook']['total'])) {
                         $total_book = $response['result']['groups']['printableBook']['total'];
-                        for ($start = 0; $start <= $total_book; $start += $limit) {
+                        for ($start = 182; $start <= 182; $start += $limit) {
                             echo $newUrl = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=$limit&from=$start";
                             PublisherLinks::where('idd', $publisherItem->idd)->update(['offset_crawler' => $start]);
                             echo '</br>';
