@@ -127,7 +127,7 @@ class GetFidibo extends Command
                                 }
                             }
                             $filtered['tags']= $tags;
-                            $this->info($tags);
+                            // $this->info($tags);
                         }
                         //////////book image
                         if ($crawler->filter('body main div.single2 article div.container div.bov-img img')->count() > 0) {
@@ -207,7 +207,7 @@ class GetFidibo extends Command
                                         $filtered['fileSize'] = $file_size;
                                     }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'pages.png')) {
                                         $page_number = $row->filterXPath("//li[$i]")->text('');
-                                        $filtered['tedadSafe'] = enNumberKeepOnly(faCharToEN($page_number));
+                                        $filtered['tedadSafe'] = (enNumberKeepOnly(faCharToEN($page_number))> 0 )? enNumberKeepOnly(faCharToEN($page_number)) : 0;
                                     }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'isbn.png')) {
                                         $isbn = $row->filterXPath("//li[$i]/label")->text('');
                                         $filtered['shabak'] = enNumberKeepOnly(faCharToEN($isbn));
@@ -216,7 +216,7 @@ class GetFidibo extends Command
                             }
                             
                         }
-
+                        
                         if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
                             $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
                             if ($selected_book == null) {
