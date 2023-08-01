@@ -80,7 +80,13 @@ class GetFidibo extends Command
             $bar->start();
 
             $recordNumber = $startC;
+
             while ($recordNumber <= $endC) {
+                unset($filtered);
+                $filtered = array();
+                $filtered['recordNumber'] = $recordNumber;
+
+
                 $timeout = 120;
                 $url = 'https://fidibo.com/book/' . $recordNumber;
                 $ch = curl_init($url);
@@ -99,6 +105,7 @@ class GetFidibo extends Command
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                     echo 'error:' . curl_error($ch);
                 } else {
+                    
 
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
@@ -111,9 +118,7 @@ class GetFidibo extends Command
                     }
 
                     if ($status_code == 200 && $crawler->filter('body main')->text('') != '' && $crawler->filterXPath('//*[@class="single2"]')->count() > 0) {
-                        unset($filtered);
-                        $filtered = array();
-                        $filtered['recordNumber'] = $recordNumber;
+                        
                         //BreadcrumbList
                         $BreadcrumbList = $crawler->filterXPath('//*[@style="margin-top: 7px"]')->filter('nav');
                         foreach ($BreadcrumbList->filter('ul') as $detail) {
@@ -216,28 +221,30 @@ class GetFidibo extends Command
                             }
                             
                         }
-                        
-                        if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
-                            $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
-                            if ($selected_book == null) {
-                                try {
-                                    BookFidibo::create($filtered);
-                                    $this->info(" \n ----------Save book info              ---------- ");
-
-                                } catch (Exception $Exception) {
-                                    //throw $th;
-                                    $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
-                                }
-                            } else {
-                                $this->info(" \n ---------- Book info is exist             ---------- ");
-
-                            }
-                        } else {
-                            $this->info(" \n ---------- This url does not include the book             ---------- ");
-                        }
+                       
 
                     } else {
                         $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
+                    }
+
+
+                    if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
+                        $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
+                        if ($selected_book == null) {
+                            try {
+                                BookFidibo::create($filtered);
+                                $this->info(" \n ----------Save book info              ---------- ");
+
+                            } catch (Exception $Exception) {
+                                //throw $th;
+                                $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
+                            }
+                        } else {
+                            $this->info(" \n ---------- Book info is exist             ---------- ");
+
+                        }
+                    } else {
+                        $this->info(" \n ---------- This url does not include the book             ---------- ");
                     }
                 }
                 // $bar->advance();
