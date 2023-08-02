@@ -13,6 +13,7 @@ use App\Models\BiBookBiPublisher;
 use App\Models\BiBookBiSubject;
 use App\Models\Book30book;
 use App\Models\BookDigi;
+use App\Models\BookFidibo;
 use App\Models\BookGisoom;
 use App\Models\BookIranketab;
 use App\Models\BookirBook;
@@ -2012,11 +2013,88 @@ class BookController extends Controller
             } else {
                 $iranketabData = null;
             }
+
+
+            //----------------------------------------------fidibo---------------------------------------//
+            $fidibo_books = BookFidibo::where('book_master_id', $bookId)->get();
+            if ($fidibo_books->count() > 0) {
+                $fidibo_titleData = array_unique(array_filter($fidibo_books->pluck('title')->all()));
+                $fidibo_publishersData = array_unique(array_filter($fidibo_books->pluck('nasher')->all()));
+                $tags_array = array();
+                foreach (array_unique($fidibo_books->pluck('tags')->all()) as $tag_items) {
+                    if ($tag_items != null) {
+                        $tags_array = explode("#", $tag_items);
+                    }
+                }
+                $fidibo_subjectsData = array_unique(array_filter($tags_array));
+                $fidibo_min_publish_date = $fidibo_books->min('saleNashr');
+                $fidibo_max_publish_date = $fidibo_books->max('saleNashr');
+                $fidibo_printNumberData = array_unique(array_filter($fidibo_books->pluck('nobatChap')->all()));
+                // $iranketab_tedadSafeData = array_unique(array_filter($fidibo_books->pluck('tedadSafe')->all()));
+                $fidibo_min_tedadSafe = $fidibo_books->min('tedadSafe');
+                $fidibo_max_tedadSafe = $fidibo_books->max('tedadSafe');
+                $fidibo_shabakData = array_unique(array_filter($fidibo_books->pluck('shabak')->all()));
+                $fidibo_translateData = array_unique(array_filter($fidibo_books->pluck('traslate')->all()));
+                $fidibo_descriptionData = array_unique(array_filter($fidibo_books->pluck('desc')->all()));
+                if (!empty($fidibo_descriptionData)) {
+                    $fidibo_descriptionData = reset($fidibo_descriptionData);
+                }
+                $images_array = array();
+                foreach ($fidibo_books->pluck('images')->all() as $image_items) {
+                    if ($image_items != null) {
+                        $index_key = array_key_last($images_array);
+                        $arr_images = explode(" =|= ", $image_items);
+                        foreach ($arr_images as $arr_images_items) {
+                            if ($arr_images_items != "" and $arr_images_items != null) {
+                                $images_array[$index_key + 1] = $arr_images_items;
+                            }
+                        }
+                    }
+                }
+                $fidibo_imagesData = array_unique($images_array);
+                // if(!empty($fidibo_imagesData)){
+                //     $fidibo_imagesData = reset($fidibo_imagesData);
+                // }
+                $fidibo_min_price_date = $fidibo_books->min('price');
+                $fidibo_max_price_date = $fidibo_books->max('price');
+                $creators_array = array();
+                $exist_creators = array();
+                foreach (array_unique($fidibo_books->pluck('partnerArray')->all()) as $creator_items) {
+                    $item_info = json_decode($creator_items);
+                    foreach ($item_info as $items) {
+                        if (!in_array($items->name, $exist_creators)) {
+                            $index_key = array_key_last($creators_array);
+                            $exist_creators[] = $items->name;
+                            $creators_array[$index_key + 1]['name'] = $items->name;
+                            $creators_array[$index_key + 1]['role'] = ($items->roleId == 1) ? "نویسنده" : "مترجم";
+                        }
+                    }
+                }
+                $fidibo_creatorsData = array_filter($creators_array);
+                $fidiboData =
+                    [
+                        "isbns" => !empty($fidibo_shabakData) ? $fidibo_shabakData : null,
+                        "names" => !empty($fidibo_titleData) ? $fidibo_titleData : null,
+                        "publishers" => !empty($fidibo_publishersData) ? $fidibo_publishersData : null,
+                        "subjects" => !empty($fidibo_subjectsData) ? $fidibo_subjectsData : null,
+                        "images" => !empty($fidibo_imagesData) ? $fidibo_imagesData : null,
+                        "creators" => !empty($fidibo_creatorsData) ? $fidibo_creatorsData : null,
+                        "des" => !empty($fidibo_descriptionData) ? $fidibo_descriptionData : null,
+                        "numberPages" => (!empty($fidibo_min_tedadSafe) && !empty($fidibo_max_tedadSafe)) ? ' بین ' . $fidibo_min_tedadSafe . ' تا ' . $fidibo_max_tedadSafe : null,
+                        "publishDate" => (!empty($fidibo_min_publish_date) && !empty($fidibo_max_publish_date)) ? ' بین ' . $fidibo_min_publish_date . ' تا ' . $fidibo_max_publish_date : null,
+                        "price" => (!empty($fidibo_min_price_date) && !empty($fidibo_max_price_date)) ? ' بین ' . priceFormat($fidibo_min_price_date) . ' تا ' . priceFormat($fidibo_max_price_date) . ' تومان ' : null,
+                        "printNumbers" => !empty($fidibo_printNumberData) ? $fidibo_printNumberData : null,
+                        "translate" => !empty($fidibo_translateData) ? $fidibo_translateData : null,
+                    ];
+            } else {
+                $fidiboData = null;
+            }
         } else {
             $digiData = null;
             $siData = null;
             $gisoomData = null;
             $iranketabData = null;
+            $fidiboData = null;
         }
         // response
         return response()->json(
@@ -2030,7 +2108,8 @@ class BookController extends Controller
                     "digiData" => $digiData,
                     "sibookData" => $siData,
                     "gisoomData" => $gisoomData,
-                    "iranketabData" => $iranketabData
+                    "iranketabData" => $iranketabData,
+                    "fidiboData" => $fidiboData
                 ]
 
             ],
