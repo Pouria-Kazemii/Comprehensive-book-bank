@@ -105,7 +105,7 @@ class GetFidibo extends Command
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                     echo 'error:' . curl_error($ch);
                 } else {
-                    
+
 
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
@@ -118,20 +118,20 @@ class GetFidibo extends Command
                     }
 
                     if ($status_code == 200 && $crawler->filter('body main')->text('') != '' && $crawler->filterXPath('//*[@class="single2"]')->count() > 0) {
-                        
+
                         //BreadcrumbList
                         $BreadcrumbList = $crawler->filterXPath('//*[@style="margin-top: 7px"]')->filter('nav');
                         foreach ($BreadcrumbList->filter('ul') as $detail) {
                             unset($row);
                             $row = new Crawler($detail);
                             $tags = '';
-                            for($i=2;$i<=5; $i++){
+                            for ($i = 2; $i <= 5; $i++) {
                                 if ($row->filterXPath("//li[$i]")->count() > 0) {
-                                    $tags = $tags .'#'.$row->filterXPath("//li[$i]/a/span")->text('');
-                                    $tags = rtrim($tags,'#');
+                                    $tags = $tags . '#' . $row->filterXPath("//li[$i]/a/span")->text('');
+                                    $tags = rtrim($tags, '#');
                                 }
                             }
-                            $filtered['tags']= $tags;
+                            $filtered['tags'] = $tags;
                             // $this->info($tags);
                         }
                         //////////book image
@@ -151,7 +151,7 @@ class GetFidibo extends Command
                         $filtered['title'] = str_replace('کتاب', '', $bookTitle);
 
                         ////////// boot creator
-                       
+
                         $bookCreators = $crawler->filterXPath('//*[@class="single2"]')->filter('article div.container div.book-info');
                         $partner = array();
                         foreach ($bookCreators->filter('div.row div.col-sm-11 ul') as $creator) {
@@ -192,60 +192,55 @@ class GetFidibo extends Command
                         foreach ($bookDetails->filter('ul') as $detail) {
                             unset($row);
                             $row = new Crawler($detail);
-                            for($i=1;$i<=7; $i++){
+                            for ($i = 1; $i <= 7; $i++) {
                                 if ($row->filterXPath("//li[$i]")->count() > 0) {
                                     if (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'publisher.png')) {
                                         $publisher_name = $row->filterXPath("//li[$i]/a")->text('');
                                         $publisher_name = str_replace('انتشارات', '', $publisher_name);
                                         $filtered['nasher'] = str_replace('نشر', '', $publisher_name);
-                                    }elseif(str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'printer.png')) {
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'printer.png')) {
                                         $price = $row->filterXPath("//li[$i]/span")->text('');
                                         $filtered['price'] = enNumberKeepOnly(faCharToEN(trim($price)));
-                                    }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'date.png')) {
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'date.png')) {
                                         $publishDate = $row->filterXPath("//li[$i]/span")->text('');
                                         $filtered['saleNashr'] = faCharToEN($publishDate);
-                                    }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'language.png')) {
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'language.png')) {
                                         $language = $row->filterXPath("//li[$i]")->text('');
                                         $filtered['lang'] = $language;
-                                    }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'filesize.png')) {
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'filesize.png')) {
                                         $file_size = $row->filterXPath("//li[$i]")->text('');
                                         $filtered['fileSize'] = $file_size;
-                                    }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'pages.png')) {
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'pages.png')) {
                                         $page_number = $row->filterXPath("//li[$i]")->text('');
-                                        $filtered['tedadSafe'] = (enNumberKeepOnly(faCharToEN($page_number))> 0 )? enNumberKeepOnly(faCharToEN($page_number)) : 0;
-                                    }elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'isbn.png')) {
+                                        $filtered['tedadSafe'] = (enNumberKeepOnly(faCharToEN($page_number)) > 0) ? enNumberKeepOnly(faCharToEN($page_number)) : 0;
+                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'isbn.png')) {
                                         $isbn = $row->filterXPath("//li[$i]/label")->text('');
                                         $filtered['shabak'] = enNumberKeepOnly(faCharToEN($isbn));
                                     }
                                 }
                             }
-                            
                         }
-                       
-
                     } else {
                         $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
                     }
-
-
-                    if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
-                        $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
-                        if ($selected_book == null) {
-                            try {
-                                BookFidibo::create($filtered);
-                                $this->info(" \n ----------Save book info              ---------- ");
-
-                            } catch (Exception $Exception) {
-                                //throw $th;
-                                $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
-                            }
-                        } else {
-                            $this->info(" \n ---------- Book info is exist             ---------- ");
-
+                }
+                
+                if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
+                    $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
+                    if ($selected_book == null) {
+                        try {
+                            BookFidibo::create($filtered);
+                            $this->info(" \n ----------Save book info              ---------- ");
+                        } catch (Exception $Exception) {
+                            //throw $th;
+                            $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
                         }
                     } else {
-                        $this->info(" \n ---------- This url does not include the book             ---------- ");
+                        BookFidibo::update($filtered);
+                        $this->info(" \n ---------- Book info is exist             ---------- ");
                     }
+                } else {
+                    $this->info(" \n ---------- This url does not include the book             ---------- ");
                 }
                 // $bar->advance();
                 $recordNumber++;
@@ -255,6 +250,5 @@ class GetFidibo extends Command
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
         }
-
     }
 }
