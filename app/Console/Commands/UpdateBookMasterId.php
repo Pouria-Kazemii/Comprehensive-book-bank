@@ -45,7 +45,7 @@ class UpdateBookMasterId extends Command
     public function handle()
     {
         //gisoom table
-            $limit = $this->argument('limit');
+           /* $limit = $this->argument('limit');
             $gisoom_books = BookGisoom::where('book_master_id', 0)->where('shabak10', '!=', NULL)->where('shabak13', '!=', NULL)->skip(0)->take($limit)->get();
             if ($gisoom_books->count() != 0) {
                 foreach ($gisoom_books as $gisoom_book) {
@@ -75,7 +75,7 @@ class UpdateBookMasterId extends Command
                 $this->info("successfully update book_master_id info");
             } else {
                 $this->info("nothing for update");
-            }
+            } */
 
         //digi
             /* $limit = $this->argument('limit');
