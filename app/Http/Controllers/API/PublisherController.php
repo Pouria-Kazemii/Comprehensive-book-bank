@@ -195,7 +195,7 @@ class PublisherController extends Controller
         $publisherId = $request["publisherId"];
         $publisherName = $request["publisherName"];
         $dataMaster = null;
-
+        $status = 404;
         // read
         if(isset($publisherId) AND !empty($publisherId)){
             $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
