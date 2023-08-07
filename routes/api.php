@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
 Route::post('/v1/user/login', 'API\UserController@login');
 Route::post('/v1/user/auth', 'API\UserController@authenticate');
 
@@ -21,7 +22,6 @@ Route::post('/v1/user/auth', 'API\UserController@authenticate');
 Route::get('/v1/book/check', 'API\BookCheckController@check');
 Route::get('/v1/book/exist', 'API\BookCheckController@exist');
 Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');
-
 
 
 //Route::group
@@ -35,7 +35,7 @@ Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabir
 //);
 Route::group(['middleware' => ['ChToken']], function () {
 
-    Route::post('/v1/publisher/detail1', 'API\PublisherController@detail');
+    Route::post('/web/v1/publisher/detail', 'API\PublisherController@detail');
 });
 Route::group(['middleware' => ['jwt.verify']], function () {
 
