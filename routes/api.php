@@ -33,7 +33,10 @@ Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabir
 //        Route::post('/v1/book/detail', 'API\BookController@detail');
 //    }
 //);
+Route::group(['middleware' => ['ChToken']], function () {
 
+    Route::post('/v1/publisher/detail1', 'API\PublisherController@detail');
+});
 Route::group(['middleware' => ['jwt.verify']], function () {
 
 
