@@ -8,5 +8,5 @@ class Crawler extends Model
 {
     protected $table = 'crawler';
     protected $fillable = ['name','start','end','status','type'];
-    static $crawlerSize = 40000;
+    static $crawlerSize = 1000;
 }

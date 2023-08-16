@@ -51,6 +51,8 @@ Route::get('detail_with_crawler_info/{isbn}', [BookController::class, 'detailWit
 Route::get('exportExcelParentBook/{startDate}/{endDate}/{dio}', [ExcelController::class, 'exportExcelParentBook']);
 Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopPublisher']);
 Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopAuthor']);
+Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
+Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 
 
 

@@ -61,7 +61,7 @@ class GetFidibo extends Command
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->end + 1;
                 } else {
-                    $startC = 1000;
+                    $startC = 100;
                 }
 
                 $endC = $startC + CrawlerM::$crawlerSize;
@@ -148,31 +148,38 @@ class GetFidibo extends Command
                         } else {
                             $bookTitle = '';
                         }
-                        $filtered['title'] = str_replace('کتاب', '', $bookTitle);
+                        // $filtered['title'] = str_replace('کتاب', '', $bookTitle);
+                        $filtered['title'] = mb_substr($bookTitle, 0, 250, 'UTF-8');
 
                         ////////// boot creator
 
                         $bookCreators = $crawler->filterXPath('//*[@class="single2"]')->filter('article div.container div.book-info');
                         $partner = array();
-                        foreach ($bookCreators->filter('div.row div.col-sm-11 ul') as $creator) {
+                        $creator_counter = 0;
+                        foreach ($bookCreators->filter('div.row div.col-sm-11 ul li') as $creator) {
                             unset($row);
                             $row = new Crawler($creator);
+                            if($row->filterXPath('//li/span')->text('') == 'نویسنده'){
+                                foreach($row->filterXPath('//li/a') as $authors){
+                                    unset($authors_row);
+                                    $authors_row = new Crawler($authors);
 
-                            if ($row->filterXPath('//li[1]/span')->text('') == 'نویسنده') {
-                                $author = $row->filterXPath('//li[1]/a/span')->text('');
-                                // $this->info($author);
-
-                                $partner[0]['roleId'] = 1;
-                                $partner[0]['name'] = $author;
+                                    $partner[$creator_counter]['roleId'] = 1;
+                                    $partner[$creator_counter]['name'] = $authors_row->filterXPath('//a/span')->text('');
+                                    $creator_counter++;
+    
+                                }
+                            }elseif($row->filterXPath('//li/span')->text('') == 'مترجم'){
+                                foreach($row->filterXPath('//li/a') as $authors){
+                                    unset($authors_row);
+                                    $authors_row = new Crawler($authors);
+                                    $partner[$creator_counter]['roleId'] = 2;
+                                    $partner[$creator_counter]['name'] = $authors_row->filterXPath('//a/span')->text('');
+                                    $filtered['translate'] = 1;
+                                    $creator_counter++;
+                                }
                             }
-                            if ($row->filterXPath('//li[2]/span')->text('') == 'مترجم') {
-                                $motarjem = $row->filterXPath('//li[2]/a/span')->text('');
-                                // $this->info($motarjem);
-
-                                $partner[1]['roleId'] = 2;
-                                $partner[1]['name'] = $motarjem;
-                                $filtered['translate'] = 1;
-                            }
+                            
                             $filtered['partnerArray'] = json_encode($partner, JSON_UNESCAPED_UNICODE);
                         }
 
@@ -196,8 +203,12 @@ class GetFidibo extends Command
                                 if ($row->filterXPath("//li[$i]")->count() > 0) {
                                     if (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'publisher.png')) {
                                         $publisher_name = $row->filterXPath("//li[$i]/a")->text('');
+                                        $publisher_name = str_replace('انتشاراتی', '', $publisher_name);
                                         $publisher_name = str_replace('انتشارات', '', $publisher_name);
-                                        $filtered['nasher'] = str_replace('نشر', '', $publisher_name);
+                                        $publisher_name = str_replace('گروه', '', $publisher_name);
+                                        $publisher_name = str_replace('نشریه', '', $publisher_name);
+                                        $publisher_name = str_replace('نشر', '', $publisher_name);
+                                        $filtered['nasher'] =  $publisher_name;
                                     } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'printer.png')) {
                                         $price = $row->filterXPath("//li[$i]/span")->text('');
                                         $filtered['price'] = enNumberKeepOnly(faCharToEN(trim($price)));
@@ -230,14 +241,22 @@ class GetFidibo extends Command
                     if ($selected_book == null) {
                         try {
                             BookFidibo::create($filtered);
-                            $this->info(" \n ----------Save book info              ---------- ");
+                            // $this->info(" \n ----------Save book info              ---------- ");
                         } catch (Exception $Exception) {
                             //throw $th;
                             $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
                         }
                     } else {
-                        BookFidibo::update($filtered);
-                        $this->info(" \n ---------- Book info is exist             ---------- ");
+                        if(isset($filtered['title']) && !empty($filtered['title'])){
+                            BookFidibo::updateOrCreate(
+                                ['recordNumber' => $filtered['recordNumber']],
+                                $filtered
+                            );
+                            $this->info(" \n ---------- update Book info             ---------- ");
+
+                        }else{
+                            $this->info(" \n ---------- Book info is exist   & new crawl is empty info          ---------- ");
+                        }
                     }
                 } else {
                     $this->info(" \n ---------- This url does not include the book             ---------- ");
