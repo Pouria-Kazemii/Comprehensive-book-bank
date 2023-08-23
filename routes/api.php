@@ -132,5 +132,8 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/bookLanguage/list/', 'API\BookLanguageController@list');
     Route::get('/v1/bookFormat/list/', 'API\BookFormatController@list');
     Route::get('/v1/bookCover/list/', 'API\BookCoverController@list');
+
 });
+Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
+
 
