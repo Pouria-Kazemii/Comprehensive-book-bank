@@ -22,7 +22,7 @@ class ErshadBookImport implements ToModel, WithHeadingRow
             'xrade' => $row['mojavez_chap_mokhatab_asar'],
             'xpublisher_name' => $row['mojavez_chap_nasher_asar'],
             'xlang' => $row['mojavez_chap_zaban_vaset_karbari'],
-            'xisbn' => $row['mojavez_chap_shabak_shabam'],
+            'xisbn' => str_replace("-","",$row['mojavez_chap_shabak_shabam']),
             'xpage_number'=>$row['mojavez_chap_tedad_safhe'],
             'xmoalefin'=>$row['mojavez_chap_moalefin'],
             'xmotarjemin'=>$row['mojavez_chap_motarjemin'],
