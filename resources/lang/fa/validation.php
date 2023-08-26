@@ -258,6 +258,7 @@ return [
         "printNumber"=>"نوبت چاپ",
         "circulation"=>"تیراژ",
         "publishDate"=>"تاریخ انتشار",
+        "ّFile"=>'فایل',
     ],
 
 ];
