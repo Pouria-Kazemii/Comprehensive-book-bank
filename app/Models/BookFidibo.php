@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookFidibo extends Model
 {
-    protected $fillable = ['recordNumber','parentId','title','nasher','saleNashr', 'tedadSafe', 'shabak','translate','desc','images','price','lang', 'fileSize', 'partnerArray','tags','check_status'];
+    protected $fillable = ['recordNumber','parentId','title','nasher','saleNashr', 'tedadSafe', 'shabak','translate','desc','images','price','lang', 'fileSize', 'partnerArray','tags','check_status','has_permit'];
     protected $table = 'bookFidibo';
     protected $primaryKey = 'id';
 
