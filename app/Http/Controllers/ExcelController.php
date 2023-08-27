@@ -11,6 +11,7 @@ use App\Exports\TopPublisherExport;
 use App\Exports\UserExport;
 use App\Exports\ContradictionsFidiboExport;
 use App\Exports\ContradictionsTaaghcheExport;
+use App\Exports\ContradictionsDigiExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExcelController extends Controller
@@ -139,6 +140,11 @@ class ExcelController extends Controller
     public function exportExcelContradictionsTaaghche($status)
     {
         return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
+    }
+
+    public function exportExcelContradictionsDigi($status)
+    {
+        return Excel::download(new ContradictionsDigiExport($status), 'لیست مغایرت دیجیکالا' . time() . '.xlsx');
     }
 
 
