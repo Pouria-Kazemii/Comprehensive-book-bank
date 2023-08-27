@@ -54,6 +54,7 @@ Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [Excel
 Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopAuthor']);
 Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
 Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
+Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
 
 
