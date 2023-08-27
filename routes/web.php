@@ -8,6 +8,7 @@ use App\Http\Controllers\ChangeDataController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\TestController;
 
 /*
 |--------------------------------------------------------------------------

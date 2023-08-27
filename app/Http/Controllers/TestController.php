@@ -2,14 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BookirPublisher;
-use App\Models\BookirPartner;
-use App\Models\BookirBook;
-use App\Models\CirculationTemp;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Exception;
-
 class TestController extends Controller
 {
     public function test_majma_api(){
