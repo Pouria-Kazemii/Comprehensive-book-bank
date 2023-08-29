@@ -46,6 +46,6 @@ class TestController extends Controller
 
         $url = 'https://core.ketab.ir/api/Majma/get-book/'.$book_id;
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
-        die(json_encode($response, JSON_PRETTY_PRINT));
+        die($response);
     }
 }
