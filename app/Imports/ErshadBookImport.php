@@ -16,8 +16,8 @@ class ErshadBookImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         return new ErshadBook([
-            'xtitle_fa' => $row['mojavez_chap_onvan_farsi'],
-            'xtitle_en' => $row['mojavez_chap_onvan_latin'],
+            'xtitle_fa' => mb_substr($row['mojavez_chap_onvan_farsi'], 0, 250, 'UTF-8') ,
+            'xtitle_en' => mb_substr($row['mojavez_chap_onvan_latin'], 0, 250, 'UTF-8') ,
             'xtype' => $row['mojavez_chap_noe_asar'],
             'xrade' => $row['mojavez_chap_mokhatab_asar'],
             'xpublisher_name' => $row['mojavez_chap_nasher_asar'],
@@ -26,7 +26,7 @@ class ErshadBookImport implements ToModel, WithHeadingRow
             'xpage_number'=>$row['mojavez_chap_tedad_safhe'],
             'xmoalefin'=>$row['mojavez_chap_moalefin'],
             'xmotarjemin'=>$row['mojavez_chap_motarjemin'],
-            // 'xdesc'=>$row['mojavez_chap_morafi_kotahe_asar'],
+            'xdesc'=>$row['mojavez_chap_morafi_kotahe_asar'],
             'xformat'=>$row['mojavez_chap_ghateh'],
             'xgerdavarande'=>$row['mojavez_chap_gerdavarandeh'],
             'xpadidavarande'=>$row['mojavez_chap_padidavarandeh'],

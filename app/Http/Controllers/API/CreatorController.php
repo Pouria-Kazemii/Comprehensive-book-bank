@@ -187,17 +187,10 @@ class CreatorController extends Controller
     public function detail(Request $request)
     {
         $creatorId = $request["creatorId"];
-        $creatorName = $request["creatorName"];
         $dataMaster = null;
-        $status = 404;
 
         // read
-        if(isset($creatorId) AND !empty($creatorId)){
-            $creator = BookirPartner::where('xid', '=', $creatorId)->first();
-        }elseif(isset($creatorName) AND !empty($creatorName)){
-            $creator = BookirPartner::where('xcreatorname', 'LIKE', $creatorName)->first();
-        }
-
+        $creator = BookirPartner::where('xid', '=', $creatorId)->first();
         if ($creator != null and $creator->xid > 0) {
             $rolesData = null;
             $creatorId = $creator->xid;
