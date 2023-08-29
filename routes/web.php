@@ -57,6 +57,7 @@ Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class
 Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
 Route::get('test2_majma_api', [TestController::class, 'test2_majma_api']);
+Route::get('test_get_book_id_majma', [TestController::class, 'test_get_book_id_majma']);
 
 
 
