@@ -22,8 +22,16 @@ class TestController extends Controller
 
     }
     public function test2_majma_api(){
+        
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );  
+
         $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-08-18&To=2023-08-20';
-        $response = file_get_contents($url);
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         var_dump($response);
     }
 }
