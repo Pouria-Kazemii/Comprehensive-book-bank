@@ -193,16 +193,10 @@ class PublisherController extends Controller
     public function detail(Request $request)
     {
         $publisherId = $request["publisherId"];
-        $publisherName = $request["publisherName"];
         $dataMaster = null;
-        $status = 404;
-        // read
-        if(isset($publisherId) AND !empty($publisherId)){
-            $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
-        }elseif(isset($publisherName) AND !empty($publisherName)){
-            $publisher = BookirPublisher::where('xpublishername', 'LIKE', $publisherName)->first();
-        }
 
+        // read
+        $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
         if ($publisher != null and $publisher->xid > 0) {
             $dataMaster =
                 [
@@ -211,18 +205,13 @@ class PublisherController extends Controller
                     "activity" => $publisher->xactivity,
                     "place" => $publisher->xplace,
                     "address" => $publisher->xaddress,
-                    "pobox" => $publisher->xpobox,
                     "zipCode" => $publisher->xzipcode,
                     "phone" => $publisher->xphone,
                     "cellphone" => $publisher->xcellphone,
                     "fax" => $publisher->xfax,
-                    "lastUpdate" => $publisher->xlastupdate,
                     "type" => $publisher->xtype,
-                    "permitno" => $publisher->xpermitno,
                     "email" => $publisher->xemail,
                     "site" => $publisher->xsite,
-                    "isbnid" => $publisher->xisbnid,
-                    "foundingDate" => $publisher->xfoundingdate,
                     "image" => $publisher->ximageurl,
                 ];
         }

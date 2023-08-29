@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ErshadBook;
 use App\Models\BookTaaghche;
+use App\Models\BookirBook;
 use App\Models\Crawler as CrawlerM;
 use Exception;
 use Goutte\Client;
@@ -77,39 +79,21 @@ class GetTaaghcheContradictionsList extends Command
                 $book_data = BookTaaghche::where('id',$rowId)->first();
                 if(isset($book_data->shabak) AND $book_data->shabak != NULL){
                     $this->info($book_data->shabak);
-                    $data = "isbn=" . $book_data->shabak;
-                    $url = "http://dcapi.k24.ir/api/web/v1/book/find";
-                    $ch = curl_init($url);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                        'token:$2y$10$5JQeRM6hBYXyg2A3THx/ze/QuIK1dnRyLD7H3pPGYxvpkixkV2IZe',
-                    ));
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-                    curl_setopt($ch, CURLOPT_HEADER, 0);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    $response = curl_exec($ch);
-                    if (curl_errno($ch)) {
-                        $this->info(" \n ---------- Try Get BOOK " . $rowId . "              ---------- ");
-                        echo 'error:' . curl_error($ch);
-                    } else {
-                        $response = json_decode($response);
-                        if (isset($response->status) and $response->status == 200 AND !empty($response->data->list) and $response->data->list != null) {
-                            $update_data = array(
-                                'check_status'=>1
-                            );
-                        
-                        }else{
-                            $update_data = array(
-                                'check_status'=>2
-                            );
-                        }
-    
+                    $bookirbook_data = BookirBook::where('xisbn',$book_data->shabak)->orwhere('xisbn2',$book_data->shabak)->orWhere('xisbn3',$book_data->shabak)->first();
+                    $ershad_book = ErshadBook::where('xisbn',$book_data->shabak)->first();
+                    if( $ershad_book->count() > 0 ||  $bookirbook_data->count() > 0){
+                        $update_data = array(
+                            'has_permit'=>1
+                        );
+                    }else{
+                        $update_data = array(
+                            'has_permit'=>2
+                        );
                     }
                 }else{
                     $this->info('row no isbn');
                     $update_data = array(
-                        'check_status'=>3
+                        'has_permit'=>3
                     );
                 }
 
@@ -118,8 +102,6 @@ class GetTaaghcheContradictionsList extends Command
 
             }
 
-        }else{
-            $this->info('else');
         }
     }
 }

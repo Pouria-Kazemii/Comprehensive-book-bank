@@ -9,9 +9,6 @@ use App\Exports\ParentBookExport;
 use App\Exports\TopAuthorExport;
 use App\Exports\TopPublisherExport;
 use App\Exports\UserExport;
-use App\Exports\ContradictionsFidiboExport;
-use App\Exports\ContradictionsTaaghcheExport;
-use App\Exports\ContradictionsDigiExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ExcelController extends Controller
@@ -131,23 +128,6 @@ class ExcelController extends Controller
 
         return $response;
     }
-    
-    public function exportExcelContradictionsFidibo($status)
-    {
-        return Excel::download(new ContradictionsFidiboExport($status), 'لیست مغایرت فدیبو' . time() . '.xlsx');
-    }
-
-    public function exportExcelContradictionsTaaghche($status)
-    {
-        return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
-    }
-
-    public function exportExcelContradictionsDigi($status)
-    {
-        return Excel::download(new ContradictionsDigiExport($status), 'لیست مغایرت دیجیکالا' . time() . '.xlsx');
-    }
-
-
 
     public static function create_excel($row, $list, $file_name, $sheet_name, $requestFormat)
     {
