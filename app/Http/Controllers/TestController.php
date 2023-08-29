@@ -34,4 +34,17 @@ class TestController extends Controller
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         var_dump($response);
     }
+
+    public function test_get_book_id_majma($book_id){
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );  
+
+        $url = 'https://core.ketab.ir/api/Majma/get-book/'.$book_id;
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+        die(json_encode($response, JSON_PRETTY_PRINT));
+    }
 }
