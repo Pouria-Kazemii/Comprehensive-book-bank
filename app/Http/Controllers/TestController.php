@@ -21,7 +21,7 @@ class TestController extends Controller
         var_dump($content);
 
     }
-    public function test2_majma_api(){
+    public function test_get_books_majma(){
         
         $arrContextOptions=array(
             "ssl"=>array(
@@ -45,6 +45,50 @@ class TestController extends Controller
 
 
         $url = 'https://core.ketab.ir/api/Majma/get-book/'.$book_id;
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+        die($response);
+    }
+
+ 
+
+    public function test_get_publishers_majma(){
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );  
+
+
+        $url = 'https://core.ketab.ir/api/Majma/get-publishers/?MaxResultCount=200&SkipCount=0';
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+        die($response);
+    }
+
+       public function test_get_publisher_id_majma($publisher_id){
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );  
+
+
+        $url = 'https://core.ketab.ir/api/Majma/get-publisher/'.$publisher_id;
+        $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
+        die($response);
+    }
+
+     public function test_get_authors_id_majma(){
+        $arrContextOptions=array(
+            "ssl"=>array(
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            ),
+        );  
+
+
+        $url = 'https://core.ketab.ir/api/Majma/get-authors/?MaxResultCount=200&SkipCount=0';
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
