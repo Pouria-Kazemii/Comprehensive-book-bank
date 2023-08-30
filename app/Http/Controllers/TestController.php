@@ -21,7 +21,7 @@ class TestController extends Controller
         var_dump($content);
 
     }
-    public function test_get_books_majma(){
+    public function test_get_books_majma($from,$to){
         
         $arrContextOptions=array(
             "ssl"=>array(
@@ -30,7 +30,8 @@ class TestController extends Controller
             ),
         );  
 
-        $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-08-18&To=2023-08-20';
+        // $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-02-13&To=2023-02-15';
+        $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From='.$from.'&To='.$to;
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
