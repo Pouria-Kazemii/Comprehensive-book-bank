@@ -56,8 +56,11 @@ Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 
 Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
-Route::get('test2_majma_api', [TestController::class, 'test2_majma_api']);
+Route::get('test_get_books_majma', [TestController::class, 'test_get_books_majma']);
 Route::get('test_get_book_id_majma/{book_id}', [TestController::class, 'test_get_book_id_majma']);
+Route::get('test_get_publishers_majma', [TestController::class, 'test_get_publishers_majma']);
+Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
+Route::get('test_get_authors_id_majma', [TestController::class, 'test_get_authors_id_majma']);
 
 
 
