@@ -32,7 +32,7 @@ class TestController extends Controller
 
         $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-08-18&To=2023-08-20';
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
-        var_dump($response);
+        die($response);
     }
 
     public function test_get_book_id_majma($book_id){
