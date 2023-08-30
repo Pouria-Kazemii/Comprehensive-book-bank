@@ -21,7 +21,7 @@ class TestController extends Controller
         var_dump($content);
 
     }
-    public function test_get_books_majma($from,$to){
+    public function test_get_books_majma($from_date,$to_date,$from,$result_count){
         
         $arrContextOptions=array(
             "ssl"=>array(
@@ -31,7 +31,7 @@ class TestController extends Controller
         );  
 
         // $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-02-13&To=2023-02-15';
-        $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From='.$from.'&To='.$to;
+        $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount='.$result_count.'&SkipCount='.$from.'&From='.$from_date.'&To='.$to_date;
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
@@ -52,7 +52,7 @@ class TestController extends Controller
 
  
 
-    public function test_get_publishers_majma(){
+    public function test_get_publishers_majma($from,$result_count){
         $arrContextOptions=array(
             "ssl"=>array(
                 "verify_peer"=>false,
@@ -61,7 +61,7 @@ class TestController extends Controller
         );  
 
 
-        $url = 'https://core.ketab.ir/api/Majma/get-publishers/?MaxResultCount=200&SkipCount=0';
+        $url = 'https://core.ketab.ir/api/Majma/get-publishers/?MaxResultCount='.$result_count.'&SkipCount='.$from;
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
@@ -80,7 +80,7 @@ class TestController extends Controller
         die($response);
     }
 
-     public function test_get_authors_id_majma(){
+     public function test_get_authors_majma($from,$result_count){
         $arrContextOptions=array(
             "ssl"=>array(
                 "verify_peer"=>false,
@@ -89,7 +89,7 @@ class TestController extends Controller
         );  
 
 
-        $url = 'https://core.ketab.ir/api/Majma/get-authors/?MaxResultCount=200&SkipCount=0';
+        $url = 'https://core.ketab.ir/api/Majma/get-authors/?MaxResultCount='.$result_count.'&SkipCount='.$from;
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
