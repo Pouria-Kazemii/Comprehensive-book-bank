@@ -26,10 +26,10 @@ class ErshadBookImport implements ToModel, WithHeadingRow
             'xpage_number'=>$row['mojavez_chap_tedad_safhe'],
             'xmoalefin'=>$row['mojavez_chap_moalefin'],
             'xmotarjemin'=>$row['mojavez_chap_motarjemin'],
-            'xdesc'=>$row['mojavez_chap_morafi_kotahe_asar'],
+            'xdesc'=>str_replace("􀀯","",$row['mojavez_chap_morafi_kotahe_asar']),
             'xformat'=>$row['mojavez_chap_ghateh'],
-            'xgerdavarande'=>$row['mojavez_chap_gerdavarandeh'],
-            'xpadidavarande'=>$row['mojavez_chap_padidavarandeh'],
+            'xgerdavarande'=>str_replace("􀀯","",$row['mojavez_chap_gerdavarandeh']),
+            'xpadidavarande'=>str_replace("􀀯","",$row['mojavez_chap_padidavarandeh']),
         ]);
     }
 }
