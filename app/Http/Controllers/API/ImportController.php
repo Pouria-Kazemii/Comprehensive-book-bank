@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\ErshadBookRequest;
+use App\Http\Requests\UnallowableBookRequest;
 use App\Http\Controllers\Controller;
 use App\Imports\ErshadBookImport;
+use App\Imports\UnallowableBookImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
@@ -23,6 +25,13 @@ class ImportController extends Controller
     public function importErshadBooks(ErshadBookRequest $request){
         set_time_limit(0);
         Excel::import(new ErshadBookImport, $request->file('File')->store('public/excel'));
+        return 'true';
+
+    }
+
+    public function importUnallowableBooks(UnallowableBookRequest $request){
+        set_time_limit(0);
+        Excel::import(new UnallowableBookImport, $request->file('File')->store('public/excel'));
         return 'true';
 
     }
