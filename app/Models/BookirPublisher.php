@@ -17,4 +17,5 @@ class BookirPublisher extends Model
     {
         return $this->belongsToMany(BookirBook::class,'bi_book_bi_publisher','bi_publisher_xid','bi_book_xid');
     }
+    
 }

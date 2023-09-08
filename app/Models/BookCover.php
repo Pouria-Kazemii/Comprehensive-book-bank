@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class BookCover extends Model
 {
     use HasFactory;
+    protected $fillable = ['id', 'name'];
     protected $table = 'book_covers';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
+
+
 
 }

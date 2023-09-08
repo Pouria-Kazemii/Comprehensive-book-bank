@@ -35,12 +35,13 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             }else{
                 $report[$key]->fileSize = 'ناموجود';
             }
+            $report[$key]->recordNumber = 'https://taaghche.com/book/'.$item->recordNumber;
         }
         return $report;
     }
 
     public function headings(): array
     {
-        return ["آیدی کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت"];
+        return ["لینک کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت"];
     }
 }

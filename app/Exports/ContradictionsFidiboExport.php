@@ -31,12 +31,14 @@ class ContradictionsFidiboExport implements FromCollection,WithHeadings
             }else{
                 $report[$key]->fileSize = 'چاپی';
             }
+            $report[$key]->recordNumber = 'https://fidibo.com/book/'.$item->recordNumber;
+
         }
         return $report;
     }
 
     public function headings(): array
     {
-        return ["آیدی کتاب در فیدیبو", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی"];
+        return ["لینک کتاب در فیدیبو", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی"];
     }
 }

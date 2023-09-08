@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BookirSubject extends Model
+class MajmaApiBook extends Model
 {
-    protected $fillable = ['xid', 'xparentid', 'xsubject', 'xregdate', 'xhaschild', 'xsubjectname2', 'xisname'];
-    protected $table = 'bookir_subject';
+    use HasFactory;
+    protected $table = 'majma_api_books';
+    protected $fillable = ['xbook_id', 'xstatus'];
     protected $primaryKey = 'xid';
     public $timestamps = false;
 }

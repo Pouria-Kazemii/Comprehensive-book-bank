@@ -99,7 +99,6 @@ class GetFidibo extends Command
                 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
                 curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
                 curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-                curl_setopt($ch, CURLOPT_REFERER, 'http://www.google.com/');
                 $content = curl_exec($ch);
                 if (curl_errno($ch)) {
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
