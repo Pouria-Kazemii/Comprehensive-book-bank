@@ -11,5 +11,5 @@ class AgeGroup extends Model
     protected $table = 'age_group';
     protected $fillable = ['xbook_id', 'xa','xb','xg','xd','xh','xstatus'];
     protected $primaryKey = 'xid';
-    public $timestamps = false;
+    public $timestamps = true;
 }

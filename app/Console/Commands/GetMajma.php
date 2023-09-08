@@ -3,16 +3,19 @@
 namespace App\Console\Commands;
 
 use App\Models\AgeGroup;
+use App\Models\BookCover;
+use App\Models\BookFormat;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
 use App\Models\BookirPublisher;
+use App\Models\BookirRules;
 use App\Models\BookirSubject;
+use App\Models\BookLanguage;
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 use Goutte\Client;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpClient\HttpClient;
 
 class Getmajma extends Command
@@ -114,22 +117,30 @@ class Getmajma extends Command
                     ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                     $book_content = json_decode($book_content);
 
-                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->first();
+                    ///////////////////////////////////////////////// book language ////////////////////////////////////////////
+                    if(!is_null($book_content->language) AND !empty($book_content->language)){
+                        BookLanguage::firstOrCreate(array('name' => $book_content->language));
+                    }
+
+                    ///////////////////////////////////////////////// book format ////////////////////////////////////////////
+                    if(!is_null($book_content->sizeType) AND !empty($book_content->sizeType)){
+                        BookFormat::firstOrCreate(array('name' => $book_content->sizeType));
+                    }
+
+                    ///////////////////////////////////////////////// book cover ////////////////////////////////////////////
+                    if(!is_null($book_content->coverType) AND !empty($book_content->coverType)){
+                        BookCover::firstOrCreate(array('name' => $book_content->coverType));
+                    }
+                    
+
+                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+
+                    // book data
                     if (!is_null($book_content->bookType)) {
                         $is_translate = ($book_content->bookType == 'تالیف') ? 1 : 2;
                     } else {
                         $is_translate = (isset($bookIrBook->is_translate)) ? $bookIrBook->is_translate : 0;
                     }
-                    // '' => $book_content->id ,
-                    // '' => $book_content->publicationId ,
-                    // '' => $book_content->mainTitle ,
-                    // '' => $book_content->subjects ,
-                    // '' => $book_content->parentSubject ,
-                    // '' => $book_content->publisherTitle ,
-                    // '' => $book_content->publisherId ,
-                    // '' => $book_content->contentStatusId ,
-                    // '' => $book_content->ageGroup ,
-                    // '' => $book_content->authors ,
 
                     if (!is_null($book_content->isbn)) {
 
@@ -220,47 +231,39 @@ class Getmajma extends Command
                         }
                     }
 
-                    $book_data = array(
-                        'xpageurl' => 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber,
-                        'xpageurl2' => 'http://ketab.ir/bookview.aspx?bookid=' . $book_content->uniqueId,
-                        'xname' => (!is_null($book_content->title)) ? $book_content->title : $bookIrBook->xname,
-                        'xpagecount' => (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount,
-                        'xformat' => (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat,
-                        'xcover' => (!is_null($book_content->coverType)) ? $book_content->coverType : $bookIrBook->xcover,
-                        'xprintnumber' => (!is_null($book_content->printVersion)) ? $book_content->printVersion : $bookIrBook->xprintnumber,
-                        'xcirculation' => (!is_null($book_content->circulation)) ? $book_content->circulation : $bookIrBook->xcirculation,
-                        // 'xcovernumber'=> '', شماره جلد
-                        'xcovercount' => (!is_null($book_content->volumeCount)) ? $book_content->volumeCount : $bookIrBook->xcovercount,
-                        // 'xapearance'=> '',
-                        'xisbn' => (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn,
-                        'xisbn3' => (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : str_replace("-", "", $bookIrBook->xisbn),
-                        'xisbn2' => (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2,
-                        'xpublishdate' => (!is_null($book_content->issueYear)) ? $book_content->issueYear . '/01/01' : $bookIrBook->xpublishdate,
-                        'xcoverprice' => (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice,
-                        // 'xminprice'=>'',
-                        // 'xcongresscode'=>'',
-                        'xdiocode' => (!is_null($book_content->dewey)) ? $book_content->dewey : $bookIrBook->xdiocode,
-                        'xlang' => (!is_null($book_content->language)) ? $book_content->language : $bookIrBook->xlang,
-                        'xpublishplace' => (!is_null($book_content->publishPlace)) ? $book_content->publishPlace : $bookIrBook->xpublishplace,
-                        'xdescription' => (!is_null($book_content->abstract)) ? $book_content->abstract : $bookIrBook->xdescription,
-                        // 'xweight'=>'',
-                        'ximgeurl' => (!is_null($book_content->imageAddress)) ? $book_content->imageAddress : $bookIrBook->ximgeurl,
-                        'xpdfurl' => (!is_null($book_content->pdfAddress)) ? $book_content->pdfAddress : $bookIrBook->xpdfurl,
-                        'xregdate' => time(),
-                        'is_translate' => $is_translate,
-                    );
+                    $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
+                    $bookIrBook->xpageurl2 = 'http://ketab.ir/bookview.aspx?bookid=' . $book_content->uniqueId;
+                    $bookIrBook->xname = (!is_null($book_content->title)) ? $book_content->title : $bookIrBook->xname;
+                    $bookIrBook->xpagecount = (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount;
+                    $bookIrBook->xformat = (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat;
+                    $bookIrBook->xcover = (!is_null($book_content->coverType)) ? $book_content->coverType : $bookIrBook->xcover;
+                    $bookIrBook->xprintnumber = (!is_null($book_content->printVersion)) ? $book_content->printVersion : $bookIrBook->xprintnumber;
+                    $bookIrBook->xcirculation = (!is_null($book_content->circulation)) ? $book_content->circulation : $bookIrBook->xcirculation;
+                    // 'xcovernumber'=> '' ; شماره جلد
+                    $bookIrBook->xcovercount = (!is_null($book_content->volumeCount)) ? $book_content->volumeCount : $bookIrBook->xcovercount;
+                    // 'xapearance'=> '' ;
+                    $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
+                    $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : str_replace("-", "", $bookIrBook->xisbn);
+                    $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
+                    $bookIrBook->xpublishdate = (!is_null($book_content->issueYear)) ? $book_content->issueYear . '/01/01' : $bookIrBook->xpublishdate;
+                    $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
+                    // 'xminprice'=>'' ;
+                    // 'xcongresscode'=>'' ;
+                    $bookIrBook->xdiocode = (!is_null($book_content->dewey)) ? $book_content->dewey : $bookIrBook->xdiocode;
+                    $bookIrBook->xlang = (!is_null($book_content->language)) ? $book_content->language : $bookIrBook->xlang;
+                    $bookIrBook->xpublishplace = (!is_null($book_content->publishPlace)) ? $book_content->publishPlace : $bookIrBook->xpublishplace;
+                    $bookIrBook->xdescription = (!is_null($book_content->abstract)) ? $book_content->abstract : $bookIrBook->xdescription;
+                    // 'xweight'=>'' ;
+                    $bookIrBook->ximgeurl = (!is_null($book_content->imageAddress)) ? $book_content->imageAddress : $bookIrBook->ximgeurl;
+                    $bookIrBook->xpdfurl = (!is_null($book_content->pdfAddress)) ? $book_content->pdfAddress : $bookIrBook->xpdfurl;
+                    $bookIrBook->xregdate = time();
+                    $bookIrBook->is_translate = $is_translate;
 
-                    DB::enableQueryLog();
-
-                    if ($bookIrBook == null) {
-                        BookirBook::create($book_data);
-                    } else {
-                        BookirBook::where('xid', $bookIrBook->xid)->update($book_data);
-                    }
+                    $bookIrBook->save();
                     $this->info('$bookIrBook->xid : ');
                     $this->info($bookIrBook->xid);
 
-                    //////////////////////////////////////////////////////// publisher data /////////////////////////////////////////
+                    //////////////////////////////////////////////// publisher data /////////////////////////////////////////
                     $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_publisher_id_majma/' . $book_content->publisherId;
                     $ch = curl_init($url);
@@ -281,10 +284,9 @@ class Getmajma extends Command
                     } else {
                         MajmaApiPublisher::create(['xpublisher_id' => $book_content->publisherId, 'xstatus' => '200']);
                         $publisher_content = json_decode($publisher_content);
-                        // $this->info($publisher_content);
-                        $bookIrPublisher = BookirPublisher::where('xpageurl', 'http://ketab.ir//Publisherview.aspx?Publisherid=' . $publisher_content->id)->orWhere('xpageurl2', $publisher_content->url)->first();
+                        $bookIrPublisher = BookirPublisher::where('xpageurl', 'http://ketab.ir//Publisherview.aspx?Publisherid=' . $publisher_content->id)->orWhere('xpageurl2', $publisher_content->url)->firstOrNew();
 
-                        if ($bookIrPublisher == null) {$bookIrPublisher = new BookirPublisher;}
+                        // publisher data
                         $publisher_manager = '';
                         $publisher_manager .= (!is_null($publisher_content->managerFirstName)) ? $publisher_content->managerFirstName : '';
                         $publisher_manager .= (!is_null($publisher_content->managerLastName)) ? ' ' . $publisher_content->managerLastName : '';
@@ -312,103 +314,112 @@ class Getmajma extends Command
                         $bookIrPublisher->ximageurl = (!is_null($publisher_content->image)) ? $publisher_content->image : $bookIrPublisher->ximageurl;
                         $bookIrPublisher->xregdate = time();
                         $bookIrPublisher->xpublishername2 = str_replace(" ", "", $publisher_content->title);
-                        $bookIrPublisher->xisname =  (!is_null($publisher_content->title)) ? 1 : 0;
+                        $bookIrPublisher->xisname = (!is_null($publisher_content->title)) ? 1 : 0;
 
                         $bookIrPublisher->save();
                         $this->info('$bookIrPublisher->xid');
                         $this->info($bookIrPublisher->xid);
+
+                        if (isset($bookIrPublisher->xid) and !empty($bookIrPublisher->xid)) {
+                            $bookIrBook->publishers()->sync($bookIrPublisher->xid);
+                        }
                     }
-                    ///////////////////////////////////////////////////////partner data /////////////////////////////////////////////////
+
+                    //////////////////////////////////////////////// partner data /////////////////////////////////////////////////
+                    unset($partner_array);
                     if (!is_null($book_content->authors)) {
-                        foreach ($book_content->authors as $author) {
-                            $author_name = explode("،", $author->title);
-                            $partner_data = array(
-                                'xcreatorname' => $author_name['1'] . '' . $author_name['0'],
-                                'xname2' => $author_name['1'] . $author_name['0'],
-                                'xketabir_id' => $author->id,
-                                'xregdate' => time(),
-                            );
-                            $partner_current_info = BookirPartner::where('xketabir_id', $author->id)->first();
-                            if ($partner_current_info != null and count($partner_current_info) > 0) {
-                                BookirPartner::where('xid', $partner_current_info->xid)->update($partner_data);
+                        foreach ($book_content->authors as $author_key => $author) {
 
-                            } else {
-                                BookirPartner::create($partner_data);
+                            $BookirPartner = BookirPartner::where('xketabir_id', $author->id)->firstOrNew();
+                            // partner data
+                            $this->info('mb_strpos : '.$author->title);
+                            $this->info(mb_strpos($author->title,"،"));
+                            if(mb_strpos($author->title,"،")>0){
+                                $author_name = explode("،", $author->title);
+                                $BookirPartner->xcreatorname = $author_name['1'] . ' ' . $author_name['0'];
+                                $BookirPartner->xname2 = $author_name['1'] . $author_name['0'];
+                            }else{
+                                $BookirPartner->xcreatorname = $author->title;
+                                $BookirPartner->xname2 = $author->title;
                             }
+                           
+                            $BookirPartner->xketabir_id = $author->id;
+                            $BookirPartner->xregdate = time();
+
+                            $BookirPartner->save();
+
+                            $BookirRules = BookirRules::where('xrole', $author->role)->first();
+                            //rule data
+                            if (empty($BookirRules)) {
+                                $roleData = array(
+                                    'xrole' => $author->role,
+                                    'xregdate' => time(),
+                                );
+                                BookirRules::create($roleData);
+                                $BookirRules = BookirRules::where('xrole', $author->role)->first();
+                            }
+
+                            $partner_array[$author_key]['xcreatorid'] = $BookirPartner->xid;
+                            $partner_array[$author_key]['xroleid'] = $BookirRules->xid;
+
+                            $this->info('$BookirPartner->xid');
+                            $this->info($BookirPartner->xid);
+                        }
+
+                        if (isset($partner_array) and !empty($partner_array)) {
+                            $bookIrBook->partnersRoles()->sync($partner_array);
                         }
                     }
-                    ///////////////////////////////////////////////////subject data /////////////////////////////////////////////////////////
-                    if(!is_null($book_content->parentSubject)){
-                        $subject_data = array(
-                            'xsubject' => $book_content->parentSubject,
-                            'xsubjectname2' => str_replace(" ", "", $book_content->parentSubject),
-                            'xregdate' => time(),
-                        );
-                        $subject_current_info = BookirSubject::where('xsubject', $book_content->parentSubject)->first();
-                        if ($subject_current_info != null) {
-                            BookirSubject::where('xsubject', $book_content->parentSubject)->update($subject_data);
 
-                        } else {
-                            BookirSubject::create($subject_data);
-                        }
+                    //////////////////////////////////////////////// subject data /////////////////////////////////////////////////////////
+                    unset($subjects_array);
+                    if (!is_null($book_content->parentSubject)) {
+
+                        $BookirSubject = BookirSubject::where('xsubject', $book_content->parentSubject)->firstOrNew();
+                        $BookirSubject->xsubject = $book_content->parentSubject;
+                        $BookirSubject->xsubjectname2 = str_replace(" ", "", $book_content->parentSubject);
+                        $BookirSubject->xregdate = time();
+
+                        $BookirSubject->save();
+                        $subjects_array[] = $BookirSubject->xid;
+                        $this->info('$BookirSubject->xid');
+                        $this->info($BookirSubject->xid);
                     }
 
                     if (!is_null($book_content->subjects)) {
                         foreach ($book_content->subjects as $subject) {
-                            $subject_data = array(
-                                'xsubject' => $subject,
-                                'xsubjectname2' => str_replace(" ", "", $subject),
-                                'xregdate' => time(),
-                            );
-                            $subject_current_info = BookirSubject::where('xsubject', $subject)->first();
-                            if ($subject_current_info != null) {
-                                BookirSubject::where('xsubject', $subject)->update($subject_data);
+                            $BookirSubject = BookirSubject::where('xsubject', $subject)->firstOrNew();
+                            $BookirSubject->xsubject = $subject;
+                            $BookirSubject->xsubjectname2 = str_replace(" ", "", $subject);
+                            $BookirSubject->xregdate = time();
 
-                            } else {
-                                BookirSubject::create($subject_data);
-                            }
+                            $BookirSubject->save();
+                            $this->info('$BookirSubject->xid');
+                            $this->info($BookirSubject->xid);
+                            $subjects_array[] = $BookirSubject->xid;
                         }
                     }
 
-                    ////////////////////////////////////////////////age group////////////////////////////////////////////////////////////////
+                    if (isset($subjects_array) and !empty($subjects_array)) {
+                        $bookIrBook->subjects()->sync($subjects_array);
+                    }
+
+                    //////////////////////////////////////////////// age group////////////////////////////////////////////////////////////////
+                    unset($ageGroup_array);
                     if (!is_null($book_content->ageGroup)) {
-                        if ($book_content->ageGroup->a == true) {
-                            $ageGroupData['xa'] = 1;
+                        ($book_content->ageGroup->a == true) ? $ageGroup_array['xa'] = 1 : $ageGroup_array['xa'] = 0;
+                        ($book_content->ageGroup->b == true) ? $ageGroup_array['xb'] = 1 : $ageGroup_array['xb'] = 0;
+                        ($book_content->ageGroup->g == true) ? $ageGroup_array['xg'] = 1 : $ageGroup_array['xg'] = 0;
+                        ($book_content->ageGroup->d == true) ? $ageGroup_array['xd'] = 1 : $ageGroup_array['xd'] = 0;
+                        ($book_content->ageGroup->h == true) ? $ageGroup_array['xh'] = 1 : $ageGroup_array['xh'] = 0;
+
+                        if (isset($ageGroup_array) and !empty($ageGroup_array)) {
+                            AgeGroup::updateOrCreate(
+                                ['xbook_id' => $bookIrBook->xid],
+                                $ageGroup_array
+                            );
                         }
-
-                        if ($book_content->ageGroup->b == true) {
-                            $ageGroupData['xb'] = 1;
-                        }
-
-                        if ($book_content->ageGroup->g == true) {
-                            $ageGroupData['xg'] = 1;
-                        }
-
-                        if ($book_content->ageGroup->d == true) {
-                            $ageGroupData['xd'] = 1;
-                        }
-
-                        if ($book_content->ageGroup->h == true) {
-                            $ageGroupData['xh'] = 1;
-                        }
-
-                        // $age_group_info = AgeGroup::where('xbook_id', ???)->first();
-                        // if ($age_group_info != null) {
-                        //     AgeGroup::where('xbook_id', ???)->update($ageGroupData);
-
-                        // } else {
-                        //     AgeGroup::create($ageGroupData);
-                        // }
-
-
                     }
-
-                    /////////////////////////////////////////////////////////////////////////////////////////////
-
-                    /* BookirBook::updateOrCreate(
-                ['name' => 'Rehan'],
-                ['age'=> 50]
-                );*/
 
                 }
 

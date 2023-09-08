@@ -9,5 +9,6 @@ class BookirSubject extends Model
 {
     protected $fillable = ['xid', 'xparentid', 'xsubject', 'xregdate', 'xhaschild', 'xsubjectname2', 'xisname'];
     protected $table = 'bookir_subject';
+    protected $primaryKey = 'xid';
     public $timestamps = false;
 }
