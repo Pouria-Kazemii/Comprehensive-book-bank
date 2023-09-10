@@ -223,7 +223,8 @@ class CronjobController extends Controller
     public function fast_fill_circulation_temp_table()
     {
 
-        BookirBook::with('publishers:xid', 'partnersRoles', 'children')->where('check_circulation', 0)->where('xparent', -1)->chunk(100, function ($books) {
+        die('stop');
+       /* BookirBook::with('publishers:xid', 'partnersRoles', 'children')->where('check_circulation', 0)->where('xparent', -1)->chunk(100, function ($books) {
             if (isset($books) and !empty($books)) {
                 foreach ($books as $book) {
                     //reset book circulation year record
@@ -342,12 +343,13 @@ class CronjobController extends Controller
                     });
                 }
             }
-        });
+        }); */
     }
 
     public function fill_publisher_circulation_temp_table() // start in 2022-11-20
     {
-        BookirPublisher::with('books')->chunk(10, function ($books_of_book_publishers) { // کتاب های ناشران کتاب
+        die('stop');
+       /* BookirPublisher::with('books')->chunk(10, function ($books_of_book_publishers) { // کتاب های ناشران کتاب
             if (isset($books_of_book_publishers) and !empty($books_of_book_publishers)) {
                 DB::transaction(function () use ($books_of_book_publishers) {
                     try {
@@ -385,6 +387,6 @@ class CronjobController extends Controller
                     }
                 });
             }
-        });
+        }); */
     }
 }
