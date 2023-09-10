@@ -81,7 +81,7 @@ class GetTaaghcheContradictionsList extends Command
                     $this->info($book_data->shabak);
                     $bookirbook_data = BookirBook::where('xisbn',$book_data->shabak)->orwhere('xisbn2',$book_data->shabak)->orWhere('xisbn3',$book_data->shabak)->first();
                     $ershad_book = ErshadBook::where('xisbn',$book_data->shabak)->first();
-                    if( $ershad_book->count() > 0 ||  $bookirbook_data->count() > 0){
+                    if( !empty($ershad_book) ||  !empty($bookirbook_data)){
                         $update_data = array(
                             'has_permit'=>1
                         );

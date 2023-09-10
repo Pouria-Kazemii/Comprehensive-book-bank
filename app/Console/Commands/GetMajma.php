@@ -90,8 +90,6 @@ class Getmajma extends Command
             $recordNumber = $startC;
 
             while ($recordNumber <= $endC) {
-                unset($filtered);
-
                 $timeout = 120;
                 $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
                 $ch = curl_init($url);
@@ -117,21 +115,23 @@ class Getmajma extends Command
                     ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                     $book_content = json_decode($book_content);
 
+                    $book_content->title = self::remove_half_space_from_string($book_content->title);
+                    $book_content->title = self::convert_arabic_char_to_persian($book_content->title);
+
                     ///////////////////////////////////////////////// book language ////////////////////////////////////////////
-                    if(!is_null($book_content->language) AND !empty($book_content->language)){
+                    if (!is_null($book_content->language) and !empty($book_content->language)) {
                         BookLanguage::firstOrCreate(array('name' => $book_content->language));
                     }
 
                     ///////////////////////////////////////////////// book format ////////////////////////////////////////////
-                    if(!is_null($book_content->sizeType) AND !empty($book_content->sizeType)){
+                    if (!is_null($book_content->sizeType) and !empty($book_content->sizeType)) {
                         BookFormat::firstOrCreate(array('name' => $book_content->sizeType));
                     }
 
                     ///////////////////////////////////////////////// book cover ////////////////////////////////////////////
-                    if(!is_null($book_content->coverType) AND !empty($book_content->coverType)){
+                    if (!is_null($book_content->coverType) and !empty($book_content->coverType)) {
                         BookCover::firstOrCreate(array('name' => $book_content->coverType));
                     }
-                    
 
                     $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
 
@@ -144,45 +144,9 @@ class Getmajma extends Command
 
                     if (!is_null($book_content->isbn)) {
 
-                        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                        $arabic = ['٩', '٨', '٧', '٦', '٥', '٤', '٣', '٢', '١', '٠'];
+                       $book_content->isbn = self::validateIsbn($book_content->isbn);
+                       $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
 
-                        $num = range(0, 9);
-                        $book_content->isbn = str_replace($persian, $num, $book_content->isbn);
-                        $book_content->isbn = str_replace($arabic, $num, $book_content->isbn);
-
-                        $book_content->isbn = trim($book_content->isbn, ' ');
-                        $book_content->isbn = rtrim($book_content->isbn, ' ');
-                        $book_content->isbn = ltrim($book_content->isbn, ' ');
-
-                        $book_content->isbn = trim($book_content->isbn, '');
-                        $book_content->isbn = rtrim($book_content->isbn, '');
-                        $book_content->isbn = ltrim($book_content->isbn, '');
-
-                        $book_content->isbn = trim($book_content->isbn, '.');
-                        $book_content->isbn = rtrim($book_content->isbn, '.');
-
-                        $book_content->isbn = ltrim($book_content->isbn, ',');
-                        $book_content->isbn = ltrim($book_content->isbn, ',');
-
-                        $book_content->isbn = ltrim($book_content->isbn, '.');
-                        $book_content->isbn = ltrim($book_content->isbn, '"');
-
-                        $book_content->isbn = str_replace(" ", "", $book_content->isbn);
-                        $book_content->isbn = str_replace(".", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("،", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("-", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("+", "", $book_content->isbn);
-
-                        $book_content->isbn = str_replace(",", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("،", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("#", "", $book_content->isbn);
-                        $book_content->isbn = str_replace('"', "", $book_content->isbn);
-
-                        $book_content->isbn = str_replace(",", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("،", "", $book_content->isbn);
-                        $book_content->isbn = str_replace("#", "", $book_content->isbn);
-                        $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
                         if (empty($isbn13)) {
                             $book_content->isbn = $isbn13;
                         }
@@ -190,42 +154,9 @@ class Getmajma extends Command
 
                     if (!is_null($book_content->isbn10)) {
 
-                        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-                        $arabic = ['٩', '٨', '٧', '٦', '٥', '٤', '٣', '٢', '١', '٠'];
+                        $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
+                        $isbn10 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
 
-                        $num = range(0, 9);
-                        $book_content->isbn10 = str_replace($persian, $num, $book_content->isbn10);
-                        $book_content->isbn10 = str_replace($arabic, $num, $book_content->isbn10);
-
-                        $book_content->isbn10 = trim($book_content->isbn10, ' ');
-                        $book_content->isbn10 = rtrim($book_content->isbn10, ' ');
-                        $book_content->isbn10 = ltrim($book_content->isbn10, ' ');
-
-                        $book_content->isbn10 = trim($book_content->isbn10, '');
-                        $book_content->isbn10 = rtrim($book_content->isbn10, '');
-                        $book_content->isbn10 = ltrim($book_content->isbn10, '');
-
-                        $book_content->isbn10 = trim($book_content->isbn10, '.');
-                        $book_content->isbn10 = rtrim($book_content->isbn10, '.');
-
-                        $book_content->isbn10 = ltrim($book_content->isbn10, ',');
-                        $book_content->isbn10 = ltrim($book_content->isbn10, ',');
-
-                        $book_content->isbn10 = ltrim($book_content->isbn10, '.');
-                        $book_content->isbn10 = ltrim($book_content->isbn10, '"');
-
-                        $book_content->isbn10 = str_replace(" ", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace(".", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace("،", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace("-", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace("+", "", $book_content->isbn10);
-
-                        $book_content->isbn10 = str_replace(",", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace("،", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace("#", "", $book_content->isbn10);
-                        $book_content->isbn10 = str_replace('"', "", $book_content->isbn10);
-
-                        $isbn10 = str_replace("-", "", str_replace("0", "", $book_content->isbn10));
                         if (empty($isbn10)) {
                             $book_content->isbn10 = $isbn10;
                         }
@@ -245,7 +176,7 @@ class Getmajma extends Command
                     $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
                     $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : str_replace("-", "", $bookIrBook->xisbn);
                     $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
-                    $bookIrBook->xpublishdate = (!is_null($book_content->issueYear)) ? $book_content->issueYear . '/01/01' : $bookIrBook->xpublishdate;
+                    $bookIrBook->xpublishdate = (!is_null($book_content->issueYear)) ? BookirBook::toGregorian($book_content->issueYear . '/01/01', '/', '-') : $bookIrBook->xpublishdate;
                     $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
                     // 'xminprice'=>'' ;
                     // 'xcongresscode'=>'' ;
@@ -284,6 +215,10 @@ class Getmajma extends Command
                     } else {
                         MajmaApiPublisher::create(['xpublisher_id' => $book_content->publisherId, 'xstatus' => '200']);
                         $publisher_content = json_decode($publisher_content);
+
+                        $publisher_content->title = self::remove_half_space_from_string($publisher_content->title);
+                        $publisher_content->title = self::convert_arabic_char_to_persian($publisher_content->title);
+
                         $bookIrPublisher = BookirPublisher::where('xpageurl', 'http://ketab.ir//Publisherview.aspx?Publisherid=' . $publisher_content->id)->orWhere('xpageurl2', $publisher_content->url)->firstOrNew();
 
                         // publisher data
@@ -331,18 +266,19 @@ class Getmajma extends Command
                         foreach ($book_content->authors as $author_key => $author) {
 
                             $BookirPartner = BookirPartner::where('xketabir_id', $author->id)->firstOrNew();
+                            $author->title = self::remove_half_space_from_string($author->title);
+                            $author->title = self::convert_arabic_char_to_persian($author->title);
+
                             // partner data
-                            $this->info('mb_strpos : '.$author->title);
-                            $this->info(mb_strpos($author->title,"،"));
-                            if(mb_strpos($author->title,"،")>0){
+                            if (mb_strpos($author->title, "،") > 0) {
                                 $author_name = explode("،", $author->title);
                                 $BookirPartner->xcreatorname = $author_name['1'] . ' ' . $author_name['0'];
-                                $BookirPartner->xname2 = $author_name['1'] . $author_name['0'];
-                            }else{
+                                $BookirPartner->xname2 = str_replace(" ", "", $BookirPartner->xcreatorname);
+                            } else {
                                 $BookirPartner->xcreatorname = $author->title;
-                                $BookirPartner->xname2 = $author->title;
+                                $BookirPartner->xname2 = str_replace(" ", "", $author->title);
                             }
-                           
+
                             $BookirPartner->xketabir_id = $author->id;
                             $BookirPartner->xregdate = time();
 
@@ -375,6 +311,9 @@ class Getmajma extends Command
                     unset($subjects_array);
                     if (!is_null($book_content->parentSubject)) {
 
+                        $book_content->parentSubject = self::remove_half_space_from_string($book_content->parentSubject);
+                        $book_content->parentSubject = self::convert_arabic_char_to_persian($book_content->parentSubject);
+
                         $BookirSubject = BookirSubject::where('xsubject', $book_content->parentSubject)->firstOrNew();
                         $BookirSubject->xsubject = $book_content->parentSubject;
                         $BookirSubject->xsubjectname2 = str_replace(" ", "", $book_content->parentSubject);
@@ -388,6 +327,9 @@ class Getmajma extends Command
 
                     if (!is_null($book_content->subjects)) {
                         foreach ($book_content->subjects as $subject) {
+                            $subject = self::remove_half_space_from_string($subject);
+                            $subject = self::convert_arabic_char_to_persian($subject);
+
                             $BookirSubject = BookirSubject::where('xsubject', $subject)->firstOrNew();
                             $BookirSubject->xsubject = $subject;
                             $BookirSubject->xsubjectname2 = str_replace(" ", "", $subject);
@@ -432,4 +374,69 @@ class Getmajma extends Command
             $bar->finish();
         }
     }
+
+    public static function convert_arabic_char_to_persian($string)
+    {
+        $string = str_replace("ي", "ی", $string);
+        $string = str_replace("ك", "ک", $string);
+        $string = str_replace("ة", "ه", $string);
+        return $string;
+    }
+
+    /*  delete name space */
+    public static function remove_half_space_from_string($string)
+    {
+        $string = urlencode($string);
+        $string = str_replace('%E2%80%8C', ' ', $string);
+        $string = urldecode($string);
+        return $string;
+    }
+
+    public static function convert_arabic_num_to_english($string)
+    {
+        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        $arabic = ['٩', '٨', '٧', '٦', '٥', '٤', '٣', '٢', '١', '٠'];
+
+        $num = range(0, 9);
+        $convertedPersianNums = str_replace($persian, $num, $string);
+        $englishNumbersOnly = str_replace($arabic, $num, $convertedPersianNums);
+
+        return $englishNumbersOnly;
+    }
+
+    public static function validateIsbn($isbn) //correction  isbn
+    {
+        $isbn = self::convert_arabic_num_to_english($isbn);
+        $isbn = trim($isbn, ' ');
+        $isbn = rtrim($isbn, ' ');
+        $isbn = ltrim($isbn, ' ');
+
+        $isbn = trim($isbn, '');
+        $isbn = rtrim($isbn, '');
+        $isbn = ltrim($isbn, '');
+
+        $isbn = trim($isbn, '.');
+        $isbn = rtrim($isbn, '.');
+
+        $isbn = ltrim($isbn, ',');
+        $isbn = ltrim($isbn, ',');
+
+        $isbn = ltrim($isbn, '.');
+        $isbn = ltrim($isbn, '"');
+
+        $isbn = str_replace(" ", "", $isbn);
+        $isbn = str_replace(".", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        $isbn = str_replace("-", "", $isbn);
+        $isbn = str_replace("+", "", $isbn);
+
+        $isbn = str_replace(",", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        $isbn = str_replace("#", "", $isbn);
+        $isbn = str_replace('"', "", $isbn);
+
+        $isbn = str_replace("-", "", str_replace("0", "", $isbn));
+        return $isbn;
+    }
+
 }

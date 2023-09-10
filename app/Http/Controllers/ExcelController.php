@@ -134,12 +134,13 @@ class ExcelController extends Controller
 
     public function exportExcelContradictionsFidibo($status)
     {
-        
+        set_time_limit(0);
         return Excel::download(new ContradictionsFidiboExport($status), 'لیست مغایرت فدیبو' . time() . '.xlsx');
     }
 
     public function exportExcelContradictionsTaaghche($status)
     {
+        set_time_limit(0);
         return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
     }
 
