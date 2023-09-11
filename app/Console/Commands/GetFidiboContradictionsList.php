@@ -6,11 +6,7 @@ use App\models\BookFidibo;
 use App\Models\BookirBook;
 use App\Models\Crawler as CrawlerM;
 use App\Models\ErshadBook;
-use Exception;
-use Goutte\Client;
 use Illuminate\Console\Command;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\HttpClient\HttpClient;
 
 class GetFidiboContradictionsList extends Command
 {
@@ -76,28 +72,56 @@ class GetFidiboContradictionsList extends Command
         if (isset($newCrawler)) {
             $rowId = $startC;
             while ($rowId <= $endC) {
-                $book_data = BookFidibo::where('id',$rowId)->first();
-                if(isset($book_data->shabak) AND $book_data->shabak != NULL){
+                // bookirbook with ershad book
+                $book_data = BookFidibo::where('id', $rowId)->first();
+                if (isset($book_data->shabak) and $book_data->shabak != null) {
                     $this->info($book_data->shabak);
-                    $bookirbook_data = BookirBook::where('xisbn',$book_data->shabak)->orwhere('xisbn2',$book_data->shabak)->orWhere('xisbn3',$book_data->shabak)->first();
-                    $ershad_book = ErshadBook::where('xisbn',$book_data->shabak)->first();
-                    if( !empty($ershad_book) ||  !empty($bookirbook_data)){
+                    $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
+                    $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
+                    if (!empty($ershad_book) || !empty($bookirbook_data)) {
                         $update_data = array(
-                            'has_permit'=>1
+                            'has_permit' => 1,
                         );
-                    }else{
+                    } else {
                         $update_data = array(
-                            'has_permit'=>2
+                            'has_permit' => 2,
                         );
                     }
-                }else{
+                } else {
                     $this->info('row no isbn');
                     $update_data = array(
-                        'has_permit'=>3
+                        'has_permit' => 3,
                     );
                 }
 
-                BookFidibo::where('id',$rowId)->update($update_data);
+                BookFidibo::where('id', $rowId)->update($update_data);
+
+                /*
+                //  unallowable_book
+                $book_data = UnallowableBook::where('xid',$rowId)->first();
+                $this->info($rowId);
+                $this->info($book_data->xtitle);
+                $fidibo = BookFidibo::select('id');
+                if(!empty($book_data->xtitle)){
+                $fidibo->where('title','LIKE','%'.$book_data->xtitle.'%');
+                }
+                if(!empty($book_data->xauthor)){
+                $fidibo->where('partnerArray','LIKE', '%{"roleId":1,"name":"'.$book_data->xauthor.'"}%');
+                }
+                if(!empty($book_data->xpublisher_name)){
+                $fidibo->where('nasher','LIKE','%'.$book_data->xpublisher_name);
+                }
+                if(!empty($book_data->xtranslator)){
+                $fidibo->where('partnerArray','LIKE','%{"roleId":2,"name":"'.$book_data->xtranslator.'"}%');
+                }
+                $fidibo_book = $fidibo->first();
+                if(isset($fidibo_book) AND !empty($fidibo_book)){
+                $update_data = array(
+                'has_permit'=>2
+                );
+                BookFidibo::where('id',$fidibo_book->id)->update($update_data);
+                }*/
+
                 $rowId++;
 
             }
