@@ -73,27 +73,30 @@ class GetTaaghcheContradictionsList extends Command
             $rowId = $startC;
             while ($rowId <= $endC) {
                 $book_data = BookTaaghche::where('id', $rowId)->first();
-                if (isset($book_data->shabak) and $book_data->shabak != null) {
-                    $this->info($book_data->shabak);
-                    $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
-                    $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
-                    if (!empty($ershad_book) || !empty($bookirbook_data)) {
-                        $update_data = array(
-                            'has_permit' => 1,
-                        );
+                if(isset($book_data) AND !empty($book_data)){
+                    if (isset($book_data->shabak) and $book_data->shabak != null) {
+                        $this->info($book_data->shabak);
+                        $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
+                        $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
+                        if (!empty($ershad_book) || !empty($bookirbook_data)) {
+                            $update_data = array(
+                                'has_permit' => 1,
+                            );
+                        } else {
+                            $update_data = array(
+                                'has_permit' => 2,
+                            );
+                        }
                     } else {
+                        $this->info('row no isbn');
                         $update_data = array(
-                            'has_permit' => 2,
+                            'has_permit' => 3,
                         );
                     }
-                } else {
-                    $this->info('row no isbn');
-                    $update_data = array(
-                        'has_permit' => 3,
-                    );
+    
+                    BookTaaghche::where('id', $rowId)->update($update_data);
                 }
-
-                BookTaaghche::where('id', $rowId)->update($update_data);
+               
 
                 /*
                 //  unallowable_book
