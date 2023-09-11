@@ -20,7 +20,7 @@ class ContradictionsFidiboExport implements FromCollection,WithHeadings
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookFidibo::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize')->where('saleNashr','<','1400/01/01')->where('title','!=',NULL)->where('bookfidibo.has_permit',  $status)->get();
+        $report = BookFidibo::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize')->where('saleNashr','<','1400/01/01')->where('title','!=',NULL)->where('has_permit',  $status)->get();
         foreach($report as $key=>$item){
             if($item->translate == 1 ){
                 $report[$key]->translate = 'ترجمه';
