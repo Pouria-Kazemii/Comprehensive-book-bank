@@ -79,15 +79,16 @@ class CronjobController extends Controller
     }
     public function fill_circulation_temp_table()
     {
+        die('stop');
         // echo 'start : ' . date("Y/m/d H:i:s");
-        $books = BookirBook::where('check_circulation', 0)->limit(1)->get();
+       /* $books = BookirBook::where('check_circulation', 0)->limit(1)->get();
         if (isset($books) and !empty($books)) {
             foreach ($books as $book) {
                 $this->check_book_circulation($book->xid);
                 $book->check_circulation = 1;
                 $book->update();
             }
-        }
+        }*/
         // echo 'end : ' . date("Y/m/d H:i:s");
 
     }
