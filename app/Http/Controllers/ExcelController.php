@@ -13,6 +13,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ContradictionsFidiboExport;
 use App\Exports\ContradictionsTaaghcheExport;
 use App\Exports\ContradictionsDigiExport;
+use App\Exports\ContradictionsIranketabExport;
+use App\Exports\Contradictions30bookExport;
 
 class ExcelController extends Controller
 {
@@ -147,6 +149,14 @@ class ExcelController extends Controller
     public function exportExcelContradictionsDigi($status)
     {
         return Excel::download(new ContradictionsDigiExport($status), 'لیست مغایرت دیجیکالا' . time() . '.xlsx');
+    }
+    public function exportExcelContradictionsIranketab($status)
+    {
+        return Excel::download(new ContradictionsIranketabExport($status), 'لیست مغایرت ایرانکتاب' . time() . '.xlsx');
+    }
+    public function exportExcelContradictions30book($status)
+    {
+        return Excel::download(new Contradictions30bookExport($status), 'لیست مغایرت 30book' . time() . '.xlsx');
     }
 
 
