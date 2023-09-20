@@ -59,9 +59,13 @@ class GetDigi extends Command
         }else{
             try{
                 $lastCrawler = CrawlerM::where('type',5)->orderBy('end', 'desc')->first();
-                if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-                else $startC=1;
-                $endC   = $startC;
+                if (isset($lastCrawler->end)) {
+                    $startC = $lastCrawler->end + 1;
+                } else {
+                    $startC = 1;
+                }
+                $endC = $startC + CrawlerM::$crawlerSize;
+
                 $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-digi-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>5));
             }catch (\Exception $e){
@@ -74,166 +78,166 @@ class GetDigi extends Command
 
             $bar = $this->output->createProgressBar(36);
             $bar->start();
+            $recordNumber = $startC;
 
-            try {
-                $pageUrl ='https://www.digikala.com/ajax/search/category-book/?pageno='.$startC.'&sortby=1';
-                $this->info(" \n ---------- Page URL  ".$pageUrl."              ---------=-- ");
-                $json = file_get_contents($pageUrl);
-                $headers = get_headers($pageUrl);
-                $status_code= substr($headers[0], 9, 3);
-            } catch (\Exception $e) {
-                $crawler = null;
-                $status_code = 500;
-                //$this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
-            }
-            $this->info(" \n ---------- STATUS Get  ".$status_code."              ---------=-- ");
+            while ($recordNumber <= $endC) {
 
-            if($status_code == "200"){
+                try {
+                    $pageUrl ='https://www.digikala.com/ajax/search/category-book/?pageno='.$startC.'&sortby=1';
+                    $this->info(" \n ---------- Page URL  ".$pageUrl."              ---------=-- ");
+                    $json = file_get_contents($pageUrl);
+                    $headers = get_headers($pageUrl);
+                    $status_code= substr($headers[0], 9, 3);
+                } catch (\Exception $e) {
+                    $crawler = null;
+                    $status_code = 500;
+                    //$this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                }
+                $this->info(" \n ---------- STATUS Get  ".$status_code."              ---------=-- ");
 
-                $recordNumber = $startC;
-                $products_all = json_decode($json);
-                foreach($products_all->data->trackerData->products as $pp){
-                    
-                    $productUrl="https://api.digikala.com/v1/product/".$pp->product_id."/";
-                    try {
-                        $this->info(" \n ---------- Try Get BOOK        ".$pp->product_id."       ---------- ");
-                        $json = file_get_contents($productUrl);
-                        $product_info =  json_decode($json);
-                        $headers = get_headers($pageUrl);
-                        $status_code= $product_info->status;
-                    } catch (\Exception $e) {
-                        $crawler = null;
-                        $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  ".$pp->product_id."              ---------=-- ");
-                    }
+                if($status_code == "200"){
 
-                    if($status_code == 200 ){
-                       $this->info('ok');
-                        $bookDigi = BookDigi::where('recordNumber','dkp-'.$product_info->data->product->id)->firstOrNew();
-                        $bookDigi->recordNumber = 'dkp-'.$product_info->data->product->id;
-                        $this->info('title_fa : '.$product_info->data->product->title_fa);
-
-                        $bookDigi->title = str_replace('کتاب','',$product_info->data->product->title_fa);
-
-                        // اثرمرکب
-                        /*if(mb_strpos($bookDigi->title,'اثر') > 0){
-                            $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'اثر'), "UTF-8");
+                    $recordNumber = $startC;
+                    $products_all = json_decode($json);
+                    foreach($products_all->data->trackerData->products as $pp){
+                        
+                        $productUrl="https://api.digikala.com/v1/product/".$pp->product_id."/";
+                        try {
+                            $this->info(" \n ---------- Try Get BOOK        ".$pp->product_id."       ---------- ");
+                            $json = file_get_contents($productUrl);
+                            $product_info =  json_decode($json);
+                            $headers = get_headers($pageUrl);
+                            $status_code= $product_info->status;
+                        } catch (\Exception $e) {
+                            $crawler = null;
+                            $status_code = 500;
+                            $this->info(" \n ---------- Failed Get  ".$pp->product_id."              ---------=-- ");
                         }
-                        if(mb_strpos($bookDigi->title,'نشر')){
-                            $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'نشر'), "UTF-8");
-                        }
-                        if(mb_strpos($bookDigi->title,'انتشارات')){
-                            $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'انتشارات'), "UTF-8");
-                        }
-                        if(mb_strpos($bookDigi->title,'جلد')){
-                            $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'جلد'), "UTF-8");
-                        }
-                        if(mb_strpos($bookDigi->title,'چاپ')){
-                            $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'چاپ'), "UTF-8");
-                        }*/
 
-                        $this->info($bookDigi->title);
-                        $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
-                        $this->info($bookDigi->title);
-                        $bookDigi->rate = $product_info->data->product->rating->rate/20;
-                        $image_str = '';
-                        foreach($product_info->data->product->images->list as $image){
-                            $image_str .= $image->webp_url['0'].'#';
-                        }
-                        $bookDigi->images = $image_str;
-                        $authorsobj= array();
-                        if($product_info->data->product->specifications['0']->title == 'مشخصات'){
-                            foreach($product_info->data->product->specifications['0']->attributes as $attribute){
-                               
-                                if($attribute->title == 'نویسنده'){
-                                    $authorsobj = Author::firstOrCreate(array("d_name" => $attribute->values['0']));
+                        if($status_code == 200 ){
+                            $bookDigi = BookDigi::where('recordNumber','dkp-'.$product_info->data->product->id)->firstOrNew();
+                            $bookDigi->recordNumber = 'dkp-'.$product_info->data->product->id;
 
-                                }
-                                if($attribute->title == 'مترجم'){
-                                    $bookDigi->partnerArray = $attribute->values['0'];
-                                }
+                            $bookDigi->title = str_replace('کتاب','',$product_info->data->product->title_fa);
+
+                            // اثرمرکب
+                            /*if(mb_strpos($bookDigi->title,'اثر') > 0){
+                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'اثر'), "UTF-8");
+                            }
+                            if(mb_strpos($bookDigi->title,'نشر')){
+                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'نشر'), "UTF-8");
+                            }
+                            if(mb_strpos($bookDigi->title,'انتشارات')){
+                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'انتشارات'), "UTF-8");
+                            }
+                            if(mb_strpos($bookDigi->title,'جلد')){
+                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'جلد'), "UTF-8");
+                            }
+                            if(mb_strpos($bookDigi->title,'چاپ')){
+                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'چاپ'), "UTF-8");
+                            }*/
+
+                            $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
+                            $bookDigi->rate = $product_info->data->product->rating->rate/20;
+                            $image_str = '';
+                            foreach($product_info->data->product->images->list as $image){
+                                $image_str .= $image->webp_url['0'].'#';
+                            }
+                            $bookDigi->images = $image_str;
+                            $authorsobj= array();
+                            if($product_info->data->product->specifications['0']->title == 'مشخصات'){
+                                foreach($product_info->data->product->specifications['0']->attributes as $attribute){
                                 
-                                if($attribute->title == 'شابک'){
-                                    $bookDigi->shabak = self::validateIsbn($attribute->values['0']);
-                                }
-                                if($attribute->title == 'ناشر'){
-                                    $bookDigi->nasher = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'موضوع'){
-                                    $subject_str = '';
-                                    foreach($attribute->values as $value){
-                                        $subject_str .= $value .'#';
-                                    }
-                                    $bookDigi->subject = $subject_str;
+                                    if($attribute->title == 'نویسنده'){
+                                        $authorsobj = Author::firstOrCreate(array("d_name" => $attribute->values['0']));
 
-                                }
-                                if($attribute->title == 'قطع'){
-                                    $bookDigi->ghatechap = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'نوع جلد'){
-                                    $bookDigi->jeld = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'نوع کاغذ'){
-                                    $bookDigi->noekaghaz = $attribute->values['0'];
-                                }
-                                
-                                if($attribute->title == 'تعداد جلد'){
-                                    $bookDigi->count = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'تعداد صفحه'){
-                                    $bookDigi->tedadSafe = $attribute->values['0'];
-                                }
-                                $ageGroup_str ='';
-                                if($attribute->title == 'گروه سنی'){
-                                    foreach($attribute->values as $value){
-                                        $ageGroup_str .= $value .'#';
                                     }
-                                    $bookDigi->ageGroup = $ageGroup_str;
-                                }
-                                if($attribute->title == 'وزن'){
-                                    $bookDigi->vazn = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'رده‌بندی کتاب'){
-                                    $bookDigi->cat = $attribute->values['0'];
-                                }
-                                if($attribute->title == 'اقلام همراه' || $attribute->title =='سایر توضیحات'){
-                                    $bookDigi->features = $attribute->values['0'];
+                                    if($attribute->title == 'مترجم'){
+                                        $bookDigi->partnerArray = $attribute->values['0'];
+                                    }
                                     
+                                    if($attribute->title == 'شابک'){
+                                        $bookDigi->shabak = self::validateIsbn($attribute->values['0']);
+                                    }
+                                    if($attribute->title == 'ناشر'){
+                                        $bookDigi->nasher = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'موضوع'){
+                                        $subject_str = '';
+                                        foreach($attribute->values as $value){
+                                            $subject_str .= $value .'#';
+                                        }
+                                        $bookDigi->subject = $subject_str;
+
+                                    }
+                                    if($attribute->title == 'قطع'){
+                                        $bookDigi->ghatechap = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'نوع جلد'){
+                                        $bookDigi->jeld = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'نوع کاغذ'){
+                                        $bookDigi->noekaghaz = $attribute->values['0'];
+                                    }
+                                    
+                                    if($attribute->title == 'تعداد جلد'){
+                                        $bookDigi->count = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'تعداد صفحه'){
+                                        $bookDigi->tedadSafe = $attribute->values['0'];
+                                    }
+                                    $ageGroup_str ='';
+                                    if($attribute->title == 'گروه سنی'){
+                                        foreach($attribute->values as $value){
+                                            $ageGroup_str .= $value .'#';
+                                        }
+                                        $bookDigi->ageGroup = $ageGroup_str;
+                                    }
+                                    if($attribute->title == 'وزن'){
+                                        $bookDigi->vazn = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'رده‌بندی کتاب'){
+                                        $bookDigi->cat = $attribute->values['0'];
+                                    }
+                                    if($attribute->title == 'اقلام همراه' || $attribute->title =='سایر توضیحات'){
+                                        $bookDigi->features = $attribute->values['0'];
+                                        
+                                    }
                                 }
                             }
-                        }
-                        
-                        $tag_string= '';
-                        foreach($product_info->data->product->tags as $tag){
-                            $tag_string .= $tag->name .'#';
-                        }
-                        $bookDigi->tag = $tag_string;
-
-                        $bookDigi->price = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
-                        $bookDigi->desc = $product_info->data->product->expert_reviews->description;
-                        $bookDigi->save();
-                        // book author
-                        if(isset($authorsobj->id)){
-                            $bookDigi->authors()->sync(array($authorsobj->id));
-                            $this->info(" \n ---------- Attach Author Book   ".$authorsobj->id."  To ".$pp->product_id."        ---------- ");
-                        }
-                        //book related
-                        if($product_info->data->recommendations->related_products->title == "کالاهای مشابه" ){
-                            $related_array = array();
-                            foreach( $product_info->data->recommendations->related_products->products as $related_product){
-                                $related_product_digi =  BookDigi::where('recordNumber','dkp-'.$related_product->id)->firstOrNew();
-                                $related_product_digi->recordNumber = 'dkp-'.$related_product->id;
-                                $related_product_digi->save();
-                                $related = bookDigiRelated::firstOrCreate(array('book_id'=>$related_product->id));
-                                array_push($related_array, $related->id);
-                            }
-                            $bookDigi->related()->sync($related_array);
-                        }
                             
-                        
+                            $tag_string= '';
+                            foreach($product_info->data->product->tags as $tag){
+                                $tag_string .= $tag->name .'#';
+                            }
+                            $bookDigi->tag = $tag_string;
+
+                            $bookDigi->price = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
+                            $bookDigi->desc = $product_info->data->product->expert_reviews->description;
+                            $bookDigi->save();
+                            // book author
+                            if(isset($authorsobj->id)){
+                                $bookDigi->authors()->sync(array($authorsobj->id));
+                                $this->info(" \n ---------- Attach Author Book   ".$authorsobj->id."  To ".$pp->product_id."        ---------- ");
+                            }
+                            //book related
+                            if($product_info->data->recommendations->related_products->title == "کالاهای مشابه" ){
+                                $related_array = array();
+                                foreach( $product_info->data->recommendations->related_products->products as $related_product){
+                                    $related_product_digi =  BookDigi::where('recordNumber','dkp-'.$related_product->id)->firstOrNew();
+                                    $related_product_digi->recordNumber = 'dkp-'.$related_product->id;
+                                    $related_product_digi->save();
+                                    $related = bookDigiRelated::firstOrCreate(array('book_id'=>$related_product->id));
+                                    array_push($related_array, $related->id);
+                                }
+                                $bookDigi->related()->sync($related_array);
+                            }
+                                
+                            
+                        }
+                        $bar->advance();
+                        $recordNumber ++;
                     }
-                    $bar->advance();
-                    $recordNumber ++;
                 }
             }
             $newCrawler->status = 2;
