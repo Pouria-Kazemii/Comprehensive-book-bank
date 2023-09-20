@@ -76,14 +76,14 @@ class GetDigi extends Command
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
-            $bar = $this->output->createProgressBar(36);
-            $bar->start();
+            
             $recordNumber = $startC;
 
             while ($recordNumber <= $endC) {
-
+                $bar = $this->output->createProgressBar(36);
+                $bar->start();
                 try {
-                    $pageUrl ='https://www.digikala.com/ajax/search/category-book/?pageno='.$startC.'&sortby=1';
+                    $pageUrl ='https://www.digikala.com/ajax/search/category-book/?pageno='.$recordNumber.'&sortby=1';
                     $this->info(" \n ---------- Page URL  ".$pageUrl."              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -97,7 +97,6 @@ class GetDigi extends Command
 
                 if($status_code == "200"){
 
-                    $recordNumber = $startC;
                     $products_all = json_decode($json);
                     foreach($products_all->data->trackerData->products as $pp){
                         
@@ -236,9 +235,12 @@ class GetDigi extends Command
                             
                         }
                         $bar->advance();
-                        $recordNumber ++;
+                        
                     }
                 }
+
+                CrawlerM::where('name','Crawler-digi-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
+                $recordNumber ++;
             }
             $newCrawler->status = 2;
             $newCrawler->save();
