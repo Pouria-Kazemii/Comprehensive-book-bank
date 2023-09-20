@@ -18,7 +18,7 @@ class UnallowableBookImport implements ToModel, WithHeadingRow
         return new UnallowableBook([
             'xtitle' => mb_substr($row['title'], 0, 250, 'UTF-8') ,
             'xauthor' => mb_substr($row['author'], 0, 250, 'UTF-8') ,
-            'xpublish_date' => $row['publishdate'],
+            // 'xpublish_date' => $row['publishdate'],
             'xpublisher_name' => $row['publishername'],
             'xtranslator' => $row['translator'],
         ]);
