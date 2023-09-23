@@ -86,181 +86,118 @@ class GetFidibo extends Command
                 $filtered = array();
                 $filtered['recordNumber'] = $recordNumber;
 
-
-                $timeout = 120;
-                $url = 'https://fidibo.com/book/' . $recordNumber;
-                $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_FAILONERROR, true);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                curl_setopt($ch, CURLOPT_ENCODING, "");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-                $content = curl_exec($ch);
-                if (curl_errno($ch)) {
-                    $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                    echo 'error:' . curl_error($ch);
-                } else {
-
-
-                    try {
-                        $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                        $crawler = $client->request('GET', 'https://www.fidibo.com/book/' . $recordNumber);
-                        $status_code = $client->getInternalResponse()->getStatusCode();
-                    } catch (\Exception $e) {
-                        $crawler = null;
+                try {
+                    $timeout = 120;
+                    $pageUrl = 'https://api.fidibo.com/flex/page?pageName=BOOK_OVERVIEW&bookId=' . $recordNumber . '&page=1&limit=1000';
+                    $json = file_get_contents($pageUrl);
+                    $book_info = json_decode($json);
+                    if ($book_info->data->result != null) {
+                        $status_code = 200;
+                    }else{
                         $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
                     }
+                } catch (\Exception $e) {
+                    $status_code = 500;
+                    $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+                }
+                if ($status_code == "200") {
+                    $bookFidibo = BookFidibo::where('recordNumber', $recordNumber)->firstOrNew();
+                    $bookFidibo->recordNumber = $recordNumber;
+                    if(isset($book_info->data->result) AND !empty($book_info->data->result)){
+                        foreach($book_info->data->result as $result ){
 
-                    if ($status_code == 200 && $crawler->filter('body main')->text('') != '' && $crawler->filterXPath('//*[@class="single2"]')->count() > 0) {
-
-                        //BreadcrumbList
-                        $BreadcrumbList = $crawler->filterXPath('//*[@style="margin-top: 7px"]')->filter('nav');
-                        foreach ($BreadcrumbList->filter('ul') as $detail) {
-                            unset($row);
-                            $row = new Crawler($detail);
-                            $tags = '';
-                            for ($i = 2; $i <= 5; $i++) {
-                                if ($row->filterXPath("//li[$i]")->count() > 0) {
-                                    $tags = $tags . '#' . $row->filterXPath("//li[$i]/a/span")->text('');
-                                    $tags = rtrim($tags, '#');
+                            if(isset($result->subtitle) AND $result->subtitle == 'معرفی'){
+                                $this->info(str_replace('درباره ','',$result->items['0']->introduction->title));
+                                $bookFidibo->title = str_replace('درباره ','',$result->items['0']->introduction->title);
+                                $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
+                                // $this->info( $bookFidibo->desc );
+                                $tagStr = '';
+                                foreach($result->items['0']->categories as $category){
+                                    $tagStr .= $category->name.'#';
                                 }
+                                $tagStr = rtrim($tagStr, '#');
+                                $bookFidibo->tags = $tagStr;
                             }
-                            $filtered['tags'] = $tags;
-                            // $this->info($tags);
-                        }
-                        //////////book image
-                        if ($crawler->filter('body main div.single2 article div.container div.bov-img img')->count() > 0) {
-                            $bookImage = $crawler->filter('body main div.single2 article div.container div.bov-img img')->attr('src');
-                        } else {
-                            $bookImage = '';
-                        }
-                        $filtered['images'] = str_replace('?width=200', '', $bookImage);
 
-                        //////////book title
-                        if ($crawler->filter('body main div.single2 article div.container div.book-info h1')->count() > 0) {
-                            $bookTitle = $crawler->filter('body main div.single2 article div.container div.book-info h1')->text('');
-                        } else {
-                            $bookTitle = '';
-                        }
-                        // $filtered['title'] = str_replace('کتاب', '', $bookTitle);
-                        $filtered['title'] = mb_substr($bookTitle, 0, 250, 'UTF-8');
 
-                        ////////// boot creator
+                            if(isset($result->title) AND $result->title == 'شناسنامه'){
+                                $partner = array();
+                                $partnerCount = 0;
+                                foreach($result->items['0']->specifications as $attribute){
+                                    
+                                    
+                                    if ($attribute->title == 'تعداد صفحات') {
+                                        $tedadSafe = str_replace('صفحه', '', $attribute->sub_title);
+                                        $tedadSafe = trim($tedadSafe);
+                                        $bookFidibo->tedadSafe = (enNumberKeepOnly(faCharToEN($tedadSafe)) > 0) ? enNumberKeepOnly(faCharToEN($tedadSafe)) : 0;
+                                        // $this->info($bookFidibo->tedadSafe );
+                                    }
 
-                        $bookCreators = $crawler->filterXPath('//*[@class="single2"]')->filter('article div.container div.book-info');
-                        $partner = array();
-                        $creator_counter = 0;
-                        foreach ($bookCreators->filter('div.row div.col-sm-11 ul li') as $creator) {
-                            unset($row);
-                            $row = new Crawler($creator);
-                            if($row->filterXPath('//li/span')->text('') == 'نویسنده'){
-                                foreach($row->filterXPath('//li/a') as $authors){
-                                    unset($authors_row);
-                                    $authors_row = new Crawler($authors);
 
-                                    $partner[$creator_counter]['roleId'] = 1;
-                                    $partner[$creator_counter]['name'] = $authors_row->filterXPath('//a/span')->text('');
-                                    $creator_counter++;
-    
-                                }
-                            }elseif($row->filterXPath('//li/span')->text('') == 'مترجم'){
-                                foreach($row->filterXPath('//li/a') as $authors){
-                                    unset($authors_row);
-                                    $authors_row = new Crawler($authors);
-                                    $partner[$creator_counter]['roleId'] = 2;
-                                    $partner[$creator_counter]['name'] = $authors_row->filterXPath('//a/span')->text('');
-                                    $filtered['translate'] = 1;
-                                    $creator_counter++;
-                                }
-                            }
-                            
-                            $filtered['partnerArray'] = json_encode($partner, JSON_UNESCAPED_UNICODE);
-                        }
+                                    if ($attribute->title == 'نویسنده') {
+                                        $partner[$partnerCount]['roleId'] = 1;
+                                        $partner[$partnerCount]['name'] = $attribute->sub_title;
+                                        $partnerCount++;
+                                        $this->info(  $attribute->sub_title );
 
-                        //////////book Description
-                        if ($crawler->filter('body main div.single2 article section div.container div.book-description')->count() > 0) {
-                            $bookDesc = $crawler->filter('body main div.single2 article section div.container div.book-description')->text('');
-                        } elseif ($crawler->filter('body main div.single2 article section div.container p.book-description')->count() > 0) {
-                            $bookDesc = $crawler->filter('body main div.single2 article section div.container p.book-description')->text('');
-                        } else {
-                            $bookDesc = '';
-                        }
-                        $filtered['desc'] = $bookDesc;
+                                    }
 
-                        //book detail
-
-                        $bookDetails = $crawler->filterXPath('//*[@class="single2"]')->filter('section.book-tag-section div.container div.book-tags');
-                        foreach ($bookDetails->filter('ul') as $detail) {
-                            unset($row);
-                            $row = new Crawler($detail);
-                            for ($i = 1; $i <= 7; $i++) {
-                                if ($row->filterXPath("//li[$i]")->count() > 0) {
-                                    if (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'publisher.png')) {
-                                        $publisher_name = $row->filterXPath("//li[$i]/a")->text('');
-                                        $publisher_name = str_replace('انتشاراتی', '', $publisher_name);
+                                    if ($attribute->title == 'مترجم') {
+                                        $partner[$partnerCount]['roleId'] = 2;
+                                        $partner[$partnerCount]['name'] = $attribute->sub_title;
+                                        $bookFidibo->translate = 1;
+                                        $this->info(  $attribute->sub_title );
+                                    }
+                                    // var_dump($partner);
+        
+                                    $bookFidibo->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+                                    if ($attribute->title == 'ناشر') {
+                                        $publisher_name = str_replace('انتشاراتی', '', $attribute->sub_title);
                                         $publisher_name = str_replace('انتشارات', '', $publisher_name);
                                         $publisher_name = str_replace('گروه', '', $publisher_name);
                                         $publisher_name = str_replace('نشریه', '', $publisher_name);
                                         $publisher_name = str_replace('نشر', '', $publisher_name);
-                                        $filtered['nasher'] =  $publisher_name;
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'printer.png')) {
-                                        $price = $row->filterXPath("//li[$i]/span")->text('');
-                                        $filtered['price'] = enNumberKeepOnly(faCharToEN(trim($price)));
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'date.png')) {
-                                        $publishDate = $row->filterXPath("//li[$i]/span")->text('');
-                                        $filtered['saleNashr'] = faCharToEN($publishDate);
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'language.png')) {
-                                        $language = $row->filterXPath("//li[$i]")->text('');
-                                        $filtered['lang'] = $language;
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'filesize.png')) {
-                                        $file_size = $row->filterXPath("//li[$i]")->text('');
-                                        $filtered['fileSize'] = $file_size;
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'pages.png')) {
-                                        $page_number = $row->filterXPath("//li[$i]")->text('');
-                                        $filtered['tedadSafe'] = (enNumberKeepOnly(faCharToEN($page_number)) > 0) ? enNumberKeepOnly(faCharToEN($page_number)) : 0;
-                                    } elseif (str_contains($row->filterXPath("//li[$i]/img")->attr('src'), 'isbn.png')) {
-                                        $isbn = $row->filterXPath("//li[$i]/label")->text('');
-                                        $filtered['shabak'] = enNumberKeepOnly(faCharToEN($isbn));
+                                        $bookFidibo->nasher =  $publisher_name;
+                                        // $this->info(  $bookFidibo->nasher );
+
+                                    }
+        
+                                    if ($attribute->title == 'زبان') {
+                                        $bookFidibo->lang = $attribute->sub_title;
+                                        // $this->info(  $bookFidibo->lang );
+
+                                    }
+        
+                                    if ($attribute->title == 'عنوان انگلیسی') {
+                                        $bookFidibo->title_en = str_replace('کتاب','',$attribute->sub_title);
+                                        // $this->info(  $bookFidibo->title_en );
+
+                                    }
+        
+                                    if ($attribute->title == 'تاریخ انتشار') {
+                                        $bookFidibo->saleNashr = faCharToEN($attribute->sub_title);
+                                        // $this->info(  $bookFidibo->saleNashr );
+                                    }
+        
+                                    if ($attribute->title == 'قیمت چاپی') {
+                                        $price  =  str_replace('تومان', '', $attribute->sub_title);
+                                        $bookFidibo->price = enNumberKeepOnly(faCharToEN(trim($price)));
+                                        // $this->info(  $bookFidibo->price );
+                                    }
+        
+                                    if ($attribute->title == 'حجم') {
+                                        $bookFidibo->fileSize = faCharToEN($attribute->sub_title);
+                                        // $this->info(  $bookFidibo->fileSize );
                                     }
                                 }
-                            }
-                        }
-                    } else {
-                        $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
-                    }
-                }
-                
-                if (isset($filtered['recordNumber']) && $filtered['recordNumber'] > 0) {
-                    $selected_book = BookFidibo::where('recordNumber', $filtered['recordNumber'])->first();
-                    if ($selected_book == null) {
-                        try {
-                            BookFidibo::create($filtered);
-                            // $this->info(" \n ----------Save book info              ---------- ");
-                        } catch (Exception $Exception) {
-                            //throw $th;
-                            $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
-                        }
-                    } else {
-                        if(isset($filtered['title']) && !empty($filtered['title'])){
-                            BookFidibo::updateOrCreate(
-                                ['recordNumber' => $filtered['recordNumber']],
-                                $filtered
-                            );
-                            $this->info(" \n ---------- update Book info             ---------- ");
 
-                        }else{
-                            $this->info(" \n ---------- Book info is exist   & new crawl is empty info          ---------- ");
+                            }
+
+                            $bookFidibo->save();
                         }
                     }
-                } else {
-                    $this->info(" \n ---------- This url does not include the book             ---------- ");
+                   
                 }
-                // $bar->advance();
                 $recordNumber++;
             }
             $newCrawler->status = 2;
@@ -268,5 +205,69 @@ class GetFidibo extends Command
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
         }
+    }
+
+    public static function convert_arabic_char_to_persian($string)
+    {
+        $string = str_replace("ي", "ی", $string);
+        $string = str_replace("ك", "ک", $string);
+        $string = str_replace("ة", "ه", $string);
+        return $string;
+    }
+
+    /*  delete name space */
+    public static function remove_half_space_from_string($string)
+    {
+        $string = urlencode($string);
+        $string = str_replace('%E2%80%8C', ' ', $string);
+        $string = urldecode($string);
+        return $string;
+    }
+
+    public static function convert_arabic_num_to_english($string)
+    {
+        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        $arabic = ['٩', '٨', '٧', '٦', '٥', '٤', '٣', '٢', '١', '٠'];
+
+        $num = range(0, 9);
+        $convertedPersianNums = str_replace($persian, $num, $string);
+        $englishNumbersOnly = str_replace($arabic, $num, $convertedPersianNums);
+
+        return $englishNumbersOnly;
+    }
+
+    public static function validateIsbn($isbn) //correction  isbn
+    {
+        $isbn = self::convert_arabic_num_to_english($isbn);
+        $isbn = trim($isbn, ' ');
+        $isbn = rtrim($isbn, ' ');
+        $isbn = ltrim($isbn, ' ');
+
+        $isbn = trim($isbn, '');
+        $isbn = rtrim($isbn, '');
+        $isbn = ltrim($isbn, '');
+
+        $isbn = trim($isbn, '.');
+        $isbn = rtrim($isbn, '.');
+
+        $isbn = ltrim($isbn, ',');
+        $isbn = ltrim($isbn, ',');
+
+        $isbn = ltrim($isbn, '.');
+        $isbn = ltrim($isbn, '"');
+
+        $isbn = str_replace(" ", "", $isbn);
+        $isbn = str_replace(".", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        $isbn = str_replace("-", "", $isbn);
+        $isbn = str_replace("+", "", $isbn);
+
+        $isbn = str_replace(",", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        $isbn = str_replace("#", "", $isbn);
+        $isbn = str_replace('"', "", $isbn);
+
+        $isbn = str_replace("-", "", str_replace("0", "", $isbn));
+        return $isbn;
     }
 }
