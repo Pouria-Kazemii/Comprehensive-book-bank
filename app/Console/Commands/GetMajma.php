@@ -165,18 +165,21 @@ class Getmajma extends Command
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->xpageurl2 = 'http://ketab.ir/bookview.aspx?bookid=' . $book_content->uniqueId;
                     $bookIrBook->xname = (!is_null($book_content->title)) ? $book_content->title : $bookIrBook->xname;
+                    $bookIrBook->xname2 = str_replace(" ", "", $bookIrBook->xname);
                     $bookIrBook->xpagecount = (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount;
                     $bookIrBook->xformat = (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat;
                     $bookIrBook->xcover = (!is_null($book_content->coverType)) ? $book_content->coverType : $bookIrBook->xcover;
                     $bookIrBook->xprintnumber = (!is_null($book_content->printVersion)) ? $book_content->printVersion : $bookIrBook->xprintnumber;
                     $bookIrBook->xcirculation = (!is_null($book_content->circulation)) ? $book_content->circulation : $bookIrBook->xcirculation;
-                    // 'xcovernumber'=> '' ; شماره جلد
                     $bookIrBook->xcovercount = (!is_null($book_content->volumeCount)) ? $book_content->volumeCount : $bookIrBook->xcovercount;
+                    $bookIrBook->xcovernumber =  (!is_null($book_content->volumeNumber)) ? $book_content->volumeNumber : $bookIrBook->xcovernumber;
+
                     // 'xapearance'=> '' ;
                     $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
                     $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : str_replace("-", "", $bookIrBook->xisbn);
                     $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
-                    $bookIrBook->xpublishdate = (!is_null($book_content->issueYear)) ? BookirBook::toGregorian($book_content->issueYear . '/01/01', '/', '-') : $bookIrBook->xpublishdate;
+
+                    $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate,0,4) . '/'.substr($book_content->issueDate,4,2).'/'.substr($book_content->issueDate,6,2), '/', '-') : $bookIrBook->xpublishdate;
                     $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
                     // 'xminprice'=>'' ;
                     // 'xcongresscode'=>'' ;
