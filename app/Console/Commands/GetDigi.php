@@ -138,11 +138,16 @@ class GetDigi extends Command
 
                             $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
                             $bookDigi->rate = $product_info->data->product->rating->rate/20;
-                            $image_str = '';
-                            foreach($product_info->data->product->images->list as $image){
-                                $image_str .= $image->webp_url['0'].'#';
+                            if(isset($product_info->data->product->images->list) and !empty($product_info->data->product->images->list)){
+                                $image_str = '';
+                                foreach($product_info->data->product->images->list as $image){
+                                    if(isset($image->webp_url['0'])){
+                                        $image_str .= $image->webp_url['0'].'#';
+                                    }
+                                }
+                                $bookDigi->images = $image_str;
                             }
-                            $bookDigi->images = $image_str;
+                           
                             $authorsobj= array();
                             if($product_info->data->product->specifications['0']->title == 'مشخصات'){
                                 foreach($product_info->data->product->specifications['0']->attributes as $attribute){
