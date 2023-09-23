@@ -161,7 +161,16 @@ class GetDigi extends Command
                                     }
                                     
                                     if($attribute->title == 'شابک'){
-                                        $bookDigi->shabak = self::validateIsbn($attribute->values['0']);
+                                        if(strpos($attribute->values['0'],' - ') > 0 ){
+                                            $shabakStr = '';
+                                            $shabaks = explode(' - ',$attribute->values['0']);
+                                            foreach($shabaks as $shabak){
+                                                $shabakStr .= self::validateIsbn($shabak).'#';
+                                            }
+                                            $bookDigi->shabak = $shabakStr;
+                                        }else{
+                                            $bookDigi->shabak = self::validateIsbn($attribute->values['0']);
+                                        }
                                     }
                                     if($attribute->title == 'ناشر'){
                                         $bookDigi->nasher = $attribute->values['0'];
@@ -190,7 +199,16 @@ class GetDigi extends Command
                                         $bookDigi->count = $jeld;
                                     }
                                     if($attribute->title == 'تعداد صفحه'){
-                                        $bookDigi->tedadSafe = $attribute->values['0'];
+                                        if(strpos($attribute->values['0'],' - ') > 0 ){
+                                            $tedadSafeStr = '';
+                                            $tedadSafes = explode(' - ',$attribute->values['0']);
+                                            foreach($tedadSafes as $tedadSafe){
+                                                $tedadSafeStr .=  $tedadSafe.'#';
+                                            }
+                                            $bookDigi->tedadSafe = $tedadSafeStr;
+                                        }else{
+                                            $bookDigi->tedadSafe = $attribute->values['0'];
+                                        }
                                     }
                                     $ageGroup_str ='';
                                     if($attribute->title == 'گروه سنی'){
