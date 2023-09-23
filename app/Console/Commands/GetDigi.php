@@ -185,7 +185,9 @@ class GetDigi extends Command
                                     }
                                     
                                     if($attribute->title == 'تعداد جلد'){
-                                        $bookDigi->count = $attribute->values['0'];
+                                        $jeld = str_replace('جلد','',$attribute->values['0']);
+                                        $jeld = trim($jeld);
+                                        $bookDigi->count = $jeld;
                                     }
                                     if($attribute->title == 'تعداد صفحه'){
                                         $bookDigi->tedadSafe = $attribute->values['0'];
