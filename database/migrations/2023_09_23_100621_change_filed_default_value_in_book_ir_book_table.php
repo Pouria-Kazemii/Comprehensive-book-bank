@@ -13,7 +13,7 @@ class ChangeFiledDefaultValueInBookIrBookTable extends Migration
      */
     public function up()
     {
-        Schema::table('book_ir_book', function (Blueprint $table) {
+        Schema::table('bookir_book', function (Blueprint $table) {
             $table->string('xdoctype', 50)->nullable()->change();
             $table->string('xapearance', 100)->nullable()->change();
             $table->string('xminprice', 100)->nullable()->change();
@@ -47,7 +47,7 @@ class ChangeFiledDefaultValueInBookIrBookTable extends Migration
      */
     public function down()
     {
-        Schema::table('book_ir_book', function (Blueprint $table) {
+        Schema::table('bookir_book', function (Blueprint $table) {
             //
         });
     }
