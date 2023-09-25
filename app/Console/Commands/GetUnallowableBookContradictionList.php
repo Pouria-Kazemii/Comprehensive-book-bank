@@ -6,7 +6,7 @@ use App\Models\Author;
 use App\Models\AuthorBook30book;
 use App\Models\Book30book;
 use App\Models\BookDigi;
-use App\models\BookFidibo;
+use App\Models\BookFidibo;
 use App\Models\BookGisoom;
 use App\Models\BookIranketab;
 use App\Models\BookirBook;
