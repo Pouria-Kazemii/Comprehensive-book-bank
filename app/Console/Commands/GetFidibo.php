@@ -86,14 +86,15 @@ class GetFidibo extends Command
                 $filtered = array();
                 $filtered['recordNumber'] = $recordNumber;
 
+                $this->info($recordNumber);
                 try {
                     $timeout = 120;
                     $pageUrl = 'https://api.fidibo.com/flex/page?pageName=BOOK_OVERVIEW&bookId=' . $recordNumber . '&page=1&limit=1000';
                     $json = file_get_contents($pageUrl);
-                    $book_info = json_decode($json);
-                    if ($book_info->data->result != null) {
+                    $page_info = json_decode($json);
+                    if ($page_info->data->result != null) {
                         $status_code = 200;
-                    }else{
+                    } else {
                         $status_code = 500;
                     }
                 } catch (\Exception $e) {
@@ -101,31 +102,60 @@ class GetFidibo extends Command
                     $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
                 }
                 if ($status_code == "200") {
-                    $bookFidibo = BookFidibo::where('recordNumber', $recordNumber)->firstOrNew();
-                    $bookFidibo->recordNumber = $recordNumber;
-                    if(isset($book_info->data->result) AND !empty($book_info->data->result)){
-                        foreach($book_info->data->result as $result ){
 
-                            if(isset($result->subtitle) AND $result->subtitle == 'معرفی'){
-                                $this->info(str_replace('درباره ','',$result->items['0']->introduction->title));
-                                $bookFidibo->title = str_replace('درباره ','',$result->items['0']->introduction->title);
+                    $bookFidibo = BookFidibo::where('recordNumber', $recordNumber)->firstOrNew();
+
+                    ///////////////////////////////////////book//////////////////////////
+                    try {
+                        $timeout = 120;
+                        $bookUrl = 'https://api.fidibo.com/flex/book/item/' . $recordNumber;
+                        $json = file_get_contents($bookUrl);
+                        $book_info = json_decode($json);
+                        if ($book_info->data->result != null) {
+                            $book_status_code = 200;
+                        } else {
+                            $book_status_code = 500;
+                        }
+                    } catch (\Exception $e) {
+                        $book_status_code = 500;
+                        $this->info(" \n ---------- Failed Get  Image" . $recordNumber . "              ---------=-- ");
+                    }
+
+                    if ($book_status_code == "200") {
+                        if (isset($book_info->data->result) and !empty($book_info->data->result)) {
+                            foreach ($book_info->data->result as $book_result) {
+                                $bookFidibo->images = $book_result->cover->image;
+                                if(isset($book_result->breadcrumb) AND !empty($book_result->breadcrumb)){
+                                    $tagStr = '';
+                                    foreach ($book_result->breadcrumb  as $tag) {
+                                        $tagStr .= $tag->name . '#';
+                                    }
+                                    $tagStr = rtrim($tagStr, '#');
+                                    $bookFidibo->tags = $tagStr;
+                                }
+                            }
+                        }
+                    }
+                    ///////////////////////////////////////////////////////////////////////
+
+                    $bookFidibo->recordNumber = $recordNumber;
+                    if (isset($page_info->data->result) and !empty($page_info->data->result)) {
+                        foreach ($page_info->data->result as $result) {
+                            if (isset($result->subtitle) and $result->subtitle == 'معرفی') {
+                                $this->info(str_replace('درباره ', '', $result->items['0']->introduction->title));
+                                $bookFidibo->title = str_replace('درباره ', '', $result->items['0']->introduction->title);
                                 $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
                                 // $this->info( $bookFidibo->desc );
-                                $tagStr = '';
-                                foreach($result->items['0']->categories as $category){
-                                    $tagStr .= $category->name.'#';
-                                }
-                                $tagStr = rtrim($tagStr, '#');
-                                $bookFidibo->tags = $tagStr;
+                               
                             }
 
 
-                            if(isset($result->title) AND $result->title == 'شناسنامه'){
+                            if (isset($result->title) and $result->title == 'شناسنامه') {
                                 $partner = array();
                                 $partnerCount = 0;
-                                foreach($result->items['0']->specifications as $attribute){
-                                    
-                                    
+                                foreach ($result->items['0']->specifications as $attribute) {
+
+
                                     if ($attribute->title == 'تعداد صفحات') {
                                         $tedadSafe = str_replace('صفحه', '', $attribute->sub_title);
                                         $tedadSafe = trim($tedadSafe);
@@ -138,18 +168,17 @@ class GetFidibo extends Command
                                         $partner[$partnerCount]['roleId'] = 1;
                                         $partner[$partnerCount]['name'] = $attribute->sub_title;
                                         $partnerCount++;
-                                        $this->info(  $attribute->sub_title );
-
+                                        $this->info($attribute->sub_title);
                                     }
 
                                     if ($attribute->title == 'مترجم') {
                                         $partner[$partnerCount]['roleId'] = 2;
                                         $partner[$partnerCount]['name'] = $attribute->sub_title;
                                         $bookFidibo->translate = 1;
-                                        $this->info(  $attribute->sub_title );
+                                        $this->info($attribute->sub_title);
                                     }
                                     // var_dump($partner);
-        
+
                                     $bookFidibo->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
                                     if ($attribute->title == 'ناشر') {
                                         $publisher_name = str_replace('انتشاراتی', '', $attribute->sub_title);
@@ -161,43 +190,42 @@ class GetFidibo extends Command
                                         // $this->info(  $bookFidibo->nasher );
 
                                     }
-        
+
                                     if ($attribute->title == 'زبان') {
                                         $bookFidibo->lang = $attribute->sub_title;
                                         // $this->info(  $bookFidibo->lang );
 
                                     }
-        
+
                                     if ($attribute->title == 'عنوان انگلیسی') {
-                                        $bookFidibo->title_en = str_replace('کتاب','',$attribute->sub_title);
+                                        $bookFidibo->title_en = str_replace('کتاب', '', $attribute->sub_title);
                                         // $this->info(  $bookFidibo->title_en );
 
                                     }
-        
+
                                     if ($attribute->title == 'تاریخ انتشار') {
                                         $bookFidibo->saleNashr = faCharToEN($attribute->sub_title);
                                         // $this->info(  $bookFidibo->saleNashr );
                                     }
-        
+
                                     if ($attribute->title == 'قیمت چاپی') {
                                         $price  =  str_replace('تومان', '', $attribute->sub_title);
                                         $bookFidibo->price = enNumberKeepOnly(faCharToEN(trim($price)));
                                         // $this->info(  $bookFidibo->price );
                                     }
-        
+
                                     if ($attribute->title == 'حجم') {
                                         $bookFidibo->fileSize = faCharToEN($attribute->sub_title);
                                         // $this->info(  $bookFidibo->fileSize );
                                     }
                                 }
-
                             }
 
                             $bookFidibo->save();
                         }
                     }
-                   
                 }
+                CrawlerM::where('name','Crawler-Fidibo-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
