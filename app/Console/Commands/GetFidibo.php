@@ -142,17 +142,9 @@ class GetFidibo extends Command
                     if (isset($page_info->data->result) and !empty($page_info->data->result)) {
                         foreach ($page_info->data->result as $result) {
                             if (isset($result->subtitle) and $result->subtitle == 'معرفی') {
-                                $this->info($result->items['0']->introduction->title);
-
                                 $book_title  = ltrim($result->items['0']->introduction->title,'درباره');
-                                $this->info($book_title);
-
-
                                 $book_title = ltrim($book_title, 'کتاب');
-                                $this->info($book_title);
-
                                 $bookFidibo->title = $book_title;
-
                                 $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
                                 // $this->info( $bookFidibo->desc );
                                
