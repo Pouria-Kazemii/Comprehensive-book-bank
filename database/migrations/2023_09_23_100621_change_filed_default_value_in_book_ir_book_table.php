@@ -21,7 +21,6 @@ class ChangeFiledDefaultValueInBookIrBookTable extends Migration
             $table->string('xcongresscode', 20)->nullable()->change();
             $table->string('xname2', 200)->nullable()->change();
             $table->text('xdescription')->nullable()->change();
-            $table->date('xpublishdate')->nullable();
             $table->integer('xcovernumber')->default(0)->nullable()->change();
             $table->integer('xcoverprice')->default(0)->nullable()->change();
             $table->smallInteger('xissubject')->tinyInteger('xissubject')->default(0)->nullable()->unsigned()->change();
