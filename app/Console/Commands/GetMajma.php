@@ -369,6 +369,7 @@ class Getmajma extends Command
                 }
 
                 // $bar->advance();*/
+                CrawlerM::where('name','Crawler-Majma-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
