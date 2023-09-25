@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\models\BookFidibo;
+use App\Models\BookFidibo;
 use App\Models\Crawler as CrawlerM;
 use Exception;
 use Goutte\Client;
