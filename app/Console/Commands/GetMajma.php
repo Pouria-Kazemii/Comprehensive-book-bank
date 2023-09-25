@@ -255,8 +255,8 @@ class Getmajma extends Command
                         $bookIrPublisher->xisname = (!is_null($publisher_content->title)) ? 1 : 0;
 
                         $bookIrPublisher->save();
-                        $this->info('$bookIrPublisher->xid');
-                        $this->info($bookIrPublisher->xid);
+                        // $this->info('$bookIrPublisher->xid');
+                        // $this->info($bookIrPublisher->xid);
 
                         if (isset($bookIrPublisher->xid) and !empty($bookIrPublisher->xid)) {
                             $bookIrBook->publishers()->sync($bookIrPublisher->xid);
@@ -301,8 +301,8 @@ class Getmajma extends Command
                             $partner_array[$author_key]['xcreatorid'] = $BookirPartner->xid;
                             $partner_array[$author_key]['xroleid'] = $BookirRules->xid;
 
-                            $this->info('$BookirPartner->xid');
-                            $this->info($BookirPartner->xid);
+                            // $this->info('$BookirPartner->xid');
+                            // $this->info($BookirPartner->xid);
                         }
 
                         if (isset($partner_array) and !empty($partner_array)) {
@@ -324,8 +324,8 @@ class Getmajma extends Command
 
                         $BookirSubject->save();
                         $subjects_array[] = $BookirSubject->xid;
-                        $this->info('$BookirSubject->xid');
-                        $this->info($BookirSubject->xid);
+                        // $this->info('$BookirSubject->xid');
+                        // $this->info($BookirSubject->xid);
                     }
 
                     if (!is_null($book_content->subjects)) {
@@ -339,8 +339,8 @@ class Getmajma extends Command
                             $BookirSubject->xregdate = time();
 
                             $BookirSubject->save();
-                            $this->info('$BookirSubject->xid');
-                            $this->info($BookirSubject->xid);
+                            // $this->info('$BookirSubject->xid');
+                            // $this->info($BookirSubject->xid);
                             $subjects_array[] = $BookirSubject->xid;
                         }
                     }

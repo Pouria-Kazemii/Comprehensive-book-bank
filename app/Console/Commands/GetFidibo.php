@@ -124,7 +124,7 @@ class GetFidibo extends Command
                     if ($book_status_code == "200") {
                         if (isset($book_info->data->result) and !empty($book_info->data->result)) {
                             foreach ($book_info->data->result as $book_result) {
-                                $bookFidibo->images = $book_result->cover->image;
+                                $bookFidibo->images = (isset($book_result->cover->image))? $book_result->cover->image: NULL;
                                 if(isset($book_result->breadcrumb) AND !empty($book_result->breadcrumb)){
                                     $tagStr = '';
                                     foreach ($book_result->breadcrumb  as $tag) {
@@ -142,8 +142,17 @@ class GetFidibo extends Command
                     if (isset($page_info->data->result) and !empty($page_info->data->result)) {
                         foreach ($page_info->data->result as $result) {
                             if (isset($result->subtitle) and $result->subtitle == 'معرفی') {
-                                $this->info(str_replace('درباره ', '', $result->items['0']->introduction->title));
-                                $bookFidibo->title = str_replace('درباره ', '', $result->items['0']->introduction->title);
+                                $this->info($result->items['0']->introduction->title);
+
+                                $book_title  = ltrim($result->items['0']->introduction->title,'درباره');
+                                $this->info($book_title);
+
+
+                                $book_title = ltrim($book_title, 'کتاب');
+                                $this->info($book_title);
+
+                                $bookFidibo->title = $book_title;
+
                                 $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
                                 // $this->info( $bookFidibo->desc );
                                
@@ -168,14 +177,14 @@ class GetFidibo extends Command
                                         $partner[$partnerCount]['roleId'] = 1;
                                         $partner[$partnerCount]['name'] = $attribute->sub_title;
                                         $partnerCount++;
-                                        $this->info($attribute->sub_title);
+                                        // $this->info($attribute->sub_title);
                                     }
 
                                     if ($attribute->title == 'مترجم') {
                                         $partner[$partnerCount]['roleId'] = 2;
                                         $partner[$partnerCount]['name'] = $attribute->sub_title;
                                         $bookFidibo->translate = 1;
-                                        $this->info($attribute->sub_title);
+                                        // $this->info($attribute->sub_title);
                                     }
                                     // var_dump($partner);
 
