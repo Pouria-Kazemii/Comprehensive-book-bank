@@ -83,7 +83,7 @@ class GetDigi extends Command
                 $bar = $this->output->createProgressBar(36);
                 $bar->start();
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/category-book/?pageno=' . $recordNumber . '&sortby=1';
+                    $pageUrl = 'https://www.digikala.com/ajax/search/category-foreign-printed-book/?pageno=' . $recordNumber . '&sortby=1';
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
