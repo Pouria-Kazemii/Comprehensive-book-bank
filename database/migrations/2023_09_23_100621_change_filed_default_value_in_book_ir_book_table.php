@@ -29,8 +29,8 @@ class ChangeFiledDefaultValueInBookIrBookTable extends Migration
             $table->text('xdescription')->nullable()->change();
             $table->integer('xcovernumber')->default(0)->nullable()->change();
             $table->integer('xcoverprice')->default(0)->nullable()->change();
-            $table->smallInteger('xpagecount')->default(0)->nullable()->unsigned()->change();
-            $table->smallInteger('xprintnumber')->default(0)->nullable()->unsigned()->change();
+            $table->integer('xpagecount')->default(0)->nullable()->unsigned()->change();
+            $table->integer('xprintnumber')->default(0)->nullable()->unsigned()->change();
             $table->integer('xcirculation')->default(0)->nullable()->unsigned()->change();
             $table->integer('xregdate')->default(0)->nullable()->unsigned()->change();
             $table->smallInteger('xissubject')->tinyInteger('xissubject')->default(0)->nullable()->unsigned()->change();
