@@ -63,7 +63,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->has_permit = 'کتاب شابک ندارد';
             }
 
-            if((isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
+            if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
                 if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
                     $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
 
