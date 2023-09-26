@@ -45,11 +45,13 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             }elseif($item->check_status == 4){
                 $report[$key]->check_status = 'کتاب شابک ندارد';
             }
-            if((isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
+            if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
                 $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
                 if ($georgianCarbonDate < date('2022-03-21 00:00:00')) {
                     $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
                 }
+            }else{
+                $report[$key]->images = '';
             }
 
            
