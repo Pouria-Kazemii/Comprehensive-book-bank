@@ -139,7 +139,7 @@ class GetTaaghcheContradictionsList extends Command
                 );
                 BookTaaghche::where('id', $fidibo_book->id)->update($update_data);
                 }*/
-
+                CrawlerM::where('name', 'Contradictions-Taaghche-' . $this->argument('rowId'))->where('start', $startC)->update(['last' => $rowId]);
                 $rowId++;
             }
         }
