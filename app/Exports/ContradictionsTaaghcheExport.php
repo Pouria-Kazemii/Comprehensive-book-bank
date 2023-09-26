@@ -68,6 +68,8 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                     $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
 
                 }
+            }else{
+                $report[$key]->images = '';
             }
             $report[$key]->recordNumber = 'https://taaghche.com/book/'.$item->recordNumber;
         }
