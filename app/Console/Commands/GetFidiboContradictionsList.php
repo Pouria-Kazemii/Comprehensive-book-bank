@@ -74,27 +74,44 @@ class GetFidiboContradictionsList extends Command
             while ($rowId <= $endC) {
                 // bookirbook with ershad book
                 $book_data = BookFidibo::where('id', $rowId)->first();
-                if (isset($book_data->shabak) and $book_data->shabak != null) {
-                    $this->info($book_data->shabak);
-                    $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
-                    $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
-                    if (!empty($ershad_book) || !empty($bookirbook_data)) {
-                        $update_data = array(
-                            'has_permit' => 1,
-                        );
-                    } else {
-                        $update_data = array(
-                            'has_permit' => 2,
-                        );
-                    }
-                } else {
-                    $this->info('row no isbn');
+                if (isset($book_data) and !empty($book_data)) {
                     $update_data = array(
-                        'has_permit' => 3,
+                        'check_status' => 0,
+                        'has_permit' => 0,
                     );
-                }
+                    if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak)) AND (isset($book_data->saleNashr) and $book_data->saleNashr != null and !empty($book_data->saleNashr))) {
+                        $this->info($book_data->shabak);
+                        $this->info($book_data->saleNashr);
 
-                BookFidibo::where('id', $rowId)->update($update_data);
+                        $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $book_data->saleNashr)->toCarbon();
+                        if ($georgianCarbonDate < date('2022-03-21 00:00:00')) {
+                            $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
+                            if (!empty($bookirbook_data) || !empty($bookirbook_data)) {
+                                $update_data['check_status'] = 1;
+                            } else {
+                                $update_data['check_status'] = 2;
+                            }
+                        } else {
+                            $update_data['check_status'] = 3;
+                        }
+                        if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
+                            $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
+                            if (!empty($ershad_book) || !empty($bookirbook_data)) {
+                                $update_data['has_permit'] = 1;
+                            } else {
+                                $update_data['has_permit'] = 2;
+                            }
+                        } else {
+                            $update_data['has_permit'] = 3;
+                        }
+                    } else {
+                        $this->info('row no isbn');
+                        $update_data['check_status'] = 4;
+                        $update_data['has_permit'] = 4;
+                    }
+
+                    BookFidibo::where('id', $rowId)->update($update_data);
+                }
 
                 /*
                 //  unallowable_book
@@ -121,7 +138,7 @@ class GetFidiboContradictionsList extends Command
                 );
                 BookFidibo::where('id',$fidibo_book->id)->update($update_data);
                 }*/
-
+                CrawlerM::where('name', 'Contradictions-Fidibo-' . $this->argument('rowId'))->where('start', $startC)->update(['last' => $rowId]);
                 $rowId++;
 
             }
