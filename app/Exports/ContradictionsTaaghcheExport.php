@@ -18,9 +18,8 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
     {
         $status = $this->status;
         $data = array();
-        // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price')->where('saleNashr','<','1400/01/01')->where('title','!=',NULL)->where('has_permit',  $status)->get();
+        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price','check_status','has_permit')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
         foreach($report as $key=>$item){
             if($item->translate == 1 ){
                 $report[$key]->translate = 'ترجمه';
@@ -36,6 +35,26 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             }else{
                 $report[$key]->fileSize = 'ناموجود';
             }
+
+            if($item->check_status == 1){
+                $report[$key]->check_status = 'کتاب وجود دارد';
+            }elseif($item->check_status == 2){
+                $report[$key]->check_status = 'کتاب وجود ندارد';
+            }elseif($item->check_status == 3){
+                $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
+            }elseif($item->check_status == 4){
+                $report[$key]->check_status = 'کتاب شابک ندارد';
+            }
+
+            if($item->has_permit == 1){
+                $report[$key]->has_permit = 'کتاب وجود دارد';
+            }elseif($item->has_permit == 2){
+                $report[$key]->has_permit = 'کتاب وجود ندارد';
+            }elseif($item->has_permit == 3){
+                $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
+            }elseif($item->has_permit == 4){
+                $report[$key]->has_permit = 'کتاب شابک ندارد';
+            }
             $report[$key]->recordNumber = 'https://taaghche.com/book/'.$item->recordNumber;
         }
         return $report;
@@ -43,6 +62,6 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
 
     public function headings(): array
     {
-        return ["لینک کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت"];
+        return ["لینک کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت","وضعیت در خانه کتاب","وضعیت در اداره کتاب"];
     }
 }

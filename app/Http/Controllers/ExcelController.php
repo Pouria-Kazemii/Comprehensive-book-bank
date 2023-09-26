@@ -142,6 +142,7 @@ class ExcelController extends Controller
 
     public function exportExcelContradictionsTaaghche($status)
     {
+        $status =  explode(',',$status);
         set_time_limit(0);
         return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
     }
