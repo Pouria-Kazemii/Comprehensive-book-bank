@@ -60,9 +60,9 @@ class GetDigi extends Command
             try {
                 $lastCrawler = CrawlerM::where('type', 5)->orderBy('end', 'desc')->first();
                 if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->end + 1;
+                    $startC = $lastCrawler->last + 1;
                 } else {
-                    $startC = 82;
+                    $startC = 1;
                 }
                 $endC = $startC + CrawlerM::$crawlerSize;
 
