@@ -18,7 +18,7 @@ class GetDigi extends Command
      *
      * @var string
      */
-    protected $signature = 'get:digi {crawlerId} {miss?}';
+    protected $signature = 'get:digiCategoryLanguageBooks {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -46,7 +46,7 @@ class GetDigi extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('type', 5)->where('status', 1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('type', 5)->where('status', 1)->orderBy('end', 'ASC')->first();
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->start;
                     $endC   = $lastCrawler->end;
@@ -58,7 +58,7 @@ class GetDigi extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('type', 5)->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('type', 5)->orderBy('end', 'desc')->first();
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->last + 1;
                 } else {
