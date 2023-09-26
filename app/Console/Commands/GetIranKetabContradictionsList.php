@@ -79,7 +79,7 @@ class GetIranKetabContradictionsList extends Command
                         'check_status' => 0,
                         'has_permit' => 0,
                     );
-                    if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak)) AND (isset($book_data->saleNashr) and $book_data->saleNashr != null and !empty($book_data->saleNashr))) {
+                    if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak)) AND (isset($book_data->saleNashr) and $book_data->saleNashr != null and !empty($book_data->saleNashr) and strlen($book_data->saleNashr)>=4)) {
                         $this->info($book_data->shabak);
                         $this->info($book_data->saleNashr);
                         // $book_data->saleNashr =  $book_data->saleNashr.'/01/01';
