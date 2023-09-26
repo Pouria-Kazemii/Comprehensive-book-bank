@@ -112,11 +112,13 @@ class GetDigi extends Command
                             $status_code = 500;
                             $this->info(" \n ---------- Failed Get  " . $pp->product_id . "              ---------=-- ");
                         }
-
+                        $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
+                        $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
+                        $bookDigi->save();
                         if ($status_code == 200) {
-                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
-                            $bookDigi->recordNumber = 'dkp-' . $product_info->data->product->id;
-
+                           
+                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
+                            $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
                             $bookDigi->title = str_replace('کتاب', '', $product_info->data->product->title_fa);
 
                             // اثرمرکب

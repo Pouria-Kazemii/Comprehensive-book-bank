@@ -100,6 +100,11 @@ class GetDigi1 extends Command
                     $products_all = json_decode($json);
                     foreach ($products_all->data->trackerData->products as $pp) {
 
+                        $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
+                        $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
+                        $bookDigi->save();
+
+
                         $productUrl = "https://api.digikala.com/v1/product/" . $pp->product_id . "/";
                         try {
                             $this->info(" \n ---------- Try Get BOOK        " . $pp->product_id . "       ---------- ");
@@ -112,6 +117,8 @@ class GetDigi1 extends Command
                             $status_code = 500;
                             $this->info(" \n ---------- Failed Get  " . $pp->product_id . "              ---------=-- ");
                         }
+
+                       
 
                         if ($status_code == 200) {
                             $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
