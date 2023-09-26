@@ -60,14 +60,14 @@ class GetDigi extends Command
             try {
                 $lastCrawler = CrawlerM::where('type', 5)->orderBy('end', 'desc')->first();
                 if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->end + 1;
+                    $startC = $lastCrawler->last + 1;
                 } else {
                     $startC = 1;
                 }
                 $endC = $startC + CrawlerM::$crawlerSize;
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-language-books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -258,7 +258,7 @@ class GetDigi extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
