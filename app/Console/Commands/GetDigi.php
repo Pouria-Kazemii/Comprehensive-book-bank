@@ -46,7 +46,7 @@ class GetDigi extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('type', 5)->where('status', 1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books-' . $this->argument('crawlerId'))->where('type', 5)->where('status', 1)->orderBy('end', 'ASC')->first();
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->start;
                     $endC   = $lastCrawler->end;
@@ -58,7 +58,7 @@ class GetDigi extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('type', 5)->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-language-books-' . $this->argument('crawlerId'))->where('type', 5)->orderBy('end', 'desc')->first();
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->last + 1;
                 } else {
@@ -67,7 +67,7 @@ class GetDigi extends Command
                 $endC = $startC + CrawlerM::$crawlerSize;
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-language-books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-language-books-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -258,7 +258,7 @@ class GetDigi extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-category-language-books' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi-category-language-books-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
