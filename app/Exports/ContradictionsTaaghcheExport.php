@@ -38,7 +38,9 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
 
             if($item->check_status == 1){
                 $report[$key]->check_status = 'کتاب وجود دارد';
-            }elseif($item->check_status == 2){
+            }elseif($item->has_permit == 1 and $item->check_status == 2){
+                $report[$key]->check_status = 'عدم امکان بررسی';
+            }elseif($item->has_permit == 2 and $item->check_status == 2){
                 $report[$key]->check_status = 'کتاب وجود ندارد';
             }elseif($item->check_status == 3){
                 $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
