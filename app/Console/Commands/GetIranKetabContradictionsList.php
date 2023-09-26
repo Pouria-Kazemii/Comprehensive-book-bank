@@ -83,7 +83,9 @@ class GetIranKetabContradictionsList extends Command
                         $this->info($book_data->shabak);
                         $this->info($book_data->saleNashr);
                         // $book_data->saleNashr =  $book_data->saleNashr.'/01/01';
-                        $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($book_data->saleNashr,0,4).'/01/01')->toCarbon();
+                        $book_data->saleNashr = substr($book_data->saleNashr,0,4).'/01/01';
+                        $this->info($book_data->saleNashr);
+                        $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $book_data->saleNashr)->toCarbon();
                         if ($georgianCarbonDate < date('2022-03-21 00:00:00')) {
                             $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
                             if (!empty($bookirbook_data) || !empty($bookirbook_data)) {
