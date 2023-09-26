@@ -11,14 +11,14 @@ use App\Models\Author;
 use App\Models\BookDigiRelated;
 use App\Models\Crawler as CrawlerM;
 
-class GetDigi extends Command
+class GetDigi1 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:digi {crawlerId} {miss?}';
+    protected $signature = 'get:digi1 {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -67,7 +67,7 @@ class GetDigi extends Command
                 $endC = $startC + CrawlerM::$crawlerSize;
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi1-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -83,7 +83,7 @@ class GetDigi extends Command
                 $bar = $this->output->createProgressBar(36);
                 $bar->start();
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/category-language-books/?pageno=' . $recordNumber . '&sortby=1';
+                    $pageUrl = 'https://www.digikala.com/ajax/search/category-printed-book-of-art-and-entertainment/?pageno=' . $recordNumber . '&sortby=1';
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -258,7 +258,7 @@ class GetDigi extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi1-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
