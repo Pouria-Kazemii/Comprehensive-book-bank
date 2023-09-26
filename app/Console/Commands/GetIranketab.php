@@ -344,6 +344,7 @@ class GetIranketab extends Command
                 }
               
                 // $bar->advance();
+                CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
