@@ -19,7 +19,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
         $status = $this->status;
         $data = array();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price','check_status','tags','has_permit','images')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->limit(100)->get();
+        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price','check_status','tags','has_permit','images')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
         foreach($report as $key=>$item){
             if($item->translate == 1 ){
                 $report[$key]->translate = 'ترجمه';
