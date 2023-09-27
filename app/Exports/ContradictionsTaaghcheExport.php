@@ -50,9 +50,9 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->check_status == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if($georgianCarbonDate > date('2022-03-21 00:00:00')){
-                        $report[$key]->tags = '*';
-                    }
+                    // if($georgianCarbonDate > date('2022-03-21 00:00:00')){
+                        $report[$key]->tags = $georgianCarbonDate;
+                    // }
                 }
             }
           
@@ -71,9 +71,10 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if($georgianCarbonDate < date('2018-03-21 00:00:00')){
-                        $report[$key]->images = '**';
-                    }
+
+                    // if($georgianCarbonDate < date('2018-03-21 00:00:00')){
+                        $report[$key]->images = $georgianCarbonDate;
+                    // }
                 }
             }
             // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
@@ -97,6 +98,6 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
 
     public function headings(): array
     {
-        return ["لینک کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت","وضعیت در خانه کتاب","راهنمای خانه کتاب","وضعیت در اداره کتاب","راهنمای ادراه کتاب"];
+        return ["لینک کتاب در طاقچه", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","چاپی یا الکترونیکی","قیمت","وضعیت در خانه کتاب","راهنمای خانه کتاب","وضعیت در اداره کتاب","راهنمای اداره کتاب"];
     }
 }
