@@ -86,7 +86,7 @@ class GetTaaghcheContradictionsList extends Command
                         // $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $book_data->saleNashr)->toCarbon();
                         // if ($georgianCarbonDate < date('2022-03-21 00:00:00')) {
                             $bookirbook_data = BookirBook::where('xisbn', $book_data->shabak)->orwhere('xisbn2', $book_data->shabak)->orWhere('xisbn3', $book_data->shabak)->first();
-                            if (!empty($bookirbook_data) || !empty($bookirbook_data)) {
+                            if (!empty($bookirbook_data)) {
                                 $update_data['check_status'] = 1;
                             } else {
                                 $update_data['check_status'] = 2;
@@ -96,7 +96,7 @@ class GetTaaghcheContradictionsList extends Command
                         // }
                         // if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
                             $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
-                            if (!empty($ershad_book) || !empty($bookirbook_data)) {
+                            if (!empty($ershad_book)) {
                                 $update_data['has_permit'] = 1;
                             } else {
                                 $update_data['has_permit'] = 2;
