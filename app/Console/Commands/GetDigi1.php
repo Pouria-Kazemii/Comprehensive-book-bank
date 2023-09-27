@@ -118,33 +118,40 @@ class GetDigi1 extends Command
                             $this->info(" \n ---------- Failed Get  " . $pp->product_id . "              ---------=-- ");
                         }
 
-                       
-
+                        
                         if ($status_code == 200) {
-                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
-                            $bookDigi->recordNumber = 'dkp-' . $product_info->data->product->id;
+                            if (isset($product_info->data->product->id) and !empty($product_info->data->product->id)) {
+                                $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
+                                $bookDigi->recordNumber = 'dkp-' . $product_info->data->product->id;
+                            }
 
-                            $bookDigi->title = str_replace('کتاب', '', $product_info->data->product->title_fa);
+                            if (isset($product_info->data->product->title_fa) and !empty($product_info->data->product->title_fa)) {
+                                $bookDigi->title = str_replace('کتاب', '', $product_info->data->product->title_fa);
+                                // ex : اثرمرکب
+                                /*if(mb_strpos($bookDigi->title,'اثر') > 0){
+                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'اثر'), "UTF-8");
+                                }
+                                if(mb_strpos($bookDigi->title,'نشر')){
+                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'نشر'), "UTF-8");
+                                }
+                                if(mb_strpos($bookDigi->title,'انتشارات')){
+                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'انتشارات'), "UTF-8");
+                                }
+                                if(mb_strpos($bookDigi->title,'جلد')){
+                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'جلد'), "UTF-8");
+                                }
+                                if(mb_strpos($bookDigi->title,'چاپ')){
+                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'چاپ'), "UTF-8");
+                                }*/
 
-                            // اثرمرکب
-                            /*if(mb_strpos($bookDigi->title,'اثر') > 0){
-                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'اثر'), "UTF-8");
+                                $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
                             }
-                            if(mb_strpos($bookDigi->title,'نشر')){
-                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'نشر'), "UTF-8");
-                            }
-                            if(mb_strpos($bookDigi->title,'انتشارات')){
-                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'انتشارات'), "UTF-8");
-                            }
-                            if(mb_strpos($bookDigi->title,'جلد')){
-                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'جلد'), "UTF-8");
-                            }
-                            if(mb_strpos($bookDigi->title,'چاپ')){
-                                $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'چاپ'), "UTF-8");
-                            }*/
 
-                            $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
-                            $bookDigi->rate = $product_info->data->product->rating->rate / 20;
+
+                            if(isset($product_info->data->product->rating->rate) AND !empty($product_info->data->product->rating->rate)){
+                                $bookDigi->rate = $product_info->data->product->rating->rate / 20;
+                            }
+
                             if (isset($product_info->data->product->images->list) and !empty($product_info->data->product->images->list)) {
                                 $image_str = '';
                                 foreach ($product_info->data->product->images->list as $image) {
@@ -156,7 +163,7 @@ class GetDigi1 extends Command
                             }
 
                             $authorsobj = array();
-                            if ($product_info->data->product->specifications['0']->title == 'مشخصات') {
+                            if (isset($product_info->data->product->specifications['0']->title) AND $product_info->data->product->specifications['0']->title == 'مشخصات') {
                                 foreach ($product_info->data->product->specifications['0']->attributes as $attribute) {
 
                                     if ($attribute->title == 'نویسنده') {
@@ -235,13 +242,17 @@ class GetDigi1 extends Command
                             }
 
                             $tag_string = '';
-                            foreach ($product_info->data->product->tags as $tag) {
-                                $tag_string .= $tag->name . '#';
+                            if(isset($product_info->data->product->tags) AND !empty($product_info->data->product->tags)){
+                                foreach ($product_info->data->product->tags as $tag) {
+                                    $tag_string .= $tag->name . '#';
+                                }
                             }
+
+                           
                             $bookDigi->tag = $tag_string;
 
                             $bookDigi->price = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
-                            $bookDigi->desc = $product_info->data->product->expert_reviews->description;
+                            $bookDigi->desc = (isset($product_info->data->product->expert_reviews->description))? $product_info->data->product->expert_reviews->description : NULL;
                             $bookDigi->save();
                             // book author
                             if (isset($authorsobj->id)) {
