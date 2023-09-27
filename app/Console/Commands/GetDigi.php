@@ -258,7 +258,7 @@ class GetDigi extends Command
                                 $this->info(" \n ---------- Attach Author Book   " . $authorsobj->id . "  To " . $pp->product_id . "        ---------- ");
                             }
                             //book related
-                            if ($product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
+                            if (isset($product_info->data->recommendations->related_products->title) AND $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
                                 $related_array = array();
                                 foreach ($product_info->data->recommendations->related_products->products as $related_product) {
                                     $related_product_digi =  BookDigi::where('recordNumber', 'dkp-' . $related_product->id)->firstOrNew();
