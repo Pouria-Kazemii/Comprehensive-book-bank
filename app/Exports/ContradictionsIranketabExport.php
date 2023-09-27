@@ -30,9 +30,13 @@ class ContradictionsIranketabExport implements FromCollection,WithHeadings
             $report[$key]->tags = '';
             if($item->check_status == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
-                    $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if(strtotime($georgianCarbonDate) > strtotime('2022-03-21 00:00:00')){
-                        $report[$key]->tags = '*';
+                    if(strlen($item->saleNashr) != 4 ){
+                        $report[$key]->images = '***';
+                    }else{
+                        $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr,0,4).'/01/01')->toCarbon();
+                        if(strtotime($georgianCarbonDate) > strtotime('2022-03-21 00:00:00')){
+                            $report[$key]->tags = '*';
+                        }
                     }
                 }
             }
@@ -50,10 +54,15 @@ class ContradictionsIranketabExport implements FromCollection,WithHeadings
             $report[$key]->images = '';
             if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
-                    $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if(strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')){
-                        $report[$key]->images = '**';
+                    if(strlen($item->saleNashr) != 4 ){
+                        $report[$key]->images = '***';
+                    }else{
+                        $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr,0,4).'/01/01')->toCarbon();
+                        if(strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')){
+                            $report[$key]->images = '**';
+                        }
                     }
+                   
                 }
             }
            
