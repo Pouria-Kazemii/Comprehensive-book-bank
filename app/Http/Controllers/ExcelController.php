@@ -136,6 +136,7 @@ class ExcelController extends Controller
 
     public function exportExcelContradictionsFidibo($status)
     {
+        $status =  explode(',',$status);
         set_time_limit(0);
         return Excel::download(new ContradictionsFidiboExport($status), 'لیست مغایرت فدیبو' . time() . '.xlsx');
     }
@@ -149,14 +150,21 @@ class ExcelController extends Controller
 
     public function exportExcelContradictionsDigi($status)
     {
+        $status =  explode(',',$status);
+        set_time_limit(0);
         return Excel::download(new ContradictionsDigiExport($status), 'لیست مغایرت دیجیکالا' . time() . '.xlsx');
     }
     public function exportExcelContradictionsIranketab($status)
     {
+        $status =  explode(',',$status);
+        set_time_limit(0);
         return Excel::download(new ContradictionsIranketabExport($status), 'لیست مغایرت ایرانکتاب' . time() . '.xlsx');
     }
     public function exportExcelContradictions30book($status)
     {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+
         return Excel::download(new Contradictions30bookExport($status), 'لیست مغایرت 30book' . time() . '.xlsx');
     }
 
