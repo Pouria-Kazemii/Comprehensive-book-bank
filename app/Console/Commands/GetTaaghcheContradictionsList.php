@@ -73,12 +73,13 @@ class GetTaaghcheContradictionsList extends Command
         if (isset($newCrawler)) {
             $rowId = $startC;
             while ($rowId <= $endC) {
-                $book_data = BookTaaghche::where('id', $rowId)->first();
+                // $book_data = BookTaaghche::where('id', $rowId)->first();
+                $book_data = BookTaaghche::where('check_status', 0)->orwhere('has_permit',0)->first();
                 if (isset($book_data) and !empty($book_data)) {
-                    $update_data = array(
-                        'check_status' => 0,
-                        'has_permit' => 0,
-                    );
+                    // $update_data = array(
+                    //     'check_status' => 0,
+                    //     'has_permit' => 0,
+                    // );
                     if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak))) {
                         $this->info($book_data->shabak);
                         // $this->info($book_data->saleNashr);
@@ -105,11 +106,11 @@ class GetTaaghcheContradictionsList extends Command
                         //     $update_data['has_permit'] = 3;
                         // }
                     } else {
-                        if(isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak)){
+                        // if(isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak)){
                             $this->info('row no isbn');
                             $update_data['check_status'] = 4;
                             $update_data['has_permit'] = 4;
-                        }
+                        // }
                         // }elseif((isset($book_data->saleNashr) and $book_data->saleNashr != null and !empty($book_data->saleNashr))){
                         //     $this->info('row no isbn');
                         //     $update_data['check_status'] = 5;
