@@ -40,9 +40,9 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->check_status == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    // if($georgianCarbonDate > date('2022-03-21 00:00:00')){
+                    if(strtotime($georgianCarbonDate) < strtotime('2022-03-21 00:00:00')){
                         $report[$key]->tags = $georgianCarbonDate;
-                    // }
+                    }
                 }
             }
             if($item->check_status == 1){
@@ -60,9 +60,9 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    // if($georgianCarbonDate < date('2018-03-21 00:00:00')){
+                    if(strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')){
                         $report[$key]->images = $georgianCarbonDate;
-                    // }
+                    }
                 }
             }
            
