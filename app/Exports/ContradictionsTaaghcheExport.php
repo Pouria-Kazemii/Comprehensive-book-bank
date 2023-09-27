@@ -19,7 +19,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
         $status = $this->status;
         $data = array();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price','check_status','tags','has_permit','images')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
+        $report = BookTaaghche::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','fileSize','price','check_status','tags','has_permit','images')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->limit(100)->get();
         foreach($report as $key=>$item){
             if($item->translate == 1 ){
                 $report[$key]->translate = 'ترجمه';
@@ -36,6 +36,15 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->fileSize = 'ناموجود';
             }
 
+            $report[$key]->tags = '';
+            if($item->check_status == 2){
+                if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
+                    $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
+                    // if($georgianCarbonDate > date('2022-03-21 00:00:00')){
+                        $report[$key]->tags = $georgianCarbonDate;
+                    // }
+                }
+            }
             if($item->check_status == 1){
                 $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
             }elseif($item->check_status == 2){
@@ -46,16 +55,16 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->check_status = 'کتاب شابک ندارد';
             }
 
-            $report[$key]->tags = 'test tag';
-            if($item->check_status == 2){
+            
+            $report[$key]->images = '';
+            if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    // if($georgianCarbonDate > date('2022-03-21 00:00:00')){
-                        $report[$key]->tags = $georgianCarbonDate;
+                    // if($georgianCarbonDate < date('2018-03-21 00:00:00')){
+                        $report[$key]->images = $georgianCarbonDate;
                     // }
                 }
             }
-          
            
             if($item->has_permit == 1){
                 $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
@@ -67,16 +76,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->has_permit = 'کتاب شابک ندارد';
             }
 
-            $report[$key]->images = 'test image';
-            if($item->has_permit == 2){
-                if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
-                    $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-
-                    // if($georgianCarbonDate < date('2018-03-21 00:00:00')){
-                        $report[$key]->images = $georgianCarbonDate;
-                    // }
-                }
-            }
+            
             // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
             //     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
             //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2018-03-21 00:00:00') ) {
