@@ -40,8 +40,8 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->check_status == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if(strtotime($georgianCarbonDate) < strtotime('2022-03-21 00:00:00')){
-                        $report[$key]->tags = $georgianCarbonDate;
+                    if(strtotime($georgianCarbonDate) > strtotime('2022-03-21 00:00:00')){
+                        $report[$key]->tags = '*';
                     }
                 }
             }
@@ -61,7 +61,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
                     if(strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')){
-                        $report[$key]->images = $georgianCarbonDate;
+                        $report[$key]->images = '**';
                     }
                 }
             }
