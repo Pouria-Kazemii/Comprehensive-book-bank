@@ -46,7 +46,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->check_status = 'کتاب شابک ندارد';
             }
 
-            $report[$key]->tags = '';
+            $report[$key]->tags = 'test tag';
             if($item->check_status == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
@@ -67,7 +67,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
                 $report[$key]->has_permit = 'کتاب شابک ندارد';
             }
 
-            $report[$key]->images = '';
+            $report[$key]->images = 'test image';
             if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
