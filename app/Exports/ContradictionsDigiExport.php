@@ -19,7 +19,7 @@ class ContradictionsDigiExport implements FromCollection,WithHeadings
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookDigi::select('recordNumber','title','nasher','tedadSafe','shabak','ghatechap','check_status','cat','has_permit','images')->where('title','!=',NULL)->where('has_permit',  $status)->get();
+        $report = BookDigi::select('recordNumber','title','nasher','tedadSafe','shabak','ghatechap','check_status','cat','has_permit','images')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
         foreach($report as $key=>$item){
             $report[$key]->cat = '';
             if($item->check_status == 2){
