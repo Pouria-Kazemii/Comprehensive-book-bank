@@ -71,6 +71,7 @@ class GetDigi extends Command
                     $startC = 1;
                 }
                 $endC = $startC + CrawlerM::$crawlerSize;
+                $endC = 277;
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
