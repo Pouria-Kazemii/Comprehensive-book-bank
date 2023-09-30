@@ -69,6 +69,6 @@ class ContradictionsDigiExport implements FromCollection,WithHeadings
 
     public function headings(): array
     {
-        return ["آیدی کتاب در دیجیکالا", "عنوان کتاب","ناشر","تعداد صفحه","شابک","قطع"];
+        return ["آیدی کتاب در دیجیکالا", "عنوان کتاب","ناشر","تعداد صفحه","شابک","قطع","وضعیت در خانه کتاب","راهنمای خانه کتاب","وضعیت در اداره کتاب","راهنمای اداره کتاب"];
     }
 }
