@@ -246,7 +246,7 @@ class Getmajma extends Command
                         $bookIrPublisher->xpermitno = (!is_null($publisher_content->permitNumber)) ? $publisher_content->permitNumber : $bookIrPublisher->xpermitno;
                         $bookIrPublisher->xemail = (!is_null($publisher_content->mail)) ? $publisher_content->mail : $bookIrPublisher->xemail;
                         $bookIrPublisher->xsite = (!is_null($publisher_content->site)) ? $publisher_content->site : $bookIrPublisher->xsite;
-                        $bookIrPublisher->xisbnid = (!is_null($publisher_content->isbns)) ? implode(",", $publisher_content->isbns) : $bookIrPublisher->xisbnid;
+                        $bookIrPublisher->xisbnid = (!is_null($publisher_content->isbns)) ? implode(",", array_unique($publisher_content->isbns)) : $bookIrPublisher->xisbnid;
                         $bookIrPublisher->xfoundingdate = (!is_null($publisher_content->foundingDate)) ? $publisher_content->foundingDate : $bookIrPublisher->xfoundingdate;
                         // $bookIrPublisher->xispos = '';
                         $bookIrPublisher->ximageurl = (!is_null($publisher_content->image)) ? $publisher_content->image : $bookIrPublisher->ximageurl;
