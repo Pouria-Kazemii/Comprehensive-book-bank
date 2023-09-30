@@ -53,7 +53,7 @@ class GetMajmaRevers extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->where('status', 1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->where('status', 1)->orderBy('end', 'DESC')->first();
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->start;
                     $endC = $lastCrawler->end;
@@ -65,9 +65,14 @@ class GetMajmaRevers extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->orderBy('end', 'ASC')->first();
                 if (isset($lastCrawler->last)) {
-                    $startC = $lastCrawler->last - 1;
+                    if($lastCrawler->last > 0){
+                        $startC = $lastCrawler->last - 1;
+                    }else{
+                        $startC = $lastCrawler->start;
+                    }
+                   
                 } else {
                     $startC = 3033976;
                 }
