@@ -60,7 +60,13 @@ class GetDigi1 extends Command
             try {
                 $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-art-and-entertainment-' . $this->argument('crawlerId'))->where('type', 5)->orderBy('end', 'desc')->first();
                 if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->last + 1;
+                    if($lastCrawler->last > 0){
+                        $startC = $lastCrawler->last + 1;
+
+                    }else{
+                        $startC = $lastCrawler->start;
+
+                    }
                 } else {
                     $startC = 1;
                 }
@@ -215,11 +221,11 @@ class GetDigi1 extends Command
                                             $tedadSafeStr = '';
                                             $tedadSafes = explode(' - ', $attribute->values['0']);
                                             foreach ($tedadSafes as $tedadSafe) {
-                                                $tedadSafeStr .=  $tedadSafe . '#';
+                                                $tedadSafeStr .=  enNumberKeepOnly($tedadSafe) . '#';
                                             }
                                             $bookDigi->tedadSafe = $tedadSafeStr;
                                         } else {
-                                            $bookDigi->tedadSafe = $attribute->values['0'];
+                                            $bookDigi->tedadSafe = enNumberKeepOnly($attribute->values['0']);
                                         }
                                     }
                                     $ageGroup_str = '';
