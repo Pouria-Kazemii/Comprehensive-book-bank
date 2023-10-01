@@ -188,6 +188,10 @@ class Getmajma extends Command
                     // 'xcongresscode'=>'' ;
                     $bookIrBook->xdiocode = (!is_null($book_content->dewey)) ? $book_content->dewey : $bookIrBook->xdiocode;
                     $bookIrBook->xlang = (!is_null($book_content->language)) ? $book_content->language : $bookIrBook->xlang;
+                    if (!is_null($book_content->publishPlace)) {
+                        //Replace multiple whitespace characters with a single space
+                        $book_content->publishPlace = preg_replace('/\s+/', ' ', $book_content->publishPlace);
+                    }
                     $bookIrBook->xpublishplace = (!is_null($book_content->publishPlace)) ? $book_content->publishPlace : $bookIrBook->xpublishplace;
                     $bookIrBook->xdescription = (!is_null($book_content->abstract)) ? $book_content->abstract : $bookIrBook->xdescription;
                     // 'xweight'=>'' ;
@@ -237,6 +241,10 @@ class Getmajma extends Command
                         $bookIrPublisher->xpublishername = (!is_null($publisher_content->title)) ? $publisher_content->title : $bookIrPublisher->xpublishername;
                         $bookIrPublisher->xmanager = (!empty($publisher_manager)) ? $publisher_manager : $bookIrPublisher->xmanager;
                         // $bookIrPublisher->xactivity = '';
+                        if (!is_null($publisher_content->publisherPlace)) {
+                            //Replace multiple whitespace characters with a single space
+                            $publisher_content->publisherPlace = preg_replace('/\s+/', ' ', $publisher_content->publisherPlace);
+                        }
                         $bookIrPublisher->xplace = (!is_null($publisher_content->publisherPlace)) ? $publisher_content->publisherPlace : $bookIrPublisher->xplace;
                         $bookIrPublisher->xaddress = (!is_null($publisher_content->address)) ? $publisher_content->address : $bookIrPublisher->xaddress;
                         // $bookIrPublisher->xpobox = '';

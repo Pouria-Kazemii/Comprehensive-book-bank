@@ -59,7 +59,6 @@ class GetMajmaRevers extends Command
                     $endC = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
                     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-majmaRevers-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-
                 }
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
@@ -67,10 +66,9 @@ class GetMajmaRevers extends Command
         } else {
             try {
                 $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'ASC')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
+                if (isset($lastCrawler) and !empty($lastCrawler)) {
                     $startC = $lastCrawler->last - 1;
                     $endC = $startC - CrawlerM::$crawlerSize;
-                    
                 } else {
                     $startC = 3033976;
                     $endC = $startC - CrawlerM::$crawlerSize;
@@ -112,7 +110,7 @@ class GetMajmaRevers extends Command
                     echo 'error:' . curl_error($ch);
                     MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
                 } else {
-                    $this->info(' recordNumber : '. $recordNumber);
+                    $this->info(' recordNumber : ' . $recordNumber);
                     MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
 
                     ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
@@ -147,8 +145,8 @@ class GetMajmaRevers extends Command
 
                     if (!is_null($book_content->isbn)) {
 
-                       $book_content->isbn = self::validateIsbn($book_content->isbn);
-                       $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
+                        $book_content->isbn = self::validateIsbn($book_content->isbn);
+                        $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
 
                         if (empty($isbn13)) {
                             $book_content->isbn = $isbn13;
@@ -167,7 +165,7 @@ class GetMajmaRevers extends Command
 
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->xpageurl2 = 'http://ketab.ir/book/' . $book_content->uniqueId;
-                    $bookIrBook->xname = (!is_null($book_content->title)) ? mb_substr($book_content->title,0,300, "UTF-8") : $bookIrBook->xname;
+                    $bookIrBook->xname = (!is_null($book_content->title)) ? mb_substr($book_content->title, 0, 300, "UTF-8") : $bookIrBook->xname;
                     $bookIrBook->xname2 = str_replace(" ", "", $bookIrBook->xname);
                     $bookIrBook->xpagecount = (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount;
                     $bookIrBook->xformat = (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat;
@@ -179,15 +177,19 @@ class GetMajmaRevers extends Command
 
                     // 'xapearance'=> '' ;
                     $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
-                    $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn),0,20);
+                    $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn), 0, 20);
                     $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
 
-                    $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate,0,4) . '/'.substr($book_content->issueDate,4,2).'/'.substr($book_content->issueDate,6,2), '/', '-') : $bookIrBook->xpublishdate;
+                    $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate, 0, 4) . '/' . substr($book_content->issueDate, 4, 2) . '/' . substr($book_content->issueDate, 6, 2), '/', '-') : $bookIrBook->xpublishdate;
                     $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
                     // 'xminprice'=>'' ;
                     // 'xcongresscode'=>'' ;
                     $bookIrBook->xdiocode = (!is_null($book_content->dewey)) ? $book_content->dewey : $bookIrBook->xdiocode;
                     $bookIrBook->xlang = (!is_null($book_content->language)) ? $book_content->language : $bookIrBook->xlang;
+                    if (!is_null($book_content->publishPlace)) {
+                        //Replace multiple whitespace characters with a single space
+                        $book_content->publishPlace = preg_replace('/\s+/', ' ', $book_content->publishPlace);
+                    }
                     $bookIrBook->xpublishplace = (!is_null($book_content->publishPlace)) ? $book_content->publishPlace : $bookIrBook->xpublishplace;
                     $bookIrBook->xdescription = (!is_null($book_content->abstract)) ? $book_content->abstract : $bookIrBook->xdescription;
                     // 'xweight'=>'' ;
@@ -237,6 +239,11 @@ class GetMajmaRevers extends Command
                         $bookIrPublisher->xpublishername = (!is_null($publisher_content->title)) ? $publisher_content->title : $bookIrPublisher->xpublishername;
                         $bookIrPublisher->xmanager = (!empty($publisher_manager)) ? $publisher_manager : $bookIrPublisher->xmanager;
                         // $bookIrPublisher->xactivity = '';
+
+                        if (!is_null($publisher_content->publisherPlace)) {
+                            //Replace multiple whitespace characters with a single space
+                            $publisher_content->publisherPlace = preg_replace('/\s+/', ' ', $publisher_content->publisherPlace);
+                        }
                         $bookIrPublisher->xplace = (!is_null($publisher_content->publisherPlace)) ? $publisher_content->publisherPlace : $bookIrPublisher->xplace;
                         $bookIrPublisher->xaddress = (!is_null($publisher_content->address)) ? $publisher_content->address : $bookIrPublisher->xaddress;
                         // $bookIrPublisher->xpobox = '';
@@ -368,11 +375,10 @@ class GetMajmaRevers extends Command
                             );
                         }
                     }
-
                 }
 
                 // $bar->advance();*/
-                CrawlerM::where('name','Crawler-majmaRevers-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
+                CrawlerM::where('name', 'Crawler-majmaRevers-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber--;
             }
             $newCrawler->status = 2;
@@ -445,5 +451,4 @@ class GetMajmaRevers extends Command
         $isbn = str_replace("-", "", str_replace("0", "", $isbn));
         return $isbn;
     }
-
 }
