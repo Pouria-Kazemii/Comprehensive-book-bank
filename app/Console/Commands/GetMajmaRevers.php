@@ -58,7 +58,7 @@ class GetMajmaRevers extends Command
                     $startC = $lastCrawler->last;
                     $endC = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-majmaRevers-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
                 }
             } catch (\Exception $e) {
