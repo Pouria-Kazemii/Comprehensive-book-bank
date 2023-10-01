@@ -239,13 +239,11 @@ class GetKetabRah extends Command
                             }
 
                             // price 
-                            //
                             if($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price')->count() > 0){
 
                                 $prices = $crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price span')->text();
                                 $price = explode('-',$prices);
-                                $BookKetabrah->price = enNumberKeepOnly(faCharToEN($price[0]));
-                                $this->info(enNumberKeepOnly(faCharToEN($price[0])));
+                                $BookKetabrah->price = (isset($price[0]) AND enNumberKeepOnly(faCharToEN($price[0])) > 0)? enNumberKeepOnly(faCharToEN($price[0])) : 0;
                             }
                             $BookKetabrah->save();
                         } 
