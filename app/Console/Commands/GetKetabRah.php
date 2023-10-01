@@ -251,7 +251,7 @@ class GetKetabRah extends Command
                         $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
                     }
                 }
-
+                CrawlerM::where('name','Crawler-KetabRah-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 // $bar->advance();
                 $recordNumber++;
             }

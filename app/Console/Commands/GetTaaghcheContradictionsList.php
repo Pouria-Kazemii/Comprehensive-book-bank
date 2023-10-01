@@ -73,8 +73,7 @@ class GetTaaghcheContradictionsList extends Command
         if (isset($newCrawler)) {
             $rowId = $startC;
             while ($rowId <= $endC) {
-                // $book_data = BookTaaghche::where('id', $rowId)->first();
-                $book_data = BookTaaghche::where('check_status', 0)->orwhere('has_permit',0)->first();
+                $book_data = BookTaaghche::where('id', $rowId)->first();
                 if (isset($book_data) and !empty($book_data)) {
                     // $update_data = array(
                     //     'check_status' => 0,
