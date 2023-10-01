@@ -167,7 +167,7 @@ class GetMajmaRevers extends Command
 
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->xpageurl2 = 'http://ketab.ir/book/' . $book_content->uniqueId;
-                    $bookIrBook->xname = (!is_null($book_content->title)) ? $book_content->title : $bookIrBook->xname;
+                    $bookIrBook->xname = (!is_null($book_content->title)) ? mb_substr($book_content->title,0,300, "UTF-8") : $bookIrBook->xname;
                     $bookIrBook->xname2 = str_replace(" ", "", $bookIrBook->xname);
                     $bookIrBook->xpagecount = (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount;
                     $bookIrBook->xformat = (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat;
