@@ -199,13 +199,21 @@ class GetKetabRah extends Command
                                         $BookKetabrah->cat = $catStr;
                                     }
 
-                                    if( $row->filterXPath('//td[1]')->text() == 'ناشر چاپی' OR $row->filterXPath('//td[1]')->text() =='ناشر صوتی'){
+                                    if( $row->filterXPath('//td[1]')->text() == 'ناشر چاپی'){
                                         $publisher_name = str_replace('انتشاراتی', '', $row->filterXPath('//td[2]')->text());
                                         $publisher_name = str_replace('انتشارات', '', $publisher_name);
                                         $publisher_name = str_replace('گروه', '', $publisher_name);
                                         $publisher_name = str_replace('نشریه', '', $publisher_name);
                                         $publisher_name = str_replace('نشر', '', $publisher_name);
                                         $BookKetabrah->nasher = $publisher_name;
+                                    }
+                                    if($row->filterXPath('//td[1]')->text() =='ناشر صوتی'){
+                                        $audio_publisher_name = str_replace('انتشاراتی', '', $row->filterXPath('//td[2]')->text());
+                                        $audio_publisher_name = str_replace('انتشارات', '', $audio_publisher_name);
+                                        $audio_publisher_name = str_replace('گروه', '', $audio_publisher_name);
+                                        $audio_publisher_name = str_replace('نشریه', '', $audio_publisher_name);
+                                        $audio_publisher_name = str_replace('نشر', '', $audio_publisher_name);
+                                        $BookKetabrah->nasherSouti = $audio_publisher_name;
                                     }
 
                                     if( $row->filterXPath('//td[1]')->text() == 'سال انتشار'){

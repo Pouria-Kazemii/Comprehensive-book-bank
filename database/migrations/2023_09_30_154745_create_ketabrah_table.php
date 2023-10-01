@@ -19,6 +19,7 @@ class CreateKetabrahTable extends Migration
             $table->integer('parentId')->default(0)->index();
             $table->string('title',255)->collation('utf8_persian_ci')->nullable();
             $table->string('nasher',255)->collation('utf8_persian_ci')->nullable()->index();
+            $table->string('nasherSouti',255)->collation('utf8_persian_ci')->nullable()->index();
             $table->string('saleNashr',20)->collation('utf8_persian_ci')->nullable();
             $table->integer('tedadSafe')->default(0)->index();
             $table->string('shabak',255)->collation('utf8_persian_ci')->nullable()->index();
