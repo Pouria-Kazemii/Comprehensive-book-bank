@@ -46,32 +46,29 @@ class GetDigi extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'))->where('type', 5)->where('status', 1)->orderBy('end', 'ASC')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->start;
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
+                if (isset($lastCrawler) AND !empty($lastCrawler)) {
+                    $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = $lastCrawler;
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+
                 }
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'))->where('type', 5)->orderBy('end', 'desc')->first();
-                if (isset($lastCrawler->end)) {
-                    if($lastCrawler->last > 0){
-                        $startC = $lastCrawler->last + 1;
-
-                    }else{
-                        $startC = $lastCrawler->start;
-
-                    }
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'DESC')->first();
+                if (isset($lastCrawler) AND !empty($lastCrawler)) {
+                    $startC = $lastCrawler->end + 1;
+                    $endC = $startC + CrawlerM::$crawlerSize;
+                    
                 } else {
                     $startC = 1;
+                    // $endC = $startC + CrawlerM::$crawlerSize;
+                    $endC = 277;
                 }
-                $endC = $startC + CrawlerM::$crawlerSize;
-                $endC = 277;
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-book-of-social-sciences-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));

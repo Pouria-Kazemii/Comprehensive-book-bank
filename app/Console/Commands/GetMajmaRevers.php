@@ -53,31 +53,29 @@ class GetMajmaRevers extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->where('status', 1)->orderBy('end', 'DESC')->first();
+                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
                 if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->start;
+                    $startC = $lastCrawler->last;
                     $endC = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = $lastCrawler;
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+
                 }
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-%')->where('type', 2)->orderBy('end', 'ASC')->first();
-                if (isset($lastCrawler->last)) {
-                    if($lastCrawler->last > 0){
-                        $startC = $lastCrawler->last - 1;
-                    }else{
-                        $startC = $lastCrawler->start;
-                    }
-                   
+                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-majmaRevers-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'ASC')->first();
+                if (isset($lastCrawler) AND !empty($lastCrawler)) {
+                    $startC = $lastCrawler->last - 1;
+                    $endC = $startC - CrawlerM::$crawlerSize;
+                    
                 } else {
                     $startC = 3033976;
+                    $endC = $startC - CrawlerM::$crawlerSize;
                 }
 
-                $endC = $startC - CrawlerM::$crawlerSize;
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-majmaRevers-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
