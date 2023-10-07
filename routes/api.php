@@ -38,6 +38,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/web/v1/publisher/detail', 'API\PublisherController@detail');
     Route::post('/web/v1/creator/detail', 'API\CreatorController@detail');
     Route::post('/web/v1/book/find', 'API\BookController@find');
+    Route::post('/web/v1/book/detail', 'API\BookController@detail');
 });
 
 Route::group(['middleware' => ['jwt.verify']], function () {
