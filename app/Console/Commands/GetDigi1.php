@@ -18,7 +18,7 @@ class GetDigi1 extends Command
      *
      * @var string
      */
-    protected $signature = 'get:digiCategoryAppliedSciencesTechnologyEngineering {crawlerId} {miss?}';
+    protected $signature = 'get:digiCategoryTextbookTutorialsTests {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -46,12 +46,12 @@ class GetDigi1 extends Command
     {
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-applied-sciences-technology-and-engineering-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-textbook-tutorials-and-tests-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-applied-sciences-technology-and-engineering-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-textbook-tutorials-and-tests-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
                 }
             } catch (\Exception $e) {
@@ -59,7 +59,7 @@ class GetDigi1 extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-applied-sciences-technology-and-engineering-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-textbook-tutorials-and-tests-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->end + 1;
                     $endC = $startC + CrawlerM::$crawlerSize;
@@ -71,7 +71,7 @@ class GetDigi1 extends Command
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-applied-sciences-technology-and-engineering-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-textbook-tutorials-and-tests-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -87,7 +87,7 @@ class GetDigi1 extends Command
                 $bar = $this->output->createProgressBar(36);
                 $bar->start();
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/category-printed-book-of-philosophy-and-psychology/?pageno=' . $recordNumber . '&sortby=1';
+                    $pageUrl = 'https://www.digikala.com/ajax/search/category-textbook-tutorials-and-tests/?pageno=' . $recordNumber . '&sortby=1';
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -280,7 +280,7 @@ class GetDigi1 extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-category-applied-sciences-technology-and-engineering-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi-category-textbook-tutorials-and-tests-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
