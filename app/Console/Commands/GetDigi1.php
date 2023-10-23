@@ -18,7 +18,7 @@ class GetDigi1 extends Command
      *
      * @var string
      */
-    protected $signature = 'get:digiCategoryPrintedBookBiographyEncyclopedia {crawlerId} {miss?}';
+    protected $signature = 'get:digiCategoryChildrenBook {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -44,14 +44,27 @@ class GetDigi1 extends Command
      */
     public function handle()
     {
+        // cat: 
+        //x category-foreign-printed-book
+        //x category-children-book
+        //x category-printed-book-of-biography-and-encyclopedia
+        // category-applied-sciences-technology-and-engineering
+        // category-printed-history-and-geography-book
+        // category-printed-book-of-philosophy-and-psychology
+        // category-textbook-tutorials-and-tests
+        // category-language-books
+        // category-printed-book-of-art-and-entertainment
+        // category-religious-printed-book
+        // category-printed-book-of-social-sciences
+        // category-printed-book-of-poetry-and-literature
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-biography-and-encyclopedia-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-book-of-biography-and-encyclopedia-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
                 }
             } catch (\Exception $e) {
@@ -59,7 +72,7 @@ class GetDigi1 extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-biography-and-encyclopedia-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->end + 1;
                     $endC = $startC + CrawlerM::$crawlerSize;
@@ -71,7 +84,7 @@ class GetDigi1 extends Command
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-book-of-biography-and-encyclopedia-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -87,7 +100,7 @@ class GetDigi1 extends Command
                 $bar = $this->output->createProgressBar(36);
                 $bar->start();
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/category-printed-book-of-biography-and-encyclopedia/?pageno=' . $recordNumber . '&sortby=1';
+                    $pageUrl = 'https://www.digikala.com/ajax/search/category-children-book/?pageno=' . $recordNumber . '&sortby=1';
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -130,24 +143,7 @@ class GetDigi1 extends Command
                             }
 
                             if (isset($product_info->data->product->title_fa) and !empty($product_info->data->product->title_fa)) {
-                                $bookDigi->title = str_replace('کتاب', '', $product_info->data->product->title_fa);
-                                // ex : اثرمرکب
-                                /*if(mb_strpos($bookDigi->title,'اثر') > 0){
-                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'اثر'), "UTF-8");
-                                }
-                                if(mb_strpos($bookDigi->title,'نشر')){
-                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'نشر'), "UTF-8");
-                                }
-                                if(mb_strpos($bookDigi->title,'انتشارات')){
-                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'انتشارات'), "UTF-8");
-                                }
-                                if(mb_strpos($bookDigi->title,'جلد')){
-                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'جلد'), "UTF-8");
-                                }
-                                if(mb_strpos($bookDigi->title,'چاپ')){
-                                    $bookDigi->title = mb_substr($bookDigi->title,0,mb_strpos($bookDigi->title,'چاپ'), "UTF-8");
-                                }*/
-
+                                $bookDigi->title = $product_info->data->product->title_fa;
                                 $bookDigi->title = self::convert_arabic_char_to_persian(self::remove_half_space_from_string($bookDigi->title));
                             }
 
@@ -280,7 +276,7 @@ class GetDigi1 extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-category-printed-book-of-biography-and-encyclopedia-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
