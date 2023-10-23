@@ -450,7 +450,7 @@ class Getmajma extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "", str_replace("0", "", $isbn));
+        $isbn = str_replace("-", "", $isbn);
         return $isbn;
     }
 
