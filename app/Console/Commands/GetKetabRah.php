@@ -53,7 +53,8 @@ class GetKetabRah extends Command
                 $lastCrawler = CrawlerM::where('name', 'Crawler-KetabRah-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->last;
-                    $endC   = $lastCrawler->end;
+                    // $endC   = $lastCrawler->end;
+                     $endC   = 79602;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
                     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabRah-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
                 }
@@ -65,11 +66,13 @@ class GetKetabRah extends Command
                 $lastCrawler = CrawlerM::where('name', 'Crawler-KetabRah-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->end + 1;
-                    $endC = $startC + CrawlerM::$crawlerSize;
+                    // $endC = $startC + CrawlerM::$crawlerSize;
+                    $endC = 79602;
                     
                 } else {
                     $startC = 1;
-                    $endC = $startC + CrawlerM::$crawlerSize;
+                    // $endC = $startC + CrawlerM::$crawlerSize;
+                    $endC = 79602;
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
@@ -321,7 +324,7 @@ class GetKetabRah extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "", str_replace("0", "", $isbn));
+        $isbn = str_replace("-", "",  $isbn);
         return $isbn;
     }
 }
