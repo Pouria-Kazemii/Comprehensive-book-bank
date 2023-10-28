@@ -112,10 +112,10 @@ class Getmajma extends Command
                     if (curl_errno($ch)) {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         echo 'error:' . curl_error($ch);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
+                        // MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
                     } else {
                         $this->info(' recordNumber : '. $recordNumber);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
+                        // MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
     
                         ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                         $book_content = json_decode($book_content);
@@ -152,7 +152,7 @@ class Getmajma extends Command
                     } 
     
                     // $bar->advance();*/
-                    // CrawlerM::where('name','Correct-Isbn-From-Majma-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
+                    CrawlerM::where('name','Correct-Isbn-From-Majma-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 }
             });
 
