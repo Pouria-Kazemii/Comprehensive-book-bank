@@ -18,7 +18,7 @@ use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\HttpClient\HttpClient;
 
-class Getmajma extends Command
+class CorrectIsbnFromMajma extends Command
 {
     /**
      * The name and signature of the console command.
