@@ -35,6 +35,7 @@ Route::get('/v1/book/update_temp_book_master_id_in_iranketab/{limit}', [ChangeDa
 // Route::get('/dossier/{bookId}', [BookController::class, 'dossier']);
 // Route::get('/consensus_similar_books_by_iranketab_entitle/{limit}', [ChangeDataController::class, 'consensus_similar_books_by_iranketab_entitle']);
 // Route::get('/consensus_similar_books_by_iranketab_parentId/{limit}', [ChangeDataController::class, 'consensus_similar_books_by_iranketab_parentId']);
+Route::get('/consensus_similar_books_by_iranketab_parentId_new/{limit}', [ChangeDataController::class, 'consensus_similar_books_by_iranketab_parentId_new']);
 Route::get('/merge_parentid_tempparentid/{limit}', [ChangeDataController::class, 'merge_parentid_tempparentid']);
 Route::get('/merge_parentid_tempparentid_desc/{limit}', [ChangeDataController::class, 'merge_parentid_tempparentid_desc']);
 // Route::get('/update_tempparent_to_other_fields/{limit}', [ChangeDataController::class, 'update_tempparent_to_other_fields']);
@@ -63,6 +64,7 @@ Route::get('test_get_book_id_majma/{book_id}', [TestController::class, 'test_get
 Route::get('test_get_publishers_majma/{from}/{result_count}', [TestController::class, 'test_get_publishers_majma']);
 Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
 Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::class, 'test_get_authors_majma']);
+Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
 
 
 
