@@ -137,15 +137,15 @@ class TestController extends Controller
                 $redirectedUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
                 curl_close($ch);
 
-                if(curl_errno($ch))
-                {
-                    echo(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                    echo '</br>';
-                    echo 'error:' . curl_error($ch);
-                    echo '</br>';
-                }
-                else
-                {
+                // if(curl_errno($ch))
+                // {
+                //     echo(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
+                //     echo '</br>';
+                //     echo 'error:' . curl_error($ch);
+                //     echo '</br>';
+                // }
+                // else
+                // {
                     try {
                         echo(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         echo '</br>';
@@ -412,7 +412,7 @@ class TestController extends Controller
                         echo(" \n ---------- Inappropriate Content              ---------=-- ");
                     }    
 
-                }
+                // }
             }
         // });
     }
