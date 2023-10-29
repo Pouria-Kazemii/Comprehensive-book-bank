@@ -82,8 +82,9 @@ class GetMajma2500000 extends Command
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
         }
+        CrawlerM::where('name','Crawler-majma2500000-'.$this->argument('crawlerId'))->where('start',$startC)->update(['status'=>2]);
 
-        if (isset($newCrawler)) {
+       /* if (isset($newCrawler)) {
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
@@ -379,7 +380,6 @@ class GetMajma2500000 extends Command
 
                 }
 
-                // $bar->advance();*/
                 CrawlerM::where('name','Crawler-majma2500000-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 $recordNumber++;
             }
@@ -387,7 +387,9 @@ class GetMajma2500000 extends Command
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
-        }
+        }*/
+
+
     }
 
     public static function convert_arabic_char_to_persian($string)
