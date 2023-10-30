@@ -11,5 +11,5 @@ class MajmaApiBook extends Model
     protected $table = 'majma_api_books';
     protected $fillable = ['xbook_id', 'xstatus'];
     protected $primaryKey = 'xid';
-    public $timestamps = false;
+    public $timestamps = true;
 }

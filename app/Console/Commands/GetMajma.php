@@ -51,37 +51,17 @@ class Getmajma extends Command
      */
     public function handle()
     {
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('name','Crawler-Majma-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->last;
-                    $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+        $newest_book_id = MajmaApiBook::where('xstatus',200)->orderBy('xbook_id','DESC')->first();
+        try {
+            $startC = $newest_book_id->xbook_id + 1;
+            $endC = $startC + CrawlerM::$crawlerSize;
 
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name','Crawler-Majma-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->end + 1;
-                    $endC = $startC + CrawlerM::$crawlerSize;
-                    
-                } else {
-                    $startC = 1;
-                    $endC = $startC + CrawlerM::$crawlerSize;
-                }
-
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
+        
 
         if (isset($newCrawler)) {
 
