@@ -93,7 +93,8 @@ class CorrectIsbnFromMajma3 extends Command
             // $books = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->get();
             BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('xid','>',1000000)->orderby('xid','ASC')->chunk(2000, function($books,$startC) {
                 foreach ($books as $book) {
-                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=",'',$book->xpageurl);
+                    $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=",'',$book->xpageurl);
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=",'',$pageUrl);
                     $this->info($recordNumber);
                     $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
@@ -121,21 +122,23 @@ class CorrectIsbnFromMajma3 extends Command
                         $book_content = json_decode($book_content);
                         $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
     
+                        $book_content->isbn = self::validateIsbn($book_content->isbn);
                         if (!is_null($book_content->isbn)) {
-    
-                           $book_content->isbn = self::validateIsbn($book_content->isbn);
-                           $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
-    
+
+                            $isbn13 = $book_content->isbn;
+                            $isbn13 = str_replace("-", "", str_replace("0", "", $isbn13));
+
                             if (empty($isbn13)) {
                                 $book_content->isbn = $isbn13;
                             }
                         }
-    
+
+                        $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
                         if (!is_null($book_content->isbn10)) {
-    
-                            $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
-                            $isbn10 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
-    
+
+                            $isbn10 = $book_content->isbn10;
+                            $isbn10 = str_replace("-", "", str_replace("0", "", $isbn10));
+
                             if (empty($isbn10)) {
                                 $book_content->isbn10 = $isbn10;
                             }
@@ -225,7 +228,7 @@ class CorrectIsbnFromMajma3 extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "", $isbn);
+        // $isbn = str_replace("-", "", $isbn);
         return $isbn;
     }
 
