@@ -11,5 +11,5 @@ class MajmaApiPublisher extends Model
     protected $table = 'majma_api_publishers';
     protected $fillable = ['xpublisher_id', 'xstatus'];
     protected $primaryKey = 'xid';
-    public $timestamps = false;
+    public $timestamps = true;
 }
