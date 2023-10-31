@@ -13,7 +13,9 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
+        // Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
+        Commands\GetIranketab::class, 
+
     ];
 
     /**
@@ -25,6 +27,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('get:iranKetab 1')->everyMinute();
     }
 
     /**
