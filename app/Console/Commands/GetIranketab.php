@@ -120,13 +120,13 @@ class GetIranketab extends Command
             //  die('stop');
             // dd('stop');
 
-                if(curl_errno($ch))
-                {
-                    $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                    echo 'error:' . curl_error($ch);
-                }
-                else
-                {
+                // if(curl_errno($ch))  // not work in server
+                // {
+                //     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
+                //     echo 'error:' . curl_error($ch);
+                // }
+                // else
+                // {
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         $crawler = $client->request('GET', 'https://kandoonews.com/iranketab/' . $recordNumber.'/');
@@ -382,7 +382,7 @@ class GetIranketab extends Command
                         $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
                     }    
 
-                }
+               // }
               
                 // $bar->advance();
                 CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
