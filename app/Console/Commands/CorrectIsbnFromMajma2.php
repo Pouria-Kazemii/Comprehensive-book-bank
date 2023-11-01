@@ -92,8 +92,8 @@ class CorrectIsbnFromMajma2 extends Command
             // $books = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->get();
             BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('xid', '<', 1000000)->orderby('xid', 'DESC')->chunk(2000, function ($books, $startC) {
                 foreach ($books as $book) {
-                    $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=",'',$book->xpageurl);
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=",'',$pageUrl);
+                    $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
                     $this->info($recordNumber);
                     $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
@@ -119,7 +119,7 @@ class CorrectIsbnFromMajma2 extends Command
 
                         ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                         $book_content = json_decode($book_content);
-                        $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+                        $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
 
                         $book_content->isbn = self::validateIsbn($book_content->isbn);
                         if (!is_null($book_content->isbn)) {
