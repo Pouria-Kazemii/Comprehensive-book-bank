@@ -125,19 +125,20 @@ class Getmajma extends Command
                         $is_translate = (isset($bookIrBook->is_translate)) ? $bookIrBook->is_translate : 0;
                     }
 
+                    $book_content->isbn = self::validateIsbn($book_content->isbn);
                     if (!is_null($book_content->isbn)) {
-
-                       $book_content->isbn = self::validateIsbn($book_content->isbn);
-                       $isbn13 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
+                      
+                       $isbn13 = $book_content->isbn;
+                       $isbn13 = str_replace("-", "", str_replace("0", "", $isbn13));
 
                         if (empty($isbn13)) {
                             $book_content->isbn = $isbn13;
                         }
                     }
 
+                    $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
                     if (!is_null($book_content->isbn10)) {
-
-                        $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
+                        $isbn10 = $book_content->isbn10;
                         $isbn10 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
 
                         if (empty($isbn10)) {
@@ -430,7 +431,7 @@ class Getmajma extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "", $isbn);
+        // $isbn = str_replace("-", "", $isbn);
         return $isbn;
     }
 
