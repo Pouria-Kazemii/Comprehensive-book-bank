@@ -11,14 +11,14 @@ use App\Models\Author;
 use App\Models\BookDigiRelated;
 use App\Models\Crawler as CrawlerM;
 
-class GetDigi4 extends Command
+class GetDigiNewestBook extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:digiCategoryPrintedHistoryAndGeographyBook {crawlerId} {miss?}';
+    protected $signature = 'get:digiNewestBook {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -44,27 +44,14 @@ class GetDigi4 extends Command
      */
     public function handle()
     {
-        // cat: 
-        // category-foreign-printed-book
-        // category-children-book
-        //x category-printed-book-of-biography-and-encyclopedia
-        // category-applied-sciences-technology-and-engineering
-        // category-printed-history-and-geography-book
-        // category-printed-book-of-philosophy-and-psychology
-        // category-textbook-tutorials-and-tests
-        // category-language-books
-        // category-printed-book-of-art-and-entertainment
-        // category-religious-printed-book
-        // category-printed-book-of-social-sciences
-        // category-printed-book-of-poetry-and-literature
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-history-and-geography-book-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-newest-book-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
                     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-history-and-geography-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-newest-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
                 }
             } catch (\Exception $e) {
@@ -72,7 +59,7 @@ class GetDigi4 extends Command
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-printed-history-and-geography-book-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-newest-book-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->end + 1;
                     $endC = $startC + CrawlerM::$crawlerSize;
@@ -80,11 +67,11 @@ class GetDigi4 extends Command
                 } else {
                     $startC = 1;
                     // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 2;
+                    $endC = 100;
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-printed-history-and-geography-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-newest-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
             } catch (\Exception $e) {
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
             }
@@ -100,7 +87,7 @@ class GetDigi4 extends Command
                 $bar = $this->output->createProgressBar(36);
                 $bar->start();
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/category-printed-history-and-geography-book/?pageno=' . $recordNumber . '&sortby=1';
+                    $pageUrl = 'https://api.digikala.com/v1/categories/book/search/?sort=1&page='.$recordNumber;
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -115,16 +102,16 @@ class GetDigi4 extends Command
                 if ($status_code == "200") {
 
                     $products_all = json_decode($json);
-                    foreach ($products_all->data->trackerData->products as $pp) {
+                    foreach ($products_all->data->products as $pp) {
 
-                        $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
-                        $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
+                        $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->id)->firstOrNew();
+                        $bookDigi->recordNumber = 'dkp-' . $pp->id;
                         $bookDigi->save();
 
 
-                        $productUrl = "https://api.digikala.com/v1/product/" . $pp->product_id . "/";
+                        $productUrl = "https://api.digikala.com/v1/product/" . $pp->id . "/";
                         try {
-                            $this->info(" \n ---------- Try Get BOOK        " . $pp->product_id . "       ---------- ");
+                            $this->info(" \n ---------- Try Get BOOK        " . $pp->id . "       ---------- ");
                             $json = file_get_contents($productUrl);
                             $product_info =  json_decode($json);
                             $headers = get_headers($pageUrl);
@@ -132,7 +119,7 @@ class GetDigi4 extends Command
                         } catch (\Exception $e) {
                             $crawler = null;
                             $status_code = 500;
-                            $this->info(" \n ---------- Failed Get  " . $pp->product_id . "              ---------=-- ");
+                            $this->info(" \n ---------- Failed Get  " . $pp->id . "              ---------=-- ");
                         }
 
                         
@@ -257,7 +244,7 @@ class GetDigi4 extends Command
                             // book author
                             if (isset($authorsobj->id)) {
                                 $bookDigi->authors()->sync(array($authorsobj->id));
-                                $this->info(" \n ---------- Attach Author Book   " . $authorsobj->id . "  To " . $pp->product_id . "        ---------- ");
+                                $this->info(" \n ---------- Attach Author Book   " . $authorsobj->id . "  To " . $pp->id . "        ---------- ");
                             }
                             //book related
                             if (isset($product_info->data->recommendations->related_products->title) AND $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
@@ -276,7 +263,7 @@ class GetDigi4 extends Command
                     }
                 }
 
-                CrawlerM::where('name', 'Crawler-digi-category-printed-history-and-geography-book-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-digi-newest-book-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;

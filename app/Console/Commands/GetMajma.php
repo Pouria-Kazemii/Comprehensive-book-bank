@@ -161,7 +161,7 @@ class Getmajma extends Command
                     // 'xapearance'=> '' ;
                     $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
                     $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn),0,20);
-                    $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
+                    $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? str_replace("-", "",$book_content->isbn10) : $bookIrBook->xisbn2;
 
                     $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate,0,4) . '/'.substr($book_content->issueDate,4,2).'/'.substr($book_content->issueDate,6,2), '/', '-') : $bookIrBook->xpublishdate;
                     $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
@@ -423,7 +423,7 @@ class Getmajma extends Command
         $isbn = str_replace(" ", "", $isbn);
         $isbn = str_replace(".", "", $isbn);
         $isbn = str_replace("،", "", $isbn);
-        $isbn = str_replace("-", "", $isbn);
+        // $isbn = str_replace("-", "", $isbn);
         $isbn = str_replace("+", "", $isbn);
 
         $isbn = str_replace(",", "", $isbn);
@@ -431,7 +431,6 @@ class Getmajma extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        // $isbn = str_replace("-", "", $isbn);
         return $isbn;
     }
 
