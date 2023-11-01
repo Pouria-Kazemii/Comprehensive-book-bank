@@ -148,7 +148,7 @@ class CorrectIsbnFromMajma extends Command
 
                         $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
                         $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn), 0, 20);
-                        $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? $book_content->isbn10 : $bookIrBook->xisbn2;
+                        $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? str_replace("-", "",$book_content->isbn10) : $bookIrBook->xisbn2;
                         $bookIrBook->save();
                     }
 
@@ -218,7 +218,7 @@ class CorrectIsbnFromMajma extends Command
         $isbn = str_replace(" ", "", $isbn);
         $isbn = str_replace(".", "", $isbn);
         $isbn = str_replace("،", "", $isbn);
-        $isbn = str_replace("-", "", $isbn);
+        // $isbn = str_replace("-", "", $isbn);
         $isbn = str_replace("+", "", $isbn);
 
         $isbn = str_replace(",", "", $isbn);
@@ -226,7 +226,6 @@ class CorrectIsbnFromMajma extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        // $isbn = str_replace("-", "", $isbn);
         return $isbn;
     }
 }

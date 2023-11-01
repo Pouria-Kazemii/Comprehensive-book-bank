@@ -80,7 +80,7 @@ class GetDigi5 extends Command
                 } else {
                     $startC = 1;
                     // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 277;
+                    $endC = 2;
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
@@ -346,7 +346,6 @@ class GetDigi5 extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "",  $isbn);
         return $isbn;
     }
 }

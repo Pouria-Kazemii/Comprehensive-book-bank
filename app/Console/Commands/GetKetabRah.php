@@ -324,7 +324,6 @@ class GetKetabRah extends Command
         $isbn = str_replace("#", "", $isbn);
         $isbn = str_replace('"', "", $isbn);
 
-        $isbn = str_replace("-", "",  $isbn);
         return $isbn;
     }
 }
