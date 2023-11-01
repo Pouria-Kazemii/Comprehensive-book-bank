@@ -90,7 +90,7 @@ class CorrectIsbnFromMajma1 extends Command
             $bar->start();
 
             // $books = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->get();
-            BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->orderby('xid', '')->chunk(2000, function ($books, $startC) {
+            BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->orderby('xid', 'ASC')->chunk(2000, function ($books, $startC) {
                 foreach ($books as $book) {
                     $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
