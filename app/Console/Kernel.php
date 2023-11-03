@@ -28,6 +28,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('get:iranKetab 1')->everyMinute();
+        $schedule->command('get:GetMajmaForCorrectInfo 1')->everySecond()->timezone('Asia/Tehran')->between('00:00', '7:00');
     }
 
     /**
