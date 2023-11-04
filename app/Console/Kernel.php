@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         // Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
         Commands\GetIranketab::class, 
+        Commands\GetMajmaForCorrectInfo::class, 
 
     ];
 
