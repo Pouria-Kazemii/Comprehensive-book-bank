@@ -52,7 +52,7 @@ class ConsensusSimilarBooksByIsbn extends Command
      */
     public function handle()
     {
-        $countBook = BookirBook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->count();
+        $countBook = BookirBook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->where('xisbn3','!=','N')->where('xisbn3','!=','0')->where('xisbn3','!=','-')->count();
         try {
 
             $startC = 1;
@@ -67,7 +67,13 @@ class ConsensusSimilarBooksByIsbn extends Command
         if (isset($newCrawler)) {
 
             // DB::enableQueryLog();
-            bookirbook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->orderBy('xid', 'DESC')->chunk(1, function ($books,$startC) {
+            // 0 نیاشه 
+            // - نباشه
+            // خالی نیاشه
+            // N نباشه
+            // ز نباشه 
+            // ت نباشه 
+            bookirbook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->where('xisbn3','!=','N')->where('xisbn3','!=','0')->where('xisbn3','!=','-')->orderBy('xid', 'DESC')->chunk(1, function ($books,$startC) {
                 foreach ($books as $book) {
                     $this->info($book->xisbn3);
                     $same_books = BookirBook::where('xisbn3', $book->xisbn3)->orwhere('xisbn2', $book->xisbn2)->get();
@@ -84,7 +90,7 @@ class ConsensusSimilarBooksByIsbn extends Command
                     }
                     // $query = DB::getQueryLog();
                     // dd($query);
-                    CrawlerM::where('name', 'Crawler-consensus-similar-books-by-isbn-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $book->xisbn3]);
+                    // CrawlerM::where('name', 'Crawler-consensus-similar-books-by-isbn-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $book->xisbn3]);
                 }
             });
             $newCrawler->status = 2;
