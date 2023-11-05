@@ -43,11 +43,10 @@ class get30Book extends Command
      */
     public function handle()
     {
+        $Last_id = Book30book::whereNotNull('title')->orderBy('recordNumber','DESC')->first()->recordNumber;
         try{
-            $lastCrawler = CrawlerM::where('type',3)->orderBy('end', 'desc')->first();
-            if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
-            else $startC=1;
-            $endC   = $startC + CrawlerM::$crawlerSize;
+            $startC = $Last_id + 1;
+            $endC = $startC + 100;
             $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
             $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-30book-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
         }catch (\Exception $e){

@@ -17,7 +17,7 @@ class GetFidibo extends Command
      *
      * @var string
      */
-    protected $signature = 'get:fidibo {crawlerId} {miss?}';
+    protected $signature = 'get:fidibo {crawlerId}';
 
     /**
      * The console command description.
@@ -43,34 +43,17 @@ class GetFidibo extends Command
      */
     public function handle()
     {
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('type', 2)->where('status', 1)->orderBy('end', 'ASC')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->start;
-                    $endC = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = $lastCrawler;
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-Fidibo-%')->where('type', 2)->orderBy('end', 'desc')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->end + 1;
-                } else {
-                    $startC = 100;
-                }
+        $Last_id = BookFidibo::whereNotNull('title')->orderBy('recordNumber','DESC')->first()->recordNumber;
+        try {
 
-                $endC = $startC + CrawlerM::$crawlerSize;
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Fidibo-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
+            $startC = $Last_id + 1;
+            $endC = $startC + 100;
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Fidibo-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
+        
 
         if (isset($newCrawler)) {
 
