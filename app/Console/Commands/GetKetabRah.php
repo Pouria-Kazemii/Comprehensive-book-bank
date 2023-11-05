@@ -22,7 +22,7 @@ class GetKetabRah extends Command
      *
      * @var string
      */
-    protected $signature = 'get:ketabRah {crawlerId} {miss?}';
+    protected $signature = 'get:ketabRah {crawlerId}';
 
     /**
      * The console command description.
@@ -48,39 +48,20 @@ class GetKetabRah extends Command
      */
     public function handle()
     {
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-KetabRah-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->last;
-                    // $endC   = $lastCrawler->end;
-                     $endC   = 79602;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabRah-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-KetabRah-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->end + 1;
-                    // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 79602;
-                    
-                } else {
-                    $startC = 1;
-                    // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 79602;
-                }
+       
+        $Last_id = BookKetabrah::whereNotNull('title')->orderBy('recordNumber','DESC')->first()->recordNumber;
 
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabRah-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
+        try {
+                
+            $startC = $Last_id + 1;
+            $endC = $startC + 100;
+
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabRah-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
+        
         if (isset($newCrawler)) {
 
             $client = new Client(HttpClient::create(['timeout' => 30]));

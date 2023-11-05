@@ -67,8 +67,9 @@ class GetMajmaForCorrectInfo extends Command
             $bar = $this->output->createProgressBar($correctCountBook);
             $bar->start();
             // bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->chunk(100, function ($books,$startC) {
-            //     foreach($books as $book){
-                    $book = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->first();
+                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->limit('100')->get();
+                foreach($books as $book){
+                    
                     $recordNumber = $book->xpageurl;
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
                     $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
@@ -365,7 +366,7 @@ class GetMajmaForCorrectInfo extends Command
 
                     // $bar->advance();*/
                     CrawlerM::where('name','Crawler-mamja-for-correct-info-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
-            //     }
+                }
                 
             // });
             $newCrawler->status = 2;

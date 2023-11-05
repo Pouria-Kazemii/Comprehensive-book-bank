@@ -67,7 +67,7 @@ class GetDigiNewestBook extends Command
                 } else {
                     $startC = 1;
                     // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 100;
+                    $endC = 2;
                 }
 
                 $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
