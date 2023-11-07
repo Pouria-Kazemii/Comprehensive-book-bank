@@ -18,7 +18,7 @@ class GetDigi1 extends Command
      *
      * @var string
      */
-    protected $signature = 'get:digiCategoryChildrenBook {crawlerId} {miss?}';
+    protected $signature = 'get:digiCategoryChildrenBook {crawlerId}';
 
     /**
      * The console command description.
@@ -57,38 +57,20 @@ class GetDigi1 extends Command
         // category-religious-printed-book
         // category-printed-book-of-social-sciences
         // category-printed-book-of-poetry-and-literature
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'desc')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->last;
-                    $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
-                if (isset($lastCrawler) AND !empty($lastCrawler)) {
-                    $startC = $lastCrawler->end + 1;
-                    $endC = $startC + CrawlerM::$crawlerSize;
-                    
-                } else {
-                    $startC = 1;
-                    // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 2;
-                }
+        try {
 
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
+            $startC = 1;
+            // $endC = $startC + CrawlerM::$crawlerSize;
+            $endC = 2;
+
+
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-category-children-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
+
         if (isset($newCrawler)) {
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
@@ -135,7 +117,7 @@ class GetDigi1 extends Command
                             $this->info(" \n ---------- Failed Get  " . $pp->product_id . "              ---------=-- ");
                         }
 
-                        
+
                         if ($status_code == 200) {
                             if (isset($product_info->data->product->id) and !empty($product_info->data->product->id)) {
                                 $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
@@ -148,7 +130,7 @@ class GetDigi1 extends Command
                             }
 
 
-                            if(isset($product_info->data->product->rating->rate) AND !empty($product_info->data->product->rating->rate)){
+                            if (isset($product_info->data->product->rating->rate) and !empty($product_info->data->product->rating->rate)) {
                                 $bookDigi->rate = $product_info->data->product->rating->rate / 20;
                             }
 
@@ -163,7 +145,7 @@ class GetDigi1 extends Command
                             }
 
                             $authorsobj = array();
-                            if (isset($product_info->data->product->specifications['0']->title) AND $product_info->data->product->specifications['0']->title == 'مشخصات') {
+                            if (isset($product_info->data->product->specifications['0']->title) and $product_info->data->product->specifications['0']->title == 'مشخصات') {
                                 foreach ($product_info->data->product->specifications['0']->attributes as $attribute) {
 
                                     if ($attribute->title == 'نویسنده') {
@@ -242,17 +224,17 @@ class GetDigi1 extends Command
                             }
 
                             $tag_string = '';
-                            if(isset($product_info->data->product->tags) AND !empty($product_info->data->product->tags)){
+                            if (isset($product_info->data->product->tags) and !empty($product_info->data->product->tags)) {
                                 foreach ($product_info->data->product->tags as $tag) {
                                     $tag_string .= $tag->name . '#';
                                 }
                             }
 
-                           
+
                             $bookDigi->tag = $tag_string;
 
                             $bookDigi->price = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
-                            $bookDigi->desc = (isset($product_info->data->product->expert_reviews->description))? $product_info->data->product->expert_reviews->description : NULL;
+                            $bookDigi->desc = (isset($product_info->data->product->expert_reviews->description)) ? $product_info->data->product->expert_reviews->description : NULL;
                             $bookDigi->save();
                             // book author
                             if (isset($authorsobj->id)) {
@@ -260,7 +242,7 @@ class GetDigi1 extends Command
                                 $this->info(" \n ---------- Attach Author Book   " . $authorsobj->id . "  To " . $pp->product_id . "        ---------- ");
                             }
                             //book related
-                            if (isset($product_info->data->recommendations->related_products->title) AND $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
+                            if (isset($product_info->data->recommendations->related_products->title) and $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
                                 $related_array = array();
                                 foreach ($product_info->data->recommendations->related_products->products as $related_product) {
                                     $related_product_digi =  BookDigi::where('recordNumber', 'dkp-' . $related_product->id)->firstOrNew();
