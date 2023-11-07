@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
         Commands\GetDigiNewestBook::class, 
         Commands\GetIranketab::class, 
         Commands\GetKetabRah::class, 
+        Commands\GetShahreKetabOnline::class, 
         Commands\get30Book::class, 
         Commands\GetMajmaForCorrectInfo::class, 
 
@@ -44,24 +45,26 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         // digi category
-        $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedBookOfBiographyAndEncyclopedia 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryAppliedSciencesTechnologyAndEngineering 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedHistoryAndGeographyBook 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedBookOfPhilosophyAndPsychology 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryTextbookTutorialsAndTests 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryLanguageBooks 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedBookOfArtAndEntertainment 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryReligiousPrintedBook 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedBookOfSocialSciences 1')->dailyAt('12:40');
-        $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('12:40');
+        $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('09:00');
+        $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('09:30');
+        $schedule->command('get:digiCategoryPrintedBookOfBiographyAndEncyclopedia 1')->dailyAt('10:00');
+        $schedule->command('get:digiCategoryAppliedSciencesTechnologyAndEngineering 1')->dailyAt('10:30');
+        $schedule->command('get:digiCategoryPrintedHistoryAndGeographyBook 1')->dailyAt('11:00');
+        $schedule->command('get:digiCategoryPrintedBookOfPhilosophyAndPsychology 1')->dailyAt('11:30');
+        $schedule->command('get:digiCategoryTextbookTutorialsAndTests 1')->dailyAt('12:00');
+        $schedule->command('get:digiCategoryLanguageBooks 1')->dailyAt('12:30');
+        $schedule->command('get:digiCategoryPrintedBookOfArtAndEntertainment 1')->dailyAt('13:00');
+        $schedule->command('get:digiCategoryReligiousPrintedBook 1')->dailyAt('13:30');
+        $schedule->command('get:digiCategoryPrintedBookOfSocialSciences 1')->dailyAt('14:00');
+        $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('15:00');
         //digi new books
-        $schedule->command('get:digiNewestBook 1')->dailyAt('12:40');
+        $schedule->command('get:digiNewestBook 1')->dailyAt('15:30');
         // fidibo 
-        $schedule->command('get:fidibo 1')->dailyAt('12:40');
+        $schedule->command('get:fidibo 1')->dailyAt('16:00');
         //ketabrah
-        $schedule->command('get:ketabRah 1')->dailyAt('12:40');
+        $schedule->command('get:ketabRah 1')->dailyAt('16:30');
+        //shahreketabonline
+        // $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
