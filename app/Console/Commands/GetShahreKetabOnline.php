@@ -48,12 +48,14 @@ class GetShahreKetabOnline extends Command
         //     $startC = $Last_id + 1;
         //     $endC = $startC + 100;
         //     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-        //     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-30book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
+        //     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
         // } catch (\Exception $e) {
         //     $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         // }
         $startC =  1;
         $endC = 391000;
+        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
+
         if (isset($newCrawler)) {
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
