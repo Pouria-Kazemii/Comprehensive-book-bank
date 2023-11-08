@@ -43,18 +43,15 @@ class GetShahreKetabOnline extends Command
      */
     public function handle()
     {
-        // $Last_id = (isset(BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber)) ? BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber : 0;
-        // try {
-        //     $startC = $Last_id + 1;
-        //     $endC = $startC + 100;
-        //     $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-        //     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
-        // } catch (\Exception $e) {
-        //     $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-        // }
-        $startC =  1;
-        $endC = 391000;
-        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
+        $Last_id = (isset(BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber)) ? BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber : 0;
+        try {
+            $startC = $Last_id + 1;
+            $endC = $startC + 100;
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+        }
 
         if (isset($newCrawler)) {
             $client = new Client(HttpClient::create(['timeout' => 30]));
@@ -133,7 +130,7 @@ class GetShahreKetabOnline extends Command
                                     break;
                                 case 'نویسنده:':
                                     if ($trObj->filter('div.LightText')->nextAll()->text() != '') {
-                                        $this->info($trObj->filter('div.LightText')->nextAll()->text());
+                                        // $this->info($trObj->filter('div.LightText')->nextAll()->text());
                                         // foreach($trObj->filter('a div') as $link){
                                             // $authorObject = Author::firstOrCreate(array("d_name" => $trObj->filter('div.LightText')->nextAll()->text()));
                                             // $authors[] = $authorObject->id;
@@ -199,7 +196,7 @@ class GetShahreKetabOnline extends Command
                             foreach ($crawler->filter("body div.ProductDetails div.Tags a") as $tag) {
                                 $tagObj = new Crawler($tag);
                                 $book->tags = $book->tags . $tagObj->filter('div.Tag')->text();
-                                $this->info($tagObj->filter('div.Tag')->text());
+                                // $this->info($tagObj->filter('div.Tag')->text());
                             }
                         }
                         

@@ -15,6 +15,7 @@ use App\Exports\ContradictionsTaaghcheExport;
 use App\Exports\ContradictionsDigiExport;
 use App\Exports\ContradictionsIranketabExport;
 use App\Exports\Contradictions30bookExport;
+use App\Exports\ContradictionsShahreKetabOnlineExport;
 
 class ExcelController extends Controller
 {
@@ -166,6 +167,14 @@ class ExcelController extends Controller
         set_time_limit(0);
 
         return Excel::download(new Contradictions30bookExport($status), 'لیست مغایرت 30book' . time() . '.xlsx');
+    }
+
+    public function exportExcelContradictionsShahreKetabOnline($status)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+
+        return Excel::download(new ContradictionsShahreKetabOnlineExport($status), 'لیست مغایرت شهرکتاب آنلاین' . time() . '.xlsx');
     }
 
 
