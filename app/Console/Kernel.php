@@ -64,7 +64,7 @@ class Kernel extends ConsoleKernel
         //ketabrah
         $schedule->command('get:ketabRah 1')->dailyAt('16:30');
         //shahreketabonline
-        // $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
+        $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
