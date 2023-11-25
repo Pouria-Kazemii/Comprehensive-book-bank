@@ -81,14 +81,14 @@ class GetShahreKetabOnline extends Command
                     foreach ($crawler->filter('body ol.breadcrumb li a') as $cat) {
                         if (isset($book_cats) and !empty($book_cats))
                         {
-                            $book_cats = $book_cats . "-|-" . ltrim(rtrim($cat->textContent));
+                            $book_cats = $book_cats . "-|-" . ltrim(rtrim(self::convert_arabic_char_to_persian($cat->textContent)));
                         }else{
-                            $book_cats = ltrim(rtrim($cat->textContent));
+                            $book_cats = ltrim(rtrim(self::convert_arabic_char_to_persian($cat->textContent)));
                         } 
                     }
                     if (isset($book_cats)) $cats_arr = explode('-|-', $book_cats);
 
-                    if (!in_array('نوشت افزار', $cats_arr) && !in_array('محصولات فرهنگی', $cats_arr) && !in_array('صنایع دستی', $cats_arr)) {
+                    if (!in_array('نوشت افزار', $cats_arr) && !in_array('محصولات فرهنگی', $cats_arr) && !in_array('صنایع دستی', $cats_arr) && !in_array('هنری', $cats_arr)) {
 
                         $book = BookShahreKetabOnline::where('recordNumber', $recordNumber)->firstOrNew();
 
@@ -216,4 +216,67 @@ class GetShahreKetabOnline extends Command
             $bar->finish();
         }
     }
+    public static function convert_arabic_char_to_persian($string)
+    {
+        $string = str_replace("ي", "ی", $string);
+        $string = str_replace("ك", "ک", $string);
+        $string = str_replace("ة", "ه", $string);
+        return $string;
+    }
+
+    /*  delete name space */
+    public static function remove_half_space_from_string($string)
+    {
+        $string = urlencode($string);
+        $string = str_replace('%E2%80%8C', ' ', $string);
+        $string = urldecode($string);
+        return $string;
+    }
+
+    public static function convert_arabic_num_to_english($string)
+    {
+        $persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+        $arabic = ['٩', '٨', '٧', '٦', '٥', '٤', '٣', '٢', '١', '٠'];
+
+        $num = range(0, 9);
+        $convertedPersianNums = str_replace($persian, $num, $string);
+        $englishNumbersOnly = str_replace($arabic, $num, $convertedPersianNums);
+
+        return $englishNumbersOnly;
+    }
+
+    public static function validateIsbn($isbn) //correction  isbn
+    {
+        $isbn = self::convert_arabic_num_to_english($isbn);
+        $isbn = trim($isbn, ' ');
+        $isbn = rtrim($isbn, ' ');
+        $isbn = ltrim($isbn, ' ');
+
+        $isbn = trim($isbn, '');
+        $isbn = rtrim($isbn, '');
+        $isbn = ltrim($isbn, '');
+
+        $isbn = trim($isbn, '.');
+        $isbn = rtrim($isbn, '.');
+
+        $isbn = ltrim($isbn, ',');
+        $isbn = ltrim($isbn, ',');
+
+        $isbn = ltrim($isbn, '.');
+        $isbn = ltrim($isbn, '"');
+
+        $isbn = str_replace(" ", "", $isbn);
+        $isbn = str_replace(".", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        // $isbn = str_replace("-", "", $isbn);
+        $isbn = str_replace("+", "", $isbn);
+
+        $isbn = str_replace(",", "", $isbn);
+        $isbn = str_replace("،", "", $isbn);
+        $isbn = str_replace("#", "", $isbn);
+        $isbn = str_replace('"', "", $isbn);
+
+        return $isbn;
+    }
 }
+
