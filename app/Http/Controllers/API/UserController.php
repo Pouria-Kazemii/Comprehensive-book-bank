@@ -17,15 +17,16 @@ class UserController extends Controller
 {
     public function authenticate(Request $request)
     {
-        $credentials = $request->only('email', 'password');
-
+        // $credentials = $request->only('email', 'password');
+       $user = User::where('phone', $request->phone)->first();
         try {
-            if (!$token = JWTAuth::attempt($credentials)) {
+            // if (!$token = JWTAuth::attempt($credentials)) {
+            if (!$token = JWTAuth::fromUser($user)) {
                 return response()->json(['error' => 'invalid_credentials'], 400);
             }
             try {
                 $sms_code = rand(1000, 9999);
-                $resultSendSms = $this->sendSmsCode($sms_code);
+                $resultSendSms = $this->sendSmsCode($sms_code,$request->phone);
                 return $resultSendSms;
             } catch (JWTException $e) {
                 return response()->json(['error' => 'مشکل در ارسال پیامک'], 500);
@@ -38,7 +39,8 @@ class UserController extends Controller
     public function login(Request $request)
     {
 
-        $user = User::where('email', $request->email)->first();
+        // $user = User::where('email', $request->email)->first();
+        $user = User::where('phone', $request->phone)->first();
         if ($user != NULL) {
             if ($user->sms_code === $request->smsCode) {
                 //todo get authenticated user here 
@@ -63,10 +65,12 @@ class UserController extends Controller
         );
     }
 
-    protected function sendSmsCode($sms_code)
+    protected function sendSmsCode($sms_code,$phone)
     {
         try {
-            $user = Auth::user();
+            $user = User::where('phone', $phone)->first();
+
+            // $user = Auth::user();
             $user->sms_code = $sms_code;
             $user->update();
             //send sms code
