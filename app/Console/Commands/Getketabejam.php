@@ -6,13 +6,10 @@ use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
-use App\Models\Author;
-use App\Models\BookirBook;
 use App\Models\BookKetabejam;
-use App\Models\BookShahreKetabOnline;
 use App\Models\Crawler as CrawlerM;
 use App\Models\SiteBookLinks;
-use App\Models\siteCategories;
+use App\Models\SiteCategories;
 use Illuminate\Support\Facades\DB;
 
 class Getketabejam extends Command
