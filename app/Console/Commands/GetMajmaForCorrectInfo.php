@@ -67,7 +67,7 @@ class GetMajmaForCorrectInfo extends Command
             $bar = $this->output->createProgressBar($correctCountBook);
             $bar->start();
             // bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->chunk(100, function ($books,$startC) {
-                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('100')->get();
+                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('10')->get();
                 foreach($books as $book){
                     
                     $recordNumber = $book->xpageurl;
