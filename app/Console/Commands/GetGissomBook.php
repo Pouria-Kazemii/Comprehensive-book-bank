@@ -121,29 +121,30 @@ class GetGissomBook extends Command
                 try {
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . " ---------- ");
                     // $crawler = $client->request('GET', 'http://188.253.2.66/proxy.php?url=https://www.gisoom.com/book/' . $recordNumber);
-                    $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber);
+                    $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber.'/book_name/');
                     $status_code = $client->getInternalResponse()->getStatusCode();
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
                     $this->info(" \n ---------- Failed Get " . $recordNumber . " ---------=-- ");
                 }
+
                 if ($status_code == 200 && $crawler->filter('body')->text('') != '') {
-                    $filtered = array();
-                    $title = $crawler->filter('body div.bookinfocol div h1 a');
-                    $filtered['title'] = $title->text();
+                    $book = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
+
+                    $book->title = $crawler->filter('body div.bookinfocol div h1 a')->text();
                     foreach ($crawler->filter('body div.bookinfocol div.col') as $col) {
                         if (strpos($col->textContent, 'ناشر:') !== false) {
-                            $filtered['nasher'] = str_replace('ناشر:', '', $col->textContent);
+                            $book->nasher = str_replace('ناشر:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'ویراستار:') !== false) {
-                            $filtered['editor'] = str_replace('ویراستار:', '', $col->textContent);
+                            $book->editor = str_replace('ویراستار:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'ویراستاران:') !== false) {
-                            $filtered['editor'] = str_replace('ویراستاران:', '', $col->textContent);
+                            $book->editor = str_replace('ویراستاران:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false) {
-                            $filtered['tarjome'] = true;
+                            $book->tarjome = true;
                         }
                         if (strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false) {
                             $colc = new Crawler($col);
@@ -153,53 +154,53 @@ class GetGissomBook extends Command
                             }
                         }
                         if (strpos($col->textContent, 'زبان:') !== false) {
-                            $filtered['lang'] = str_replace('زبان:', '', $col->textContent);
+                            $book->lang = str_replace('زبان:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'رده‌بندی دیویی:') !== false) {
-                            $filtered['radeD'] = str_replace('رده‌بندی دیویی:', '', $col->textContent);
+                            $book->radeD = str_replace('رده‌بندی دیویی:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'سال چاپ:') !== false) {
-                            $filtered['saleNashr'] = enNumberKeepOnly(faCharToEN(str_replace('سال چاپ:', '', $col->textContent)));
+                            $book->saleNashr = enNumberKeepOnly(faCharToEN(str_replace('سال چاپ:', '', $col->textContent)));
                         }
                         if (strpos($col->textContent, 'نوبت چاپ:') !== false) {
-                            $filtered['nobatChap'] = enNumberKeepOnly(faCharToEN(str_replace('نوبت چاپ:', '', $col->textContent)));
+                            $book->nobatChap = enNumberKeepOnly(faCharToEN(str_replace('نوبت چاپ:', '', $col->textContent)));
                         }
                         if (strpos($col->textContent, 'تیراژ:') !== false) {
-                            $filtered['tiraj'] = enNumberKeepOnly(faCharToEN(str_replace('تیراژ:', '', $col->textContent)));
+                            $book->tiraj = enNumberKeepOnly(faCharToEN(str_replace('تیراژ:', '', $col->textContent)));
                         }
                         if (strpos($col->textContent, 'تعداد صفحات:') !== false) {
-                            $filtered['tedadSafe'] = enNumberKeepOnly(faCharToEN(str_replace('تعداد صفحات:', '', $col->textContent)));
+                            $book->tedadSafe = enNumberKeepOnly(faCharToEN(str_replace('تعداد صفحات:', '', $col->textContent)));
                         }
                         if (strpos($col->textContent, 'قطع و نوع جلد:') !== false) {
-                            $filtered['ghateChap'] = str_replace('قطع و نوع جلد:', '', $col->textContent);
+                            $book->ghateChap = str_replace('قطع و نوع جلد:', '', $col->textContent);
                         }
 
                         if (strpos($col->textContent, 'شابک 10 رقمی:') !== false) {
-                            $filtered['shabak10'] = str_replace('شابک 10 رقمی:', '', $col->textContent);
+                            $book->shabak10 = str_replace('شابک 10 رقمی:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'شابک 13 رقمی:') !== false) {
-                            $filtered['shabak13'] = str_replace('شابک 13 رقمی:', '', $col->textContent);
+                            $book->shabak13 = str_replace('شابک 13 رقمی:', '', $col->textContent);
                         }
                         if (strpos($col->textContent, 'توضیح کتاب:') !== false) {
-                            $filtered['desc'] = str_replace('توضیح کتاب:', '', $col->textContent);
+                            $book->desc = str_replace('توضیح کتاب:', '', $col->textContent);
                         }
                     }
                     $categories = array();
                     foreach ($crawler->filter("div.nav-wrapper a") as $catLinks) {
                         if ($catLinks->textContent != 'کتاب') $categories[] = $catLinks->textContent;
                     }
-                    $filtered['price'] = 0;
+                    $book->price = 0;
                     $dibcontent = $crawler->filter('body a.iwantbook span.dib')->first()->text('');
                     $dbcontent = $crawler->filter('body a.iwantbook span.db')->first()->text('');
                     if ($dibcontent != '') {
-                        $filtered['price'] = enNumberKeepOnly(faCharToEN($dibcontent));
+                        $book->price = enNumberKeepOnly(faCharToEN($dibcontent));
                     } elseif ($dbcontent != '') {
-                        $filtered['price'] = enNumberKeepOnly(faCharToEN($dbcontent));
+                        $book->price = enNumberKeepOnly(faCharToEN($dbcontent));
                     }
-                    $filtered['catText'] = implode("-|-", $categories);
-                    $filtered['image'] = $crawler->filter('body img.cls3')->attr('src');
-                    $filtered['recordNumber'] = $recordNumber;
-                    $book = BookGisoom::firstOrCreate($filtered);
+                    $book->catText = implode("-|-", $categories);
+                    $book->image = $crawler->filter('body img.cls3')->attr('src');
+                    $book->recordNumber = $recordNumber;
+                    $book->save();
                     $this->info(" \n ---------- Inserted Book " . $recordNumber . " ---------- ");
                     if (count($authors) > 0) {
                         $book->authors()->attach($authors);
