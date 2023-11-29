@@ -45,7 +45,7 @@ class Getketabejam extends Command
      */
     public function handle()
     {
-        if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
+        /*if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
             // menu
             $client = new Client(HttpClient::create(['timeout' => 30]));
             try {
@@ -177,7 +177,7 @@ class Getketabejam extends Command
                     }
                 }
             }
-        }
+        }*/
 
         SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->chunk(1, function ($bookLinks) {
             foreach ($bookLinks as $bookLink) {
