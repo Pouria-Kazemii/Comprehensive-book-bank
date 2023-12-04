@@ -181,6 +181,14 @@ class GetGissomBook extends Command
                         if (strpos($col->textContent, 'شابک 13 رقمی:') !== false) {
                             $book->shabak13 = str_replace('شابک 13 رقمی:', '', $col->textContent);
                         }
+                        if (strpos($col->textContent, 'شابک:') !== false) {
+                            $shabak = str_replace('شابک:', '', $col->textContent);
+                            if(strlen($shabak) >= 13 ){
+                                $book->shabak13 =  $shabak;
+                            }else{
+                                $book->shabak10 =  $shabak;
+                            }
+                        }
                         if (strpos($col->textContent, 'توضیح کتاب:') !== false) {
                             $book->desc = str_replace('توضیح کتاب:', '', $col->textContent);
                         }
