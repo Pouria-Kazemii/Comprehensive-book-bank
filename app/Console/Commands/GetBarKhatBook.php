@@ -9,7 +9,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookBarkhatBook;
 use App\Models\Crawler as CrawlerM;
 use App\Models\SiteBookLinks;
-use App\Models\siteCategories;
+use App\Models\SiteCategories;
 
 class GetBarKhatBook extends Command
 {
@@ -67,11 +67,11 @@ class GetBarKhatBook extends Command
                 $menu_content = json_decode($menu_content);
                 // dd($menu_content->cats);
                 foreach ($menu_content->cats as $cat) {
-                    siteCategories::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'cat_link' => $cat->id, 'cat_name' => $cat->name));
+                    SiteCategories::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'cat_link' => $cat->id, 'cat_name' => $cat->name));
                 }
             }
 
-            $cats = siteCategories::where('domain', 'https://barkhatbook.com/')->get();
+            $cats = SiteCategories::where('domain', 'https://barkhatbook.com/')->get();
             foreach ($cats as $cat) {
                 // find count  books for loop
                 $timeout = 120;
@@ -130,7 +130,7 @@ class GetBarKhatBook extends Command
         } else {
 
 
-            $cats = siteCategories::where('domain', 'https://barkhatbook.com/')->get();
+            $cats = SiteCategories::where('domain', 'https://barkhatbook.com/')->get();
 
             foreach ($cats as $cat) {
                 // find count  books for loop
