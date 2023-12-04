@@ -241,7 +241,10 @@ class Getketabejam extends Command
                         $book->images  = $crawler->filter('body main article div.product div.product-entry-wrapper div.woocommerce-product-gallery a.ct-image-container img')->attr('src');
                     }
 
-                    $book->price = enNumberKeepOnly(faCharToEN($crawler->filter('body main article div.product div.product-entry-wrapper div.summary p.price span.sale-price span.woocommerce-Price-amount bdi')->text()));
+                    if($crawler->filter('body main article div.product div.product-entry-wrapper div.summary p.price span.sale-price span.woocommerce-Price-amount bdi')->count() > 0){
+                        $book->price = enNumberKeepOnly(faCharToEN($crawler->filter('body main article div.product div.product-entry-wrapper div.summary p.price span.sale-price span.woocommerce-Price-amount bdi')->text()));
+                    }
+                    
                     if ($crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.woocommerce-product-details__short-description')->count() > 0) {
                         $book->desc = $crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.woocommerce-product-details__short-description')->text();
                     }
