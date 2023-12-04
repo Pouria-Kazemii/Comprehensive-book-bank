@@ -74,7 +74,7 @@ class Getketabejam extends Command
                                 foreach ($catLi->filter('div.stk-column-wrapper div.stk-block-content div.wp-block-stackable-button-group div.stk-row div a') as $tt) {
                                     $tt_li = new Crawler($tt);
                                     if ($tt_li->filter('a')->attr('href') != '' && $tt_li->filter('a')->attr('href') != 'بازی و سرگرمی‌های فکری' && $tt_li->filter('a')->attr('href') != 'مجله کتاب جم' && $tt_li->filter('a')->attr('href') != 'پیگیری سفارشات') {
-                                        siteCategories::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'cat_link' => $tt_li->filter('a')->attr('href'), 'cat_name' => $tt_li->filter('a')->text()));
+                                        SiteCategories::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'cat_link' => $tt_li->filter('a')->attr('href'), 'cat_name' => $tt_li->filter('a')->text()));
                                     }
                                 }
                             }
@@ -84,7 +84,7 @@ class Getketabejam extends Command
             }
 
             //category
-            $cats = siteCategories::where('domain', 'https://ketabejam.com/')->get();
+            $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
             foreach ($cats as $cat) {
                 // find count  books for loop
                 $client = new Client(HttpClient::create(['timeout' => 30]));
@@ -148,7 +148,7 @@ class Getketabejam extends Command
             }
         } else {
             //category
-            $cats = siteCategories::where('domain', 'https://ketabejam.com/')->get();
+            $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
             foreach ($cats as $cat) {
 
                 $client = new Client(HttpClient::create(['timeout' => 30]));
