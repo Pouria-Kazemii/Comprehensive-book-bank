@@ -275,10 +275,10 @@ class Getketabejam extends Command
                             $book->ghateChap = trim($detail_tr->filterXPath('//td[1]')->text());
                         }
                         if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'تعداد صفحات') {
-                            $book->tedadSafe = trim($detail_tr->filterXPath('//td[1]')->text());
+                            $book->tedadSafe = enNumberKeepOnly(faCharToEN(trim($detail_tr->filterXPath('//td[1]')->text())));
                         }
                         if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'سال انتشار') {
-                            $book->saleNashr = trim($detail_tr->filterXPath('//td[1]')->text());
+                            $book->saleNashr = enNumberKeepOnly(faCharToEN(trim($detail_tr->filterXPath('//td[1]')->text())));
                         }
                         if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'نوع جلد') {
                             $book->jeld = trim($detail_tr->filterXPath('//td[1]')->text());
