@@ -75,7 +75,7 @@ class GetGissomBook extends Command
 
             try {
 
-                $lastCrawler = CrawlerM::where('name','Crawler-Gisoom-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('end', 'ASC')->first();
 
                 if (isset($lastCrawler->last)) {
 
@@ -95,7 +95,7 @@ class GetGissomBook extends Command
 
             try {
 
-                $lastCrawler = CrawlerM::where('name','Crawler-Gisoom-' . $this->argument('crawlerId'))->orderBy('end', 'desc')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->orderBy('end', 'desc')->first();
 
                 if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
 
@@ -121,15 +121,14 @@ class GetGissomBook extends Command
                 try {
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . " ---------- ");
                     // $crawler = $client->request('GET', 'http://188.253.2.66/proxy.php?url=https://www.gisoom.com/book/' . $recordNumber);
-                    $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber.'/book_name/');
+                    $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber . '/book_name/');
                     $status_code = $client->getInternalResponse()->getStatusCode();
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
                     $this->info(" \n ---------- Failed Get " . $recordNumber . " ---------=-- ");
                 }
-
-                if ($status_code == 200 && $crawler->filter('body')->text('') != '') {
+                if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0 ) {
                     $book = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
 
                     $book->title = $crawler->filter('body div.bookinfocol div h1 a')->text();
@@ -183,9 +182,9 @@ class GetGissomBook extends Command
                         }
                         if (strpos($col->textContent, 'شابک:') !== false) {
                             $shabak = str_replace('شابک:', '', $col->textContent);
-                            if(strlen($shabak) >= 13 ){
+                            if (strlen($shabak) >= 13) {
                                 $book->shabak13 =  $shabak;
-                            }else{
+                            } else {
                                 $book->shabak10 =  $shabak;
                             }
                         }
