@@ -77,9 +77,9 @@ class GetGissomBook extends Command
 
                 $lastCrawler = CrawlerM::where('name','Crawler-Gisoom-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('end', 'ASC')->first();
 
-                if (isset($lastCrawler->end)) {
+                if (isset($lastCrawler->last)) {
 
-                    $startC = $lastCrawler->start;
+                    $startC = $lastCrawler->last;
 
                     $endC = $lastCrawler->end;
 
