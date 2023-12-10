@@ -31,7 +31,7 @@ if(!function_exists('vaziiat_dar_khane_ketab'))
      */
     function vaziiat_dar_khane_ketab($row)
     {
-        $vaziiat_dar_khane_ketab = (isset($row['vaziiat_dar_khane_ketab']) AND !empty($row['vaziiat_dar_khane_ketab']))? : NULL;
+        $vaziiat_dar_khane_ketab =  (isset($row['vaziiat_dar_khane_ketab']) AND !empty($row['vaziiat_dar_khane_ketab']))? $row['vaziiat_dar_khane_ketab'] : NULL;
         return $vaziiat_dar_khane_ketab;
     }
 }
@@ -46,7 +46,7 @@ if(!function_exists('vaziiat_dar_edare_ketab'))
      */
     function vaziiat_dar_edare_ketab($row)
     {
-        $vaziiat_dar_edare_ketab = (isset($row['vaziiat_dar_edare_ketab']) AND !empty($row['vaziiat_dar_edare_ketab']))? : NULL;
+        $vaziiat_dar_edare_ketab = (isset($row['vaziiat_dar_edare_ketab']) AND !empty($row['vaziiat_dar_edare_ketab']))? $row['vaziiat_dar_edare_ketab'] : NULL;
         return $vaziiat_dar_edare_ketab;
     }
 }
@@ -71,8 +71,10 @@ if(!function_exists('siteBookLinkDefects'))
             $bugId = 4;
         }elseif($khaneKetabStatus== 'کتاب در خانه کتاب وجود دارد' && $edareKetabStatus== 'کتاب در اداره کتاب وجود دارد'){
             $bugId = 5;
-        }else{
+        }elseif($khaneKetabStatus== NULL && $edareKetabStatus== NULL){
             $bugId = 6;
+        }else{
+            $bugId = 7;
         }
         return $bugId;
     }
