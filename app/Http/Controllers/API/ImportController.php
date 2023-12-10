@@ -51,4 +51,16 @@ class ImportController extends Controller
         $excel_id = $contradictionsExcelExport->id;
         Excel::import(new DigiBookLinksDefectsImport($excel_id), storage_path('app/'.$excel_name));
     }
+
+    public function importTaaghcheExcel($excel_name){
+        set_time_limit(0);
+        // $excel_name = 'ketabhaye_gheyre_mojaz_digikala_8_mehr.xlsx';
+        // $excel_name = 'list_ba_shabak_digikala_17_mehr.xlsx';
+        // $excel_name = 'list_bedune_shabak_digikala_17_mehr.xlsx';
+        $contents = file_get_contents('https://manvaketab.com/public/files/datacollector/'. $excel_name);
+        Storage::disk('local')->put($excel_name, $contents);
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        $excel_id = $contradictionsExcelExport->id;
+        Excel::import(new DigiBookLinksDefectsImport($excel_id), storage_path('app/'.$excel_name));
+    }
 }
