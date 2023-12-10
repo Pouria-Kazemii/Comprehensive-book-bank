@@ -16,6 +16,10 @@ use App\Exports\ContradictionsDigiExport;
 use App\Exports\ContradictionsIranketabExport;
 use App\Exports\Contradictions30bookExport;
 use App\Exports\ContradictionsShahreKetabOnlineExport;
+use App\Models\ContradictionsExcelExport;
+use Illuminate\Support\Facades\Storage;
+
+
 
 class ExcelController extends Controller
 {
@@ -153,7 +157,11 @@ class ExcelController extends Controller
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        return Excel::download(new ContradictionsDigiExport($status), 'لیست مغایرت دیجیکالا' . time() . '.xlsx');
+        $excel_name = 'لیست مغایرت دیجیکالا'.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
     }
     public function exportExcelContradictionsIranketab($status)
     {

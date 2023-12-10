@@ -2,6 +2,7 @@
 namespace App\Exports;
 
 use App\Models\BookDigi;
+use App\Models\WebSiteBookLinksDefects;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -9,13 +10,15 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ContradictionsDigiExport implements FromCollection,WithHeadings
 {
-    public function __construct($status)
+    public function __construct($status,$excel_id)
     {
         $this->status = $status;
+        $this->excel_id = $excel_id;
     }
     public function collection()
     {
         $status = $this->status;
+        $excel_id = $this->excel_id;
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
@@ -59,9 +62,12 @@ class ContradictionsDigiExport implements FromCollection,WithHeadings
                 $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
             }elseif($item->has_permit == 4){
                 $report[$key]->has_permit = 'کتاب شابک ندارد';
+            
             }
 
-            $report[$key]->recordNumber = 'https://www.digikala.com/product/dkp-'.$item->recordNumber.'/';
+            $bugId = siteBookLinkDefects($report[$key]->check_status,$report[$key]->has_permit);
+            $report[$key]->recordNumber = 'https://www.digikala.com/product/'.$item->recordNumber.'/';
+            WebSiteBookLinksDefects::create(array('siteName'=>'https://www.digikala.com/','book_links'=>'https://www.digikala.com/product/'.$item->recordNumber.'/','recordNumber'=>$item->recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'excelId'=>$excel_id));
         }
        
         return $report;
