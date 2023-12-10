@@ -3,6 +3,7 @@
 // use App\Http\Controllers\API\BookController;
 use App\Http\Controllers\API\InstagramController;
 use App\Http\Controllers\API\CrawlerKetabirController;
+use App\Http\Controllers\Api\ImportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChangeDataController;
 use App\Http\Controllers\CronjobController;
@@ -66,6 +67,8 @@ Route::get('test_get_publishers_majma/{from}/{result_count}', [TestController::c
 Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
 Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::class, 'test_get_authors_majma']);
 Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
+Route::get('test', [TestController::class, 'test']);
+Route::get('importDigiExcel/{excel_name}', [ImportController::class, 'importDigiExcel']);
 
 
 
