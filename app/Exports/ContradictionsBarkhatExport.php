@@ -22,7 +22,7 @@ class ContradictionsBarkhatExport implements FromCollection,WithHeadings
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookBarkhatBook::select('recordNumber','title','nasher','tedadSafe','shabak','ghatechap','check_status','cats','has_permit','images','id')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
+        $report = BookBarkhatBook::select('recordNumber','title','nasher','tedadSafe','shabak','ghatechap','check_status','cats','has_permit','images','id')->where('title','!=',NULL)->whereIN('has_permit',  $status)->get();
         foreach($report as $key=>$item){
             $report[$key]->cats = '';
             if($item->check_status == 2){
@@ -52,7 +52,7 @@ class ContradictionsBarkhatExport implements FromCollection,WithHeadings
             $bugId = siteBookLinkDefects($report[$key]->check_status,$report[$key]->has_permit);
             $report[$key]->main_recordNumber = 'bk_'.$item->recordNumber;
             $report[$key]->recordNumber = 'https://barkhatbook.com/product/bk_'.$item->recordNumber.'/'.$item->title.'/';
-            WebSiteBookLinksDefects::create(array('siteName'=>'barkhatbook','book_links'=>$item->recordNumber,'recordNumber'=>$item->main_recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'old_check_status'=>$item->main_check_status,'old_has_permit'=>$item->main_has_permit,'excelId'=>$excel_id));
+            // WebSiteBookLinksDefects::create(array('siteName'=>'barkhatbook','book_links'=>$item->recordNumber,'recordNumber'=>$item->main_recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'old_check_status'=>$item->main_check_status,'old_has_permit'=>$item->main_has_permit,'excelId'=>$excel_id));
         }
        
         return $report;
