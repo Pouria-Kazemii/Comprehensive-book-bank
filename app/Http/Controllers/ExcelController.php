@@ -16,6 +16,7 @@ use App\Exports\ContradictionsDigiExport;
 use App\Exports\ContradictionsIranketabExport;
 use App\Exports\Contradictions30bookExport;
 use App\Exports\ContradictionsShahreKetabOnlineExport;
+use App\Exports\ContradictionsBarkhatExport;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
 
@@ -183,6 +184,19 @@ class ExcelController extends Controller
         set_time_limit(0);
 
         return Excel::download(new ContradictionsShahreKetabOnlineExport($status), 'لیست مغایرت شهرکتاب آنلاین' . time() . '.xlsx');
+    }
+
+    public function exportExcelContradictionsBarkhatBook($status,$excel_name)
+    {
+
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        // $excel_name = 'لیست مغایرت برخط بوک'.time().'.xlsx';
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsBarkhatExport($status,$contradictionsExcelExport->id), $excel_name);
     }
 
 

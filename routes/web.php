@@ -69,6 +69,7 @@ Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::clas
 Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
 Route::get('test', [TestController::class, 'test']);
 Route::get('importDigiExcel/{excel_name}', [ImportController::class, 'importDigiExcel']);
+Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
 
 
 
