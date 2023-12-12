@@ -9,7 +9,9 @@ use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
 use App\Models\Author;
 use App\Models\BookDigiRelated;
+use App\Models\BookirBook;
 use App\Models\Crawler as CrawlerM;
+use App\Models\ErshadBook;
 use App\Models\WebSiteBookLinksDefects;
 
 class GetDigiPeriodicReportedDefects extends Command
@@ -48,13 +50,13 @@ class GetDigiPeriodicReportedDefects extends Command
 
         $client = new Client(HttpClient::create(['timeout' => 30]));
 
-        $items = WebSiteBookLinksDefects::where('siteName','digikala')->WhereNull('crawlerStatus')->WhereNotNull('book_links')->get();
+        $items = WebSiteBookLinksDefects::where('siteName', 'digikala')->WhereNull('crawlerStatus')->WhereNotNull('book_links')->get();
 
-        if(isset($items) AND !empty($items)){
+        if (isset($items) and !empty($items)) {
             foreach ($items as $item) {
-               
 
-                $product_id = str_replace("dkp-","",$item->recordNumber);
+
+                $product_id = str_replace("dkp-", "", $item->recordNumber);
                 $productUrl = "https://api.digikala.com/v1/product/" . $product_id . "/";
                 try {
                     $this->info(" \n ---------- Try Get BOOK        " . $product_id . "       ---------- ");
@@ -70,6 +72,8 @@ class GetDigiPeriodicReportedDefects extends Command
 
 
                 if ($status_code == 200) {
+
+
                     $CrawlerData = array();
                     if (isset($product_info->data->product->id) and !empty($product_info->data->product->id)) {
                         $CrawlerData['recordNumber'] = 'dkp-' . $product_info->data->product->id;
@@ -184,17 +188,45 @@ class GetDigiPeriodicReportedDefects extends Command
                     $CrawlerData['price'] = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
                     $CrawlerData['desc'] = (isset($product_info->data->product->expert_reviews->description)) ? $product_info->data->product->expert_reviews->description : NULL;
                     $item->crawlerInfo = json_encode($CrawlerData);
-                   
+
+
+
+                    // check status and has permit 
+                    if ($item->old_check_status == 0 and $item->old_has_permit == 0) { // bugid = 6
+                        if (isset($product_info->data->product->is_inactive) and $product_info->data->product->is_inactive == true) {
+                            $item->new_check_status = 5;
+                            $item->new_has_permit = 5;
+                        } else {
+                            $item->new_check_status = 6;
+                            $item->new_has_permit = 6;
+                        }
+                    } else {
+                        if (isset($CrawlerData['shabak']) and !empty($CrawlerData['shabak'])) {
+                            $bookirbookInfo = BookirBook::where('xisbn', $CrawlerData['shabak'])->orwhere('xisbn2', $CrawlerData['shabak'])->orwhere('xisbn3', $CrawlerData['shabak'])->first();
+                            if (isset($bookirbookInfo->xid) and !empty($bookirbookInfo->xid)) {
+                                $item->new_check_status = '1';
+                            } else {
+                                $item->new_check_status = '4';
+                            }
+                            $ershadbookinfo = ErshadBook::where('xisbn', $CrawlerData['shabak'])->first();
+                            if (isset($ershadbookinfo->xid) and !empty($ershadbookinfo->xid)) {
+                                $item->new_has_permit = '1';
+                            } else {
+                                $item->new_has_permit = '4';
+                            }
+                        } else {
+                            $item->new_check_status = '4';
+                            $item->new_has_permit = '4';
+                        }
+                    }
+                    BookDigi::where('recordNumber', $item->recordNumber)->update(array('check_status' => $item->new_check_status, 'has_permit' => $item->new_has_permit));
+                    $item->result = siteBookLinkDefects(checkStatusTitle($item->new_check_status), hasPermitTitle($item->new_has_permit));
                 }
                 $item->crawlerStatus = $status_code;
                 $item->crawlerTime = date("Y-m-d h:i:s");
                 $item->save();
-                    
-               
             }
-
         }
-
     }
 
     public static function convert_arabic_char_to_persian($string)
