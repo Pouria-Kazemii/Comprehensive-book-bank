@@ -33,15 +33,17 @@ class ContradictionsDigiExport implements FromCollection,WithHeadings
                     }
                 }
             }
-            if($item->check_status == 1){
-                $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
-            }elseif($item->check_status == 2){
-                $report[$key]->check_status = 'کتاب در خانه کتاب وجود ندارد';
-            }elseif($item->check_status == 3){
-                $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
-            }elseif($item->check_status == 4){
-                $report[$key]->check_status = 'کتاب شابک ندارد';
-            }
+            // if($item->check_status == 1){
+            //     $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
+            // }elseif($item->check_status == 2){
+            //     $report[$key]->check_status = 'کتاب در خانه کتاب وجود ندارد';
+            // }elseif($item->check_status == 3){
+            //     $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
+            // }elseif($item->check_status == 4){
+            //     $report[$key]->check_status = 'کتاب شابک ندارد';
+            // }
+
+            $report[$key]->check_status = checkStatusTitle($item->check_status);
 
             
             $report[$key]->images = '';
@@ -54,20 +56,20 @@ class ContradictionsDigiExport implements FromCollection,WithHeadings
                 }
             }
            
-            if($item->has_permit == 1){
-                $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
-            }elseif($item->has_permit == 2){
-                $report[$key]->has_permit = 'کتاب در اداره کتاب وجود ندارد';
-            }elseif($item->has_permit == 3){
-                $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
-            }elseif($item->has_permit == 4){
-                $report[$key]->has_permit = 'کتاب شابک ندارد';
-            
-            }
+            // if($item->has_permit == 1){
+            //     $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
+            // }elseif($item->has_permit == 2){
+            //     $report[$key]->has_permit = 'کتاب در اداره کتاب وجود ندارد';
+            // }elseif($item->has_permit == 3){
+            //     $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
+            // }elseif($item->has_permit == 4){
+            //     $report[$key]->has_permit = 'کتاب شابک ندارد';
+            // }
+            $report[$key]->has_permit = hasPermitTitle($item->has_permit);
 
             $bugId = siteBookLinkDefects($report[$key]->check_status,$report[$key]->has_permit);
             $report[$key]->recordNumber = 'https://www.digikala.com/product/'.$item->recordNumber.'/';
-            WebSiteBookLinksDefects::create(array('siteName'=>'https://www.digikala.com/','book_links'=>'https://www.digikala.com/product/'.$item->recordNumber.'/','recordNumber'=>$item->recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'excelId'=>$excel_id));
+            WebSiteBookLinksDefects::create(array('siteName'=>'digikala','book_links'=>'https://www.digikala.com/product/'.$item->recordNumber.'/','recordNumber'=>$item->recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'excelId'=>$excel_id));
         }
        
         return $report;
