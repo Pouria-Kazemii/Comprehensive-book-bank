@@ -121,13 +121,15 @@ class GetGissomBook extends Command
                 try {
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . " ---------- ");
                     // $crawler = $client->request('GET', 'http://188.253.2.66/proxy.php?url=https://www.gisoom.com/book/' . $recordNumber);
-                    $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber . '/book_name/');
+                    // $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber . '/book_name/');
+                    $crawler = $client->request('GET', 'http://asr.dmedia.ir/getgisoom/' . $recordNumber.'/');
                     $status_code = $client->getInternalResponse()->getStatusCode();
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
                     $this->info(" \n ---------- Failed Get " . $recordNumber . " ---------=-- ");
                 }
+                // dd($crawler->filter('body div.bookinfocol')->count());
                 if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0 ) {
                     $book = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
 
