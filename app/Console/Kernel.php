@@ -31,7 +31,8 @@ class Kernel extends ConsoleKernel
         Commands\GetKetabRah::class, 
         Commands\GetShahreKetabOnline::class, 
         Commands\get30Book::class, 
-        Commands\GetMajmaForCorrectInfo::class, 
+        Commands\GetMajmaForCorrectInfo::class,
+        commands\GetBarKhatBook::class, 
 
     ];
 
@@ -65,6 +66,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:ketabRah 1')->dailyAt('16:30');
         //shahreketabonline
         $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
+        // barkhat book
+        $schedule->command('get:get:barkhatbook 1 2')->dailyAt('17:30');
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
