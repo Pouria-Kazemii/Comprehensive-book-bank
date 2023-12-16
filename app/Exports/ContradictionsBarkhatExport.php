@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class ContradictionsBarkhatExport implements FromCollection,WithHeadings
 {
-    public function __construct($status,$excel_id)
+    public function __construct($status,$excel_type,$excel_id)
     {
         $this->status = $status;
         $this->excel_id = $excel_id;
@@ -19,6 +19,7 @@ class ContradictionsBarkhatExport implements FromCollection,WithHeadings
     {
         $status = $this->status;
         $excel_id = $this->excel_id;
+        $excel_type = $this->excel_type;
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
@@ -52,7 +53,7 @@ class ContradictionsBarkhatExport implements FromCollection,WithHeadings
             $bugId = siteBookLinkDefects($report[$key]->check_status,$report[$key]->has_permit);
             $report[$key]->main_recordNumber = 'bk_'.$item->recordNumber;
             $report[$key]->recordNumber = 'https://barkhatbook.com/product/bk_'.$item->recordNumber.'/'.$item->title.'/';
-            // WebSiteBookLinksDefects::create(array('siteName'=>'barkhatbook','book_links'=>$item->recordNumber,'recordNumber'=>$item->main_recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'old_check_status'=>$item->main_check_status,'old_has_permit'=>$item->main_has_permit,'excelId'=>$excel_id));
+            WebSiteBookLinksDefects::create(array('siteName'=>'barkhatbook','book_links'=>$item->recordNumber,'recordNumber'=>$item->main_recordNumber,'bookId'=>$item->id,'bugId'=>$bugId,'old_check_status'=>$item->main_check_status,'old_has_permit'=>$item->main_has_permit,'excelId'=>$excel_id));
         }
        
         return $report;

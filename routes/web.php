@@ -56,7 +56,11 @@ Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [Excel
 Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopAuthor']);
 Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
 Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
+//digi
 Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsDigi']);
+Route::get('exportExcelWebsiteBookLinkDefectsCheckResultDigi/{excel_id}/{excel_name}', [ExcelController::class, 'exportExcelWebsiteBookLinkDefectsCheckResultDigi']);
+Route::get('importDigiExcel/{excel_type}/{excel_name}', [ImportController::class, 'importDigiExcel']);
+
 Route::get('exportExcelContradictionsIranketab/{status}', [ExcelController::class, 'exportExcelContradictionsIranketab']);
 Route::get('exportExcelContradictions30book/{status}', [ExcelController::class, 'exportExcelContradictions30book']);
 Route::get('exportExcelContradictionsShahreKetabOnline/{status}', [ExcelController::class, 'exportExcelContradictionsShahreKetabOnline']);
@@ -68,8 +72,8 @@ Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class,
 Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::class, 'test_get_authors_majma']);
 Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
 Route::get('test', [TestController::class, 'test']);
-Route::get('importDigiExcel/{excel_name}', [ImportController::class, 'importDigiExcel']);
 Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
+Route::get('/getMajmaForCorrectInfo/{skip}/{limit}', [ChangeDataController::class, 'getMajmaForCorrectInfo']);
 
 
 
