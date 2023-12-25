@@ -70,6 +70,7 @@ class GetKetabejamContradictionsList extends Command
                     $update_data['check_status'] = 4;
                     $update_data['has_permit'] = 4;
                 }
+                BookKetabejam::where('id',$item->id)->update($update_data);
             }
         }
 
