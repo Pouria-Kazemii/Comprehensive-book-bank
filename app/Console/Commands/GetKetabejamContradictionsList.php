@@ -16,7 +16,7 @@ class GetKetabejamContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:ketabejamContradictionsList {rowId} {miss?}';
+    protected $signature = 'get:ketabejamContradictionsList {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -95,7 +95,7 @@ class GetKetabejamContradictionsList extends Command
                 $Ketabejam_books = $Ketabejam->get();
                 foreach ($Ketabejam_books as $Ketabejam_book) {
                     if (isset($Ketabejam_book) and !empty($Ketabejam_book)) {
-                        BookKetabejam::where('id', $Ketabejam_book->id)->update(array('has_permit' => 2));
+                        BookKetabejam::where('id', $Ketabejam_book->id)->update(array('unallowed' => 1));
                     }
                 }
             }
