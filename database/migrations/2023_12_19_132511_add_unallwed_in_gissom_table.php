@@ -14,6 +14,7 @@ class AddUnallwedInGissomTable extends Migration
     public function up()
     {
         Schema::table('bookgisoom', function (Blueprint $table) {
+            $table->integer('has_permit')->default(0)->index()->after('book_master_id');
             $table->integer('unallowed')->default(0)->index()->after('has_permit');
         });
     }
