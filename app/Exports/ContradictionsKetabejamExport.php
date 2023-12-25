@@ -49,7 +49,7 @@ class ContradictionsKetabejamExport implements FromCollection,WithHeadings
             $report[$key]->has_permit = hasPermitTitle($item->has_permit);
 
             $bugId = siteBookLinkDefects($report[$key]->check_status,$report[$key]->has_permit);
-            WebSiteBookLinksDefects::create(array('siteName'=>'ketabejam','book_links'=> $item->pageUrl,'bookId'=>$item->id,'bugId'=>$bugId,'excelId'=>$excel_id));
+            // WebSiteBookLinksDefects::create(array('siteName'=>'ketabejam','book_links'=> $item->pageUrl,'bookId'=>$item->id,'bugId'=>$bugId,'excelId'=>$excel_id));
         }
        
         return $report;
