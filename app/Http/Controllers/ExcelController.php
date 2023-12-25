@@ -17,6 +17,7 @@ use App\Exports\ContradictionsIranketabExport;
 use App\Exports\Contradictions30bookExport;
 use App\Exports\ContradictionsShahreKetabOnlineExport;
 use App\Exports\ContradictionsBarkhatExport;
+use App\Exports\ContradictionsKetabejamExport;
 use App\Exports\WebsiteBookLinkDigiExport;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
@@ -165,6 +166,19 @@ class ExcelController extends Controller
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
     }
+
+    public function exportExcelContradictionsKetabejam($status,$excel_name)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsKetabejamExport($status,$contradictionsExcelExport->id), $excel_name);
+   
+    }
+
 
     public function exportExcelWebsiteBookLinkDefectsCheckResultDigi($excel_id,$excel_name)
     {
