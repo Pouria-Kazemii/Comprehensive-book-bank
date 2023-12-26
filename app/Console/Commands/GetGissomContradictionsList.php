@@ -49,17 +49,18 @@ class GetGissomContradictionsList extends Command
         foreach ($items as $item) {
             // bookirbook with ershad book
             if (isset($item) and !empty($item)) {
-                if ((isset($item->shabak) and $item->shabak != null and !empty($item->shabak))) {
-                    $this->info($item->shabak);
+                if ((isset($item->shabak10) and $item->shabak10 != null and !empty($item->shabak10)) or (isset($item->shabak13) and $item->shabak13 != null and !empty($item->shabak13))) {
+                    $this->info($item->shabak10);
+                    $this->info($item->shabak13);
 
-                    $bookiritem = BookirBook::where('xisbn', $item->shabak)->orwhere('xisbn2', $item->shabak)->orWhere('xisbn3', $item->shabak)->first();
+                    $bookiritem = BookirBook::where('xisbn', $item->shabak10)->orwhere('xisbn2', $item->shabak10)->orWhere('xisbn3', $item->shabak10)->orWhere('xisbn', $item->shabak13)->orwhere('xisbn2', $item->shabak13)->orWhere('xisbn3', $item->shabak13)->first();
                     if (!empty($bookiritem)) {
                         $update_data['check_status'] = 1;
                     } else {
                         $update_data['check_status'] = 2;
                     }
 
-                    $ershad_book = ErshadBook::where('xisbn', $item->shabak)->first();
+                    $ershad_book = ErshadBook::where('xisbn', $item->shabak10)->orwhere('xisbn', $item->shabak13)->first();
                     if (!empty($ershad_book)) {
                         $update_data['has_permit'] = 1;
                     } else {
