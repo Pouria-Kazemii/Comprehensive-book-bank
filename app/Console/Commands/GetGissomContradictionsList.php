@@ -70,13 +70,14 @@ class GetGissomContradictionsList extends Command
                     $update_data['check_status'] = 4;
                     $update_data['has_permit'] = 4;
                 }
+                BookGisoom::where('id',$item->id)->update($update_data);
             }
         }
 
 
 
         //  unallowable_book
-        UnallowableBook::chunk(1, function ($items) {
+       /* UnallowableBook::chunk(1, function ($items) {
             foreach ($items as $item) {
                 $this->info($item->xtitle);
                 $gisoom = BookGisoom::select('id');
@@ -95,10 +96,10 @@ class GetGissomContradictionsList extends Command
                 $gisoom_books = $gisoom->get();
                 foreach ($gisoom_books as $gisoom_book) {
                     if (isset($gisoom_book) and !empty($gisoom_book)) {
-                        Bookgisoom::where('id', $gisoom_book->id)->update(array('has_permit' => 2));
+                        Bookgisoom::where('id', $gisoom_book->id)->update(array('unallowed' => 1));
                     }
                 }
             }
-        });
+        }); */
     }
 }
