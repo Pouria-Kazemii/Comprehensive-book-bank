@@ -16,7 +16,7 @@ class GetGissomContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:gissomContradictionsList {rowId} {miss?}';
+    protected $signature = 'get:gissomContradictionsList {crawlerId} {miss?}';
 
     /**
      * The console command description.
