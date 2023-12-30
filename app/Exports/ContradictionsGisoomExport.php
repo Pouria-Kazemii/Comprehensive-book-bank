@@ -28,7 +28,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
-            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10','shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image','unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10', 'shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
 
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
@@ -39,7 +39,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
 
 
-            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10','shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image','unallowed')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
+            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10', 'shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image', 'unallowed')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->catText = '';
                 if ($item->check_status == 2) {
@@ -66,10 +66,11 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 $report[$key]->has_permit = hasPermitTitle($item->has_permit);
                 $report[$key]->main_recordNumber =  $item->recordNumber;
                 $report[$key]->recordNumber = 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name';
-
-                $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => $item->recordNumber , 'recordNumber' => $item->main_recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->main_check_status, 'old_has_permit' => $item->main_has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
-
+                
+                if ($saveInWebsiteBooklinksDefects == 1) {
+                    $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
+                    WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => $item->recordNumber, 'recordNumber' => $item->main_recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->main_check_status, 'old_has_permit' => $item->main_has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                }
             }
         }
         return $report;
@@ -77,6 +78,6 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ["لینک کتاب در گیسوم", "عنوان کتاب", "ناشر", "تعداد صفحه", "سال نشر", "شابک 10 زقمی","شابک 13 رقمی", "قطع", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
+        return ["لینک کتاب در گیسوم", "عنوان کتاب", "ناشر", "تعداد صفحه", "سال نشر", "شابک 10 زقمی", "شابک 13 رقمی", "قطع", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
     }
 }
