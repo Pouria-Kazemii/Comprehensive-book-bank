@@ -44,7 +44,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 $report[$key]->catText = '';
                 if ($item->check_status == 2) {
                     if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
-                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
+                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr, 0, 4) . '/01/01')->toCarbon();
                         if (strtotime($georgianCarbonDate) > strtotime('2022-03-21 00:00:00')) {
                             $report[$key]->catText = '*';
                         }
@@ -56,7 +56,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 $report[$key]->image = '';
                 if ($item->has_permit == 2) {
                     if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
-                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
+                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr, 0, 4) . '/01/01')->toCarbon();
                         if (strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')) {
                             $report[$key]->image = '**';
                         }
@@ -64,18 +64,19 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 }
                 $report[$key]->main_has_permit = $item->has_permit;
                 $report[$key]->has_permit = hasPermitTitle($item->has_permit);
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name';
 
                 $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name', 'recordNumber' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->main_check_status, 'old_has_permit' => $item->main_has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => $item->recordNumber , 'recordNumber' => $item->main_recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->main_check_status, 'old_has_permit' => $item->main_has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
 
             }
         }
-
         return $report;
     }
 
     public function headings(): array
     {
-        return ["آیدی کتاب در گیسوم", "عنوان کتاب", "ناشر", "تعداد صفحه", "سال نشر", "شابک 10 زقمی","شابک 13 رقمی", "قطع", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
+        return ["لینک کتاب در گیسوم", "عنوان کتاب", "ناشر", "تعداد صفحه", "سال نشر", "شابک 10 زقمی","شابک 13 رقمی", "قطع", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
     }
 }
