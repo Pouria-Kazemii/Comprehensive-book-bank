@@ -17,6 +17,7 @@ use App\Exports\ContradictionsIranketabExport;
 use App\Exports\Contradictions30bookExport;
 use App\Exports\ContradictionsShahreKetabOnlineExport;
 use App\Exports\ContradictionsBarkhatExport;
+use App\Exports\ContradictionsGisoomExport;
 use App\Exports\ContradictionsKetabejamExport;
 use App\Exports\WebsiteBookLinkDigiExport;
 use App\Models\ContradictionsExcelExport;
@@ -167,7 +168,7 @@ class ExcelController extends Controller
         return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
     }
 
-    public function exportExcelContradictionsKetabejam($status,$excel_name)
+    public function exportExcelContradictionsKetabejam($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
@@ -175,10 +176,20 @@ class ExcelController extends Controller
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsKetabejamExport($status,$contradictionsExcelExport->id), $excel_name);
+        return Excel::download(new ContradictionsKetabejamExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
    
     }
-
+    public function exportExcelContradictionsGisoom($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsGisoomExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+   
+    }
 
     public function exportExcelWebsiteBookLinkDefectsCheckResultDigi($excel_id,$excel_name)
     {
