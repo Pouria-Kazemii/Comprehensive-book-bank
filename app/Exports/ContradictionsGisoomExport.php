@@ -39,7 +39,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
 
 
-            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10','shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
+            $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10','shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image','unallowed')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->catText = '';
                 if ($item->check_status == 2) {
