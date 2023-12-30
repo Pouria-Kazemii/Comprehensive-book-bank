@@ -66,7 +66,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 $report[$key]->has_permit = hasPermitTitle($item->has_permit);
 
                 $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name', 'recordNumber' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name', 'recordNumber' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->main_check_status, 'old_has_permit' => $item->main_has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
 
             }
         }
