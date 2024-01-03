@@ -3,111 +3,64 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-
 use Goutte\Client;
-
 use Symfony\Component\HttpClient\HttpClient;
-
 use Symfony\Component\DomCrawler\Crawler;
-
 use App\Models\BookGisoom;
-
 use App\Models\Author;
-
 use App\Models\Crawler as CrawlerM;
 
 class GetGissomBook extends Command
-
 {
-
     /*
-
- The name and signature of the console command.
-
-
- @var string
-
-*/
-
+    The name and signature of the console command.
+    @var string
+    */
     protected $signature = 'get:gissomBook {crawlerId} {miss?}';
-
     /*
-
- The console command description.
-
-
- @var string
-
-*/
-
+    The console command description.
+    @var string
+    */
     protected $description = 'crawle Gisoom book from site html';
 
     /*
+    Create a new command instance.
+    @return void
 
- Create a new command instance.
-
-
- @return void
-
-*/
-
+    */
     public function __construct()
-
     {
-
         parent::__construct();
     }
-
     /*
+    Execute the console command.
+    @return int
 
- Execute the console command.
-
-
- @return int
-
-*/
+    */
 
     public function handle()
-
     {
-
         if ($this->argument('miss') && $this->argument('miss') == 1) {
-
             try {
-
-                $lastCrawler = CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('end', 'ASC')->first();
-
+                $lastCrawler = CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->orderBy('end', 'ASC')->first();
                 if (isset($lastCrawler->last)) {
-
                     $startC = $lastCrawler->last;
-
                     $endC = $lastCrawler->end;
-
                     $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ---------=-- ");
-
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-
                 $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ---------=-- ");
             }
         } else {
-
             try {
-
                 $lastCrawler = CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->orderBy('end', 'desc')->first();
-
                 if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
-
                 else $startC = 11000000;
-
                 $endC = $startC + CrawlerM::$crawlerSize;
-
                 $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ---------=-- ");
-
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Gisoom-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-
                 $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ---------=-- ");
             }
         }
@@ -118,11 +71,12 @@ class GetGissomBook extends Command
             $bar->start();
             $recordNumber = $startC;
             while ($recordNumber <= $endC) {
+                // $recordNumber =11200511;
                 try {
                     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . " ---------- ");
                     // $crawler = $client->request('GET', 'http://188.253.2.66/proxy.php?url=https://www.gisoom.com/book/' . $recordNumber);
                     // $crawler = $client->request('GET', 'https://www.gisoom.com/book/' . $recordNumber . '/book_name/');
-                    $crawler = $client->request('GET', 'http://asr.dmedia.ir/getgisoom/' . $recordNumber.'/');
+                    $crawler = $client->request('GET', 'http://asr.dmedia.ir/getgisoom/' . $recordNumber . '/');
                     $status_code = $client->getInternalResponse()->getStatusCode();
                 } catch (\Exception $e) {
                     $crawler = null;
@@ -130,7 +84,8 @@ class GetGissomBook extends Command
                     $this->info(" \n ---------- Failed Get " . $recordNumber . " ---------=-- ");
                 }
                 // dd($crawler->filter('body div.bookinfocol')->count());
-                if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0 ) {
+                if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0) {
+                    $authors = array();
                     $book = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
 
                     $book->title = $crawler->filter('body div.bookinfocol div h1 a')->text();
@@ -147,7 +102,7 @@ class GetGissomBook extends Command
                         if (strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false) {
                             $book->tarjome = true;
                         }
-                        if (strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false) {
+                        if (strpos($col->textContent, 'پدیدآوران:') !== false || strpos($col->textContent, 'مترجمان:') !== false || strpos($col->textContent, 'مترجم:') !== false || strpos($col->textContent, 'مؤلف:') !== false || strpos($col->textContent, 'مؤلفان:') !== false) {
                             $colc = new Crawler($col);
                             foreach ($colc->filter('a') as $link) {
                                 $authorObject = Author::firstOrCreate(array("d_name" => $link->textContent));
@@ -211,12 +166,14 @@ class GetGissomBook extends Command
                     $book->recordNumber = $recordNumber;
                     $book->save();
                     $this->info(" \n ---------- Inserted Book " . $recordNumber . " ---------- ");
-                    if (count($authors) > 0) {
-                        $book->authors()->attach($authors);
-                        $this->info(" \n ---------- Attach Author Book " . $recordNumber . " ---------- ");
-                    }
+                    // dd($authors);
+                    // if (count($authors) > 0) {
+                    $book->authors()->sync($authors);
+                    $this->info(" \n ---------- sync Author Book " . $recordNumber . " ---------- ");
+                    // }
                 }
                 $bar->advance();
+                CrawlerM::where('name', 'Crawler-Gisoom-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
