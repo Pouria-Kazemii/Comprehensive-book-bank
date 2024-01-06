@@ -68,16 +68,18 @@ class GetMajmaForCorrectInfo extends Command
             $bar->start();
             // bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->chunk(100, function ($books,$startC) {
                 $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('10')->get();
-                foreach($books as $book){
+                /*foreach($books as $book){
                     $recordNumber = $book->xpageurl;
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
                     $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
                     BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->update(['check_goodreads'=>1]);
-                }
+                }*/
                 foreach($books as $book){
+                    //find recorNumber
                     $recordNumber = $book->xpageurl;
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
                     $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
+                    //////////////////////////
                     $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
                     $ch = curl_init($url);
@@ -120,7 +122,8 @@ class GetMajmaForCorrectInfo extends Command
                             BookCover::firstOrCreate(array('name' => $book_content->coverType));
                         }
 
-                        $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+                        //$bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+                        $bookIrBook = BookirBook::where('xid', $book->xid)->first();
 
                         // book data
                         if (!is_null($book_content->bookType)) {

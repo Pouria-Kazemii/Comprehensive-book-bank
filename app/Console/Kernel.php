@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         Commands\GetShahreKetabOnline::class, 
         Commands\get30Book::class, 
         Commands\GetMajmaForCorrectInfo::class,
+        Commands\GetMajmaLastDays::class,
         commands\GetBarKhatBook::class, 
 
     ];
@@ -72,6 +73,9 @@ class Kernel extends ConsoleKernel
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
         $schedule->command('get:iranKetab 1')->everyMinute();
+        
+        $schedule->command('get:GetMajmaLastDays 1')->dailyAt('02:00');
+
         $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
     }
 
