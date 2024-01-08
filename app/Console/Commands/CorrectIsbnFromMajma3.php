@@ -25,7 +25,7 @@ class CorrectIsbnFromMajma3 extends Command
      *
      * @var string
      */
-    protected $signature = 'get:CorrectIsbnFromMajma3 {crawlerId} {miss?}';
+    protected $signature = 'get:CorrectIsbnFromMajma3 {crawlerId}';
 
     /**
      * The console command description.
@@ -51,37 +51,12 @@ class CorrectIsbnFromMajma3 extends Command
      */
     public function handle()
     {
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
-                if (isset($lastCrawler) and !empty($lastCrawler)) {
-                    $startC = $lastCrawler->last;
-                    $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
-                if (isset($lastCrawler) and !empty($lastCrawler)) {
-                    $startC = $lastCrawler->end + 1;
-                    // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 500000;
-                } else {
-                    $startC = 1;
-                    // $endC = $startC + CrawlerM::$crawlerSize;
-                    $endC = 500000;
-                }
-
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
-            }
-        }
+        $count = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('check_circulation',0)->where('xid', '>', 1000000)->count();
+        $startC = 0;
+        $endC   =  $count;
+        $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                
 
         if (isset($newCrawler)) {
 
@@ -90,8 +65,10 @@ class CorrectIsbnFromMajma3 extends Command
             $bar->start();
 
             // $books = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->get();
-            BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('xid', '>', 1000000)->orderby('xid', 'ASC')->chunk(2000, function ($books, $startC) {
+            BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('check_circulation',0)->where('xid', '>', 1000000)->orderby('xid', 'ASC')->chunk(2000, function ($books, $startC) {
                 foreach ($books as $book) {
+                    BookirBook::where('xid',$book->xid)->update(['check_circulation'=>1]);
+
                     $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
                     $this->info($recordNumber);
