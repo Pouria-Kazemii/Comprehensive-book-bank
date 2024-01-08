@@ -54,7 +54,7 @@ class GetMajmaLastDays extends Command
 
         $limit_book = 200;
         $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
-        $to_date = date("Y-m-d", strtotime("+2 days", strtotime($from_date)));
+        $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
         //give total for foreach
         $timeout = 120;
         $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/'.$limit_book;
@@ -127,6 +127,7 @@ class GetMajmaLastDays extends Command
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
 
+                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0']);
                    /* $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
                     $ch = curl_init($url);

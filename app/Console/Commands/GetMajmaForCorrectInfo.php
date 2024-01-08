@@ -76,6 +76,10 @@ class GetMajmaForCorrectInfo extends Command
                 }*/
                 foreach($books as $book){
                     //find recorNumber
+                    $bookIrBook = BookirBook::where('xid', $book->xid)->first();
+                    $bookIrBook->check_goodreads=1;
+                    $bookIrBook->save();
+                    
                     $recordNumber = $book->xpageurl;
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
                     $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
@@ -97,6 +101,8 @@ class GetMajmaForCorrectInfo extends Command
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         echo 'error:' . curl_error($ch);
                         MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
+                        
+
                     } else {
                         $this->info(' recordNumber : '. $recordNumber);
                         MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
