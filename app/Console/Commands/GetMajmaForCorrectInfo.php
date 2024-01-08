@@ -76,9 +76,8 @@ class GetMajmaForCorrectInfo extends Command
                 }*/
                 foreach($books as $book){
                     //find recorNumber
-                    $bookIrBook = BookirBook::where('xid', $book->xid)->first();
-                    $bookIrBook->check_goodreads=1;
-                    $bookIrBook->save();
+                    BookirBook::where('xid',$book->xid)->update(['check_goodreads'=>1]);
+
                     
                     $recordNumber = $book->xpageurl;
                     $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);

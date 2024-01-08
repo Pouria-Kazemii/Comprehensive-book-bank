@@ -32,12 +32,10 @@ class ChangeDataController extends Controller
         // die($skip);
         $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
         foreach($books as $book){
-            // $recordNumber = $book->xpageurl;
-            // $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
-            // $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
+
             BookirBook::where('xid',$book->xid)->update(['check_goodreads'=>1]);
-        }
-        foreach($books as $book){
+
+            
             $recordNumber = $book->xpageurl;
             $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
             $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
