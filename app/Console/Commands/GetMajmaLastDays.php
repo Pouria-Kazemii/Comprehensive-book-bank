@@ -53,8 +53,13 @@ class GetMajmaLastDays extends Command
     {
 
         $limit_book = 200;
-        $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
-        $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
+        // $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
+        // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
+        
+        $to_date = date("Y-m-d");
+        $from_date = date("Y-m-d", strtotime("-90 days", strtotime($to_date)));
+
+
         //give total for foreach
         $timeout = 120;
         $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/'.$limit_book;
