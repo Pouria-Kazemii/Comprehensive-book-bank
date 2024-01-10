@@ -79,12 +79,11 @@ class GetShahreKetabOnline extends Command
                 if ($status_code == 200 and $crawler->filter('body div.ProductDetails')->count() > 0) {
                     $book_cats = '';
                     foreach ($crawler->filter('body ol.breadcrumb li a') as $cat) {
-                        if (isset($book_cats) and !empty($book_cats))
-                        {
+                        if (isset($book_cats) and !empty($book_cats)) {
                             $book_cats = $book_cats . "-|-" . ltrim(rtrim(self::convert_arabic_char_to_persian($cat->textContent)));
-                        }else{
+                        } else {
                             $book_cats = ltrim(rtrim(self::convert_arabic_char_to_persian($cat->textContent)));
-                        } 
+                        }
                     }
                     if (isset($book_cats)) $cats_arr = explode('-|-', $book_cats);
 
@@ -106,17 +105,20 @@ class GetShahreKetabOnline extends Command
 
                         // price 
                         if ($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->count() > 0) {
-                            $book->price  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->text()));
+                            $price  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->text()));
+                            if (strlen($price) < 10) {
+                                $book->price = $price;
+                            }
                         }
 
                         // desc 
                         if ($crawler->filter('body div.ProductDetails div.description')->count() > 0) {
                             $book->Desc  = $crawler->filter('body div.ProductDetails div.description')->text();
                         }
-                        
+
                         // details
                         $book->title  = $crawler->filter('body div.ProductDetails div.ProductInfo div.Details h1')->text();
-                        
+
                         $partner =  array();
                         foreach ($crawler->filter("body div.ProductDetails div.ProductInfo div.Details div.mt-1 div.Attributes div.Attribute") as $trTable) {
                             $trObj = new Crawler($trTable);
@@ -132,11 +134,11 @@ class GetShahreKetabOnline extends Command
                                     if ($trObj->filter('div.LightText')->nextAll()->text() != '') {
                                         // $this->info($trObj->filter('div.LightText')->nextAll()->text());
                                         // foreach($trObj->filter('a div') as $link){
-                                            // $authorObject = Author::firstOrCreate(array("d_name" => $trObj->filter('div.LightText')->nextAll()->text()));
-                                            // $authors[] = $authorObject->id;
+                                        // $authorObject = Author::firstOrCreate(array("d_name" => $trObj->filter('div.LightText')->nextAll()->text()));
+                                        // $authors[] = $authorObject->id;
 
-                                            $partner[0]['roleId'] = 1;
-                                            $partner[0]['name'] = $trObj->filter('div.LightText')->nextAll()->text();
+                                        $partner[0]['roleId'] = 1;
+                                        $partner[0]['name'] = $trObj->filter('div.LightText')->nextAll()->text();
                                         // }
                                     }
                                     break;
@@ -154,9 +156,9 @@ class GetShahreKetabOnline extends Command
                                 case 'انتشارات:':
                                     $book->nasher = $trObj->filter('div.LightText')->nextAll()->text();
                                     break;
-                                // case 'نوبت چاپ':
-                                //     $book->nobatChap = $trObj->filter('div.LightText')->nextAll()->text();
-                                //     break;
+                                    // case 'نوبت چاپ':
+                                    //     $book->nobatChap = $trObj->filter('div.LightText')->nextAll()->text();
+                                    //     break;
                                 case 'شماره چاپ:':
                                     $book->nobatChap = $trObj->filter('div.LightText')->nextAll()->text();
                                     break;
@@ -185,12 +187,11 @@ class GetShahreKetabOnline extends Command
                                     $book->vazn = enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text()));
                                     break;
                             }
-
                         }
-                       
+
                         $book->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
 
-                        
+
                         //tags
                         if ($crawler->filter("body div.ProductDetails div.Tags")->count() > 0) {
                             foreach ($crawler->filter("body div.ProductDetails div.Tags a") as $tag) {
@@ -199,10 +200,9 @@ class GetShahreKetabOnline extends Command
                                 // $this->info($tagObj->filter('div.Tag')->text());
                             }
                         }
-                        
+
 
                         $book->save();
-
                     } else {
                         $this->info(" \n ---------- Rejected Book   " . $recordNumber . "           ---------- ");
                     }
@@ -279,4 +279,3 @@ class GetShahreKetabOnline extends Command
         return $isbn;
     }
 }
-
