@@ -9,7 +9,7 @@ class MajmaApiBook extends Model
 {
     use HasFactory;
     protected $table = 'majma_api_books';
-    protected $fillable = ['xbook_id', 'xstatus'];
+    protected $fillable = ['xbook_id', 'xstatus','xfunction_caller'];
     protected $primaryKey = 'xid';
     public $timestamps = true;
 }
