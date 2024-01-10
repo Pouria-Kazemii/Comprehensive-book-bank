@@ -99,12 +99,12 @@ class GetMajmaForCorrectInfo extends Command
                     if (curl_errno($ch)) {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         echo 'error:' . curl_error($ch);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500','xfunction_caller'=>'GetMajmaForCorrectInfo-Command' ]);
                         
 
                     } else {
                         $this->info(' recordNumber : '. $recordNumber);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200','xfunction_caller'=>'GetMajmaForCorrectInfo-Command' ]);
 
                         ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                         $book_content = json_decode($book_content);

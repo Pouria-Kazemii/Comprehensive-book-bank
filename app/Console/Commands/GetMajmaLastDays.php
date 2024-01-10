@@ -132,7 +132,7 @@ class GetMajmaLastDays extends Command
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
 
-                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0']);
+                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0' ,'xfunction_caller'=>'GetMajmaLastDays-Command']);
                    /* $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
                     $ch = curl_init($url);

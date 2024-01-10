@@ -30,6 +30,7 @@ class ChangeDataController extends Controller
 {
     public function getMajmaForCorrectInfo($skip,$limit){
         // die($skip);
+        $xfunction_caller = 'ChangeDataController->getMajmaForCorrectInfo-from:'.$skip.'-Limit:'.$limit;
         $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
         foreach($books as $book){
 
@@ -55,10 +56,10 @@ class ChangeDataController extends Controller
             if (curl_errno($ch)) {
                 echo (" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                 echo 'error:' . curl_error($ch);
-                MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
+                MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500','xfunction_caller'=>$xfunction_caller ]);
             } else {
                 echo (' recordNumber : '. $recordNumber);
-                MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
+                MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200','xfunction_caller'=>$xfunction_caller]);
 
                 ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                 $book_content = json_decode($book_content);
