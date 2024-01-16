@@ -25,9 +25,111 @@ use App\Models\BookFormat;
 use App\Models\BookirPublisher;
 use App\Models\BookirSubject;
 use App\Models\BookLanguage;
+use App\Models\Crawler as CrawlerM;
+
 
 class ChangeDataController extends Controller
 {
+
+    public static function getMajmaLastDays(){
+        
+        $limit_book = 200;
+        $to_date = date("Y-m-d");
+        $from_date = date("Y-m-d", strtotime("-90 days", strtotime($to_date)));
+
+
+        //give total for foreach
+        $timeout = 120;
+        $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/'.$limit_book;
+        echo 'url : '.$url;
+        echo '</br>';
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_ENCODING, "");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        $total_api_content = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo " Try Get BOOK LIST " . $from_date . "/" . $to_date . "/0/".$limit_book."              ---------- ";
+            echo '</br>';
+            echo 'error:' . curl_error($ch);
+            echo '</br>';
+        } else {
+            $total_api_content = json_decode($total_api_content);
+            $totalCount = $total_api_content->totalCount;
+           echo' total books  : ' . $totalCount;
+           echo '</br>';
+        }
+
+        try {
+            $startC = 1;
+            $endC = $totalCount;
+
+            echo " \n ---------- Create Crawler  $startC  -> $endC         ---------=-- ";
+            echo '</br>';
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Last-days' , 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+        } catch (\Exception $e) {
+            echo " \n ---------- Failed Crawler            ---------=-- ";
+            echo '</br>';
+        }
+
+
+        if (isset($newCrawler)) {
+
+            for ($i = 0; $i <= ceil($totalCount / $limit_book); $i++) {
+                $timeout = 120;
+                $from = $i*200;
+                $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/' . $from . '/'.$limit_book;
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_ENCODING, "");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                $books_content = curl_exec($ch);
+               
+                if (curl_errno($ch)) {
+                   echo " \n ---------- Try Get BOOK LIST http://dcapi.k24.ir/test_get_books_majma/" . $from_date . "/" . $to_date . "/" . $from . "/".$limit_book."             ---------- ";
+                   echo '</br>';
+                    echo 'error:' . curl_error($ch);
+                    echo '</br>';
+                } else {
+                    $books_content = json_decode($books_content);
+                }
+                // قسمت کتاب ها رو باید بندازم تو foreach که دونه دونه بره اطلاعاتشو بگیره
+                foreach ($books_content->items as $item) {
+                    // die('stop');
+                    $recordNumber = $item->id;
+                    echo 'recordNumber : '.$recordNumber .'</br>';
+                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
+                    $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
+                    $bookIrBook->save();
+
+                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0' ,'xfunction_caller'=>'GetMajmaLastDays-Command']);
+                    $totalCount--;
+                    CrawlerM::where('name', 'Crawler-Majma-Last-days')->where('start', $startC)->update(['last' => $totalCount]);
+                    die('stop');
+                }
+            }
+
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
+            echo " \n ---------- Finish Crawler     $startC  -> $endC         ---------=-- ";
+            echo '</br>';
+        }
+
+    }
+
     public function getMajmaForCorrectInfo($skip,$limit){
         // die($skip);
         $xfunction_caller = 'ChangeDataController->getMajmaForCorrectInfo-from:'.$skip.'-Limit:'.$limit;
@@ -41,7 +143,7 @@ class ChangeDataController extends Controller
             $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
             $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
             $timeout = 120;
-            $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
+            $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_FAILONERROR, true);
             curl_setopt($ch, CURLOPT_HEADER, 0);

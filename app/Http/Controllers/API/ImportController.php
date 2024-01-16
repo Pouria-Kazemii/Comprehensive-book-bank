@@ -6,6 +6,7 @@ use App\Http\Requests\ErshadBookRequest;
 use App\Http\Requests\UnallowableBookRequest;
 use App\Http\Controllers\Controller;
 use App\Imports\DigiBookLinksDefectsImport;
+use App\Imports\TaaghcheBookLinksDefectsImport;
 use App\Imports\ErshadBookImport;
 use App\Imports\UnallowableBookImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -47,6 +48,14 @@ class ImportController extends Controller
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         $excel_id = $contradictionsExcelExport->id;
         Excel::import(new DigiBookLinksDefectsImport($excel_type,$excel_id), storage_path('app/'.$excel_name));
+    }
+    public function importTaaghcheExcel($excel_type,$excel_name){
+        set_time_limit(0);
+        $contents = file_get_contents('https://manvaketab.com/public/files/datacollector/'. $excel_name);
+        Storage::disk('local')->put($excel_name, $contents);
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        $excel_id = $contradictionsExcelExport->id;
+        Excel::import(new TaaghcheBookLinksDefectsImport($excel_type,$excel_id), storage_path('app/'.$excel_name));
     }
 
    

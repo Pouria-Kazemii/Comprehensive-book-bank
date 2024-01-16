@@ -74,7 +74,7 @@ class Getmajma extends Command
 
             while ($recordNumber <= $endC) {
                 $timeout = 120;
-                $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
+                $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_FAILONERROR, true);
                 curl_setopt($ch, CURLOPT_HEADER, 0);

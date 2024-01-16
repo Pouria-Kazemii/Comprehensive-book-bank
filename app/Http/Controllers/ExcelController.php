@@ -183,6 +183,8 @@ class ExcelController extends Controller
     {
         $status =  explode(',',$status);
         set_time_limit(0);
+
+        ini_set('memory_limit', '512M');
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         

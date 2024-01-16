@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\CorrectInfo;
 
 use App\Models\AgeGroup;
 use App\Models\BookCover;
@@ -18,14 +18,14 @@ use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\HttpClient\HttpClient;
 
-class GetMajmaLastDays extends Command
+class GetMajmaForCorrectInfo extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:MajmaLastDays {crawlerId} {miss?}';
+    protected $signature = 'get:GetMajmaForCorrectInfo {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -51,89 +51,40 @@ class GetMajmaLastDays extends Command
      */
     public function handle()
     {
-
-        $limit_book = 200;
-        // $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
-        // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
-        
-        $to_date = date("Y-m-d");
-        $from_date = date("Y-m-d", strtotime("-90 days", strtotime($to_date)));
-
-
-        //give total for foreach
-        $timeout = 120;
-        $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/'.$limit_book;
-        $this->info($url);
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_ENCODING, "");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        $total_api_content = curl_exec($ch);
-        if (curl_errno($ch)) {
-            $this->info(" \n ---------- Try Get BOOK LIST " . $from_date . "/" . $to_date . "/0/".$limit_book."              ---------- ");
-            echo 'error:' . curl_error($ch);
-        } else {
-            $total_api_content = json_decode($total_api_content);
-            $totalCount = $total_api_content->totalCount;
-            $this->info(' total books  : ' . $totalCount);
-        }
-
+        $correctCountBook = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->count();
         try {
+            
             $startC = 1;
-            $endC = $totalCount;
+            $endC = $correctCountBook ;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Last-days' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-mamja-for-correct-info-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
-
-
+        
         if (isset($newCrawler)) {
-
-            $client = new Client(HttpClient::create(['timeout' => 30]));
-
-            $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
+            $bar = $this->output->createProgressBar($correctCountBook);
             $bar->start();
+            // bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->chunk(100, function ($books,$startC) {
+                // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('10')->get();
+                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('1')->get();
+                /*foreach($books as $book){
+                    $recordNumber = $book->xpageurl;
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
+                    BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->update(['check_goodreads'=>1]);
+                }*/
+                foreach($books as $book){
+                    //find recorNumber
+                    BookirBook::where('xid',$book->xid)->update(['check_goodreads'=>1]);
 
-            for ($i = 0; $i <= ceil($totalCount / $limit_book); $i++) {
-                $timeout = 120;
-                $from = $i*200;
-                $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/' . $from . '/'.$limit_book;
-                $this->info($url);
-                $ch = curl_init($url);
-                curl_setopt($ch, CURLOPT_FAILONERROR, true);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                curl_setopt($ch, CURLOPT_ENCODING, "");
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-                $books_content = curl_exec($ch);
-               
-                if (curl_errno($ch)) {
-                    $this->info(" \n ---------- Try Get BOOK LIST http://dcapi.k24.ir/test_get_books_majma/" . $from_date . "/" . $to_date . "/" . $from . "/".$limit_book."             ---------- ");
-                    echo 'error:' . curl_error($ch);
-                } else {
-                    $books_content = json_decode($books_content);
-                }
-                // قسمت کتاب ها رو باید بندازم تو foreach که دونه دونه بره اطلاعاتشو بگیره
-                foreach ($books_content->items as $item) {
-                    $recordNumber = $item->id;
-                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
-                    $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
-                    $bookIrBook->save();
-
-                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0' ,'xfunction_caller'=>'GetMajmaLastDays-Command']);
-                   /* $timeout = 120;
+                    
+                    $recordNumber = $book->xpageurl;
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
+                    //////////////////////////
+                    $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
                     $ch = curl_init($url);
                     curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -146,14 +97,15 @@ class GetMajmaLastDays extends Command
                     curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
                     curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
                     $book_content = curl_exec($ch);
-
                     if (curl_errno($ch)) {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
                         echo 'error:' . curl_error($ch);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500']);
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500','xfunction_caller'=>'GetMajmaForCorrectInfo-Command' ]);
+                        
+
                     } else {
-                        $this->info(' recordNumber : ' . $recordNumber);
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200']);
+                        $this->info(' recordNumber : '. $recordNumber);
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200','xfunction_caller'=>'GetMajmaForCorrectInfo-Command' ]);
 
                         ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                         $book_content = json_decode($book_content);
@@ -176,7 +128,8 @@ class GetMajmaLastDays extends Command
                             BookCover::firstOrCreate(array('name' => $book_content->coverType));
                         }
 
-                        $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+                        //$bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+                        $bookIrBook = BookirBook::where('xid', $book->xid)->first();
 
                         // book data
                         if (!is_null($book_content->bookType)) {
@@ -185,7 +138,10 @@ class GetMajmaLastDays extends Command
                             $is_translate = (isset($bookIrBook->is_translate)) ? $bookIrBook->is_translate : 0;
                         }
 
+                        $this->info('isbn : '.$book_content->isbn);
+
                         $book_content->isbn = self::validateIsbn($book_content->isbn);
+                        $this->info('isbn : '.$book_content->isbn);
                         if (!is_null($book_content->isbn)) {
 
                             $isbn13 = $book_content->isbn;
@@ -196,10 +152,12 @@ class GetMajmaLastDays extends Command
                             }
                         }
 
+                       
                         $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
                         if (!is_null($book_content->isbn10)) {
+
                             $isbn10 = $book_content->isbn10;
-                            $isbn10 = str_replace("-", "", str_replace("0", "", $book_content->isbn));
+                            $isbn10 = str_replace("-", "", str_replace("0", "", $isbn10));
 
                             if (empty($isbn10)) {
                                 $book_content->isbn10 = $isbn10;
@@ -208,7 +166,7 @@ class GetMajmaLastDays extends Command
 
                         $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                         $bookIrBook->xpageurl2 = 'http://ketab.ir/book/' . $book_content->uniqueId;
-                        $bookIrBook->xname = (!is_null($book_content->title)) ? mb_substr($book_content->title, 0, 300, "UTF-8") : $bookIrBook->xname;
+                        $bookIrBook->xname = (!is_null($book_content->title)) ? mb_substr($book_content->title,0,300, "UTF-8") : $bookIrBook->xname;
                         $bookIrBook->xname2 = str_replace(" ", "", $bookIrBook->xname);
                         $bookIrBook->xpagecount = (!is_null($book_content->pageCount)) ? $book_content->pageCount : $bookIrBook->xpagecount;
                         $bookIrBook->xformat = (!is_null($book_content->sizeType)) ? $book_content->sizeType : $bookIrBook->xformat;
@@ -220,10 +178,10 @@ class GetMajmaLastDays extends Command
 
                         // 'xapearance'=> '' ;
                         $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
-                        $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn), 0, 20);
-                        $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? str_replace("-", "", $book_content->isbn10) : $bookIrBook->xisbn2;
+                        $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn),0,20);
+                        $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? str_replace("-", "",$book_content->isbn10) : $bookIrBook->xisbn2;
 
-                        $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate, 0, 4) . '/' . substr($book_content->issueDate, 4, 2) . '/' . substr($book_content->issueDate, 6, 2), '/', '-') : $bookIrBook->xpublishdate;
+                        $bookIrBook->xpublishdate = (!is_null($book_content->issueDate)) ? BookirBook::toGregorian(substr($book_content->issueDate,0,4) . '/'.substr($book_content->issueDate,4,2).'/'.substr($book_content->issueDate,6,2), '/', '-') : $bookIrBook->xpublishdate;
                         $bookIrBook->xcoverprice = (!is_null($book_content->coverPrice)) ? $book_content->coverPrice : $bookIrBook->xcoverprice;
                         // 'xminprice'=>'' ;
                         // 'xcongresscode'=>'' ;
@@ -417,23 +375,20 @@ class GetMajmaLastDays extends Command
                                 );
                             }
                         }
+
                     }
-                    */
 
                     // $bar->advance();*/
-                    CrawlerM::where('name', 'Crawler-Majma-Last-days' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
-                    $recordNumber++;
+                    CrawlerM::where('name','Crawler-mamja-for-correct-info-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
                 }
-            }
-
-
+                
+            // });
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
         }
     }
-
     public static function convert_arabic_char_to_persian($string)
     {
         $string = str_replace("ي", "ی", $string);
@@ -496,4 +451,5 @@ class GetMajmaLastDays extends Command
 
         return $isbn;
     }
+
 }

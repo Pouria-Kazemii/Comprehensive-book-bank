@@ -370,7 +370,7 @@ class PublisherController extends Controller
                 $role_creators = $collection->filter(function ($item) use ($role_item) {
                     return data_get($item, 'xroleid') == $role_item;
                 });
-                // dd($$role_creators);
+                // dd($role_creators);
                 $role_creator_collection = $role_creators->pluck('xcreatorid')->all();
                 $role_creator_collection =  array_unique($role_creator_collection);
                 // dd($role_creator_collection);
