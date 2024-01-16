@@ -172,7 +172,7 @@ class GetShahreKetabOnline extends Command
                                     $book->jeld = $trObj->filter('div.LightText')->nextAll()->text();
                                     break;
                                 case 'تعداد صفحه:':
-                                    $book->tedadSafe = enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text()));
+                                    $book->tedadSafe = (enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text())))? enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text())) : 0;
                                     break;
                                 case 'طول:':
                                     $book->length = faCharToEN($trObj->filter('div.LightText')->nextAll()->text());
