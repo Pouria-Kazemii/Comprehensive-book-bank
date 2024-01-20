@@ -39,7 +39,8 @@ class CreateBarkhatbookTable extends Migration
             $table->integer('book_master_id')->default(0)->index();
             $table->integer('check_status')->default(0)->index();
             $table->integer('has_permit')->default(0)->index();
-            $table->timestamps();
+            $table->string('mongo_id', 255)->nullable()->index()->collation('utf8_persian_ci')->after('has_permit');
+           $table->timestamps();
         });
     }
 
