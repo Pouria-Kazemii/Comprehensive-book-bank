@@ -45,7 +45,7 @@ class AddK24bookTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('book30book');
+        Schema::dropIfExists('bookK24');
     }
 }
 
