@@ -25,7 +25,7 @@ class CorrectIsbnFromMajma3 extends Command
      *
      * @var string
      */
-    protected $signature = 'get:CorrectIsbnFromMajma3 {crawlerId}';
+    protected $signature = 'get:CorrectIsbnFromMajma3 {crawlerId} {miss?}';
 
     /**
      * The console command description.
@@ -51,12 +51,37 @@ class CorrectIsbnFromMajma3 extends Command
      */
     public function handle()
     {
-        $count = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('check_circulation',0)->where('xid', '>', 1000000)->count();
-        $startC = 0;
-        $endC   =  $count;
-        $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-                
+        if ($this->argument('miss') && $this->argument('miss') == 1) {
+            try {
+                $lastCrawler = CrawlerM::where('name', 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('id', 'DESC')->first();
+                if (isset($lastCrawler) and !empty($lastCrawler)) {
+                    $startC = $lastCrawler->last;
+                    $endC   = $lastCrawler->end;
+                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+                    $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+                }
+            } catch (\Exception $e) {
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            }
+        } else {
+            try {
+                $lastCrawler = CrawlerM::where('name', 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'))->where('status', 2)->orderBy('id', 'desc')->first();
+                if (isset($lastCrawler) and !empty($lastCrawler)) {
+                    $startC = $lastCrawler->end + 1;
+                    // $endC = $startC + CrawlerM::$crawlerSize;
+                    $endC = 1000000;
+                } else {
+                    $startC = 1;
+                    // $endC = $startC + CrawlerM::$crawlerSize;
+                    $endC = 1000000;
+                }
+
+                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Correct-Isbn-From-Majma3-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+            } catch (\Exception $e) {
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            }
+        }
 
         if (isset($newCrawler)) {
 
@@ -64,8 +89,7 @@ class CorrectIsbnFromMajma3 extends Command
             $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
             $bar->start();
 
-            // $books = BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->get();
-            BookirBook::whereRaw('CHAR_LENGTH(xisbn3) < 13')->where('check_circulation',0)->where('xid', '>', 1000000)->orderby('xid', 'ASC')->chunk(2000, function ($books, $startC) {
+            BookirBook::where('xisbn', 'not like', "%-%")->where('check_circulation',0)->where('xid', '>', 2000000)->orderby('xid', 'ASC')->chunk(2000, function ($books, $startC) {
                 foreach ($books as $book) {
                     BookirBook::where('xid',$book->xid)->update(['check_circulation'=>1]);
 
@@ -96,37 +120,11 @@ class CorrectIsbnFromMajma3 extends Command
 
                         ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
                         $book_content = json_decode($book_content);
-                        $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
 
                         $book_content->isbn = self::validateIsbn($book_content->isbn);
-                        if (!is_null($book_content->isbn)) {
+                        $book->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $book->xisbn;
 
-                            $isbn13 = $book_content->isbn;
-                            $isbn13 = str_replace("-", "", str_replace("0", "", $isbn13));
-
-                            if (empty($isbn13)) {
-                                $book_content->isbn = $isbn13;
-                            }
-                        }
-
-                        $book_content->isbn10 = self::validateIsbn($book_content->isbn10);
-                        if (!is_null($book_content->isbn10)) {
-
-                            $isbn10 = $book_content->isbn10;
-                            $isbn10 = str_replace("-", "", str_replace("0", "", $isbn10));
-
-                            if (empty($isbn10)) {
-                                $book_content->isbn10 = $isbn10;
-                            }
-                        }
-
-                        $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
-                        $bookIrBook->xpageurl2 = 'http://ketab.ir/book/' . $book_content->uniqueId;
-
-                        $bookIrBook->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $bookIrBook->xisbn;
-                        $bookIrBook->xisbn3 = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? str_replace("-", "", $book_content->isbn) : substr(str_replace("-", "", $bookIrBook->xisbn), 0, 20);
-                        $bookIrBook->xisbn2 = (!is_null($book_content->isbn10) && !empty($book_content->isbn10)) ? str_replace("-", "",$book_content->isbn10) : $bookIrBook->xisbn2;
-                        $bookIrBook->save();
+                        $book->save();
                     }
 
                     // $bar->advance();*/
