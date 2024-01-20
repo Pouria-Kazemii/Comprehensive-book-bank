@@ -73,6 +73,7 @@ class ConsensusSimilarBooksByIsbn extends Command
             // N نباشه
             // ز نباشه 
             // ت نباشه 
+            // dossier by same isbn
             bookirbook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->where('xisbn3','!=','N')->where('xisbn3','!=','0')->where('xisbn3','!=','-')->orderBy('xid', 'DESC')->chunk(1, function ($books,$startC) {
                 foreach ($books as $book) {
                     $this->info($book->xisbn3);
@@ -93,6 +94,7 @@ class ConsensusSimilarBooksByIsbn extends Command
                     // CrawlerM::where('name', 'Crawler-consensus-similar-books-by-isbn-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $book->xisbn3]);
                 }
             });
+
             $newCrawler->status = 2;
             $newCrawler->save();
         }

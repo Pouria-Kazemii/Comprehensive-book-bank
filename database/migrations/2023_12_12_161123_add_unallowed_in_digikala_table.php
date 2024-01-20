@@ -15,6 +15,7 @@ class AddUnallowedInDigikalaTable extends Migration
     {
         Schema::table('bookDigi', function (Blueprint $table) {
             $table->integer('unallowed')->default(0)->index()->after('has_permit');
+            $table->string('mongo_id', 255)->nullable()->index()->collation('utf8_persian_ci')->after('unallowed');
         });
     }
 

@@ -9,6 +9,7 @@ use Symfony\Component\DomCrawler\Crawler;
 use App\Models\Author;
 use App\Models\BookShahreKetabOnline;
 use App\Models\Crawler as CrawlerM;
+use App\Models\SiteCategories;
 
 class GetKetabchi extends Command
 {
@@ -43,13 +44,89 @@ class GetKetabchi extends Command
      */
     public function handle()
     {
+        //menu
+        $timeout = 120;
+        $url = 'https://ketabchi.com/api/v1/menus';
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_ENCODING, "");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        $menu_content = curl_exec($ch);
 
-        $startC =  1;
-        $endC =  100;
-        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-ketabchi-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
-        
+        if (curl_errno($ch)) {
+            $this->info(" \n ---------- Try Get MENU              ---------- ");
+            echo 'error:' . curl_error($ch);
+        } else {
+            $menu_content = json_decode($menu_content);
+            self::give_menu($menu_content->menus);
+        }
 
-        if (isset($newCrawler)) {
+        // die('stop');
+        //category
+        /*$cats = SiteCategories::where('domain', 'https://ketabchi.com/')->get();
+        foreach ($cats as $cat) {
+            // find count  books for loop
+            $timeout = 120;
+            $url = 'https://ketabchi.com/api/v1/products?genre=122&from=0&count=18&orderBy=sales&compact=true';
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "value=" . $cat->cat_link . "&type=cat&sort=0&onsale=0");
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_ENCODING, "");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+            $cat_page_content = curl_exec($ch);
+            // dd($cat_book_content);
+            if (curl_errno($ch)) {
+                $this->info(" \n ---------- Try Get MENU              ---------- ");
+                echo 'error:' . curl_error($ch);
+            } else {
+                $cat_page_content = json_decode($cat_page_content);
+                $cat_pages = $cat_page_content->books->last_page;
+            }
+
+            $x = 1;
+            while ($x <= $cat_pages) {
+                $timeout = 120;
+                $url = 'https://barkhatbook.com/api/quick?page=' . $x;
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, "value=" . $cat->cat_link . "&type=cat&sort=0&onsale=0");
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_ENCODING, "");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                $cat_book_content = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    $this->info(" \n ---------- Try Get MENU              ---------- ");
+                    echo 'error:' . curl_error($ch);
+                } else {
+                    $cat_book_content = json_decode($cat_book_content);
+                    foreach ($cat_book_content->books->data as $book) {
+                        SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
+                    }
+                }
+                $x++;
+            }
+        }*/
+
+        /*if (isset($newCrawler)) {
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
             $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
@@ -88,6 +165,19 @@ class GetKetabchi extends Command
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
+        }*/
+    }
+
+    public static function give_menu($menu){
+        dd($menu['label']);
+        if(isset($menu->label) AND isset($menu->link)){
+            dd($menu);
+            SiteCategories::firstOrCreate(array('domain' => 'https://ketabchi.com/', 'cat_link' => $menu->link, 'cat_name' => $menu->label));
+        }
+        if(isset($menu->children)){
+            foreach($menu->children as $child){
+                self::give_menu($child);
+            }
         }
     }
     public static function convert_arabic_char_to_persian($string)

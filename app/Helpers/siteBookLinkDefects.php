@@ -13,6 +13,19 @@ if (!function_exists('digiRecordNumberFromBookLink')) {
     }
 }
 
+if (!function_exists('taaghcheRecordNumberFromBookLink')) {
+    function taaghcheRecordNumberFromBookLink($row)
+    {
+
+        if (isset($row['book_links'])) {
+            $book_link_array = explode("/", $row['book_links']);
+            return $book_link_array[4];
+        } else {
+            return NULL;
+        }
+    }
+}
+
 if (!function_exists('vaziiat_dar_khane_ketab')) {
     function vaziiat_dar_khane_ketab($row)
     {

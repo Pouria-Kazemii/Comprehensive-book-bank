@@ -134,7 +134,7 @@ class GetMajmaLastDays extends Command
 
                     MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0' ,'xfunction_caller'=>'GetMajmaLastDays-Command']);
                    /* $timeout = 120;
-                    $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber;
+                    $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
                     $ch = curl_init($url);
                     curl_setopt($ch, CURLOPT_FAILONERROR, true);
                     curl_setopt($ch, CURLOPT_HEADER, 0);

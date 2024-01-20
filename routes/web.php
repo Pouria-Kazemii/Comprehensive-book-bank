@@ -76,6 +76,7 @@ Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelC
 Route::get('exportExcelContradictionsKetabejam/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsKetabejam']);
 Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsGisoom']);
 Route::get('getMajmaForCorrectInfo/{skip}/{limit}', [ChangeDataController::class, 'getMajmaForCorrectInfo']);
+Route::get('getMajmaLastDays', [ChangeDataController::class, 'getMajmaLastDays']);
 
 
 
