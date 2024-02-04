@@ -82,7 +82,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:CorrectIsbnFromMajma2 1')->dailyAt('02:00');
         $schedule->command('get:CorrectIsbnFromMajma3 1')->dailyAt('02:00');
 
-        $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
     }
 
     /**

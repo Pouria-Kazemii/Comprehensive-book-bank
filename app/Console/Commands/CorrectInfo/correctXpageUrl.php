@@ -87,7 +87,9 @@ class correctXpageUrl extends Command
                         'xcirculation'=>$additionalRecord->xcirculation,
                         'xisbn2'=>$additionalRecord->xisbn2,
                         'xpdfurl'=>$additionalRecord->xpdfurl,
-                        'xdiocode'=>$additionalRecord->xdiocode]);
+                        'xdiocode'=>$additionalRecord->xdiocode,
+                        'xdocid'=>1
+                    ]);
                         $count = BookirBook::where('xpageurl','http://ketab.ir/bookview.aspx?bookid='.$recordNumber)->get()->count();
                         $this->info('$count : '.$count);
                         if($count > 1){
