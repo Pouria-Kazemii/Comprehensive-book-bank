@@ -51,7 +51,7 @@ class GetMajmaForCorrectInfo extends Command
      */
     public function handle()
     {
-        $correctCountBook = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->count();
+        $correctCountBook = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid',1)->count();
         try {
             
             $startC = 1;
@@ -66,18 +66,10 @@ class GetMajmaForCorrectInfo extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($correctCountBook);
             $bar->start();
-            // bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->chunk(100, function ($books,$startC) {
-                // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('10')->get();
-                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_goodreads',0)->orderBy('xid','DESC')->limit('1')->get();
-                /*foreach($books as $book){
-                    $recordNumber = $book->xpageurl;
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
-                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
-                    BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->update(['check_goodreads'=>1]);
-                }*/
+                $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid',1)->orderBy('xid','DESC')->limit('1')->get();
                 foreach($books as $book){
                     //find recorNumber
-                    BookirBook::where('xid',$book->xid)->update(['check_goodreads'=>1]);
+                    BookirBook::where('xid',$book->xid)->update(['xdocid'=>2]);
 
                     
                     $recordNumber = $book->xpageurl;
