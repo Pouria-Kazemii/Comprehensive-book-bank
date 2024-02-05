@@ -34,9 +34,12 @@ class Kernel extends ConsoleKernel
         Commands\CorrectInfo\GetMajmaForCorrectInfo::class,
         Commands\GetMajmaLastDays::class,
         commands\CrawlerSites\GetBarKhatBook::class, 
+        
         commands\CorrectInfo\CorrectIsbnFromMajma1::class, 
         commands\CorrectInfo\CorrectIsbnFromMajma2::class, 
         commands\CorrectInfo\CorrectIsbnFromMajma3::class, 
+
+        commands\CorrectInfo\correctXpageUrl::class, 
 
     ];
 
@@ -81,6 +84,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:CorrectIsbnFromMajma1 1')->dailyAt('02:00');
         $schedule->command('get:CorrectIsbnFromMajma2 1')->dailyAt('02:00');
         $schedule->command('get:CorrectIsbnFromMajma3 1')->dailyAt('02:00');
+
+        $schedule->command('get:correctXpageUrl 1')->everySixHours();
 
         $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
     }
