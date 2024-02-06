@@ -16,6 +16,7 @@ use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 use Goutte\Client;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpClient\HttpClient;
 
 class GetMajmaLastDays extends Command
@@ -55,14 +56,14 @@ class GetMajmaLastDays extends Command
         $limit_book = 200;
         // $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
         // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
-        
+
         $to_date = date("Y-m-d");
         $from_date = date("Y-m-d", strtotime("-90 days", strtotime($to_date)));
 
 
         //give total for foreach
         $timeout = 120;
-        $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/'.$limit_book;
+        $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/' . $limit_book;
         $this->info($url);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -76,20 +77,19 @@ class GetMajmaLastDays extends Command
         curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
         $total_api_content = curl_exec($ch);
         if (curl_errno($ch)) {
-            $this->info(" \n ---------- Try Get BOOK LIST " . $from_date . "/" . $to_date . "/0/".$limit_book."              ---------- ");
+            $this->info(" \n ---------- Try Get BOOK LIST " . $from_date . "/" . $to_date . "/0/" . $limit_book . "              ---------- ");
             echo 'error:' . curl_error($ch);
         } else {
             $total_api_content = json_decode($total_api_content);
             $totalCount = $total_api_content->totalCount;
             $this->info(' total books  : ' . $totalCount);
         }
-
         try {
             $startC = 1;
             $endC = $totalCount;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Last-days' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Last-days-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
@@ -104,8 +104,9 @@ class GetMajmaLastDays extends Command
 
             for ($i = 0; $i <= ceil($totalCount / $limit_book); $i++) {
                 $timeout = 120;
-                $from = $i*200;
-                $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/' . $from . '/'.$limit_book;
+                $from = $i * 200;
+                $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/' . $from . '/' . $limit_book;
+                CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Last-days-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'last' => $from, 'status' => 1));
                 $this->info($url);
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -118,9 +119,9 @@ class GetMajmaLastDays extends Command
                 curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
                 curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
                 $books_content = curl_exec($ch);
-               
+
                 if (curl_errno($ch)) {
-                    $this->info(" \n ---------- Try Get BOOK LIST http://dcapi.k24.ir/test_get_books_majma/" . $from_date . "/" . $to_date . "/" . $from . "/".$limit_book."             ---------- ");
+                    $this->info(" \n ---------- Try Get BOOK LIST http://dcapi.k24.ir/test_get_books_majma/" . $from_date . "/" . $to_date . "/" . $from . "/" . $limit_book . "             ---------- ");
                     echo 'error:' . curl_error($ch);
                 } else {
                     $books_content = json_decode($books_content);
@@ -132,8 +133,8 @@ class GetMajmaLastDays extends Command
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
 
-                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0' ,'xfunction_caller'=>'GetMajmaLastDays-Command']);
-                   /* $timeout = 120;
+                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetMajmaLastDays-Command']);
+                    /* $timeout = 120;
                     $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
                     $ch = curl_init($url);
                     curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -421,9 +422,10 @@ class GetMajmaLastDays extends Command
                     */
 
                     // $bar->advance();*/
-                    CrawlerM::where('name', 'Crawler-Majma-Last-days' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
-                    $recordNumber++;
                 }
+
+                // CrawlerM::where('name', 'Crawler-Majma-Last-days-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
+                CrawlerM::where('name', 'Crawler-Majma-Last-days-' . $this->argument('crawlerId'))->where('start', enNumberKeepOnly($from_date))->where('end', enNumberKeepOnly($to_date))->where('last', $from)->update(['status' => 2]);
             }
 
 
