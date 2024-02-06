@@ -66,7 +66,7 @@ class correctXpageUrl extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($correctCountBook);
             $bar->start();
-                $withOutXpageUrl2books = bookirbook::where('xdocid',0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->orderBy('xid','DESC')->limit('1000')->get();
+                $withOutXpageUrl2books = bookirbook::where('xdocid',0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->WhereNull('xname')->orderBy('xid','DESC')->limit('1000')->get();
                 foreach($withOutXpageUrl2books as $withOutXpageUrl2book){
                     // die($withOutXpageUrl2book);
                     $this->info($withOutXpageUrl2book->xpageurl);
