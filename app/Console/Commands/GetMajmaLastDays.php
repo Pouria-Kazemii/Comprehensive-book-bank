@@ -58,7 +58,7 @@ class GetMajmaLastDays extends Command
         // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
 
         $to_date = date("Y-m-d");
-        $from_date = date("Y-m-d", strtotime("-90 days", strtotime($to_date)));
+        $from_date = date("Y-m-d", strtotime("-30 days", strtotime($to_date)));
 
 
         //give total for foreach
