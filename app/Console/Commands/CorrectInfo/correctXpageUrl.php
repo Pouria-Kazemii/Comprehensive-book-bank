@@ -51,63 +51,63 @@ class correctXpageUrl extends Command
      */
     public function handle()
     {
-        $correctCountBook = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->count();
+        $total = BookirBook::where('xdocid', 0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->count();
         try {
-            
+
             $startC = 1;
-            $endC = $correctCountBook ;
+            $endC = $total;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-correct-xpageurl2-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
-        
+
         if (isset($newCrawler)) {
-            $bar = $this->output->createProgressBar($correctCountBook);
+            $bar = $this->output->createProgressBar($total);
             $bar->start();
-                $withOutXpageUrl2books = bookirbook::where('xdocid',0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->WhereNull('xname')->orderBy('xid','DESC')->limit('1000')->get();
-                foreach($withOutXpageUrl2books as $withOutXpageUrl2book){
-                    // die($withOutXpageUrl2book);
-                    $this->info($withOutXpageUrl2book->xpageurl);
-                    $recordNumber = $withOutXpageUrl2book->xpageurl;
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
-                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
-                    $this->info($recordNumber);
+            $withOutXpageUrl2books = bookirbook::where('xdocid', 0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->orderBy('xid', 'DESC')->limit('1000')->get();
+            foreach ($withOutXpageUrl2books as $withOutXpageUrl2book) {
+                // die($withOutXpageUrl2book);
+                $this->info($withOutXpageUrl2book->xpageurl);
+                $recordNumber = $withOutXpageUrl2book->xpageurl;
+                $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                $this->info('recordNumber :' . $recordNumber);
 
-                    $additionalRecord = bookirbook::Where('xpageurl','LIKE','%?bookid='.$recordNumber)->whereNotNull('xpageurl2')->first();
-                    if(isset($additionalRecord)and !empty($additionalRecord)){
-                        // die($additionalRecord);
-                        $withOutXpageUrl2book->update(['xpageurl'=>'http://ketab.ir/bookview.aspx?bookid='.$recordNumber,
-                        'xpageurl2'=>$additionalRecord->xpageurl2,
-                        'xpagecount'=>$additionalRecord->xpagecount,
-                        'xformat'=>$additionalRecord->xformat,
-                        'xcover'=>$additionalRecord->xcover,
-                        'xprintnumber'=>$additionalRecord->xprintnumber,
-                        'xcirculation'=>$additionalRecord->xcirculation,
-                        'xisbn2'=>$additionalRecord->xisbn2,
-                        'xpdfurl'=>$additionalRecord->xpdfurl,
-                        'xdiocode'=>$additionalRecord->xdiocode,
-                        'xdocid'=>1
+                $additionalRecord = bookirbook::Where('xpageurl', 'LIKE', '%?bookid=' . $recordNumber)->whereNotNull('xpageurl2')->first();
+                if (isset($additionalRecord) and !empty($additionalRecord)) {
+                    // die($additionalRecord);
+                    $withOutXpageUrl2book->update([
+                        'xpageurl' => 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber,
+                        'xpageurl2' => $additionalRecord->xpageurl2,
+                        'xpagecount' => $additionalRecord->xpagecount,
+                        'xformat' => $additionalRecord->xformat,
+                        'xcover' => $additionalRecord->xcover,
+                        'xprintnumber' => $additionalRecord->xprintnumber,
+                        'xcirculation' => $additionalRecord->xcirculation,
+                        'xisbn2' => $additionalRecord->xisbn2,
+                        'xpdfurl' => $additionalRecord->xpdfurl,
+                        'xdiocode' => $additionalRecord->xdiocode,
+                        'xdocid' => 1
                     ]);
-                        $count = BookirBook::where('xpageurl','http://ketab.ir/bookview.aspx?bookid='.$recordNumber)->get()->count();
-                        $this->info('$count : '.$count);
-                        if($count > 1){
-                           $deleted_book = BookirBook::where('xpageurl','http://ketab.ir/bookview.aspx?bookid='.$recordNumber)->where('xparent','!=','-1')->orderBy('xid','DESC')->first();
-                           if(isset($deleted_book) and !empty($deleted_book)){
+                    $count = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->get()->count();
+                    $this->info('$count : ' . $count);
+                    if ($count > 1) {
+                        $deleted_book = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->where('xparent', '!=', '-1')->orderBy('xid', 'DESC')->first();
+                        if (isset($deleted_book) and !empty($deleted_book)) {
                             $deleted_book->delete();
-                           } 
                         }
-                   
-                    }else{
-                        $withOutXpageUrl2book->update(['xdocid'=>1]);
-
                     }
-                   
-                    // $bar->advance();*/
-                    CrawlerM::where('name','Crawler-correct-xpageurl2-'.$this->argument('crawlerId'))->where('start',$startC)->update(['last'=>$recordNumber]);
+                } else {
+                    $withOutXpageUrl2book->update(['xdocid' => 1]);
                 }
-                
+
+                $bar->advance();
+                $newCrawler->last = $recordNumber;
+                $newCrawler->save();
+            }
+
             // });
             $newCrawler->status = 2;
             $newCrawler->save();
@@ -115,7 +115,4 @@ class correctXpageUrl extends Command
             $bar->finish();
         }
     }
-
-
-
 }
