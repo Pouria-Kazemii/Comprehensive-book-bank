@@ -25,7 +25,7 @@ class correctXpageUrl extends Command
      *
      * @var string
      */
-    protected $signature = 'get:correctXpageUrl {crawlerId} {miss?}';
+    protected $signature = 'get:correctXpageUrl {crawlerId}';
 
     /**
      * The console command description.
@@ -66,49 +66,49 @@ class correctXpageUrl extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($total);
             $bar->start();
-            $withOutXpageUrl2books = bookirbook::where('xdocid', 0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->orderBy('xid', 'DESC')->limit('1000')->get();
-            foreach ($withOutXpageUrl2books as $withOutXpageUrl2book) {
-                // die($withOutXpageUrl2book);
-                $this->info($withOutXpageUrl2book->xpageurl);
-                $recordNumber = $withOutXpageUrl2book->xpageurl;
-                $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
-                $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
-                $this->info('recordNumber :' . $recordNumber);
+            bookirbook::where('xdocid', 0)->WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->orderBy('xid', 'DESC')->chunk(2000, function ($withOutXpageUrl2books) use ($bar, $newCrawler) {
+                foreach ($withOutXpageUrl2books as $withOutXpageUrl2book) {
+                    // die($withOutXpageUrl2book);
+                    $this->info($withOutXpageUrl2book->xpageurl);
+                    $recordNumber = $withOutXpageUrl2book->xpageurl;
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                    $this->info('recordNumber :' . $recordNumber);
 
-                $additionalRecord = bookirbook::Where('xpageurl', 'LIKE', '%?bookid=' . $recordNumber)->whereNotNull('xpageurl2')->first();
-                if (isset($additionalRecord) and !empty($additionalRecord)) {
-                    // die($additionalRecord);
-                    $withOutXpageUrl2book->update([
-                        'xpageurl' => 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber,
-                        'xpageurl2' => $additionalRecord->xpageurl2,
-                        'xpagecount' => $additionalRecord->xpagecount,
-                        'xformat' => $additionalRecord->xformat,
-                        'xcover' => $additionalRecord->xcover,
-                        'xprintnumber' => $additionalRecord->xprintnumber,
-                        'xcirculation' => $additionalRecord->xcirculation,
-                        'xisbn2' => $additionalRecord->xisbn2,
-                        'xpdfurl' => $additionalRecord->xpdfurl,
-                        'xdiocode' => $additionalRecord->xdiocode,
-                        'xdocid' => 1
-                    ]);
-                    $count = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->get()->count();
-                    $this->info('$count : ' . $count);
-                    if ($count > 1) {
-                        $deleted_book = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->where('xparent', '!=', '-1')->orderBy('xid', 'DESC')->first();
-                        if (isset($deleted_book) and !empty($deleted_book)) {
-                            $deleted_book->delete();
+                    $additionalRecord = bookirbook::Where('xpageurl', 'LIKE', '%?bookid=' . $recordNumber)->whereNotNull('xpageurl2')->first();
+                    if (isset($additionalRecord) and !empty($additionalRecord)) {
+                        // die($additionalRecord);
+                        $withOutXpageUrl2book->update([
+                            'xpageurl' => 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber,
+                            'xpageurl2' => $additionalRecord->xpageurl2,
+                            'xpagecount' => $additionalRecord->xpagecount,
+                            'xformat' => $additionalRecord->xformat,
+                            'xcover' => $additionalRecord->xcover,
+                            'xprintnumber' => $additionalRecord->xprintnumber,
+                            'xcirculation' => $additionalRecord->xcirculation,
+                            'xisbn2' => $additionalRecord->xisbn2,
+                            'xpdfurl' => $additionalRecord->xpdfurl,
+                            'xdiocode' => $additionalRecord->xdiocode,
+                            'xdocid' => 1
+                        ]);
+                        $count = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->get()->count();
+                        $this->info('$count : ' . $count);
+                        if ($count > 1) {
+                            $deleted_book = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->where('xparent', '!=', '-1')->orderBy('xid', 'DESC')->first();
+                            if (isset($deleted_book) and !empty($deleted_book)) {
+                                $deleted_book->delete();
+                            }
                         }
+                    } else {
+                        $withOutXpageUrl2book->update(['xdocid' => 1]);
                     }
-                } else {
-                    $withOutXpageUrl2book->update(['xdocid' => 1]);
+
+                    $bar->advance();
+                    $newCrawler->last = $recordNumber;
+                    $newCrawler->save();
                 }
 
-                $bar->advance();
-                $newCrawler->last = $recordNumber;
-                $newCrawler->save();
-            }
-
-            // });
+            });
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
