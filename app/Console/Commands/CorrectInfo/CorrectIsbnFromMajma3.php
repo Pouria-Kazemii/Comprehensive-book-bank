@@ -69,29 +69,30 @@ class CorrectIsbnFromMajma3 extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            BookirBook::whereNotNull('xpageurl2')->where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->where('xid', '>', 1500000)->where('xid', '<', 2000000)->orderby('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $function_caller, $newCrawler) {
-                foreach ($books as $book) {
-                    $this->info($book->xid);
+            // BookirBook::whereNotNull('xpageurl2')->where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->where('xid', '>', 1500000)->where('xid', '<', 2000000)->orderby('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $function_caller, $newCrawler) {
+            $books = BookirBook::whereNotNull('xpageurl2')->where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->where('xid', '>', 1500000)->where('xid', '<', 2000000)->orderby('xid', 'ASC')->limit(60)->get();
+            foreach ($books as $book) {
+                $this->info($book->xid);
 
-                    $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
-                    $this->info('recordNumber :' . $recordNumber);
+                $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
+                $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
+                $this->info('recordNumber :' . $recordNumber);
 
-                    $apiResult = returnBookDataFromMajmaApi($recordNumber, $function_caller);
-                    if ($apiResult) {
-                        $book_content = $apiResult;
-                        $book_content->isbn = validateIsbn($book_content->isbn);
-                        $this->info($book_content->isbn);
-                        $book->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $book->xisbn;
-                        $book->save();
-                    }
-                    BookirBook::where('xid', $book->xid)->update(['check_circulation' => 1]);
-
-                    $bar->advance();
-                    $newCrawler->last = $recordNumber;
-                    $newCrawler->save();
+                $apiResult = returnBookDataFromMajmaApi($recordNumber, $function_caller);
+                if ($apiResult) {
+                    $book_content = $apiResult;
+                    $book_content->isbn = validateIsbn($book_content->isbn);
+                    $this->info($book_content->isbn);
+                    $book->xisbn = (!is_null($book_content->isbn) && !empty($book_content->isbn)) ? $book_content->isbn : $book->xisbn;
+                    $book->save();
                 }
-            });
+                BookirBook::where('xid', $book->xid)->update(['check_circulation' => 1]);
+
+                $bar->advance();
+                $newCrawler->last = $recordNumber;
+                $newCrawler->save();
+            }
+            // });
 
 
 
