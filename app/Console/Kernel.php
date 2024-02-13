@@ -32,6 +32,7 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
         Commands\CrawlerSites\get30Book::class, 
         Commands\CorrectInfo\GetMajmaForCorrectInfo::class,
+        Commands\Getmajma::class,
         Commands\GetMajmaLastDays::class,
         commands\CrawlerSites\GetBarKhatBook::class, 
 
@@ -82,6 +83,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:iranKetab 1')->everyMinute();
 
         $schedule->command('get:MajmaLastDays 1')->dailyAt('02:00');
+        $schedule->command('get:majma 1')->dailyAt('02:00');
         // for check removed - in xisbn 
         $schedule->command('get:CorrectIsbnFromMajma 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
         $schedule->command('get:CorrectIsbnFromMajma1 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
