@@ -40,10 +40,12 @@ if(!function_exists('updateBookDataWithMajmaApiInfo'))
         if (curl_errno($ch)) {
             // $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
             echo 'error:' . curl_error($ch);
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500','xfunction_caller'=>$function_caller]);
+            $api_status = 500;
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status,'xfunction_caller'=>$function_caller]);
         } else {
             // $this->info(' recordNumber : ' . $recordNumber);
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200','xfunction_caller'=>$function_caller]);
+            $api_status = 200;
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status,'xfunction_caller'=>$function_caller]);
 
             ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
             $book_content = json_decode($book_content);
@@ -309,6 +311,7 @@ if(!function_exists('updateBookDataWithMajmaApiInfo'))
             }
         }
         
+        return $api_status;
     }
 
     

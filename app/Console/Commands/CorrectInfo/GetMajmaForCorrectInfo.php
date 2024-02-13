@@ -67,7 +67,7 @@ class GetMajmaForCorrectInfo extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($total);
             $bar->start();
-            $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid', 1)->orderBy('xid', 'DESC')->limit('10000')->get();
+            $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid', 1)->orderBy('xid', 'DESC')->limit('60')->get();
             foreach ($books as $book) {
 
                 //find recorNumber
