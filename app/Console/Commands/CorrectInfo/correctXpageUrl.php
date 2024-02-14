@@ -82,7 +82,7 @@ class correctXpageUrl extends Command
                     ->where(function($query) use ($recordNumber)
                     {
                         $query->where('xpageurl',"https://db.ketab.ir/bookview.aspx?bookid=".$recordNumber)
-                        ->orWhere('xpageurl',"https://ketab.ir/bookview.aspx?bookid=".$recordNumber);
+                        ->orWhere('xpageurl',"http://ketab.ir/bookview.aspx?bookid=".$recordNumber);
                     })
                     ->first();
                     // $q = DB::getQueryLog();
