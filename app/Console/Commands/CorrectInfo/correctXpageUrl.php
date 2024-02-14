@@ -16,6 +16,7 @@ use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 use Goutte\Client;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpClient\HttpClient;
 
 class correctXpageUrl extends Command
@@ -75,7 +76,17 @@ class correctXpageUrl extends Command
                     $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
                     $this->info('recordNumber :' . $recordNumber);
 
-                    $additionalRecord = bookirbook::Where('xpageurl', 'LIKE', '%?bookid=' . $recordNumber)->whereNotNull('xpageurl2')->first();
+                    // $additionalRecord = bookirbook::Where('xpageurl', 'LIKE', '%?bookid=' . $recordNumber)->whereNotNull('xpageurl2')->first();
+                    // DB::enableQueryLog();
+                    $additionalRecord = bookirbook::whereNotNull('xpageurl2')
+                    ->where(function($query) use ($recordNumber)
+                    {
+                        $query->where('xpageurl',"https://db.ketab.ir/bookview.aspx?bookid=".$recordNumber)
+                        ->orWhere('xpageurl',"https://ketab.ir/bookview.aspx?bookid=".$recordNumber);
+                    })
+                    ->first();
+                    // $q = DB::getQueryLog();
+                    // dd($q );
                     if (isset($additionalRecord) and !empty($additionalRecord)) {
                         // die($additionalRecord);
                         $withOutXpageUrl2book->update([

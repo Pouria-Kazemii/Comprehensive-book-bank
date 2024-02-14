@@ -139,19 +139,18 @@ class GetMajmaLastDays extends Command
                     MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetMajmaLastDays-Command']);
                     //updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook);
                     
-                    // $bar->advance();*/
+                    $bar->advance();
                 }
 
                 $crawlerItems->status = 2 ;
                 $crawlerItems->save();
             }
-
-
-            $newCrawler->status = 2;
-            $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $bar->finish();
+           
         }
+        $newCrawler->status = 2;
+        $newCrawler->save();
+        $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+        $bar->finish();
     }
 
    
