@@ -52,14 +52,14 @@ class GetMajmaForCorrectInfo extends Command
     public function handle()
     {
         $function_caller = 'GetMajmaForCorrectInfo-Command';
-        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid', 1)->count();
+        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->count();
         try {
 
             $startC = 1;
             $endC = $total;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-mamja-for-correct-info-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Old-Books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
@@ -67,7 +67,7 @@ class GetMajmaForCorrectInfo extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($total);
             $bar->start();
-            $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xdocid', 1)->orderBy('xid', 'DESC')->limit('60')->get();
+            $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->orderBy('xid', 'DESC')->limit('60')->get();
             foreach ($books as $book) {
 
                 //find recorNumber
@@ -78,8 +78,10 @@ class GetMajmaForCorrectInfo extends Command
 
                 //$bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
                 $bookIrBook = BookirBook::where('xid', $book->xid)->first();
-                updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller);
-                BookirBook::where('xid', $book->xid)->update(['xdocid' => 2]);
+                $api_status = updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller);
+                $bookIrBook->check_circulation = $api_status;
+                $bookIrBook->save();
+
                 $bar->advance();
                 $newCrawler->last = $recordNumber;
                 $newCrawler->save();
