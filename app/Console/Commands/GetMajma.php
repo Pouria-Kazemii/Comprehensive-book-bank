@@ -51,7 +51,9 @@ class Getmajma extends Command
      */
     public function handle()
     {
-        $total = MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->count();
+        $function_caller ='GetMajmaForNewBooksCommand';
+        // $total = MajmaApiBook::where('xfunction_caller', 'GetMajmaLastDays-Command')->where('xstatus', 0)->count();
+        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->count();
         try {
             $startC = 0;
             $endC = $total;
@@ -61,7 +63,7 @@ class Getmajma extends Command
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
-        
+
 
         if (isset($newCrawler)) {
 
@@ -70,26 +72,52 @@ class Getmajma extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
-                foreach($books as $book){
-                    $this->info($book->xbook_id);
-                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->first();
-                    $api_status = updateBookDataWithMajmaApiInfo($book->xbook_id,$bookIrBook);
-                    $this->info($api_status);
-                    MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>$api_status]);
+            // MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
+            //     foreach($books as $book){
+
+            //         $this->info($book->xbook_id);
+            //         $bookIrBook = BookirBook::WhereNull('xpageurl2')->where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->first();
+            //         if(isset($bookIrBook) and !empty($bookIrBook)){
+            //             $api_status = updateBookDataWithMajmaApiInfo($book->xbook_id,$bookIrBook);
+            //             MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>$api_status]);
+            //         }else{
+            //             MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>1]);
+            //         }
+
+            //         $bar->advance();
+            //         $newCrawler->last = $book->xbook_id;
+            //         $newCrawler->save();
+            //     }
+            // });
+            BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
+                // MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
+                foreach ($books as $book) {
+
+                    $this->info($book->xid);
+                    $recordNumber = $book->xpageurl;
+                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                    $this->info('recordNumber : ' . $recordNumber);
+
+                    $bookIrBook = BookirBook::where('xid',$book->xid)->first();
+                    $api_status = updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller);
+                    MajmaApiBook::where('xbook_id', $recordNumber)->update(['xstatus' => $api_status]);
+                   
+
+                    $bookIrBook->check_circulation = $api_status;
+                    $bookIrBook->save();
+
                     $bar->advance();
-                    $newCrawler->last = $book->xbook_id;
+                    $newCrawler->last = $book->xid;
                     $newCrawler->save();
                 }
-             
-                
-            
             });
+
+
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $bar->finish();
         }
     }
-
 }

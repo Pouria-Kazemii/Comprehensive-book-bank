@@ -133,10 +133,15 @@ class GetMajmaLastDays extends Command
                 foreach ($books_content->items as $item) {
                     $recordNumber = $item->id;
                     $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
+                   
+
+                    if(empty($bookIrBook->xpageurl)){
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetMajmaLastDays-Command']);
+                    }
+
+                    
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
-
-                    MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetMajmaLastDays-Command']);
                     //updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook);
                     
                     $bar->advance();
