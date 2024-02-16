@@ -18,14 +18,14 @@ use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\HttpClient\HttpClient;
 
-class GetMajmaForCorrectInfo extends Command
+class GetMajmaForCorrectIsbnInfo extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:GetMajmaForCorrectInfo {crawlerId}';
+    protected $signature = 'get:GetMajmaForCorrectIsbnInfo {crawlerId}';
 
     /**
      * The console command description.
@@ -52,7 +52,7 @@ class GetMajmaForCorrectInfo extends Command
     public function handle()
     {
         $function_caller = 'GetMajmaForCorrectInfo-Command';
-        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->count();
+        $total = BookirBook::where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->count();
         try {
 
             $startC = 1;
@@ -68,7 +68,7 @@ class GetMajmaForCorrectInfo extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
             // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->orderBy('xid', 'DESC')->limit('60')->get();
-            bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->orderBy('xid', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
+            bookirbook::where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->orderBy('xid', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
                 foreach ($books as $book) {
 
                     //find recorNumber
