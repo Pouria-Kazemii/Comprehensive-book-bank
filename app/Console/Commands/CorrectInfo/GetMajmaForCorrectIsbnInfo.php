@@ -51,7 +51,7 @@ class GetMajmaForCorrectIsbnInfo extends Command
      */
     public function handle()
     {
-        $function_caller = 'GetMajmaForCorrectInfo-Command';
+        $function_caller = 'GetMajmaForCorrectIsbnInfo-Command';
         $total = BookirBook::where('xisbn', 'not like', "%-%")->where('check_circulation', 0)->count();
         try {
 
@@ -59,7 +59,7 @@ class GetMajmaForCorrectIsbnInfo extends Command
             $endC = $total;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Old-Books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-Old-Books-Isbn-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
