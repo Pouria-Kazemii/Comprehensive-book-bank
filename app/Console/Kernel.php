@@ -81,7 +81,7 @@ class Kernel extends ConsoleKernel
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
-        $schedule->command('get:iranKetab 1')->everyMinute();
+        // $schedule->command('get:iranKetab 1')->everyMinute();   // stop from kandoo news
 
         $schedule->command('get:MajmaLastDays 1')->dailyAt('02:00');
         $schedule->command('get:majma 1')->dailyAt('02:00');
