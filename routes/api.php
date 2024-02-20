@@ -20,6 +20,7 @@ Route::post('/v1/user/auth', 'API\UserController@authenticate');
 //Route::get('/v1/book/find', 'API\BookController@find');
 //Route::get('/v1/book/check', 'API\BookController@checkBookK24');
 Route::get('/v1/book/check', 'API\BookCheckController@check');
+Route::post('/v1/book/check_ketabir_ershad', 'API\BookCheckController@check_ketabir_and_ershad');
 Route::get('/v1/book/exist', 'API\BookCheckController@exist');
 Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');
 
@@ -30,7 +31,7 @@ Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabir
 //    function()
 //    {
 //        Route::post('/v1/book/find', 'API\BookController@find');
-//        Route::post('/v1/book/detail', 'API\BookController@detail');
+//        Route::post('/v1/', 'API\BookController@detail');
 //    }
 //);
 Route::group(['middleware' => ['ChToken']], function () {
