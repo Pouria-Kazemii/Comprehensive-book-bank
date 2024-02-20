@@ -6,7 +6,11 @@ use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiPublisher;
 use App\Models\BookirBook;
+use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
+use App\Models\BookirPublisher;
+use App\Models\ErshadBook;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +18,91 @@ use Illuminate\Support\Facades\DB;
 
 class BookCheckController extends Controller
 {
+    public function check_ketabir_and_ershad(Request $request){
+        $shabak = $request["shabak"];
+        $book_name = $request["book_name"];
+        $publisher = $request["publisher"];
+        $creators = $request["creators"];
+
+        /////////////////////////////////bookirbook/////////////////////////////////////////////////
+        $data = array();
+        if(isset($shabak) AND !empty($shabak)){
+            $bookirbook_data = BookirBook::where('xisbn', $shabak)->orwhere('xisbn2', $shabak)->orWhere('xisbn3', $shabak)->get();
+            if (count($bookirbook_data)>0) {
+                $data['bookir_book'] = TRUE;
+            } else {
+                $data['bookir_book'] = FALSE;
+            }
+        }else{
+
+            // publisher
+            $bookPublishers =  BookirPublisher::select('xid')->where('xpublishername',$publisher)->get();
+            $publisher_ids = $bookPublishers->pluck('xid');
+
+            if(isset($publisher_ids) AND !empty($publisher_ids)){
+                $publisher_books = BiBookBiPublisher::select('bi_book_xid')->whereIN('bi_publisher_xid',$publisher_ids)->get();
+                $publisher_book_ids = $publisher_books->pluck('bi_book_xid');
+            }
+            
+            //creators
+            // $bookPartners = BookirPartner::select('xid')->whereIN('xcreatorname',array_map('trim', explode(',', $creators)))->get();
+            $bookPartners = BookirPartner::select('xid')->whereIN('xcreatorname',explode(',', $creators))->get();
+            $partners_ids = $bookPartners->pluck('xid');
+
+            if(isset($partners_ids) AND !empty($partners_ids)){
+                $partner_books = BookirPartnerrule::select('xbookid')->whereIN('xcreatorid',$partners_ids)->get();
+                $partner_books_ids = $partner_books->pluck('xbookid');
+
+            }
+            // 
+            $book_ids = $partner_books_ids->merge($publisher_book_ids);
+      
+
+            if(isset( $book_name) AND !empty( $book_name)){
+                $bookirbook_data = BookirBook::select('xid')->where('xname', $book_name)->whereIN('xid',$book_ids )->get();
+            }else{
+                $bookirbook_data = BookirBook::select('xid')->whereIN('xid',$book_ids )->get();
+            }
+
+            if (count($bookirbook_data)>0) {
+                $data['bookir_book'] = TRUE;
+            } else {
+                $data['bookir_book'] = FALSE;
+            }
+        }
+       
+
+        ////////////////////////////////////////////ershadbook//////////////////////////////////////////
+        if(isset($shabak) AND !empty($shabak)){
+            $ershad_book = ErshadBook::where('xisbn', $shabak)->get();
+            if (count($ershad_book)>0) {
+                $data['ershad_book'] = TRUE;
+            } else {
+                $data['ershad_book'] = FALSE;
+            }
+        }else{
+            if(isset( $book_name) AND !empty( $book_name)){
+                $ershad_book = ErshadBook::where('xpublisher_name', $publisher)->where(function($query) use ($book_name){
+                    $query->where('xtitle_fa',$book_name)->orwhere('xtitle_en',$book_name);
+                })->where(function($query) use ($creators){
+                    $query->whereIN('xmoalefin',explode(',', $creators))->orwhereIN('xmotarjemin',explode(',', $creators));
+                })->get();
+            }else{
+                $ershad_book = ErshadBook::where('xpublisher_name', $publisher)->where(function($query) use ($creators){
+                    $query->whereIN('xmoalefin',explode(',', $creators))->orwhereIN('xmotarjemin',explode(',', $creators));
+                })->get();
+            }
+
+            if (count($ershad_book)>0) {
+                $data['ershad_book'] = TRUE;
+            } else {
+                $data['ershad_book'] = FALSE;
+            }
+
+        }
+       
+        return json_encode($data);
+    }
     public function exist(Request $request){
         // return $request;
         $shabak = $request["shabak"];
