@@ -2,21 +2,10 @@
 
 namespace App\Console\Commands\CorrectInfo;
 
-use App\Models\AgeGroup;
-use App\Models\BookCover;
-use App\Models\BookFormat;
+
 use App\Models\BookirBook;
-use App\Models\BookirPartner;
-use App\Models\BookirPublisher;
-use App\Models\BookirRules;
-use App\Models\BookirSubject;
-use App\Models\BookLanguage;
 use App\Models\Crawler as CrawlerM;
-use App\Models\MajmaApiBook;
-use App\Models\MajmaApiPublisher;
-use Goutte\Client;
 use Illuminate\Console\Command;
-use Symfony\Component\HttpClient\HttpClient;
 
 class GetMajmaForCorrectIsbnInfoFromBeginng extends Command
 {
