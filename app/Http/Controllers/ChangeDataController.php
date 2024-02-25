@@ -8,24 +8,14 @@ use App\Models\BookDigi;
 use App\Models\Book30book;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
-// use App\Models\BookirRules;
-// use Illuminate\Http\Request;
+
 use App\Models\BookIranketab;
 use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\BookIranKetabPartner;
-// use DateTime;
-// use App\Models\MajmaApiBook;
-// use App\Models\MajmaApiPublisher;
-// use App\Models\AgeGroup;
-// use App\Models\BookCover;
-// use App\Models\BookFormat;
-// use App\Models\BookirPublisher;
-// use App\Models\BookirSubject;
-// use App\Models\BookLanguage;
-// use App\Models\Crawler as CrawlerM;
+
 
 
 class ChangeDataController extends Controller
@@ -34,7 +24,8 @@ class ChangeDataController extends Controller
     public function getMajmaForCorrectInfo($skip,$limit){
         // die($skip);
         $function_caller = 'ChangeDataController->getMajmaForCorrectInfo-from:'.$skip.'-Limit:'.$limit;
-        $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
+        // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
+        $books = bookirbook::where('check_circulation',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
         foreach($books as $book){
 
             $recordNumber = $book->xpageurl;
