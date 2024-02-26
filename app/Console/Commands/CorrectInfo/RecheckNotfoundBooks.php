@@ -58,8 +58,8 @@ class RecheckNotfoundBooks extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            // BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
-                $books = BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->limit(6)->get();
+            BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+                // $books = BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->limit(6)->get();
                 foreach ($books as $book) {
 
                     $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
@@ -79,7 +79,7 @@ class RecheckNotfoundBooks extends Command
                     $newCrawler->last = $recordNumber;
                     $newCrawler->save();
                 }
-            // });
+            });
 
 
 
