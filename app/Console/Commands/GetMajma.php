@@ -2,18 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AgeGroup;
-use App\Models\BookCover;
-use App\Models\BookFormat;
+
 use App\Models\BookirBook;
-use App\Models\BookirPartner;
-use App\Models\BookirPublisher;
-use App\Models\BookirRules;
-use App\Models\BookirSubject;
-use App\Models\BookLanguage;
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
-use App\Models\MajmaApiPublisher;
 use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\HttpClient\HttpClient;
@@ -89,8 +81,8 @@ class Getmajma extends Command
             //         $newCrawler->save();
             //     }
             // });
-            BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
-                // MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
+            // BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
+                $books = bookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->limit('6')->get();
                 foreach ($books as $book) {
 
                     $this->info($book->xid);
@@ -111,7 +103,7 @@ class Getmajma extends Command
                     $newCrawler->last = $book->xid;
                     $newCrawler->save();
                 }
-            });
+            // });
 
 
             $newCrawler->status = 2;
