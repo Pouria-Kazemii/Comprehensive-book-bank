@@ -59,7 +59,8 @@ class RecheckNotfoundBooks extends Command
 
             // BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
                 DB::enableQueryLog();
-                $books = BookirBook::where('check_circulation','>=', 500)->where('check_circulation','<=', 5000)->orderby('xid', 'ASC')->limit(10)->get();
+                // $books = BookirBook::where('check_circulation','>=', 500)->where('check_circulation','<=', 5000)->orderby('xid', 'ASC')->limit(10)->get();
+                $books = BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->limit(10)->get();
                 $q = DB::getQueryLog();
                 echo '<pre>'; print_r($q);
                 foreach ($books as $book) {
