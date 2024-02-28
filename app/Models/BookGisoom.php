@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookGisoom extends Model
 {
-    protected $fillable = ['title','nasher','lang','editor','radeD','saleNashr','nobatChap','tiraj', 'tedadSafe', 'ghateChap', 'shabak10', 'shabak13','recordNumber','tarjome','desc','image','price','catText', 'saveBook'];
+    protected $fillable = ['title','nasher','lang','editor','radeD','saleNashr','nobatChap','tiraj', 'tedadSafe', 'ghateChap', 'shabak10', 'shabak13','recordNumber','tarjome','desc','image','price','catText', 'saveBook','mongo_id'];
     protected $table = 'bookgisoom';
 
     public function authors() {

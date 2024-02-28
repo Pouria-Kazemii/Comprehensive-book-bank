@@ -54,8 +54,8 @@ class GetMajmaLastDays extends Command
     {
 
         $limit_book = 200;
-        // $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
-        // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
+        $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
+        $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
         $lastDate = CrawlerM::where('name','Crawler-Majma-Last-days-1')->where('status',2)->orderBy('id','DESC')->first()->start;
         $lastDate= substr_replace($lastDate, '-', 4, 0);
         $lastDate= substr_replace($lastDate, '-', 7, 0);
@@ -63,7 +63,6 @@ class GetMajmaLastDays extends Command
         $to_date = date($lastDate);
         $from_date = date("Y-m-d", strtotime("-30 days", strtotime($to_date)));
 
-       
         //give total for foreach
         $timeout = 120;
         $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/' . $limit_book;
@@ -98,7 +97,7 @@ class GetMajmaLastDays extends Command
         }
 
 
-        if (isset($newCrawler)) {
+        if (isset($newCrawler) and $totalCount > 0 ) {
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
             $last_id_recived_info = CrawlerM::where('name','Crawler-Majma-Last-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
@@ -155,12 +154,13 @@ class GetMajmaLastDays extends Command
                 $crawlerItems->status = 2 ;
                 $crawlerItems->save();
             }
+            $bar->finish();
+
            
         }
         $newCrawler->status = 2;
         $newCrawler->save();
         $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-        $bar->finish();
     }
 
    
