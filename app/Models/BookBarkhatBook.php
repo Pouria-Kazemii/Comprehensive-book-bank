@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookBarkhatBook extends Model
 {
-    protected $fillable = ['recordNumber','parentId','title','nasher','saleNashr','tedadSafe','weight','nobatChap','shabak','translate','desc','subTopic','images','price','jeld','ghateChap','partnerArray','cats','tags','book_master_id','check_status','has_permit',];
+    protected $fillable = ['recordNumber','parentId','title','nasher','saleNashr','tedadSafe','weight','nobatChap','shabak','translate','desc','subTopic','images','price','jeld','ghateChap','partnerArray','cats','tags','book_master_id','check_status','has_permit','mongo_id'];
     protected $table = 'tbl_book_barkhatbook';
     protected $primaryKey = 'id';
 
