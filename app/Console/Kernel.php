@@ -89,12 +89,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:MajmaFutureDays 1')->dailyAt('02:00');
         $schedule->command('get:majma 1')->dailyAt('02:00');
         // for check removed - in xisbn 
-        $schedule->command('get:CorrectIsbnFromMajma 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('get:CorrectIsbnFromMajma1 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('get:CorrectIsbnFromMajma2 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('get:CorrectIsbnFromMajma3 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('get:CorrectIsbnFromMajma4 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:CorrectIsbnFromMajma 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:CorrectIsbnFromMajma1 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:CorrectIsbnFromMajma2 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:CorrectIsbnFromMajma3 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:CorrectIsbnFromMajma4 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+        // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
 
 
         $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
