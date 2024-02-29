@@ -41,7 +41,7 @@ class GetMajmaForCorrectIsbnInfoFromEnding extends Command
     public function handle()
     {
         $function_caller = 'GetMajmaForCorrectIsbnInfoFromEnding-Command';
-        $total = BookirBook::/*where('xisbn', 'not like', "%-%")->*/where('check_circulation', 0)->count();
+        $total = BookirBook::/*where('xisbn', 'not like', "%-%")->*/where('xid','<','2007732')->where('xid','>','1400000')->where('check_circulation', 0)->count();
         try {
 
             $startC = 1;
@@ -57,7 +57,7 @@ class GetMajmaForCorrectIsbnInfoFromEnding extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
             // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->whereNotNull('xname')->where('check_circulation', 0)->orderBy('xid', 'DESC')->limit('60')->get();
-            bookirbook::/*where('xisbn', 'not like', "%-%")->*/where('check_circulation', 0)->orderBy('xid', 'DESC')->chunk(200, function ($books) use ($bar, $newCrawler,$function_caller) {
+            bookirbook::/*where('xisbn', 'not like', "%-%")->*/where('xid','<','2007732')->where('xid','>','1400000')->where('check_circulation', 0)->orderBy('xid', 'DESC')->chunk(200, function ($books) use ($bar, $newCrawler,$function_caller) {
                 foreach ($books as $book) {
 
                     //find recorNumber
