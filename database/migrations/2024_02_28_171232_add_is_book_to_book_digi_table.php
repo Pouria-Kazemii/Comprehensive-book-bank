@@ -13,7 +13,7 @@ class AddIsBookToBookDigiTable extends Migration
      */
     public function up()
     {
-        Schema::table('bookdigi', function (Blueprint $table) {
+        Schema::table('bookDigi', function (Blueprint $table) {
             $table->smallInteger('is_book')->default(0)->nullable();
         });
     }
@@ -25,7 +25,7 @@ class AddIsBookToBookDigiTable extends Migration
      */
     public function down()
     {
-        Schema::table('bookdigi', function (Blueprint $table) {
+        Schema::table('bookDigi', function (Blueprint $table) {
             //
         });
     }
