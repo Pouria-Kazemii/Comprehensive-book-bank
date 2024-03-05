@@ -74,3 +74,11 @@ if(!function_exists('validateIsbn'))
         return $isbn;
     }
 }
+if(!function_exists('validateIsbnWithRemoveDash'))
+{
+    function validateIsbnWithRemoveDash($isbn)
+    {
+        $isbn =  str_replace("-", "", validateIsbn($isbn));
+        return $isbn;
+    }
+}
