@@ -5,20 +5,17 @@ namespace App\Console\Commands\CrawlerSites;
 use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
-use App\Models\Author;
-use App\Models\BookDigiRelated;
 use App\Models\Crawler as CrawlerM;
 
-class GetDigiNewestBook extends Command
+class GetDigiCategoryPrintedBookOfPoetryAndLiterature extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:digiNewestBook {crawlerId}';
+    protected $signature = 'get:digiCategoryPrintedBookOfPoetryAndLiterature {crawlerId}';
 
     /**
      * The console command description.
@@ -44,15 +41,27 @@ class GetDigiNewestBook extends Command
      */
     public function handle()
     {
-
-        $function_caller = 'newest-book';
+        $search_books_category = 'category-printed-book-of-poetry-and-literature';
+        // cat: 
+        //x category-foreign-printed-book
+        // category-children-book
+        //x category-printed-book-of-biography-and-encyclopedia
+        // category-applied-sciences-technology-and-engineering
+        // category-printed-history-and-geography-book
+        // category-printed-book-of-philosophy-and-psychology
+        // category-textbook-tutorials-and-tests
+        // category-language-books
+        // category-printed-book-of-art-and-entertainment
+        // category-religious-printed-book
+        // category-printed-book-of-social-sciences
+        // category-printed-book-of-poetry-and-literature
+        $function_caller = 'Crawler-digi-' . $search_books_category;
         $startC = 1;
         $endC = 2;
-
         try {
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-newest-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-' . $search_books_category . '-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
@@ -63,11 +72,10 @@ class GetDigiNewestBook extends Command
 
 
             $pageCounter = $startC;
-
             while ($pageCounter <= $endC) {
 
                 try {
-                    $pageUrl = 'https://api.digikala.com/v1/categories/book/search/?sort=1&page=' . $pageCounter;
+                    $pageUrl = 'https://www.digikala.com/ajax/search/' . $search_books_category . '/?pageno=' . $pageCounter . '&sortby=1';
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -75,7 +83,7 @@ class GetDigiNewestBook extends Command
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
-                    //$this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                    //$this->info(" \n ---------- Failed Get  ".$pageCounter."              ---------=-- ");
                 }
                 $this->info(" \n ---------- STATUS Get  " . $status_code . "              ---------=-- ");
 
@@ -83,18 +91,19 @@ class GetDigiNewestBook extends Command
 
                     $products_all = json_decode($json);
 
-                    $bar = $this->output->createProgressBar(count($products_all->data->products));
+                    $bar = $this->output->createProgressBar(count($products_all->data->trackerData->products));
                     $bar->start();
 
-                    foreach ($products_all->data->products as $pp) {
-
-                        if (check_digi_id_is_book($pp->id)) {
-                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->id)->firstOrNew();
-                            $bookDigi->recordNumber = 'dkp-' . $pp->id;
-                            updateBookDigi($pp->id, $bookDigi, $function_caller);
+                    foreach ($products_all->data->trackerData->products as $pp) {
+                        if (check_digi_id_is_book($pp->product_id)) {
+                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
+                            $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
+                            updateBookDigi($pp->product_id, $bookDigi, $function_caller);
                         }
+
                         $bar->advance();
                     }
+                    $bar->finish();
                 }
 
                 $newCrawler->last = $pageCounter;
@@ -104,7 +113,6 @@ class GetDigiNewestBook extends Command
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $bar->finish();
         }
     }
 }

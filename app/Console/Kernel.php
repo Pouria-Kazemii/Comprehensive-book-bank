@@ -14,35 +14,28 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         // Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
-        Commands\CrawlerSites\GetDigi::class, 
-        Commands\CrawlerSites\GetDigi1::class, 
-        Commands\CrawlerSites\GetDigi2::class, 
-        Commands\CrawlerSites\GetDigi3::class, 
-        Commands\CrawlerSites\GetDigi4::class, 
-        Commands\CrawlerSites\GetDigi5::class, 
-        Commands\CrawlerSites\GetDigi6::class, 
-        Commands\CrawlerSites\GetDigi7::class, 
-        Commands\CrawlerSites\GetDigi8::class, 
-        Commands\CrawlerSites\GetDigi9::class, 
-        Commands\CrawlerSites\GetDigi10::class, 
-        Commands\CrawlerSites\GetDigi11::class, 
+        Commands\CrawlerSites\GetDigiCategoryForeignPrintedBook::class, 
+        Commands\CrawlerSites\GetDigiCategoryChildrenBook::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfBiographyAndEncyclopedia::class, 
+        Commands\CrawlerSites\GetDigiCategoryAppliedSciencesTechnologyAndEngineering::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedHistoryAndGeographyBook::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPhilosophyAndPsychology::class, 
+        Commands\CrawlerSites\GetDigiCategoryTextbookTutorialsAndTests::class, 
+        Commands\CrawlerSites\GetDigiCategoryLanguageBooks::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfArtAndEntertainment::class, 
+        Commands\CrawlerSites\GetDigiCategoryReligiousPrintedBook::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfSocialSciences::class, 
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPoetryAndLiterature::class, 
         Commands\CrawlerSites\GetDigiNewestBook::class, 
         Commands\CrawlerSites\GetIranketab::class, 
         Commands\CrawlerSites\GetKetabRah::class, 
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
         Commands\CrawlerSites\get30Book::class, 
-        Commands\CorrectInfo\GetMajmaForCorrectInfo::class,
         Commands\Getmajma::class,
         Commands\GetMajmaLastDays::class,
         Commands\GetMajmaFutureDays::class,
         commands\CrawlerSites\GetBarKhatBook::class, 
 
-        commands\CorrectInfo\CorrectIsbnFromMajma::class, 
-        commands\CorrectInfo\CorrectIsbnFromMajma1::class, 
-        commands\CorrectInfo\CorrectIsbnFromMajma2::class, 
-        commands\CorrectInfo\CorrectIsbnFromMajma3::class, 
-        commands\CorrectInfo\CorrectIsbnFromMajma4::class, 
-        commands\CorrectInfo\CorrectIsbnFromMajma4::class, 
         commands\CorrectInfo\RecheckNotfoundBooks::class, 
 
 
@@ -57,7 +50,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        // digi category
+        //////////////////////////////// digi category//////////////////////////////////////////////
         $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('09:00');
         $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('09:30');
         $schedule->command('get:digiCategoryPrintedBookOfBiographyAndEncyclopedia 1')->dailyAt('10:00');
@@ -69,9 +62,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:digiCategoryPrintedBookOfArtAndEntertainment 1')->dailyAt('13:00');
         $schedule->command('get:digiCategoryReligiousPrintedBook 1')->dailyAt('13:30');
         $schedule->command('get:digiCategoryPrintedBookOfSocialSciences 1')->dailyAt('14:00');
-        $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('15:00');
+        $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('14:30');
         //digi new books
-        $schedule->command('get:digiNewestBook 1')->dailyAt('15:30');
+        $schedule->command('get:digiNewestBook 1')->dailyAt('15:00');
+        /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo 
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
         //ketabrah
@@ -88,16 +82,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:MajmaLastDays 1')->dailyAt('02:00');
         $schedule->command('get:MajmaFutureDays 1')->dailyAt('02:00');
         $schedule->command('get:majma 1')->dailyAt('02:00');
-        // for check removed - in xisbn 
-        // $schedule->command('get:CorrectIsbnFromMajma 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        // $schedule->command('get:CorrectIsbnFromMajma1 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        // $schedule->command('get:CorrectIsbnFromMajma2 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        // $schedule->command('get:CorrectIsbnFromMajma3 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        // $schedule->command('get:CorrectIsbnFromMajma4 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+
         // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
 
 
-        // $schedule->command('get:GetMajmaForCorrectInfo 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
     }
 
     /**

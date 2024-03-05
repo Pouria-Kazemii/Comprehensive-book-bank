@@ -21,29 +21,6 @@ use App\Models\BookIranKetabPartner;
 class ChangeDataController extends Controller
 {
 
-    public function getMajmaForCorrectInfo($skip,$limit){
-        // die($skip);
-        $function_caller = 'ChangeDataController->getMajmaForCorrectInfo-from:'.$skip.'-Limit:'.$limit;
-        // $books = bookirbook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
-        $books = bookirbook::where('check_circulation',0)->orderBy('xid','ASC')->skip($skip)->take($limit)->get();
-        foreach($books as $book){
-
-            $recordNumber = $book->xpageurl;
-            $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=","", $recordNumber);
-            $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=","",$recordNumber);
-
-            $bookIrBook = BookirBook::where('xid', $book->xid)->firstOrNew();
-            echo 'xid : '.$bookIrBook->xid;
-
-            $api_status = updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller);
-            $bookIrBook->check_circulation = $api_status;
-            $bookIrBook->save();
-
-        }
-    } 
-
-    
-   
     public function check_is_translate($roleid, $from, $limit, $order)
     {
 

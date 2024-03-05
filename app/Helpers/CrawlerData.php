@@ -1,6 +1,10 @@
 <?php
+
 use App\Models\AgeGroup;
+use App\Models\Author;
 use App\Models\BookCover;
+use App\Models\BookDigi;
+use App\Models\BookDigiRelated;
 use App\Models\BookFormat;
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
@@ -11,8 +15,7 @@ use App\Models\BookLanguage;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 
-if(!function_exists('updateBookDataWithMajmaApiInfo'))
-{
+if (!function_exists('updateBookDataWithMajmaApiInfo')) {
     /**
      * Change number to price format
      *
@@ -20,11 +23,11 @@ if(!function_exists('updateBookDataWithMajmaApiInfo'))
      * @return string $price
      */
 
-    function updateBookDataWithMajmaApiInfo($recordNumber,$bookIrBook,$function_caller=NULL)
+    function updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller = NULL)
     {
 
         $timeout = 120;
-        $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
+        $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber . '/';
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -41,11 +44,11 @@ if(!function_exists('updateBookDataWithMajmaApiInfo'))
             // $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
             echo 'error:' . curl_error($ch);
             $api_status = 500;
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status,'xfunction_caller'=>$function_caller]);
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
         } else {
             // $this->info(' recordNumber : ' . $recordNumber);
             $api_status = 200;
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status,'xfunction_caller'=>$function_caller]);
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
 
             ////////////////////////////////////////////////// book data  ///////////////////////////////////////////////
             $book_content = json_decode($book_content);
@@ -310,20 +313,18 @@ if(!function_exists('updateBookDataWithMajmaApiInfo'))
                 }
             }
         }
-        
+
         return $api_status;
     }
-
-    
 }
 
 
-if(!function_exists('returnBookDataFromMajmaApi')){
-    function returnBookDataFromMajmaApi($recordNumber,$function_caller=null)
+if (!function_exists('returnBookDataFromMajmaApi')) {
+    function returnBookDataFromMajmaApi($recordNumber, $function_caller = null)
     {
 
         $timeout = 120;
-        $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber.'/';
+        $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber . '/';
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
         curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -336,15 +337,238 @@ if(!function_exists('returnBookDataFromMajmaApi')){
         curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
         $book_content = curl_exec($ch);
 
-        if (curl_errno($ch)) {   
-                     MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500','xfunction_caller'=>$function_caller]);
+        if (curl_errno($ch)) {
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500', 'xfunction_caller' => $function_caller]);
 
             return False;
         } else {
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200','xfunction_caller'=>$function_caller]);
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200', 'xfunction_caller' => $function_caller]);
 
             $book_content = json_decode($book_content);
             return $book_content;
+        }
+    }
+}
+
+
+if (!function_exists('updateBookDigi')) {
+    function updateBookDigi($recordNumber,$bookDigi,$function_caller = NULL)
+    {
+
+        $id = str_replace('dkp-','',$recordNumber);
+        $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
+        try {
+            // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
+            $json = file_get_contents($productUrl);
+            $product_info =  json_decode($json);
+            $headers = get_headers($productUrl);
+            $api_status = $product_info->status;
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+
+        } catch (\Exception $e) {
+            $crawler = null;
+            $api_status = 500;
+            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+
+            // $this->info(" \n ---------- Failed Get  " . $id . "              ---------=-- ");
+        }
+
+
+        if ($api_status == 200) {
+            // if (isset($product_info->data->product->id) and !empty($product_info->data->product->id)) {
+            //     $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $product_info->data->product->id)->firstOrNew();
+            //     $bookDigi->recordNumber = 'dkp-' . $product_info->data->product->id;
+            // }
+
+            if (isset($product_info->data->product->title_fa) and !empty($product_info->data->product->title_fa)) {
+                $bookDigi->title = $product_info->data->product->title_fa;
+                $bookDigi->title = convert_arabic_char_to_persian(remove_half_space_from_string($bookDigi->title));
+            }
+
+
+            if (isset($product_info->data->product->rating->rate) and !empty($product_info->data->product->rating->rate)) {
+                $bookDigi->rate = $product_info->data->product->rating->rate / 20;
+            }
+
+            if (isset($product_info->data->product->images->list) and !empty($product_info->data->product->images->list)) {
+                $image_str = '';
+                foreach ($product_info->data->product->images->list as $image) {
+                    if (isset($image->webp_url['0'])) {
+                        $image_str .= $image->webp_url['0'] . '#';
+                    }
+                }
+                $bookDigi->images = $image_str;
+            }
+
+            $authorsobj = array();
+            if (isset($product_info->data->product->specifications['0']->title) and $product_info->data->product->specifications['0']->title == 'مشخصات') {
+                foreach ($product_info->data->product->specifications['0']->attributes as $attribute) {
+
+                    // نویسنده تو جدول author_book_digi ذخیره میشه 
+                    if ($attribute->title == 'نویسنده') {
+                        $authorsobj = Author::firstOrCreate(array("d_name" => $attribute->values['0']));
+                    }
+                    if ($attribute->title == 'مترجم') {
+                        $bookDigi->partnerArray = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'شابک') {
+                        if (strpos($attribute->values['0'], ' - ') > 0) {
+                            $shabakStr = '';
+                            $shabaks = explode(' - ', $attribute->values['0']);
+                            foreach ($shabaks as $shabak) {
+                                $shabak = validateIsbnWithRemoveDash($shabak);
+                                $shabakStr .=  $shabak . '#';
+                            }
+                            $bookDigi->shabak = $shabakStr;
+                        } else {
+
+                            $bookDigi->shabak = validateIsbnWithRemoveDash($attribute->values['0']);
+                        }
+                    }
+
+                    if ($attribute->title == 'ناشر') {
+                        $bookDigi->nasher = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'موضوع') {
+                        $subject_str = '';
+                        foreach ($attribute->values as $value) {
+                            $subject_str .= $value . '#';
+                        }
+                        $bookDigi->subject = $subject_str;
+                    }
+                    if ($attribute->title == 'قطع') {
+                        $bookDigi->ghatechap = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'نوع جلد') {
+                        $bookDigi->jeld = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'نوع کاغذ') {
+                        $bookDigi->noekaghaz = $attribute->values['0'];
+                    }
+
+                    if ($attribute->title == 'تعداد جلد') {
+                        $jeld = str_replace('جلد', '', $attribute->values['0']);
+                        $jeld = trim($jeld);
+                        $bookDigi->count = (!empty(enNumberKeepOnly(faCharToEN($jeld)))) ? enNumberKeepOnly(faCharToEN($jeld)) : 1;
+                    }
+                    if ($attribute->title == 'تعداد صفحه') {
+                        if (strpos($attribute->values['0'], ' - ') > 0) {
+                            $tedadSafeStr = '';
+                            $tedadSafes = explode(' - ', $attribute->values['0']);
+                            foreach ($tedadSafes as $tedadSafe) {
+                                $tedadSafeStr .=  enNumberKeepOnly($tedadSafe) . '#';
+                            }
+                            $bookDigi->tedadSafe = $tedadSafeStr;
+                        } else {
+                            $bookDigi->tedadSafe = enNumberKeepOnly($attribute->values['0']);
+                        }
+                    }
+                    $ageGroup_str = '';
+                    if ($attribute->title == 'گروه سنی') {
+                        foreach ($attribute->values as $value) {
+                            $ageGroup_str .= $value . '#';
+                        }
+                        $bookDigi->ageGroup = $ageGroup_str;
+                    }
+                    if ($attribute->title == 'وزن') {
+                        $bookDigi->vazn = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'رده‌بندی کتاب') {
+                        $bookDigi->cat = $attribute->values['0'];
+                    }
+                    if ($attribute->title == 'اقلام همراه' || $attribute->title == 'سایر توضیحات') {
+                        $bookDigi->features = $attribute->values['0'];
+                    }
+                }
+            }
+
+            $tag_string = '';
+            if (isset($product_info->data->product->tags) and !empty($product_info->data->product->tags)) {
+                foreach ($product_info->data->product->tags as $tag) {
+                    $tag_string .= $tag->name . '#';
+                }
+            }
+
+
+            $bookDigi->tag = $tag_string;
+
+            $bookDigi->price = (isset($product_info->data->product->variants['0']->price->rrp_price)) ? (int)$product_info->data->product->variants['0']->price->rrp_price : 0;
+            $bookDigi->desc = (isset($product_info->data->product->expert_reviews->description)) ? $product_info->data->product->expert_reviews->description : NULL;
+            $bookDigi->save();
+            // book author
+            if (isset($authorsobj->id)) {
+                $bookDigi->authors()->sync(array($authorsobj->id));
+                // $this->info(" \n ---------- Attach Author Book   " . $authorsobj->id . "  To " . $id . "        ---------- ");
+            }
+            //book related
+            if (isset($product_info->data->recommendations->related_products->title) and $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
+                $related_array = array();
+                foreach ($product_info->data->recommendations->related_products->products as $related_product) {
+                    if(check_digi_id_is_book($related_product->id)){
+                        $related_product_digi =  BookDigi::where('recordNumber', 'dkp-' . $related_product->id)->firstOrNew();
+                        $related_product_digi->recordNumber = 'dkp-' . $related_product->id;
+                        $related_product_digi->save();
+                        $related = bookDigiRelated::firstOrCreate(array('book_id' => $related_product->id));
+                        array_push($related_array, $related->id);
+                    }
+                }
+                $bookDigi->related()->sync($related_array);
+            }
+        }
+
+        return $api_status;
+    }
+}
+
+
+if(!function_exists('check_digi_book_status')){
+    function check_digi_book_status($recordNumber)
+    {
+        $id = str_replace('dkp-','',$recordNumber);
+        $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
+        try {
+            // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
+            $json = file_get_contents($productUrl);
+            $product_info =  json_decode($json);
+            $headers = get_headers($productUrl);
+            $api_status = $product_info->status;
+            // MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+
+        } catch (\Exception $e) {
+            $crawler = null;
+            $api_status = 500;
+            // MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+            // $this->info(" \n ---------- Failed Get  " . $id . "              ---------=-- ");
+        }
+
+
+        if ($api_status == 200) {
+            if(isset($product_info->data->product->is_inactive) AND $product_info->data->product->is_inactive == true){ 
+                return 'is_inactive';
+            }else{
+                if (isset($product_info->data->product->breadcrumb) and !empty($product_info->data->product->breadcrumb)) {
+                    if($product_info->data->product->breadcrumb['1']->url->uri == '/main/book-and-media/'){
+                        return 'is_book';
+                    }else{
+                        return 'is_not_book';
+                    }
+                }else{
+                    return 'unknown';
+                }
+            }
+        }
+    }
+}
+
+
+if(!function_exists('check_digi_id_is_book')){
+    function check_digi_id_is_book($recordNumber)
+    {
+        $result_check_digi_book_status = check_digi_book_status('dkp-' .$recordNumber);
+        if($result_check_digi_book_status == 'is_book'){
+            return TRUE;
+        }else{
+            return FALSE;
         }
     }
 }
