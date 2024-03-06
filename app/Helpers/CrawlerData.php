@@ -15,7 +15,7 @@ use App\Models\BookLanguage;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 
-if (!function_exists('updateBookDataWithMajmaApiInfo')) {
+if (!function_exists('updateBookDataWithKetabirApiInfo')) {
     /**
      * Change number to price format
      *
@@ -23,7 +23,7 @@ if (!function_exists('updateBookDataWithMajmaApiInfo')) {
      * @return string $price
      */
 
-    function updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller = NULL)
+    function updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook, $function_caller = NULL)
     {
 
         $timeout = 120;
@@ -319,8 +319,8 @@ if (!function_exists('updateBookDataWithMajmaApiInfo')) {
 }
 
 
-if (!function_exists('returnBookDataFromMajmaApi')) {
-    function returnBookDataFromMajmaApi($recordNumber, $function_caller = null)
+if (!function_exists('returnBookDataFromKetabirApi')) {
+    function returnBookDataFromKetabirApi($recordNumber, $function_caller = null)
     {
 
         $timeout = 120;

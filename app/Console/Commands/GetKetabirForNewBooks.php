@@ -10,21 +10,21 @@ use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\HttpClient\HttpClient;
 
-class Getmajma extends Command
+class GetKetabirForNewBooks extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:majma {crawlerId}';
+    protected $signature = 'get:KetabirForNewBookInfo {crawlerId}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Get majma Book Command';
+    protected $description = 'Get ketabir Book Command';
 
     /**
      * Create a new command instance.
@@ -43,15 +43,14 @@ class Getmajma extends Command
      */
     public function handle()
     {
-        $function_caller ='GetMajmaForNewBooksCommand';
-        // $total = MajmaApiBook::where('xfunction_caller', 'GetMajmaLastDays-Command')->where('xstatus', 0)->count();
-        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->count();
+        $function_caller ='GetKetabirForNewBooksForNewBooksCommand';
+        $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation', 0)->count();
         try {
             $startC = 0;
             $endC = $total;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-New-Books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-New-Books' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
@@ -64,13 +63,13 @@ class Getmajma extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            // MajmaApiBook::where('xfunction_caller','GetMajmaLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
+            // MajmaApiBook::where('xfunction_caller','GetKetabirLastDays-Command')->where('xstatus',0)->orderBy('xbook_id', 'DESC')->chunk(2000, function ($books) use ($bar, $newCrawler) {
             //     foreach($books as $book){
 
             //         $this->info($book->xbook_id);
             //         $bookIrBook = BookirBook::WhereNull('xpageurl2')->where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->first();
             //         if(isset($bookIrBook) and !empty($bookIrBook)){
-            //             $api_status = updateBookDataWithMajmaApiInfo($book->xbook_id,$bookIrBook);
+            //             $api_status = updateBookDataWithKetabirApiInfo($book->xbook_id,$bookIrBook);
             //             MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>$api_status]);
             //         }else{
             //             MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>1]);
@@ -92,7 +91,7 @@ class Getmajma extends Command
                     $this->info('recordNumber : ' . $recordNumber);
 
                     $bookIrBook = BookirBook::where('xid',$book->xid)->first();
-                    $api_status = updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook, $function_caller);
+                    $api_status = updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook, $function_caller);
                     MajmaApiBook::where('xbook_id', $recordNumber)->update(['xstatus' => $api_status]);
                    
 
