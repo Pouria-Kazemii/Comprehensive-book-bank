@@ -31,9 +31,9 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetKetabRah::class, 
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
         Commands\CrawlerSites\get30Book::class, 
-        Commands\Getmajma::class,
-        Commands\GetMajmaLastDays::class,
-        Commands\GetMajmaFutureDays::class,
+        Commands\GetKetabirForNewBooks::class,
+        Commands\GetKetabirLastDays::class,
+        Commands\GetKetabirFutureDays::class,
         commands\CrawlerSites\GetBarKhatBook::class, 
 
         commands\CorrectInfo\RecheckNotfoundBooks::class, 
@@ -79,10 +79,11 @@ class Kernel extends ConsoleKernel
 
         // $schedule->command('get:iranKetab 1')->everyMinute();   // stop from kandoo news
 
-        $schedule->command('get:MajmaLastDays 1')->dailyAt('02:00');
-        $schedule->command('get:MajmaFutureDays 1')->dailyAt('02:00');
-        $schedule->command('get:majma 1')->dailyAt('02:00');
+        $schedule->command('get:KetabirFutureDays 1')->dailyAt('02:00');
+        $schedule->command('get:KetabirLastDays 1')->dailyAt('02:30');
+        $schedule->command('get:KetabirForNewBookInfo 1')->dailyAt('03:00');
 
+        $schedule->command('get:RecheckNotfoundBooks 1')->dailyAt('05:00');
         // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
 
 

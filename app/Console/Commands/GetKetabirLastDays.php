@@ -4,27 +4,29 @@ namespace App\Console\Commands;
 
 
 use App\Models\BookirBook;
+
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
 use Goutte\Client;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpClient\HttpClient;
 
-class GetMajmaFutureDays extends Command
+class GetKetabirLastDays extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:MajmaFutureDays {crawlerId}';
+    protected $signature = 'get:KetabirLastDays {crawlerId}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Get majma Book Command';
+    protected $description = 'Get ketabir Book Command';
 
     /**
      * Create a new command instance.
@@ -45,21 +47,15 @@ class GetMajmaFutureDays extends Command
     {
 
         $limit_book = 200;
-        // $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
-        // $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
-        $last_futureDate = CrawlerM::where('name','Crawler-Majma-future-days-1')->where('status',2)->orderBy('end','DESC')->first();
-        $last_futureDate = (isset($last_futureDate) AND !empty($last_futureDate))? $last_futureDate->end: '20240113';
-        $last_futureDate= substr_replace($last_futureDate, '-', 4, 0);
-        $last_futureDate= substr_replace($last_futureDate, '-', 7, 0);
+        $from_date = BookirBook::orderBy('xpublishdate','DESC')->first()->xpublishdate;
+        $to_date = date("Y-m-d", strtotime("+5 days", strtotime($from_date)));
+        $lastDate = CrawlerM::where('name','Crawler-Ketabir-Last-days-1')->where('status',2)->orderBy('id','DESC')->first()->start;
+        $lastDate= substr_replace($lastDate, '-', 4, 0);
+        $lastDate= substr_replace($lastDate, '-', 7, 0);
         
-        $ast_month_date = date("Y-m-d", strtotime("-30 days"));
-        // $this->info($ast_month_date);
-        $from_date = (date($last_futureDate) < $ast_month_date)? date($last_futureDate) : $ast_month_date;
-        $to_date = date("Y-m-d");
+        $to_date = date($lastDate);
+        $from_date = date("Y-m-d", strtotime("-30 days", strtotime($to_date)));
 
-        $this->info($from_date);
-        $this->info($to_date);
-       
         //give total for foreach
         $timeout = 120;
         $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/' . $limit_book;
@@ -88,30 +84,29 @@ class GetMajmaFutureDays extends Command
             $endC = $totalCount;
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-future-days-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'status' => 1, 'type' => 0));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-Last-days-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'status' => 1, 'type' => 0));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
         }
 
 
-        if (isset($newCrawler)) {
+        if (isset($newCrawler) and $totalCount > 0 ) {
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
-            $future_id_recived_info = CrawlerM::where('name','Crawler-Majma-future-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
+            $last_id_recived_info = CrawlerM::where('name','Crawler-Ketabir-Last-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
             
-            
-            $future_id_recived = (isset($future_id_recived_info->last) and !empty($future_id_recived_info->last))? $future_id_recived_info->last + $limit_book : 0 ;
+            $last_id_recived = (isset($last_id_recived_info->last) and !empty($last_id_recived_info->last))? $last_id_recived_info->last + $limit_book : 0 ;
           
-            $remained_Count = $totalCount -$future_id_recived;
+            $remained_Count = $totalCount -$last_id_recived;
             
             $bar = $this->output->createProgressBar($remained_Count);
             $bar->start();
 
-            for ($i = ceil($future_id_recived / $limit_book); $i <= ceil($totalCount / $limit_book); $i++) {
+            for ($i = ceil($last_id_recived / $limit_book); $i <= ceil($totalCount / $limit_book); $i++) {
                 $timeout = 120;
                 $from = $i * 200;
                 $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/' . $from . '/' . $limit_book;
-                $crawlerItems = CrawlerM::firstOrCreate(array('name' => 'Crawler-Majma-future-days-items-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'last' => $from, 'status' => 1, 'type' => 1));
+                $crawlerItems = CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-Last-days-items-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'last' => $from, 'status' => 1, 'type' => 1));
                 $this->info($url);
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -138,13 +133,13 @@ class GetMajmaFutureDays extends Command
                    
 
                     if(empty($bookIrBook->xpageurl)){
-                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetMajmafutureDays-Command']);
+                        MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetKetabirLastDays-Command']);
                     }
 
                     
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
-                    //updateBookDataWithMajmaApiInfo($recordNumber, $bookIrBook);
+                    //updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook);
                     
                     $bar->advance();
                 }
@@ -152,12 +147,13 @@ class GetMajmaFutureDays extends Command
                 $crawlerItems->status = 2 ;
                 $crawlerItems->save();
             }
+            $bar->finish();
+
            
         }
         $newCrawler->status = 2;
         $newCrawler->save();
         $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-        $bar->finish();
     }
 
    
