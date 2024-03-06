@@ -81,8 +81,8 @@ class Getmajma extends Command
             //         $newCrawler->save();
             //     }
             // });
-            // BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
-                $books = bookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('xid', '>',2007732)->orderBy('xid', 'ASC')->limit('6')->get();
+            BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation', 0)->orderBy('xid', 'ASC')->chunk(2000, function ($books) use ($bar, $newCrawler,$function_caller) {
+                // $books = bookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation', 0)->orderBy('xid', 'ASC')->limit('6')->get();
                 foreach ($books as $book) {
 
                     $this->info($book->xid);
@@ -103,7 +103,7 @@ class Getmajma extends Command
                     $newCrawler->last = $book->xid;
                     $newCrawler->save();
                 }
-            // });
+            });
 
 
             $newCrawler->status = 2;
