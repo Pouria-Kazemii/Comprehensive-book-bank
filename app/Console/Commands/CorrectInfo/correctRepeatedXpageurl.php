@@ -40,7 +40,7 @@ class correctRepeatedXpageurl extends Command
      */
     public function handle()
     {
-        $total = BookirBook::count();
+        $total = bookirbook::whereNotNull('xpageurl2')->where('check_goodreads',0)->count();
         try {
 
             $startC = 1;
@@ -55,15 +55,20 @@ class correctRepeatedXpageurl extends Command
         if (isset($newCrawler)) {
             $bar = $this->output->createProgressBar($total);
             $bar->start();
-            bookirbook::whereNotNull('xpageurl2')->orderBy('xid', 'DESC')->chunk(200, function ($books) use ($bar, $newCrawler) {
+            bookirbook::whereNotNull('xpageurl2')->where('check_goodreads',0)->orderBy('xid', 'ASC')->chunk(200, function ($books) use ($bar, $newCrawler) {
                 foreach ($books as $book) {
                     // DB::enableQueryLog();
-                    $same_records = BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->get();
-                    foreach($same_records as $detected_books){
-                        $detected_books->xdocid = 333;
-                        $detected_books->save();
-                        echo 'detected same record with xid = '.$detected_books->xid .'</br>';
-                    }
+                    $book->check_goodreads = 1;
+                    $book->save();
+                    BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->update(['check_goodreads' => 333]);
+
+
+                    // $same_records = BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->get();
+                    // foreach($same_records as $detected_books){
+                    //     $detected_books->xdocid = 333;
+                    //     $detected_books->save();
+                    //     echo 'detected same record with xid = '.$detected_books->xid .'</br>';
+                    // }
                     // $rr = BookirBook::where('xpageurl',$book->xpageurl)->where('xid','!=',$book->xid)->delete();
 
                     // if($rr){ echo 'deleteed'; echo '</br>';}
