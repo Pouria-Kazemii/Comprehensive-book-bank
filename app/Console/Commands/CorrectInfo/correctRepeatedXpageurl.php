@@ -60,12 +60,12 @@ class correctRepeatedXpageurl extends Command
                     // DB::enableQueryLog();
                     $book->check_goodreads = 1;
                     $book->save();
-                    BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->update(['check_goodreads' => 333]);
+                    BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->update(['check_goodreads' => 2]);
 
 
                     // $same_records = BookirBook::whereNotNull('xpageurl2')->where('xpageurl2',$book->xpageurl2)->where('xid','!=',$book->xid)->get();
                     // foreach($same_records as $detected_books){
-                    //     $detected_books->xdocid = 333;
+                    //     $detected_books->xdocid = 2;
                     //     $detected_books->save();
                     //     echo 'detected same record with xid = '.$detected_books->xid .'</br>';
                     // }
