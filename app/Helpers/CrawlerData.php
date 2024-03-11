@@ -363,12 +363,12 @@ if (!function_exists('updateBookDigi')) {
             $product_info =  json_decode($json);
             $headers = get_headers($productUrl);
             $api_status = $product_info->status;
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+            MajmaApiBook::create(['xbook_id' => $id, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
 
         } catch (\Exception $e) {
             $crawler = null;
             $api_status = 500;
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
+            MajmaApiBook::create(['xbook_id' => $id, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
 
             // $this->info(" \n ---------- Failed Get  " . $id . "              ---------=-- ");
         }

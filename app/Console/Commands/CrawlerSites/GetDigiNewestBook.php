@@ -3,12 +3,7 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
-use App\Models\Author;
-use App\Models\BookDigiRelated;
 use App\Models\Crawler as CrawlerM;
 
 class GetDigiNewestBook extends Command
@@ -45,7 +40,7 @@ class GetDigiNewestBook extends Command
     public function handle()
     {
 
-        $function_caller = 'newest-book';
+        $function_caller = 'digi-newest-book';
         $startC = 1;
         $endC = 2;
 

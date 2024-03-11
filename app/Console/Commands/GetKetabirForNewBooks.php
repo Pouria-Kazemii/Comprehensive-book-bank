@@ -43,7 +43,7 @@ class GetKetabirForNewBooks extends Command
      */
     public function handle()
     {
-        $function_caller ='GetKetabirForNewBooksForNewBooksCommand';
+        $function_caller ='GetKetabirForNewBooksCommand';
         $total = BookirBook::WhereNull('xpageurl2')->whereNotNull('xpageurl')->where('check_circulation', 0)->count();
         try {
             $startC = 0;
