@@ -356,7 +356,9 @@ if (!function_exists('updateBookDigi')) {
     {
 
         $id = str_replace('dkp-','',$recordNumber);
+        echo $id.'</br>';
         $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
+        echo $productUrl.'</br>';
         try {
             // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
             $json = file_get_contents($productUrl);
@@ -372,6 +374,7 @@ if (!function_exists('updateBookDigi')) {
 
             // $this->info(" \n ---------- Failed Get  " . $id . "              ---------=-- ");
         }
+        echo $api_status.'</br>';
 
 
         if ($api_status == 200) {

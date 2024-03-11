@@ -59,9 +59,12 @@ class GetDigiBooksInfo extends Command
 
             BookDigi::whereNull('title')->where('is_book',1)->orderby('id', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
                 foreach ($books as $book) {
+                    
+                    $this->info($book->id);
                     $bookDigi = BookDigi::where('recordNumber', $book->recordNumber)->firstOrNew();
                     $bookDigi->recordNumber = $book->recordNumber;
-                    updateBookDigi($book->recordNumber, $bookDigi, $function_caller);
+                    $api_status = updateBookDigi($book->recordNumber, $bookDigi, $function_caller);
+                    $this->info($api_status);
 
                     $bar->advance();
                     $newCrawler->last = $book->id;
