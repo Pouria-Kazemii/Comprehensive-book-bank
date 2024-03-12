@@ -33,6 +33,7 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
        ->groupBy('bookir_book.xpageurl2')->get(); */
 
        foreach($report as $report_row){
+            $report_row->xpublishdate=  BookirBook::convertMiladi2Shamsi_with_slash($report_row->xpublishdate);
            $partners =  BookirPartner::select('xcreatorname')
            ->Join('bookir_partnerrule', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
            ->where('bookir_partnerrule.xbookid',$report_row->xid)->get();
