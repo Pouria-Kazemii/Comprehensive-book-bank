@@ -75,7 +75,7 @@ Route::get('test', [TestController::class, 'test']);
 Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
 Route::get('exportExcelContradictionsKetabejam/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsKetabejam']);
 Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsGisoom']);
-Route::get('NewBookEveryYearExport/{yearStart}/{yearEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
+Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
 
 
 
