@@ -10,15 +10,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class NewBookEveryYearExport implements FromCollection,WithHeadings
 {
-    public function __construct($yearStart,$yearEnd)
+    public function __construct($yearStart,$monthStart,$yearEnd,$monthEnd)
     {
         $this->yearStart = $yearStart;
         $this->yearEnd = $yearEnd;
+        $this->monthStart = $monthStart;
+        $this->monthEnd = $monthEnd;
         }
     public function collection()
     {
-        $yearStart = (isset($this->yearStart) && $this->yearStart != 0) ? BookirBook::toGregorian($this->yearStart . '-01-01', '-', '-') : "";
-        $yearEnd = (isset($this->yearEnd) && $this->yearEnd != 0) ? BookirBook::toGregorian($this->yearEnd . '-12-29', '-', '-') : "";
+        $yearStart = (isset($this->yearStart) && $this->yearStart != 0) ? BookirBook::toGregorian($this->yearStart . '-'.$this->monthStart.'-01', '-', '-') : "";
+        $yearEnd = (isset($this->yearEnd) && $this->yearEnd != 0) ? BookirBook::toGregorian($this->yearEnd . '-'.$this->monthEnd.'-29', '-', '-') : "";
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
