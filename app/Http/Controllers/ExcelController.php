@@ -38,7 +38,7 @@ class ExcelController extends Controller
     }
 
     public function NewBookEveryYearExport($yearStart,$yearEnd){
-        return Excel::download(new NewBookEveryYearExport($yearStart,$yearEnd), 'کتاب های چاپ اول سال' . time() . '.xlsx');
+        return Excel::download(new NewBookEveryYearExport($yearStart,$yearEnd), 'کتاب های چاپ اول سال' . time() . '.csv');
 
     }
 
