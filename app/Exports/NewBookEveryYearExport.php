@@ -33,6 +33,7 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
        ->groupBy('bookir_book.xpageurl2')->get(); */
 
        foreach($report as $report_row){
+            $report_row->xpublishdate=  BookirBook::convertMiladi2Shamsi_with_slash($report_row->xpublishdate);
            $partners =  BookirPartner::select('xcreatorname')
            ->Join('bookir_partnerrule', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
            ->where('bookir_partnerrule.xbookid',$report_row->xid)->get();
@@ -49,7 +50,7 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
 
     public function headings(): array
     {
-        return ["آیدی جدول","پدیدآوررندگان","لینک خانه کتاب","نام کتاب","تعداد صفحات","فرمت","تیراژ","شابک 13 رقمی","شابک 10 رقمی","شابک 13 رقمی عدی","تاریخ انتشار","قیمت","کد دیویی","زبات","مکان انتشار","وضعیت اظلاعات"];
+        return ["آیدی جدول","پدیدآوررندگان","لینک خانه کتاب","نام کتاب","تعداد صفحات","فرمت","تیراژ","شابک 13 رقمی","شابک 10 رقمی","شابک 13 رقمی عدی","تاریخ انتشار","قیمت","کد دیویی","زبان","مکان انتشار","وضعیت اظلاعات"];
     }
 
     

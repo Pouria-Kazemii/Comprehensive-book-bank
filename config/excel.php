@@ -45,7 +45,7 @@ return [
             'delimiter'              => ',',
             'enclosure'              => '"',
             'line_ending'            => PHP_EOL,
-            'use_bom'                => false,
+            'use_bom'                => true, // default false change for export persian charcters in csv export
             'include_separator_line' => false,
             'excel_compatibility'    => false,
             'output_encoding'        => '',
