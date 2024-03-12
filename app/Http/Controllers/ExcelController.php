@@ -19,6 +19,7 @@ use App\Exports\ContradictionsShahreKetabOnlineExport;
 use App\Exports\ContradictionsBarkhatExport;
 use App\Exports\ContradictionsGisoomExport;
 use App\Exports\ContradictionsKetabejamExport;
+use App\Exports\NewBookEveryYearExport;
 use App\Exports\WebsiteBookLinkDigiExport;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,11 @@ class ExcelController extends Controller
      */
     public function __construct()
     {
+    }
+
+    public function NewBookEveryYearExport($yearStart,$yearEnd){
+        return Excel::download(new NewBookEveryYearExport($yearStart,$yearEnd), 'کتاب های چاپ اول سال' . time() . '.xlsx');
+
     }
 
     public function exportExcelTopPublisher($startDate, $endDate, $dio, $limit)
