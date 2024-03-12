@@ -3,6 +3,7 @@ namespace App\Exports;
 
 use App\Models\BookirBook;
 use App\Models\BookirPartner;
+use App\Models\BookirPublisher;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -25,7 +26,7 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         // $report = DB::table('bookir_book')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd)->where('xprintnumber',1);
-        $report = DB::table('bookir_book')->select('bookir_book.xid','bookir_book.xpageurl as partners','bookir_book.xpageurl2','bookir_book.xname','bookir_book.xpagecount','bookir_book.xformat','bookir_book.xcirculation','bookir_book.xisbn','bookir_book.xisbn2','bookir_book.xisbn3','bookir_book.xpublishdate','bookir_book.xcoverprice','bookir_book.xdiocode','bookir_book.xlang','bookir_book.xpublishplace','bookir_book.check_circulation')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd)->where('xprintnumber',1)->groupBy('bookir_book.xpageurl2')->get();
+        $report = DB::table('bookir_book')->select('bookir_book.xid','bookir_book.xsiteid as partners','bookir_book.xdocid as publisher','bookir_book.xpageurl2','bookir_book.xname','bookir_book.xpagecount','bookir_book.xformat','bookir_book.xcirculation','bookir_book.xisbn','bookir_book.xisbn2','bookir_book.xisbn3','bookir_book.xpublishdate','bookir_book.xcoverprice','bookir_book.xdiocode','bookir_book.xlang','bookir_book.xpublishplace','bookir_book.check_circulation')->where('bookir_book.xpublishdate', '>=', $yearStart)->where('bookir_book.xpublishdate', '<=', $yearEnd)->where('xprintnumber',1)->groupBy('bookir_book.xpageurl2')->get();
 
         //SELECT xcreatorname FROM `bookir_partner` where xid IN (SELECT xcreatorid FROM `bookir_partnerrule` where xbookid IN (SELECT xid FROM `bookir_book` where xpublishdate >= '2023-03-21' and xprintnumber =1)) 
 
@@ -36,12 +37,21 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
 
        foreach($report as $report_row){
             $report_row->xpublishdate=  BookirBook::convertMiladi2Shamsi_with_slash($report_row->xpublishdate);
+            $publisher = BookirPublisher::select('xpublishername') 
+            ->Join('bi_book_bi_publisher', 'bi_book_bi_publisher.bi_publisher_xid', '=', 'bookir_publisher.xid')
+            ->where('bi_book_bi_publisher.bi_book_xid',$report_row->xid)->first();
+            
+            if(isset($publisher->xpublishername) AND !empty($publisher->xpublishername)){
+                $report_row->publisher = $publisher->xpublishername;
+            }
+
            $partners =  BookirPartner::select('xcreatorname')
            ->Join('bookir_partnerrule', 'bookir_partnerrule.xcreatorid', '=', 'bookir_partner.xid')
            ->where('bookir_partnerrule.xbookid',$report_row->xid)->get();
            $creator_names  = $partners->pluck('xcreatorname')->all();
 
            $report_row->partners = implode(",", $creator_names);
+        //    dd($report_row);
        }
 
 
@@ -52,7 +62,7 @@ class NewBookEveryYearExport implements FromCollection,WithHeadings
 
     public function headings(): array
     {
-        return ["آیدی جدول","پدیدآوررندگان","لینک خانه کتاب","نام کتاب","تعداد صفحات","فرمت","تیراژ","شابک 13 رقمی","شابک 10 رقمی","شابک 13 رقمی عدی","تاریخ انتشار","قیمت","کد دیویی","زبان","مکان انتشار","وضعیت اظلاعات"];
+        return ["آیدی جدول","پدیدآوررندگان","انتشارات","لینک خانه کتاب","نام کتاب","تعداد صفحات","فرمت","تیراژ","شابک 13 رقمی","شابک 10 رقمی","شابک 13 رقمی عدی","تاریخ انتشار","قیمت","کد دیویی","زبان","مکان انتشار","وضعیت اظلاعات"];
     }
 
     
