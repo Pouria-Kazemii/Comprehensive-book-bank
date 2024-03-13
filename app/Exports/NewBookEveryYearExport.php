@@ -23,7 +23,7 @@ class NewBookEveryYearExport implements FromCollection, WithHeadings
     public function collection()
     {
         $yearStart = (isset($this->yearStart) && $this->yearStart != 0) ? BookirBook::toGregorian($this->yearStart . '-' . $this->monthStart . '-01', '-', '-') : "";
-        $yearEnd = (isset($this->yearEnd) && $this->yearEnd != 0) ? BookirBook::toGregorian($this->yearEnd . '-' . $this->monthEnd . '-29', '-', '-') : "";
+        $yearEnd = (isset($this->yearEnd) && $this->yearEnd != 0) ? BookirBook::toGregorian($this->yearEnd . '-' . $this->monthEnd . '-30', '-', '-') : "";
         $data = array();
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
