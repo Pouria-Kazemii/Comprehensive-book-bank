@@ -27,6 +27,10 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetDigiCategoryPrintedBookOfSocialSciences::class, 
         Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPoetryAndLiterature::class, 
         Commands\CrawlerSites\GetDigiNewestBook::class, 
+        Commands\CrawlerSites\GetDigiBooksInfo::class, 
+        Commands\CorrectInfo\CheckIsBookDigi::class, 
+
+
         Commands\CrawlerSites\GetIranketab::class, 
         Commands\CrawlerSites\GetKetabRah::class, 
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
@@ -51,6 +55,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         //////////////////////////////// digi category//////////////////////////////////////////////
+        $schedule->command('get:digiBooksInfo 1')->dailyAt('6:00');
+        $schedule->command('get:CheckIsBookDigi 1')->dailyAt('7:00');
         $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('09:00');
         $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('09:30');
         $schedule->command('get:digiCategoryPrintedBookOfBiographyAndEncyclopedia 1')->dailyAt('10:00');
@@ -65,6 +71,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('14:30');
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('15:00');
+        $schedule->command('get:digiBooksInfo 1')->dailyAt('15:45');
+        $schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo 
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
