@@ -40,6 +40,7 @@ class GetDigiBooksInfo extends Command
      */
     public function handle()
     {
+        die('stop');
         $function_caller = 'Give_Digi-Book-Info';
         $total = BookDigi::whereNull('title')->where('is_book',1)->count();
         try {
