@@ -62,8 +62,7 @@ class RecheckNotfoundBooks extends Command
             // $books = BookirBook::where('check_circulation', 500)->orderby('xid', 'ASC')->limit(10)->get();
                 foreach ($books as $book) {
 
-                    $pageUrl = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", '', $pageUrl);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", '', $book->xpageurl);
                     $this->info('recordNumber :' . $recordNumber);
 
                     $bookIrBook = BookirBook::where('xid', $book->xid)->first();

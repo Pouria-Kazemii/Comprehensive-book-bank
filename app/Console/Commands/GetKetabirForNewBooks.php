@@ -67,7 +67,7 @@ class GetKetabirForNewBooks extends Command
             //     foreach($books as $book){
 
             //         $this->info($book->xbook_id);
-            //         $bookIrBook = BookirBook::WhereNull('xpageurl2')->where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->first();
+            //         $bookIrBook = BookirBook::WhereNull('xpageurl2')->where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $book->xbook_id)->first();
             //         if(isset($bookIrBook) and !empty($bookIrBook)){
             //             $api_status = updateBookDataWithKetabirApiInfo($book->xbook_id,$bookIrBook);
             //             MajmaApiBook::where('xbook_id',$book->xbook_id)->update(['xstatus'=>$api_status]);
@@ -85,9 +85,7 @@ class GetKetabirForNewBooks extends Command
                 foreach ($books as $book) {
 
                     $this->info($book->xid);
-                    $recordNumber = $book->xpageurl;
-                    $recordNumber = str_replace("https://db.ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
-                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $recordNumber);
+                    $recordNumber = str_replace("http://ketab.ir/bookview.aspx?bookid=", "", $book->xpageurl);
                     $this->info('recordNumber : ' . $recordNumber);
 
                     $bookIrBook = BookirBook::where('xid',$book->xid)->first();

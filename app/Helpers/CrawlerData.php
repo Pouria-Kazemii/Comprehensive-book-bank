@@ -71,7 +71,7 @@ if (!function_exists('updateBookDataWithKetabirApiInfo')) {
                 BookCover::firstOrCreate(array('name' => $book_content->coverType));
             }
 
-            // $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
+            // $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber->orWhere('xpageurl2', 'https://ketab.ir/book/' . $book_content->uniqueId)->firstOrNew();
 
             // book data
             if (!is_null($book_content->bookType)) {
@@ -356,9 +356,7 @@ if (!function_exists('updateBookDigi')) {
     {
 
         $id = str_replace('dkp-','',$recordNumber);
-        echo $id.'</br>';
         $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
-        echo $productUrl.'</br>';
         try {
             // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
             $json = file_get_contents($productUrl);
@@ -374,7 +372,6 @@ if (!function_exists('updateBookDigi')) {
 
             // $this->info(" \n ---------- Failed Get  " . $id . "              ---------=-- ");
         }
-        echo $api_status.'</br>';
 
 
         if ($api_status == 200) {
