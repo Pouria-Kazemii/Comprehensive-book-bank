@@ -40,7 +40,6 @@ class CheckIsBookDigi extends Command
      */
     public function handle()
     {
-        die('stop');
         $total = BookDigi::where('is_book', 0)->count();
         try {
             $startC = 0;
