@@ -129,7 +129,7 @@ class GetKetabirLastDays extends Command
                 // قسمت کتاب ها رو باید بندازم تو foreach که دونه دونه بره اطلاعاتشو بگیره
                 foreach ($books_content->items as $item) {
                     $recordNumber = $item->id;
-                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->orwhere('xpageurl', 'https://db.ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
+                    $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
                    
 
                     if(empty($bookIrBook->xpageurl)){
