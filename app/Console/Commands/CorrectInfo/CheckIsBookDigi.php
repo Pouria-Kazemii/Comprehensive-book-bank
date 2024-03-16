@@ -40,7 +40,7 @@ class CheckIsBookDigi extends Command
      */
     public function handle()
     {
-        $total = BookDigi::where('is_book', 0)->count();
+        $total = BookDigi::where('is_book', 0)->whereNull('shabak')->count();
         try {
             $startC = 0;
             $endC   = $total;
@@ -56,7 +56,7 @@ class CheckIsBookDigi extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            BookDigi::where('is_book', 0)->orderby('id', 'ASC')->chunk(200, function ($books) use ($bar, $newCrawler) {
+            BookDigi::where('is_book', 0)->whereNull('shabak')->orderby('id', 'DESC')->chunk(200, function ($books) use ($bar, $newCrawler) {
                 foreach ($books as $book) {
                     $book_digi = BookDigi::where('id',$book->id)->first();
                     $this->info($book->recordNumber);

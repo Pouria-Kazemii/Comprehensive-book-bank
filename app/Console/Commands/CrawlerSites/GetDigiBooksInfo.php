@@ -57,7 +57,8 @@ class GetDigiBooksInfo extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            BookDigi::whereNull('title')->where('is_book',1)->orderby('id', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+            BookDigi::whereNull('title')->where('is_book',1)->orderby('id', 'DESC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+
                 foreach ($books as $book) {
                     
                     $this->info($book->id);
