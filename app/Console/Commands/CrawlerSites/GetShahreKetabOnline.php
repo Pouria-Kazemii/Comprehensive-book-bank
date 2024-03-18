@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
-use App\Models\Author;
 use App\Models\BookShahreKetabOnline;
 use App\Models\Crawler as CrawlerM;
 
@@ -46,7 +45,7 @@ class GetShahreKetabOnline extends Command
         $Last_id = (isset(BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber)) ? BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber : 0;
         try {
             $startC = $Last_id + 1;
-            $endC = $startC + 100;
+            $endC = $startC + 180000;
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 3));
         } catch (\Exception $e) {
