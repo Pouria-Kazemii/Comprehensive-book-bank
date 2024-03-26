@@ -55,7 +55,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         //////////////////////////////// digi category//////////////////////////////////////////////
-        $schedule->command('get:digiBooksInfo 1')->dailyAt('6:00');
+       // $schedule->command('get:digiBooksInfo 1')->dailyAt('6:00');
         $schedule->command('get:CheckIsBookDigi 1')->dailyAt('7:00');
         $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('09:00');
         $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('09:30');
@@ -71,7 +71,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('14:30');
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('15:00');
-        $schedule->command('get:digiBooksInfo 1')->dailyAt('15:45');
+        //$schedule->command('get:digiBooksInfo 1')->dailyAt('15:45');
         $schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo 
@@ -81,7 +81,9 @@ class Kernel extends ConsoleKernel
         //shahreketabonline
         $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
         // barkhat book
-        $schedule->command('get:barkhatbook 1 2')->dailyAt('17:30');
+        $schedule->command('get:barkhatbookNewestBook 1 1')->monthlyOn(20, '17:30'); // for check amin categories
+        $schedule->command('get:barkhatbookNewestBook 1 2')->dailyAt('18:00');
+        $schedule->command('get:barkhatbook 1')->dailyAt('20:00');
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 

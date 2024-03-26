@@ -2,6 +2,7 @@
 
 use App\Models\AgeGroup;
 use App\Models\Author;
+use App\Models\BookBarkhatBook;
 use App\Models\BookCover;
 use App\Models\BookDigi;
 use App\Models\BookDigiRelated;
@@ -14,6 +15,10 @@ use App\Models\BookirSubject;
 use App\Models\BookLanguage;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
+use App\Models\SiteBookLinks;
+use App\Models\SiteCategories;
+use Goutte\Client;
+use Symfony\Component\HttpClient\HttpClient;
 
 if (!function_exists('updateBookDataWithKetabirApiInfo')) {
     /**
@@ -351,11 +356,13 @@ if (!function_exists('returnBookDataFromKetabirApi')) {
 }
 
 
+
+///////////////////////////////////////////////////////////////digikala//////////////////////////////////////////
 if (!function_exists('updateBookDigi')) {
-    function updateBookDigi($recordNumber,$bookDigi,$function_caller = NULL)
+    function updateBookDigi($recordNumber, $bookDigi, $function_caller = NULL)
     {
 
-        $id = str_replace('dkp-','',$recordNumber);
+        $id = str_replace('dkp-', '', $recordNumber);
         $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
         try {
             // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
@@ -364,7 +371,6 @@ if (!function_exists('updateBookDigi')) {
             $headers = get_headers($productUrl);
             $api_status = $product_info->status;
             MajmaApiBook::create(['xbook_id' => $id, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $api_status = 500;
@@ -504,7 +510,7 @@ if (!function_exists('updateBookDigi')) {
             if (isset($product_info->data->recommendations->related_products->title) and $product_info->data->recommendations->related_products->title == "کالاهای مشابه") {
                 $related_array = array();
                 foreach ($product_info->data->recommendations->related_products->products as $related_product) {
-                    if(check_digi_id_is_book($related_product->id)){
+                    if (check_digi_id_is_book($related_product->id)) {
                         $related_product_digi =  BookDigi::where('recordNumber', 'dkp-' . $related_product->id)->firstOrNew();
                         $related_product_digi->recordNumber = 'dkp-' . $related_product->id;
                         $related_product_digi->save();
@@ -521,10 +527,10 @@ if (!function_exists('updateBookDigi')) {
 }
 
 
-if(!function_exists('check_digi_book_status')){
+if (!function_exists('check_digi_book_status')) {
     function check_digi_book_status($recordNumber)
     {
-        $id = str_replace('dkp-','',$recordNumber);
+        $id = str_replace('dkp-', '', $recordNumber);
         $productUrl = "https://api.digikala.com/v2/product/" . $id . "/";
         try {
             // $this->info(" \n ---------- Try Get BOOK        " . $id . "       ---------- ");
@@ -543,16 +549,16 @@ if(!function_exists('check_digi_book_status')){
 
 
         if ($api_status == 200) {
-            if(isset($product_info->data->product->is_inactive) AND $product_info->data->product->is_inactive == true){ 
+            if (isset($product_info->data->product->is_inactive) and $product_info->data->product->is_inactive == true) {
                 return 'is_inactive';
-            }else{
+            } else {
                 if (isset($product_info->data->product->breadcrumb) and !empty($product_info->data->product->breadcrumb)) {
-                    if($product_info->data->product->breadcrumb['1']->url->uri == '/main/book-and-media/'){
+                    if ($product_info->data->product->breadcrumb['1']->url->uri == '/main/book-and-media/') {
                         return 'is_book';
-                    }else{
+                    } else {
                         return 'is_not_book';
                     }
-                }else{
+                } else {
                     return 'unknown';
                 }
             }
@@ -561,14 +567,382 @@ if(!function_exists('check_digi_book_status')){
 }
 
 
-if(!function_exists('check_digi_id_is_book')){
+if (!function_exists('check_digi_id_is_book')) {
     function check_digi_id_is_book($recordNumber)
     {
-        $result_check_digi_book_status = check_digi_book_status('dkp-' .$recordNumber);
-        if($result_check_digi_book_status == 'is_book'){
+        $result_check_digi_book_status = check_digi_book_status('dkp-' . $recordNumber);
+        if ($result_check_digi_book_status == 'is_book') {
             return TRUE;
-        }else{
+        } else {
             return FALSE;
         }
+    }
+}
+
+
+////////////////////////////////////////////////////////fidibo///////////////////////////////////////////////////
+
+if (!function_exists('updateBookFidibo')) {
+    function updateBookFidibo($recordNumber, $bookFidibo, $function_caller = NULL)
+    {
+        try {
+            $timeout = 120;
+            $bookUrl = 'https://api.fidibo.com/flex/book/item/' . $recordNumber;
+            $bookUrl = 'https://api.fidibo.com/flex/page?pageName=BOOK_OVERVIEW&bookId=' . $recordNumber . '&page=1&limit=1';
+            $json = file_get_contents($bookUrl);
+            $book_info = json_decode($json);
+            if ($book_info->data->result != null) {
+                $book_status_code = 200;
+            } else {
+                $book_status_code = 500;
+            }
+        } catch (\Exception $e) {
+            $book_status_code = 500;
+            // $this->info(" \n ---------- Failed Get  Image" . $recordNumber . "              ---------=-- ");
+        }
+
+        if ($book_status_code == "200") {
+            if (isset($book_info->data->result) and !empty($book_info->data->result)) {
+                foreach ($book_info->data->result as $book_result) {
+                    $bookFidibo->title  = $book_result->title;
+                    // $bookFidibo->title_en  = (isset($book_result->subtitle)) ? $book_result->subtitle : NULL;
+
+                    $bookFidibo->price = (isset($book_result->price)) ? enNumberKeepOnly(faCharToEN(trim($book_result->price))) : NULL;
+                    // $bookFidibo->lang = (isset($book_result->lang))? $book_result->lang: NULL;
+
+                    $partner = array();
+                    $partnerCount = 0;
+                    if (isset($book_result->authors) and !empty($book_result->authors)) {
+                        foreach ($book_result->authors  as $author) {
+                            $partner[$partnerCount]['roleId'] = 1;
+                            $partner[$partnerCount]['name'] = $author->full_name;
+                            $bookFidibo->translate = 1;
+                        }
+                        $partnerCount++;
+                    }
+
+                    if (isset($book_result->translators) and !empty($book_result->translators)) {
+                        foreach ($book_result->translators  as $translator) {
+                            $partner[$partnerCount]['roleId'] = 2;
+                            $partner[$partnerCount]['name'] = $translator->full_name;
+                            $bookFidibo->translate = 1;
+                        }
+                    }
+                    $bookFidibo->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+
+                    if (isset($book_result->publishers) and !empty($book_result->publishers)) {
+                        foreach ($book_result->publishers  as $publisher) {
+                            $bookFidibo->nasher = $publisher->name;
+                        }
+                    }
+
+
+                    $bookFidibo->images = (isset($book_result->cover->image)) ? $book_result->cover->image : NULL;
+                    if (isset($book_result->breadcrumb) and !empty($book_result->breadcrumb)) {
+                        $tagStr = '';
+                        foreach ($book_result->breadcrumb  as $tag) {
+                            $tagStr .= $tag->name . '#';
+                        }
+                        $tagStr = rtrim($tagStr, '#');
+                        $bookFidibo->tags = $tagStr;
+                    }
+
+                    $bookFidibo->recordNumber = $recordNumber;
+                    if (isset($book_result->data->result) and !empty($book_result->data->result)) {
+                        foreach ($book_result->data->result as $result) {
+                            if (isset($result->subtitle) and $result->subtitle == 'معرفی') {
+                                $book_title  = ltrim($result->items['0']->introduction->title, 'درباره');
+                                $book_title = ltrim($book_title, 'کتاب');
+                                $bookFidibo->title = $book_title;
+                                $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
+                                // $this->info( $bookFidibo->desc );
+
+                            }
+
+
+                            if (isset($result->title) and $result->title == 'شناسنامه') {
+                                $partner = array();
+                                $partnerCount = 0;
+                                foreach ($result->items['0']->specifications as $attribute) {
+
+
+                                    if ($attribute->title == 'تعداد صفحات') {
+                                        $tedadSafe = str_replace('صفحه', '', $attribute->sub_title);
+                                        $tedadSafe = trim($tedadSafe);
+                                        $bookFidibo->tedadSafe = (enNumberKeepOnly(faCharToEN($tedadSafe)) > 0) ? enNumberKeepOnly(faCharToEN($tedadSafe)) : 0;
+                                        // $this->info($bookFidibo->tedadSafe );
+                                    }
+
+
+                                    /*if ($attribute->title == 'نویسنده') {
+                                        $partner[$partnerCount]['roleId'] = 1;
+                                        $partner[$partnerCount]['name'] = $attribute->sub_title;
+                                        $partnerCount++;
+                                        // $this->info($attribute->sub_title);
+                                    }
+
+                                    if ($attribute->title == 'مترجم') {
+                                        $partner[$partnerCount]['roleId'] = 2;
+                                        $partner[$partnerCount]['name'] = $attribute->sub_title;
+                                        $bookFidibo->translate = 1;
+                                        // $this->info($attribute->sub_title);
+                                    }
+                                    // var_dump($partner);
+
+                                    $bookFidibo->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+                                    if ($attribute->title == 'ناشر') {
+                                        $publisher_name = str_replace('انتشاراتی', '', $attribute->sub_title);
+                                        $publisher_name = str_replace('انتشارات', '', $publisher_name);
+                                        $publisher_name = str_replace('گروه', '', $publisher_name);
+                                        $publisher_name = str_replace('نشریه', '', $publisher_name);
+                                        $publisher_name = str_replace('نشر', '', $publisher_name);
+                                        $bookFidibo->nasher =  $publisher_name;
+                                        // $this->info(  $bookFidibo->nasher );
+
+                                    }
+
+                                    if ($attribute->title == 'زبان') {
+                                        $bookFidibo->lang = $attribute->sub_title;
+                                        // $this->info(  $bookFidibo->lang );
+
+                                    }*/
+
+                                    if ($attribute->title == 'عنوان انگلیسی') {
+                                        $bookFidibo->title_en = str_replace('کتاب', '', $attribute->sub_title);
+                                        // $this->info(  $bookFidibo->title_en );
+
+                                    }
+
+                                    if ($attribute->title == 'تاریخ انتشار') {
+                                        $bookFidibo->saleNashr = faCharToEN($attribute->sub_title);
+                                        // $this->info(  $bookFidibo->saleNashr );
+                                    }
+
+                                    /*if ($attribute->title == 'قیمت چاپی') {
+                                        $price  =  str_replace('تومان', '', $attribute->sub_title);
+                                        $bookFidibo->price = enNumberKeepOnly(faCharToEN(trim($price)));
+                                        // $this->info(  $bookFidibo->price );
+                                    }*/
+
+                                    if ($attribute->title == 'حجم') {
+                                        $bookFidibo->fileSize = faCharToEN($attribute->sub_title);
+                                        // $this->info(  $bookFidibo->fileSize );
+                                    }
+                                }
+                            }
+
+                            $bookFidibo->save();
+                        }
+                    }
+
+                    $bookFidibo->save();
+                }
+                die($bookFidibo->tags);
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////
+
+
+    }
+}
+
+
+if (!function_exists('updateBarKhatBookCategoriesBooks')) {
+    function updateBarKhatBookCategoriesBooks()
+    {
+        $cats = SiteCategories::where('domain', 'https://barkhatbook.com/')->get();
+        foreach ($cats as $cat) {
+            // find count  books for loop
+            $timeout = 120;
+            $url = 'https://barkhatbook.com/api/quick?page=1';
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "value=" . $cat->cat_link . "&type=cat&sort=0&onsale=0");
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_ENCODING, "");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+            $cat_page_content = curl_exec($ch);
+            // dd($cat_book_content);
+            if (curl_errno($ch)) {
+                echo 'error:' . curl_error($ch);
+            } else {
+                $cat_page_content = json_decode($cat_page_content);
+                $cat_pages = $cat_page_content->books->last_page;
+            }
+
+            $x = 1;
+            while ($x <= $cat_pages) {
+                $timeout = 120;
+                $url = 'https://barkhatbook.com/api/quick?page=' . $x;
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, "value=" . $cat->cat_link . "&type=cat&sort=0&onsale=0");
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_ENCODING, "");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                $cat_book_content = curl_exec($ch);
+                if (curl_errno($ch)) {
+                    echo 'error:' . curl_error($ch);
+                } else {
+                    $cat_book_content = json_decode($cat_book_content);
+                    foreach ($cat_book_content->books->data as $book) {
+                        echo 'product/bk_' . $book->code . '/' . $book->title.'<br>';
+                        SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
+                    }
+                }
+                $x++;
+            }
+        }
+    }
+}
+
+if (!function_exists('updateBarKhatBookCategories')) {
+    function updateBarKhatBookCategories($function_caller = NULL)
+    {
+        $timeout = 120;
+        $url = 'https://barkhatbook.com/api/menu';
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_ENCODING, "");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        $menu_content = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            echo 'error:' . curl_error($ch);
+        } else {
+            $menu_content = json_decode($menu_content);
+            foreach ($menu_content->cats as $cat) {
+                echo $cat->name.'</br>';
+                SiteCategories::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'cat_link' => $cat->id, 'cat_name' => $cat->name));
+            }
+        }
+        updateBarKhatBookCategoriesBooks();
+        
+    }
+}
+
+if (!function_exists('updateBarkhatBook')) {
+    function updateBarkhatBook($bookLink,$function_caller = NULL)
+    {
+        $client = new Client(HttpClient::create(['timeout' => 30]));
+        try {
+            $crawler = $client->request('GET', 'https://barkhatbook.com/' . $bookLink->book_links, [
+                'headers' => [
+                    'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                ],
+            ]);
+
+            $status_code = $client->getInternalResponse()->getStatusCode();
+            MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
+
+        } catch (\Exception $e) {
+            $crawler = null;
+            $status_code = 500;
+            MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
+
+        }
+        if ($status_code == 200 and $crawler->filter('body div.container-fluid single-product')->count() > 0) {
+            $book_json_info = $crawler->filter('body div.container-fluid single-product')->attr('v-bind:product_lv');
+            $book_info = json_decode($book_json_info);
+
+            if (isset($book_info) and !empty($book_info)) {
+                $partner =  array();
+                $book = BookBarkhatBook::where('recordNumber', $book_info->product->code)->firstOrNew();
+                $book->recordNumber = $book_info->product->code;
+
+                //  = $book_info->product->id;
+                // = $book_info->product->title;
+                $book->weight  = $book_info->product->weight;
+                //  = $book_info->product->productTypeId;
+                //  = $book_info->product->code;
+                $book->price  = $book_info->product->price;
+                //  = $book_info->product->discount;
+                //  = $book_info->product->specialEnd;
+                //  = $book_info->product->isSpecial;
+                //  = $book_info->product->catId;
+                //   = $book_info->product->bio;
+                //  = $book_info->product->onSale;
+                //  = $book_info->product->scoreCount;
+                //  = $book_info->product->score;
+                //  = $book_info->product->hasSendFree;
+                //  = $book_info->product->audio_url;
+                //  = $book_info->product->pdf_url;
+                if (isset($book_info->product->category) and !empty($book_info->product->category)) {
+                    $book_cats = '';
+                    foreach ($book_info->product->category as $category) {
+                        if (isset($category->name) and !empty($category->name)) {
+                            $book_cats = $book_cats . "-|-" . $category->name;
+                        }
+                    }
+                    $book->cats = $book_cats;
+                }
+                //  = $book_info->product->tags;
+                //  = $book_info->product->category->id;
+                //  = $book_info->product->category->name;
+                //  = $book_info->product->books->id;
+                if (isset($book_info->product->books) and !empty($book_info->product->books)) {
+                    foreach ($book_info->product->books as $book_item) {
+                        $book->title  = $book_item->title;
+                        $book->saleNashr = $book_item->year;
+                        $book->nobatChap  = $book_item->published;
+                        $book->shabak  = $book_item->isbn;
+                        $book->desc  = $book_item->mainSubject;
+                        $book->subTopic = $book_item->subTopic;
+                        if (isset($book_item->authorName) and !empty($book_item->authorName)) {
+                            $partner[0]['roleId'] = 1;
+                            $partner[0]['name'] = $book_item->authorName;
+                        }
+                        if (isset($book_item->translatorName) and !empty($book_item->translatorName)) {
+                            $book->translate = 1;
+                            $partner[1]['roleId'] = 2;
+                            $partner[1]['name'] = $book_item->translatorName;
+                        }
+                        if (isset($book_item->publisherName) and !empty($book_item->publisherName)) {
+                            $book->nasher = $book_item->publisherName;
+                        }
+
+                        //  = $book_item->onSale;
+                        //  = $book_item->availableCount;
+                        //  = $book_item->productId;
+                        $book->tedadSafe  = $book_item->pages;
+                        $book->jeld  = $book_item->bookCover;
+                        $book->ghateChap  = $book_item->bookSize;
+                    }
+                }
+
+                if (isset($book_info->product->images) and !empty($book_info->product->images)) {
+                    foreach ($book_info->product->images as $image) {
+                        $book->images . '=|=' . $image->imageUrl;
+                    }
+                }
+                //  = $book_info->product->images->id;
+                //  = $book_info->product->images->imageUrl;
+                //  = $book_info->product->images->alt;
+                //  = $book_info->product->images->productId;
+                $book->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+                $book->save();
+                SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('book_links', $bookLink->book_links)->update(['status' => 1]);
+            }
+        }
+        return $status_code;
     }
 }
