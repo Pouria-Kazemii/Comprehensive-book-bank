@@ -54,9 +54,17 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        
+        $schedule->command('get:KetabirFutureDays 1')->dailyAt('02:00');
+        $schedule->command('get:KetabirLastDays 1')->dailyAt('02:30');
+        $schedule->command('get:KetabirForNewBookInfo 1')->dailyAt('03:00');
+
+        $schedule->command('get:RecheckNotfoundBooks 1')->dailyAt('05:00');
+        // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
+
         //////////////////////////////// digi category//////////////////////////////////////////////
-       // $schedule->command('get:digiBooksInfo 1')->dailyAt('6:00');
-        $schedule->command('get:CheckIsBookDigi 1')->dailyAt('7:00');
+       $schedule->command('get:digiBooksInfo 1')->dailyAt('6:00');
+       // $schedule->command('get:CheckIsBookDigi 1')->dailyAt('7:00');
         $schedule->command('get:digiCategoryForeignPrintedBook 1')->dailyAt('09:00');
         $schedule->command('get:digiCategoryChildrenBook 1')->dailyAt('09:30');
         $schedule->command('get:digiCategoryPrintedBookOfBiographyAndEncyclopedia 1')->dailyAt('10:00');
@@ -72,7 +80,7 @@ class Kernel extends ConsoleKernel
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('15:00');
         //$schedule->command('get:digiBooksInfo 1')->dailyAt('15:45');
-        $schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
+        //$schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo 
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
@@ -89,12 +97,6 @@ class Kernel extends ConsoleKernel
 
         // $schedule->command('get:iranKetab 1')->everyMinute();   // stop from kandoo news
 
-        $schedule->command('get:KetabirFutureDays 1')->dailyAt('02:00');
-        $schedule->command('get:KetabirLastDays 1')->dailyAt('02:30');
-        $schedule->command('get:KetabirForNewBookInfo 1')->dailyAt('03:00');
-
-        $schedule->command('get:RecheckNotfoundBooks 1')->dailyAt('05:00');
-        // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
 
 
     }
