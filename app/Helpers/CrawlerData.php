@@ -12,6 +12,7 @@ use App\Models\BookirPartner;
 use App\Models\BookirPublisher;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
+use App\Models\BookKetabejam;
 use App\Models\BookLanguage;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
@@ -19,6 +20,8 @@ use App\Models\SiteBookLinks;
 use App\Models\SiteCategories;
 use Goutte\Client;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\DomCrawler\Crawler;
+
 
 if (!function_exists('updateBookDataWithKetabirApiInfo')) {
     /**
@@ -747,8 +750,9 @@ if (!function_exists('updateBookFidibo')) {
 }
 
 
-if (!function_exists('updateBarKhatBookCategoriesBooks')) {
-    function updateBarKhatBookCategoriesBooks()
+///////////////////////////////////////////////barkhat book/////////////////////////////////////////////////////////
+if (!function_exists('updateBarKhatBookCategoriesAllBooks')) {
+    function updateBarKhatBookCategoriesAllBooks()
     {
         $cats = SiteCategories::where('domain', 'https://barkhatbook.com/')->get();
         foreach ($cats as $cat) {
@@ -798,7 +802,7 @@ if (!function_exists('updateBarKhatBookCategoriesBooks')) {
                 } else {
                     $cat_book_content = json_decode($cat_book_content);
                     foreach ($cat_book_content->books->data as $book) {
-                        echo 'product/bk_' . $book->code . '/' . $book->title.'<br>';
+                        // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
                         SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
                     }
                 }
@@ -807,6 +811,41 @@ if (!function_exists('updateBarKhatBookCategoriesBooks')) {
         }
     }
 }
+
+if (!function_exists('updateBarKhatBookCategoriesFirstPageBooks')) {
+    function updateBarKhatBookCategoriesFirstPageBooks()
+    {
+        $cats = SiteCategories::where('domain', 'https://barkhatbook.com/')->get();
+        foreach ($cats as $cat) {
+            // find count  books for loop
+            $timeout = 120;
+            $url = 'https://barkhatbook.com/api/quick?page=1';
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, "value=" . $cat->cat_link . "&type=cat&sort=0&onsale=0");
+            curl_setopt($ch, CURLOPT_FAILONERROR, true);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_ENCODING, "");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+            $cat_book_content = curl_exec($ch);
+            if (curl_errno($ch)) {
+                echo 'error:' . curl_error($ch);
+            } else {
+                $cat_book_content = json_decode($cat_book_content);
+                foreach ($cat_book_content->books->data as $book) {
+                    // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
+                    SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
+                }
+            }
+        }
+    }
+}
+
 
 if (!function_exists('updateBarKhatBookCategories')) {
     function updateBarKhatBookCategories($function_caller = NULL)
@@ -831,17 +870,15 @@ if (!function_exists('updateBarKhatBookCategories')) {
         } else {
             $menu_content = json_decode($menu_content);
             foreach ($menu_content->cats as $cat) {
-                echo $cat->name.'</br>';
+                // echo $cat->name . '</br>';
                 SiteCategories::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'cat_link' => $cat->id, 'cat_name' => $cat->name));
             }
         }
-        updateBarKhatBookCategoriesBooks();
-        
     }
 }
 
 if (!function_exists('updateBarkhatBook')) {
-    function updateBarkhatBook($bookLink,$function_caller = NULL)
+    function updateBarkhatBook($bookLink, $function_caller = NULL)
     {
         $client = new Client(HttpClient::create(['timeout' => 30]));
         try {
@@ -853,12 +890,10 @@ if (!function_exists('updateBarkhatBook')) {
 
             $status_code = $client->getInternalResponse()->getStatusCode();
             MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
             MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         }
         if ($status_code == 200 and $crawler->filter('body div.container-fluid single-product')->count() > 0) {
             $book_json_info = $crawler->filter('body div.container-fluid single-product')->attr('v-bind:product_lv');
@@ -944,5 +979,273 @@ if (!function_exists('updateBarkhatBook')) {
             }
         }
         return $status_code;
+    }
+}
+
+//////////////////////////////////////////////////////ketabejam///////////////////////////////////////////////////
+if (!function_exists('updateKetabejamCategoriesAllBooks')) {
+    function updateKetabejamCategoriesAllBooks()
+    {
+        //category
+        $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
+        foreach ($cats as $cat) {
+            // find count  books for loop
+            $client = new Client(HttpClient::create(['timeout' => 30]));
+            try {
+                $crawler = $client->request('GET', $cat->cat_link, [
+                    'headers' => [
+                        'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                    ],
+                ]);
+
+                $status_code = $client->getInternalResponse()->getStatusCode();
+            } catch (\Exception $e) {
+                $crawler = null;
+                $status_code = 500;
+            }
+            if ($status_code == 200 /*and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0*/) {
+                if (str_contains($result_count = $crawler->filter('body main section div.woo-listing-top p.woocommerce-result-count')->text(), 'نمایش یک نتیجه')) {
+                    $cat_pages = 1;
+                } else {
+                    $result_count  =  str_replace("نمایش 1–30 از", "", $result_count);
+                    $total_result  =  enNumberKeepOnly(faCharToEN($result_count));
+                    $cat_pages = ceil((int)$total_result / 30);
+                }
+            }
+
+
+            $x = 1;
+            while ($x <= $cat_pages) {
+
+                $client = new Client(HttpClient::create(['timeout' => 30]));
+                try {
+                    $crawler = $client->request('GET', $cat->cat_link . '/page/' . $x . '/', [
+                        'headers' => [
+                            'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                        ],
+                    ]);
+
+                    $status_code = $client->getInternalResponse()->getStatusCode();
+                } catch (\Exception $e) {
+                    $crawler = null;
+                    $status_code = 500;
+                }
+                if ($status_code == 200 /*and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0*/) {
+                    foreach ($crawler->filter('body main section ul li') as $book) {
+                        $book_li = new Crawler($book);
+                        $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
+                        if (empty($SiteBookLinks)) {
+                            SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href'), 'status' => 0));
+                        }
+                    }
+                }
+                $x++;
+            }
+        }
+    }
+}
+
+if (!function_exists('updateKetabejamCategoriesFirstPageBooks')) {
+    function updateKetabejamCategoriesFirstPageBooks()
+    {
+        //category
+        $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
+        foreach ($cats as $cat) {
+
+            $client = new Client(HttpClient::create(['timeout' => 30]));
+            try {
+                $crawler = $client->request('GET', $cat->cat_link, [
+                    'headers' => [
+                        'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                    ],
+                ]);
+
+                $status_code = $client->getInternalResponse()->getStatusCode();
+            } catch (\Exception $e) {
+                $crawler = null;
+                $status_code = 500;
+            }
+            if ($status_code == 200 and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0) {
+                foreach ($crawler->filter('body main section ul li') as $book) {
+                    $book_li = new Crawler($book);
+                    $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
+                    if (empty($SiteBookLinks)) {
+                        SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href'), 'status' => 0));
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+if (!function_exists('updateKetabejamCategories')) {
+    function updateKetabejamCategories($function_caller = NULL)
+    {
+        // menu
+        $client = new Client(HttpClient::create(['timeout' => 30]));
+        try {
+            $crawler = $client->request('GET', 'https://ketabejam.com/', [
+                'headers' => [
+                    'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                ],
+            ]);
+
+            $status_code = $client->getInternalResponse()->getStatusCode();
+        } catch (\Exception $e) {
+            $crawler = null;
+            $status_code = 500;
+        }
+
+        if ($status_code == 200 /*and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0*/) {
+            foreach ($crawler->filter('body header div.ct-sticky-container div.ct-container nav.header-menu-1 ul li') as $menu) {
+                $menuLi = new Crawler($menu);
+                if ($menuLi->filter('ul li div.entry-content div.wp-block-kadence-tabs div.kt-tabs-wrap div.kt-tabs-content-wrap div.wp-block-kadence-tab div.kt-tab-inner-content-inner div.wp-block-stackable-columns div.stk-inner-blocks div')->count() > 0) {
+                    foreach ($menuLi->filter('ul li div.entry-content div.wp-block-kadence-tabs div.kt-tabs-wrap div.kt-tabs-content-wrap div.wp-block-kadence-tab div.kt-tab-inner-content-inner div.wp-block-stackable-columns div.stk-inner-blocks div') as $cat) {
+                        $catLi = new Crawler($cat);
+                        if ($catLi->filter('div.stk-column-wrapper div.stk-block-content div.wp-block-stackable-button-group div.stk-row div a')->count() > 0) {
+                            foreach ($catLi->filter('div.stk-column-wrapper div.stk-block-content div.wp-block-stackable-button-group div.stk-row div a') as $tt) {
+                                $tt_li = new Crawler($tt);
+                                if ($tt_li->filter('a')->attr('href') != '' && $tt_li->filter('a')->attr('href') != 'بازی و سرگرمی‌های فکری' && $tt_li->filter('a')->attr('href') != 'مجله کتاب جم' && $tt_li->filter('a')->attr('href') != 'پیگیری سفارشات') {
+                                    SiteCategories::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'cat_link' => $tt_li->filter('a')->attr('href'), 'cat_name' => $tt_li->filter('a')->text()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+if (!function_exists('updateKetabejamBook')) {
+    function updateKetabejamBook($bookLink, $function_caller = NULL)
+    {
+        $client = new Client(HttpClient::create(['timeout' => 30]));
+        try {
+            $crawler = $client->request('GET', $bookLink->book_links, [
+                'headers' => [
+                    'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                ],
+            ]);
+
+            $status_code = $client->getInternalResponse()->getStatusCode();
+        } catch (\Exception $e) {
+            $crawler = null;
+            $status_code = 500;
+        }
+        // $this->info($crawler->filterXPath('//*[@class="arm-circle"]')->count());
+        // $this->info($crawler->filterXPath('//nav[contains(@class, "navbar navbar-expand arm-bg-cream arm-pd-u-15 arm-fix-style")]')->count());
+
+
+        if ($status_code == 200 and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0) {
+
+            // $this->info($crawler->filter('body main article header nav.ct-breadcrumbs span')->count());
+            $book_cats = '';
+            foreach ($crawler->filter('body main article header nav.ct-breadcrumbs span a') as $nav) {
+                $breadcrumb = new Crawler($nav);
+                if (isset($book_cats) and !empty($book_cats)) {
+                    $book_cats = $book_cats . "-|-" . ltrim(rtrim(convert_arabic_char_to_persian($breadcrumb->text())));
+                } else {
+                    $book_cats = ltrim(rtrim(convert_arabic_char_to_persian($breadcrumb->text())));
+                }
+            }
+
+            if (isset($book_cats)) $cats_arr = explode('-|-', $book_cats);
+
+            // title
+            $title = $crawler->filter('body main article div.product div.product-entry-wrapper div.summary h1.product_title')->text();
+            // tag
+            $tags = '';
+            if ($crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.product_meta span')->count() > 0) {
+                foreach ($crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.product_meta span a') as $tr) {
+                    $tag_tr = new Crawler($tr);
+                    // $this->info($tag_tr->text() );
+                    $tags = $tags . '#' . $tag_tr->text();
+                }
+                $tags = rtrim($tags, '#');
+                $tags = ltrim($tags, '#');
+            }
+
+            $book = BookKetabejam::where('pageUrl', $bookLink->book_links)->firstOrNew();
+            $book->pageUrl = $bookLink->book_links;
+            $book->title = $title;
+            $book->cats = $book_cats;
+            $book->tags = $tags;
+
+            //image
+            if ($crawler->filter('body main article div.product div.product-entry-wrapper div.woocommerce-product-gallery a.ct-image-container img')->count() > 0) {
+                $book->images  = $crawler->filter('body main article div.product div.product-entry-wrapper div.woocommerce-product-gallery a.ct-image-container img')->attr('src');
+            }
+
+            if ($crawler->filter('body main article div.product div.product-entry-wrapper div.summary p.price span.sale-price span.woocommerce-Price-amount bdi')->count() > 0) {
+                $book->price = enNumberKeepOnly(faCharToEN($crawler->filter('body main article div.product div.product-entry-wrapper div.summary p.price span.sale-price span.woocommerce-Price-amount bdi')->text()));
+            }
+
+            if ($crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.woocommerce-product-details__short-description')->count() > 0) {
+                $book->desc = $crawler->filter('body main article div.product div.product-entry-wrapper div.summary div.woocommerce-product-details__short-description')->text();
+            }
+            $partner =  array();
+
+            foreach ($crawler->filter('table.woocommerce-product-attributes tr') as $tr) {
+                $detail_tr = new Crawler($tr);
+
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'نویسنده') {
+                    $partner[0]['roleId'] = 1;
+                    $partner[0]['name'] = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'ناشر') {
+                    $book->nasher = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'مترجم') {
+                    $book->translate = 1;
+                    $partner[1]['roleId'] = 2;
+                    $partner[1]['name'] = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'دسته بندی ها') {
+                    $book->tags = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'شابک') {
+                    $book->shabak = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'قطع کتاب') {
+                    $book->ghateChap = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'تعداد صفحات') {
+                    $book->tedadSafe = enNumberKeepOnly(faCharToEN(trim($detail_tr->filterXPath('//td[1]')->text())));
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'سال انتشار') {
+                    $book->saleNashr = enNumberKeepOnly(faCharToEN(trim($detail_tr->filterXPath('//td[1]')->text())));
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'نوع جلد') {
+                    $book->jeld = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'سری (نام مجموعه)') {
+                    $book->nameMajmoe = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'درس') {
+                    $book->dars = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'مقطع تحصیلی') {
+                    $book->maghtaeTahsily = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'رشته تحصیلی') {
+                    $book->reshteTahsily = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+                if (trim($detail_tr->filterXPath('//th[1]')->text()) == 'پایه تحصیلی') {
+                    $book->payeTahsily = trim($detail_tr->filterXPath('//td[1]')->text());
+                }
+            }
+            $book->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+
+            // dd($book);
+            // DB::enableQueryLog();
+            $book->save();
+            SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $bookLink->book_links)->update(['status' => 1]);
+            // $query = DB::getQueryLog();
+            // $this->info($query);
+
+        }
     }
 }

@@ -57,10 +57,11 @@ class GetBarKhatBookNewestBook extends Command
             if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
                 $function_caller = 'updateBarKhatBookCategories';
                 updateBarKhatBookCategories($function_caller);
+                updateBarKhatBookCategoriesAllBooks();
             } else {
 
-                $function_caller = 'updateBarKhatBookCategoriesBooks';
-                updateBarKhatBookCategoriesBooks($function_caller);
+                $function_caller = 'updateBarKhatBookCategoriesAllBooks';
+                updateBarKhatBookCategoriesFirstPageBooks($function_caller);
             }
 
             SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->chunk(1, function ($bookLinks) {
