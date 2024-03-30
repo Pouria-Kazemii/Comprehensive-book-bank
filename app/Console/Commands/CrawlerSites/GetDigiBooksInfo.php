@@ -40,9 +40,8 @@ class GetDigiBooksInfo extends Command
      */
     public function handle()
     {
-        die('stop');
         $function_caller = 'Give_Digi-Book-Info';
-        $total = BookDigi::whereNull('title')->where('is_book',1)->count();
+        $total = BookDigi::whereNull('title')->count();
         try {
             $startC = 0;
             $endC   = $total;
@@ -58,7 +57,7 @@ class GetDigiBooksInfo extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            BookDigi::whereNull('title')->where('is_book',1)->orderby('id', 'DESC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+            BookDigi::whereNull('title')->orderby('id', 'DESC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
 
                 foreach ($books as $book) {
                     

@@ -5,14 +5,14 @@ namespace App\Console\Commands\CrawlerSites;
 use Illuminate\Console\Command;
 use App\Models\SiteBookLinks;
 
-class Getketabejam extends Command
+class GetketabejamNewestBook extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:ketabejam {crawlerId} ';
+    protected $signature = 'get:ketabejamNewestBooks {crawlerId} {runNumber?}';
 
     /**
      * The console command description.
@@ -38,7 +38,17 @@ class Getketabejam extends Command
      */
     public function handle()
     {
-        SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) {
+        
+        if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
+            $function_caller = 'updateKetabejamCategories';
+            updateKetabejamCategories( $function_caller);
+            updateKetabejamCategoriesAllBooks();
+            
+        } else {
+            updateKetabejamCategoriesFirstPageBooks();
+        }
+
+        SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->chunk(100, function ($bookLinks) {
             foreach ($bookLinks as $bookLink) {
                 $this->info($bookLink->book_links);
                 $function_caller = 'updateKetabejamBookInfo';

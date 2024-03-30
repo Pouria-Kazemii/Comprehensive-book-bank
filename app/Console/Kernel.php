@@ -67,13 +67,19 @@ class Kernel extends ConsoleKernel
         // fidibo 
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
         //ketabrah
-        $schedule->command('get:ketabRah 1')->dailyAt('16:30');
+        $schedule->command('get:ketabRah 1')->dailyAt('16:15');
         //shahreketabonline
-        $schedule->command('get:shahreketabonline 1')->dailyAt('17:00');
+        $schedule->command('get:shahreketabonline 1')->dailyAt('16:30');
         // barkhat book
-        $schedule->command('get:barkhatbookNewestBook 1 1')->monthlyOn(20, '17:30'); // for check amin categories
-        $schedule->command('get:barkhatbookNewestBook 1 2')->dailyAt('18:00');
-        $schedule->command('get:barkhatbook 1')->dailyAt('20:00');
+        $schedule->command('get:barkhatbookNewestBook 1 2')->dailyAt('17:00');
+        $schedule->command('get:barkhatbookNewestBook 1 1')->monthlyOn(20, '17:15'); // for check amin categories
+        $schedule->command('get:barkhatbook 1')->dailyAt('17:30');
+
+        // ketabejam
+        $schedule->command('get:ketabejamNewestBooks 1 2')->dailyAt('18:00');
+        $schedule->command('get:ketabejamNewestBooks 1 1')->monthlyOn(20, '18:15'); // for check amin categories
+        $schedule->command('get:ketabejam')->dailyAt('18:30');
+
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 

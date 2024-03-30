@@ -50,7 +50,7 @@ class GetBarKhatBook extends Command
             $bar->start();
 
 
-            SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->chunk(1, function ($bookLinks) use ($bar,$newCrawler) {
+            SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) use ($bar,$newCrawler) {
                 foreach ($bookLinks as $bookLink) {
                     $this->info($bookLink->book_links);
                     $function_caller = 'updateBarkhatBookInfo';
