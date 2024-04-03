@@ -101,6 +101,8 @@ class Kernel extends ConsoleKernel
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('00:00');
         $schedule->command('get:digiBooksInfo 1')->dailyAt('01:00');
+        $schedule->command('get:digiBooksInfo 1')->dailyAt('07:00');
+
         //$schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
 
 
