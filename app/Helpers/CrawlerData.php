@@ -14,6 +14,7 @@ use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use App\Models\BookKetabejam;
 use App\Models\BookLanguage;
+use App\Models\BookShahreKetabOnline;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 use App\Models\SiteBookLinks;
@@ -803,7 +804,10 @@ if (!function_exists('updateBarKhatBookCategoriesAllBooks')) {
                     $cat_book_content = json_decode($cat_book_content);
                     foreach ($cat_book_content->books->data as $book) {
                         // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
-                        SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
+                        $book->title = str_replace("#","",$book->title);
+                        $book->title = str_replace("?","",$book->title);
+                        $book->title = str_replace("/","",$book->title);
+                        SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                     }
                 }
                 $x++;
@@ -839,7 +843,10 @@ if (!function_exists('updateBarKhatBookCategoriesFirstPageBooks')) {
                 $cat_book_content = json_decode($cat_book_content);
                 foreach ($cat_book_content->books->data as $book) {
                     // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
-                    SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title, 'status' => 0));
+                    $book->title = str_replace("#","",$book->title);
+                    $book->title = str_replace("?","",$book->title);
+                    $book->title = str_replace("/","",$book->title);
+                    SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                 }
             }
         }
@@ -1035,7 +1042,7 @@ if (!function_exists('updateKetabejamCategoriesAllBooks')) {
                         $book_li = new Crawler($book);
                         $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
                         if (empty($SiteBookLinks)) {
-                            SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href'), 'status' => 0));
+                            SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href')));
                         }
                     }
                 }
@@ -1070,7 +1077,7 @@ if (!function_exists('updateKetabejamCategoriesFirstPageBooks')) {
                     $book_li = new Crawler($book);
                     $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
                     if (empty($SiteBookLinks)) {
-                        SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href'), 'status' => 0));
+                        SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href')));
                     }
                 }
             }
@@ -1246,6 +1253,158 @@ if (!function_exists('updateKetabejamBook')) {
             // $query = DB::getQueryLog();
             // $this->info($query);
 
+        }
+    }
+}
+
+if (!function_exists('updateShahreketabonlineBook')) {
+    function updateShahreketabonlineBook($recordNumber,$book, $function_caller = NULL)
+    {
+        $client = new Client(HttpClient::create(['timeout' => 30]));
+
+        try {
+            // $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
+            $crawler = $client->request('GET', 'https://shahreketabonline.com/Products/Details/' . $recordNumber, [
+                'headers' => [
+                    'user-agent' => 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36',
+                ],
+            ]);
+            $status_code = $client->getInternalResponse()->getStatusCode();
+        } catch (\Exception $e) {
+            $crawler = null;
+            $status_code = 500;
+            // $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+        }
+
+        if ($status_code == 200 and $crawler->filter('body div.ProductDetails')->count() > 0) {
+            $book_cats = '';
+            foreach ($crawler->filter('body ol.breadcrumb li a') as $cat) {
+                if (isset($book_cats) and !empty($book_cats)) {
+                    $book_cats = $book_cats . "-|-" . ltrim(rtrim(convert_arabic_char_to_persian($cat->textContent)));
+                } else {
+                    $book_cats = ltrim(rtrim(convert_arabic_char_to_persian($cat->textContent)));
+                }
+            }
+            if (isset($book_cats)) $cats_arr = explode('-|-', $book_cats);
+
+            if (!in_array('نوشت افزار', $cats_arr) && !in_array('محصولات فرهنگی', $cats_arr) && !in_array('صنایع دستی', $cats_arr) && !in_array('هنری', $cats_arr)) {
+
+
+                $book->cats = $book_cats;
+
+
+                // image
+                if ($crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap img.book-image')->count() > 0) {
+                    $book->images  = 'https://shahreketabonline.com' . $crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap img.book-image')->attr('src');
+                }
+                if ($crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap div.OtherImages')->count() > 0) {
+                    $book->images =  $book->images . '=|=' . 'https://shahreketabonline.com' . $crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap div.OtherImages a img')->attr('src');
+                }
+
+                // price 
+                if ($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->count() > 0) {
+                    $price  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->text()));
+                    if (strlen($price) < 10) {
+                        $book->price = $price;
+                    }
+                }
+
+                // desc 
+                if ($crawler->filter('body div.ProductDetails div.description')->count() > 0) {
+                    $book->Desc  = $crawler->filter('body div.ProductDetails div.description')->text();
+                }
+
+                // details
+                $book->title  = $crawler->filter('body div.ProductDetails div.ProductInfo div.Details h1')->text();
+
+                $partner =  array();
+                foreach ($crawler->filter("body div.ProductDetails div.ProductInfo div.Details div.mt-1 div.Attributes div.Attribute") as $trTable) {
+                    $trObj = new Crawler($trTable);
+
+                    switch ($trObj->filter('div.LightText')->first()->text()) {
+                        case 'شابک:':
+                            $book->shabak = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'موضوع:':
+                            $book->subject = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'نویسنده:':
+                            if ($trObj->filter('div.LightText')->nextAll()->text() != '') {
+                                // $this->info($trObj->filter('div.LightText')->nextAll()->text());
+                                // foreach($trObj->filter('a div') as $link){
+                                // $authorObject = Author::firstOrCreate(array("d_name" => $trObj->filter('div.LightText')->nextAll()->text()));
+                                // $authors[] = $authorObject->id;
+
+                                $partner[0]['roleId'] = 1;
+                                $partner[0]['name'] = $trObj->filter('div.LightText')->nextAll()->text();
+                                // }
+                            }
+                            break;
+                        case 'مترجم:':
+                            if ($trObj->filter('div.LightText')->nextAll()->text() != '') {
+                                $book->translate = 1;
+                                // foreach($trObj->filter('a') as $link){
+                                // $authorObject = Author::firstOrCreate(array("d_name" => $trObj->filter('div.LightText')->nextAll()->text()));
+                                // $authors[] = $authorObject->id;
+                                $partner[1]['roleId'] = 2;
+                                $partner[1]['name'] = $trObj->filter('div.LightText')->nextAll()->text();
+                                // }
+                            }
+                            break;
+                        case 'انتشارات:':
+                            $book->nasher = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                            // case 'نوبت چاپ':
+                            //     $book->nobatChap = $trObj->filter('div.LightText')->nextAll()->text();
+                            //     break;
+                        case 'شماره چاپ:':
+                            $book->nobatChap = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'زبان:':
+                            $book->lang = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'قطع:':
+                            $book->ghateChap = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'جلد:':
+                            $book->jeld = $trObj->filter('div.LightText')->nextAll()->text();
+                            break;
+                        case 'تعداد صفحه:':
+                            $book->tedadSafe = (enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text()))) ? enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text())) : 0;
+                            $book->tedadSafe = ($book->tedadSafe != $book->shabak) ? $book->tedadSafe : 0;
+                            break;
+                        case 'طول:':
+                            $book->length = faCharToEN($trObj->filter('div.LightText')->nextAll()->text());
+                            break;
+                        case 'عرض:':
+                            $book->width = faCharToEN($trObj->filter('div.LightText')->nextAll()->text());
+                            break;
+                        case 'ارتفاع:':
+                            $book->height = faCharToEN($trObj->filter('div.LightText')->nextAll()->text());
+                            break;
+                        case 'وزن:':
+                            $book->vazn = enNumberKeepOnly(faCharToEN($trObj->filter('div.LightText')->nextAll()->text()));
+                            break;
+                    }
+                }
+
+                $book->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
+
+
+                //tags
+                if ($crawler->filter("body div.ProductDetails div.Tags")->count() > 0) {
+                    foreach ($crawler->filter("body div.ProductDetails div.Tags a") as $tag) {
+                        $tagObj = new Crawler($tag);
+                        $book->tags = $book->tags . $tagObj->filter('div.Tag')->text();
+                        // $this->info($tagObj->filter('div.Tag')->text());
+                    }
+                }
+
+
+                $book->save();
+            } else {
+                // $this->info(" \n ---------- Rejected Book   " . $recordNumber . "           ---------- ");
+            }
         }
     }
 }
