@@ -807,6 +807,7 @@ if (!function_exists('updateBarKhatBookCategoriesAllBooks')) {
                         $book->title = str_replace("#","",$book->title);
                         $book->title = str_replace("?","",$book->title);
                         $book->title = str_replace("/","",$book->title);
+                        $book->title = (empty($book->title)) ?  'book_name' : $book->title;
                         SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                     }
                 }
@@ -846,6 +847,7 @@ if (!function_exists('updateBarKhatBookCategoriesFirstPageBooks')) {
                     $book->title = str_replace("#","",$book->title);
                     $book->title = str_replace("?","",$book->title);
                     $book->title = str_replace("/","",$book->title);
+                    $book->title = (empty($book->title)) ?  'book_name' : $book->title;
                     SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                 }
             }
