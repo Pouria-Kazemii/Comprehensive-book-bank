@@ -47,10 +47,10 @@ class get30Book extends Command
         try{
             $startC = $Last_id + 1;
             $endC = $startC + 100;
-            $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ------------ ");
             $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-30book-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>3));
         }catch (\Exception $e){
-            $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ------------ ");
         }
 
         $client = new Client(HttpClient::create(['timeout' => 30]));
@@ -72,7 +72,7 @@ class get30Book extends Command
             }catch (\Exception $e) {
                 $crawler = null;
                 $status_code = 500;
-                $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                $this->info(" \n ---------- Failed Get  ".$recordNumber."              ------------ ");
             }
 
             if($status_code == 200){
@@ -185,7 +185,7 @@ class get30Book extends Command
         }
         $newCrawler->status = 2;
         $newCrawler->save();
-        $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+        $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ------------ ");
         $bar->finish();
     }
 }

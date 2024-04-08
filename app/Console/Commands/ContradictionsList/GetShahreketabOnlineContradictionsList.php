@@ -49,11 +49,11 @@ class GetShahreketabOnlineContradictionsList extends Command
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->last;
                     $endC = $count;
-                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ------------ ");
             }
         } else {
             try {
@@ -65,10 +65,10 @@ class GetShahreketabOnlineContradictionsList extends Command
                 }
 
                 $endC = $count;
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ShahreketabOnline-' . $this->argument('rowId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
             }
         }
         if (isset($newCrawler)) {

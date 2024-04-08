@@ -146,7 +146,7 @@ class GetKetabchi extends Command
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
-                    $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+                    $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                 }
 
                 $this->info($crawler->filter('body main div.container')->count());
@@ -163,7 +163,7 @@ class GetKetabchi extends Command
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $bar->finish();
         }*/
     }

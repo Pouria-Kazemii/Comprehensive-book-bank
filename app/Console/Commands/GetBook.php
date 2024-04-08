@@ -57,7 +57,7 @@ class GetBook extends Command
                 ]);
             } catch (\Exception $e) {
                 $response = null;
-                $this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                $this->info(" \n ---------- Failed Get  ".$recordNumber."              ------------ ");
             }
             if($response) {
                 $result = $response['Results'][0];

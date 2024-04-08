@@ -46,11 +46,11 @@ class GetGissomBook extends Command
                 if (isset($lastCrawler->last)) {
                     $startC = $lastCrawler->last;
                     $endC = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ---------=-- ");
+                    $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ------------ ");
             }
         } else {
             try {
@@ -58,10 +58,10 @@ class GetGissomBook extends Command
                 if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
                 else $startC = 11000000;
                 $endC = $startC + CrawlerM::$crawlerSize;
-                $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ---------=-- ");
+                $this->info(" \n ---------- Create Crawler " . $this->argument('crawlerId') . " $startC -> $endC ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Gisoom-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler " . $this->argument('crawlerId') . " ------------ ");
             }
         }
 
@@ -81,7 +81,7 @@ class GetGissomBook extends Command
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
-                    $this->info(" \n ---------- Failed Get " . $recordNumber . " ---------=-- ");
+                    $this->info(" \n ---------- Failed Get " . $recordNumber . " ------------ ");
                 }
                 // dd($crawler->filter('body div.bookinfocol')->count());
                 if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0) {
@@ -178,7 +178,7 @@ class GetGissomBook extends Command
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler " . $this->argument('crawlerId') . " $startC -> $endC ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler " . $this->argument('crawlerId') . " $startC -> $endC ------------ ");
             $bar->finish();
         }
     }

@@ -46,10 +46,10 @@ class GetDigiNewestBook extends Command
 
         try {
 
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-newest-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
@@ -63,16 +63,16 @@ class GetDigiNewestBook extends Command
 
                 try {
                     $pageUrl = 'https://api.digikala.com/v1/categories/book/search/?sort=1&page=' . $pageCounter;
-                    $this->info(" \n ---------- Page URL  " . $pageUrl . "              ---------=-- ");
+                    $this->info(" \n ---------- Page URL  " . $pageUrl . "              ------------ ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
                     $status_code = substr($headers[0], 9, 3);
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
-                    //$this->info(" \n ---------- Failed Get  ".$recordNumber."              ---------=-- ");
+                    //$this->info(" \n ---------- Failed Get  ".$recordNumber."              ------------ ");
                 }
-                $this->info(" \n ---------- STATUS Get  " . $status_code . "              ---------=-- ");
+                $this->info(" \n ---------- STATUS Get  " . $status_code . "              ------------ ");
 
                 if ($status_code == "200") {
 
@@ -86,7 +86,7 @@ class GetDigiNewestBook extends Command
                         if (check_digi_id_is_book($pp->id)) {
                             $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->id)->firstOrNew();
                             $bookDigi->recordNumber = 'dkp-' . $pp->id;
-                            updateBookDigi($pp->id, $bookDigi, $function_caller);
+                            $bookDigi->save();
                         }
                         $bar->advance();
                     }
@@ -98,7 +98,7 @@ class GetDigiNewestBook extends Command
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $bar->finish();
         }
     }

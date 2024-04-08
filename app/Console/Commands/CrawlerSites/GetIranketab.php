@@ -48,7 +48,7 @@ class GetIranketab extends Command
      */
     public function handle()
     {
-        die('stop'); /// stop from kandoonews
+        // die('stop'); /// stop from kandoonews
         
         
         $illegal_characters = explode(",", "ç,Ç,æ,œ,À,Á,Â,Ã,Ä,Å,Æ,á,È,É,Ê,Ë,é,í,Ì,Í,Î,Ï,ð,Ñ,ñ,Ò,Ó,Ô,Õ,Ö,ó,ú,Ù,Ú,Û,Ü,à,ã,è,ì,ò,õ,ō,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
@@ -61,11 +61,11 @@ class GetIranketab extends Command
                     $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
 
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         } else {
             try {
@@ -78,10 +78,10 @@ class GetIranketab extends Command
 
                 // $endC = $startC + CrawlerM::$crawlerSize;
                 $endC = $startC + 1;
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-IranKetab-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         }
         
@@ -134,7 +134,7 @@ class GetIranketab extends Command
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+                        $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                     }
     
                     $this->info($url);
@@ -229,7 +229,7 @@ class GetIranketab extends Command
                                             } catch (\Exception $e) {
                                                 $author_crawler = null;
                                                 $author_status_code = 500;
-                                                $this->info(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ---------=-- ");
+                                                $this->info(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ------------ ");
                                             }
                                             if ($author_status_code == 200 &&  $author_crawler->filter('body')->text('') != '') {
                                                 unset($authorData);
@@ -293,7 +293,7 @@ class GetIranketab extends Command
                                                 } catch (\Exception $e) {
                                                     $translator_crawler = null;
                                                     $translator_status_code = 500;
-                                                    $this->info(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ---------=-- ");
+                                                    $this->info(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ------------ ");
                                                 }
                                                 if ($translator_status_code == 200 &&  $translator_crawler->filter('body')->text('') != '') {
         
@@ -379,7 +379,7 @@ class GetIranketab extends Command
                         //var_dump($filtered);
                         // exit;
                     }else{
-                        $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
+                        $this->info(" \n ---------- Inappropriate Content              ------------ ");
                     }    
 
                // }
@@ -390,7 +390,7 @@ class GetIranketab extends Command
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             // $bar->finish();
         }
         

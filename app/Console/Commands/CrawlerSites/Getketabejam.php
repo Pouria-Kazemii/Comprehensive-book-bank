@@ -4,6 +4,7 @@ namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
 use App\Models\SiteBookLinks;
+use App\Models\Crawler as CrawlerM;
 
 class Getketabejam extends Command
 {
@@ -38,12 +39,30 @@ class Getketabejam extends Command
      */
     public function handle()
     {
-        SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) {
-            foreach ($bookLinks as $bookLink) {
-                $this->info($bookLink->book_links);
-                $function_caller = 'updateKetabejamBookInfo';
-                updateKetabejamBook($bookLink, $function_caller);
-            }
-        });
+        $function_caller = 'KetabejamInfo';
+        $total = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->count();
+        $startC = 1;
+        $endC = $total;
+        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+
+        if (isset($newCrawler)) {
+
+            $bar = $this->output->createProgressBar($total);
+            $bar->start();
+
+            SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) use ($bar,$newCrawler,$function_caller) {
+                foreach ($bookLinks as $bookLink) {
+                    updateKetabejamBook($bookLink, 'checkBook'.$function_caller);
+                    $bar->advance();
+                    
+                    $newCrawler->last = $bookLink->id;
+                    $newCrawler->save();
+                }
+            });
+            $newCrawler->status = 2;
+            $newCrawler->save();
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+            $bar->finish();
+        }
     }
 }

@@ -58,10 +58,10 @@ class ConsensusSimilarBooksByIsbn extends Command
             $startC = 1;
             $endC = $countBook;
 
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-consensus-similar-books-by-isbn-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 5));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {

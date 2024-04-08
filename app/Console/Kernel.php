@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetDigiCategoryPrintedBookOfSocialSciences::class, 
         Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPoetryAndLiterature::class, 
         Commands\CrawlerSites\GetDigiNewestBook::class, 
-        Commands\CrawlerSites\GetDigiBooksInfo::class, 
+        Commands\CrawlerSites\GetDigiBook::class, 
         Commands\CorrectInfo\CheckIsBookDigi::class, 
 
 
@@ -100,8 +100,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('23:45');
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('00:00');
-        $schedule->command('get:digiBooksInfo 1')->dailyAt('01:00');
-        $schedule->command('get:digiBooksInfo 1')->dailyAt('07:00');
+        $schedule->command('get:digiBook 1')->dailyAt('01:00');
+        $schedule->command('get:digiBook 1')->dailyAt('07:00');
 
         //$schedule->command('get:CheckIsBookDigi 1')->dailyAt('16:00');
 

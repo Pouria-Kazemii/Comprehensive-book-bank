@@ -61,11 +61,11 @@ class GetUnallowableBookContradictionList extends Command
                 if (isset($lastCrawler->end)) {
                     $startC = $lastCrawler->start;
                     $endC = $lastCrawler->end;
-                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ------------ ");
             }
         } else {
             try {
@@ -77,10 +77,10 @@ class GetUnallowableBookContradictionList extends Command
                 }
 
                 $endC = $startC + CrawlerM::$crawlerSize;
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-Unallowable-' . $this->argument('rowId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
             }
         }
         if (isset($newCrawler) or true) {

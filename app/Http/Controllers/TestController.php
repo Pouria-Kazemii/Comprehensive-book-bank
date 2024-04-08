@@ -154,7 +154,7 @@ class TestController extends Controller
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
-                        echo(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+                        echo(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                         echo '</br>';
                     }
     
@@ -255,7 +255,7 @@ class TestController extends Controller
                                             } catch (\Exception $e) {
                                                 $author_crawler = null;
                                                 $author_status_code = 500;
-                                                echo(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ---------=-- ");
+                                                echo(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ------------ ");
                                                 echo '</br>';
                                             }
                                             if ($author_status_code == 200 &&  $author_crawler->filter('body')->text('') != '') {
@@ -321,7 +321,7 @@ class TestController extends Controller
                                                 } catch (\Exception $e) {
                                                     $translator_crawler = null;
                                                     $translator_status_code = 500;
-                                                    echo(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ---------=-- ");
+                                                    echo(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ------------ ");
                                                     echo '</br>';
                                                 }
                                                 if ($translator_status_code == 200 &&  $translator_crawler->filter('body')->text('') != '') {
@@ -409,7 +409,7 @@ class TestController extends Controller
                         //var_dump($filtered);
                         // exit;
                     }else{
-                        echo(" \n ---------- Inappropriate Content              ---------=-- ");
+                        echo(" \n ---------- Inappropriate Content              ------------ ");
                     }    
 
                 // }

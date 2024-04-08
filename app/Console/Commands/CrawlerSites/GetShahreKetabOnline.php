@@ -3,9 +3,6 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
-use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookShahreKetabOnline;
 use App\Models\Crawler as CrawlerM;
 
@@ -42,16 +39,16 @@ class GetShahreKetabOnline extends Command
      */
     public function handle()
     {
-        $function_caller = 'updateShahreketabonlineBookInfo';
+        $function_caller = 'ShahreKetabOnlineBookInfo';
 
         $Last_id = (isset(BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber)) ? BookShahreKetabOnline::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber : 0;
         try {
             $startC = $Last_id + 1;
-            $endC = $startC + 180000;
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-shahreketabonline-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+            $endC = $startC + 1000;
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
@@ -62,14 +59,18 @@ class GetShahreKetabOnline extends Command
             while ($recordNumber <= $endC) {
                 $book = BookShahreKetabOnline::where('recordNumber', $recordNumber)->firstOrNew();
                 $book->recordNumber = $recordNumber;
-                updateShahreketabonlineBook($recordNumber,$book,$function_caller);
+
+                updateShahreketabonlineBook($recordNumber,$book,'checkBook'.$function_caller);
+                
                 $bar->advance();
+
                 $newCrawler->last = $recordNumber;
+                $newCrawler->save();
                 $recordNumber++;
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $bar->finish();
         }
     }

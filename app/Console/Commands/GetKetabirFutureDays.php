@@ -87,10 +87,10 @@ class GetKetabirFutureDays extends Command
             $startC = 1;
             $endC = $totalCount;
 
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Ketabir-future-days-' . $this->argument('crawlerId'), 'start' => enNumberKeepOnly($from_date), 'end' => enNumberKeepOnly($to_date), 'status' => 1, 'type' => 0));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
 
@@ -156,7 +156,7 @@ class GetKetabirFutureDays extends Command
         }
         $newCrawler->status = 2;
         $newCrawler->save();
-        $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+        $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
         $bar->finish();
     }
 
