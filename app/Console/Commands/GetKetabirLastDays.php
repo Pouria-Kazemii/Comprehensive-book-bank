@@ -139,7 +139,6 @@ class GetKetabirLastDays extends Command
                     
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
-                    //updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook);
                     
                     $bar->advance();
                 }

@@ -79,7 +79,7 @@ class GetDigiCategoryForeignPrintedBook extends Command
                         if (check_digi_id_is_book($pp->product_id)) {
                             $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
                             $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
-                            updateBookDigi($pp->product_id, $bookDigi, 'checkBook'.$function_caller);
+                            updateDigiBook($pp->product_id, $bookDigi, 'checkBook'.$function_caller);
                         }
 
                         $bar->advance();

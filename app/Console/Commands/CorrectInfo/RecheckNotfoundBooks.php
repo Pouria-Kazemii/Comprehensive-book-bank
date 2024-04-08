@@ -66,7 +66,7 @@ class RecheckNotfoundBooks extends Command
                     $this->info('recordNumber :' . $recordNumber);
 
                     $bookIrBook = BookirBook::where('xid', $book->xid)->first();
-                    $api_status = updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook, $function_caller);
+                    $api_status = updateKetabirBook($recordNumber, $bookIrBook, $function_caller);
                     if ($api_status == 200) {
                         $bookIrBook->check_circulation = $api_status;
                     } else {

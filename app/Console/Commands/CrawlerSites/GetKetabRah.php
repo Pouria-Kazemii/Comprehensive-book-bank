@@ -65,7 +65,7 @@ class GetKetabRah extends Command
                 $BookKetabrah = BookKetabrah::where('recordNumber', $recordNumber)->firstOrNew();
                 $BookKetabrah->recordNumber = $recordNumber;
 
-                updateKetabrahInfo( $BookKetabrah,$recordNumber,'checkBook'.$function_caller);
+                updateKetabrahBook( $BookKetabrah,$recordNumber,'checkBook'.$function_caller);
 
                 $bar->advance(); 
 

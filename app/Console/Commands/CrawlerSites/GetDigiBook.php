@@ -65,7 +65,7 @@ class GetDigiBook extends Command
                     // $this->info($book->id);
                     $bookDigi = BookDigi::where('recordNumber', $book->recordNumber)->firstOrNew();
                     $bookDigi->recordNumber = $book->recordNumber;
-                    $api_status = updateBookDigi($book->recordNumber, $bookDigi, 'checkBook'.$function_caller);
+                    $api_status = updateDigiBook($book->recordNumber, $bookDigi, 'checkBook'.$function_caller);
                     // $this->info($api_status);
 
                     $bar->advance();
