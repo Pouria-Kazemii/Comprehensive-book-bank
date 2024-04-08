@@ -14,7 +14,6 @@ use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use App\Models\BookKetabejam;
 use App\Models\BookLanguage;
-use App\Models\BookShahreKetabOnline;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
 use App\Models\SiteBookLinks;
@@ -24,8 +23,8 @@ use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 
 
-if (!function_exists('updateBookDataWithKetabirApiInfo')) {
-    function updateBookDataWithKetabirApiInfo($recordNumber, $bookIrBook, $function_caller = NULL)
+if (!function_exists('updateKetabirBook')) {
+    function updateKetabirBook($recordNumber, $bookIrBook, $function_caller = NULL)
     {
 
         $timeout = 120;
@@ -321,42 +320,9 @@ if (!function_exists('updateBookDataWithKetabirApiInfo')) {
 }
 
 
-if (!function_exists('returnBookDataFromKetabirApi')) {
-    function returnBookDataFromKetabirApi($recordNumber, $function_caller = null)
-    {
-
-        $timeout = 120;
-        $url = 'http://dcapi.k24.ir/test_get_book_id_majma/' . $recordNumber . '/';
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_ENCODING, "");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        $book_content = curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '500', 'xfunction_caller' => $function_caller]);
-
-            return False;
-        } else {
-            MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '200', 'xfunction_caller' => $function_caller]);
-
-            $book_content = json_decode($book_content);
-            return $book_content;
-        }
-    }
-}
-
-
-
 ///////////////////////////////////////////////////////////////digikala//////////////////////////////////////////
-if (!function_exists('updateBookDigi')) {
-    function updateBookDigi($recordNumber, $bookDigi, $function_caller = NULL)
+if (!function_exists('updateDigiBook')) {
+    function updateDigiBook($recordNumber, $bookDigi, $function_caller = NULL)
     {
 
         $id = str_replace('dkp-', '', $recordNumber);
@@ -372,7 +338,6 @@ if (!function_exists('updateBookDigi')) {
             $crawler = null;
             $api_status = 500;
             MajmaApiBook::create(['xbook_id' => $id, 'xstatus' => $api_status, 'xfunction_caller' => $function_caller]);
-
         }
 
 
@@ -516,7 +481,7 @@ if (!function_exists('updateBookDigi')) {
                 }
                 $bookDigi->related()->sync($related_array);
             }
-        }else{
+        } else {
             echo " \n ---------- Inappropriate Content              ----------- ";
         }
 
@@ -580,8 +545,8 @@ if (!function_exists('check_digi_id_is_book')) {
 
 ////////////////////////////////////////////////////////fidibo///////////////////////////////////////////////////
 
-if (!function_exists('updateBookFidibo')) {
-    function updateBookFidibo($recordNumber, $bookFidibo, $function_caller = NULL)
+if (!function_exists('updateFidiboBook')) {
+    function updateFidiboBook($recordNumber, $bookFidibo, $function_caller = NULL)
     {
         try {
             $timeout = 120;
@@ -737,9 +702,9 @@ if (!function_exists('updateBookFidibo')) {
                 }
                 die($bookFidibo->tags);
             }
+        }else{
+            echo " \n ---------- Inappropriate Content              ----------- ";
         }
-        ///////////////////////////////////////////////////////////////////////
-
 
     }
 }
@@ -798,9 +763,9 @@ if (!function_exists('updateBarKhatBookCategoriesAllBooks')) {
                     $cat_book_content = json_decode($cat_book_content);
                     foreach ($cat_book_content->books->data as $book) {
                         // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
-                        $book->title = str_replace("#","",$book->title);
-                        $book->title = str_replace("?","",$book->title);
-                        $book->title = str_replace("/","",$book->title);
+                        $book->title = str_replace("#", "", $book->title);
+                        $book->title = str_replace("?", "", $book->title);
+                        $book->title = str_replace("/", "", $book->title);
                         $book->title = (empty($book->title)) ?  'book_name' : $book->title;
                         SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                     }
@@ -838,9 +803,9 @@ if (!function_exists('updateBarKhatBookCategoriesFirstPageBooks')) {
                 $cat_book_content = json_decode($cat_book_content);
                 foreach ($cat_book_content->books->data as $book) {
                     // echo 'product/bk_' . $book->code . '/' . $book->title . '<br>';
-                    $book->title = str_replace("#","",$book->title);
-                    $book->title = str_replace("?","",$book->title);
-                    $book->title = str_replace("/","",$book->title);
+                    $book->title = str_replace("#", "", $book->title);
+                    $book->title = str_replace("?", "", $book->title);
+                    $book->title = str_replace("/", "", $book->title);
                     $book->title = (empty($book->title)) ?  'book_name' : $book->title;
                     SiteBookLinks::firstOrCreate(array('domain' => 'https://barkhatbook.com/', 'book_links' => 'product/bk_' . $book->code . '/' . $book->title));
                 }
@@ -982,7 +947,7 @@ if (!function_exists('updateBarkhatBook')) {
                 $book->save();
                 SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('book_links', $bookLink->book_links)->update(['status' => 1]);
             }
-        }else{
+        } else {
             echo " \n ---------- Inappropriate Content              ----------- ";
         }
         return $status_code;
@@ -1140,12 +1105,10 @@ if (!function_exists('updateKetabejamBook')) {
 
             $status_code = $client->getInternalResponse()->getStatusCode();
             MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
             MajmaApiBook::create(['xbook_id' => $bookLink->id, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         }
         // $this->info($crawler->filterXPath('//*[@class="arm-circle"]')->count());
         // $this->info($crawler->filterXPath('//nav[contains(@class, "navbar navbar-expand arm-bg-cream arm-pd-u-15 arm-fix-style")]')->count());
@@ -1253,16 +1216,16 @@ if (!function_exists('updateKetabejamBook')) {
 
             $book->save();
             SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $bookLink->book_links)->update(['status' => 1]);
-
-        }else{
+        } else {
             echo " \n ---------- Inappropriate Content              ----------- ";
         }
+        return $status_code;
     }
 }
 
 ///////////////////////////////////////////////////shahre onlne ketab//////////////////////////////////////////////
 if (!function_exists('updateShahreketabonlineBook')) {
-    function updateShahreketabonlineBook($recordNumber,$book, $function_caller = NULL)
+    function updateShahreketabonlineBook($recordNumber, $book, $function_caller = NULL)
     {
         $client = new Client(HttpClient::create(['timeout' => 30]));
 
@@ -1275,7 +1238,6 @@ if (!function_exists('updateShahreketabonlineBook')) {
             ]);
             $status_code = $client->getInternalResponse()->getStatusCode();
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
@@ -1411,22 +1373,24 @@ if (!function_exists('updateShahreketabonlineBook')) {
             } else {
                 echo " \n ---------- Inappropriate Content              ----------- ";
             }
+        } else {
+            echo " \n ---------- Inappropriate Content              ----------- ";
         }
+        return $status_code;
     }
 }
 
 
 //////////////////////////////////////////////////////ketabrah//////////////////////////////////////////////////
-if(!function_exists('updateKetabrahInfo')){
-    function updateKetabrahInfo($BookKetabrah, $recordNumber,$function_caller = NULL)
+if (!function_exists('updateKetabrahBook')) {
+    function updateKetabrahBook($BookKetabrah, $recordNumber, $function_caller = NULL)
     {
         $client = new Client(HttpClient::create(['timeout' => 30]));
         try {
-           echo " \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ";
+            echo " \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ";
             $crawler = $client->request('GET', 'https://www.ketabrah.ir/book_name/book/' . $recordNumber);
             $status_code = $client->getInternalResponse()->getStatusCode();
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
@@ -1436,71 +1400,69 @@ if(!function_exists('updateKetabrahInfo')){
         if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' and $crawler->filterXPath('//div[contains(@id, "InternalPageContents")]')->count() > 0) {
             if ($crawler->filter('article')->count() > 0) {
                 //tag 
-                if($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol')->count() > 0){
+                if ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol')->count() > 0) {
                     $tagStr = '';
-                    foreach ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol ol li') as $key=>$cat) {
+                    foreach ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol ol li') as $key => $cat) {
                         unset($row);
                         $row = new Crawler($cat);
-                        if($key !=0 AND $key !=3){
-                            if( $row->filter('a span')->text() != ''){
-                                $tagStr .= $row->filter('a span')->text().'#';
+                        if ($key != 0 and $key != 3) {
+                            if ($row->filter('a span')->text() != '') {
+                                $tagStr .= $row->filter('a span')->text() . '#';
                             }
                         }
-                       
                     }
-                    $tagStr = rtrim($tagStr,'#');
+                    $tagStr = rtrim($tagStr, '#');
                     $BookKetabrah->tags = $tagStr;
                 }
 
                 // image
-                if($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.book-main-info-cover a')->count() > 0){
+                if ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.book-main-info-cover a')->count() > 0) {
                     $BookKetabrah->images = $crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.book-main-info-cover a')->attr('href');
                 }
 
                 // Desc
-                if($crawler->filterXPath('//div[contains(@id, "BookIntroduction")]')->count() > 0){
+                if ($crawler->filterXPath('//div[contains(@id, "BookIntroduction")]')->count() > 0) {
                     $BookKetabrah->desc = $crawler->filterXPath('//div[contains(@id, "BookIntroduction")]')->html();
                 }
-               
+
                 // detail
-                if($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details table')->count() > 0){
+                if ($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details table')->count() > 0) {
                     $partner = array();
                     $partnerCount = 0;
                     foreach ($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details table tr') as $item) {
-                       
+
                         unset($row);
                         $row = new Crawler($item);
-                        if( $row->filterXPath('//td[1]')->text() == 'نام کتاب'){
+                        if ($row->filterXPath('//td[1]')->text() == 'نام کتاب') {
                             $title = convert_arabic_char_to_persian($row->filterXPath('//td[2]')->text());
-                            $title = str_replace('کتاب','',$title);
-                            $title = str_replace('صوتی','',$title);
-                            $title = str_replace('الکترونیکی','',$title);
+                            $title = str_replace('کتاب', '', $title);
+                            $title = str_replace('صوتی', '', $title);
+                            $title = str_replace('الکترونیکی', '', $title);
                             $BookKetabrah->title = $title;
-                            $BookKetabrah->title2 = str_replace(' ','',$title);
+                            $BookKetabrah->title2 = str_replace(' ', '', $title);
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'نویسنده'){
-                            $authors = explode("،",$row->filterXPath('//td[2]')->text());
-                            foreach($authors as $author){
+                        if ($row->filterXPath('//td[1]')->text() == 'نویسنده') {
+                            $authors = explode("،", $row->filterXPath('//td[2]')->text());
+                            foreach ($authors as $author) {
                                 $partner[$partnerCount]['roleId'] = 1;
                                 $partner[$partnerCount]['name'] = $author;
                                 $partnerCount++;
                             }
-                           
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'مترجم'){
-                            $translators = explode("،",$row->filterXPath('//td[2]')->text());
-                            foreach($translators as $translator){
+                        if ($row->filterXPath('//td[1]')->text() == 'مترجم') {
+                            $translators = explode("،", $row->filterXPath('//td[2]')->text());
+                            foreach ($translators as $translator) {
                                 $partner[$partnerCount]['roleId'] = 2;
                                 $partner[$partnerCount]['name'] = $translator;
                                 $partnerCount++;
                             }
                             $BookKetabrah->translate = 1;
                         }
-                        if( $row->filterXPath('//td[1]')->text() == 'گوینده'){
-                            $speakers = explode("،",$row->filterXPath('//td[2]')->text());
-                            foreach($speakers as $speaker){
+                        if ($row->filterXPath('//td[1]')->text() == 'گوینده') {
+                            $speakers = explode("،", $row->filterXPath('//td[2]')->text());
+                            foreach ($speakers as $speaker) {
                                 $partner[$partnerCount]['roleId'] = 38;
                                 $partner[$partnerCount]['name'] = $speaker;
                                 $partnerCount++;
@@ -1508,13 +1470,13 @@ if(!function_exists('updateKetabrahInfo')){
                         }
                         $BookKetabrah->partnerArray = json_encode($partner, JSON_UNESCAPED_UNICODE);
 
-                        if( $row->filterXPath('//td[1]')->text() == 'موضوع کتاب'){
-                            $catStr = str_replace('،','#',$row->filterXPath('//td[2]')->text());
-                            $catStr = rtrim($catStr,'#');
+                        if ($row->filterXPath('//td[1]')->text() == 'موضوع کتاب') {
+                            $catStr = str_replace('،', '#', $row->filterXPath('//td[2]')->text());
+                            $catStr = rtrim($catStr, '#');
                             $BookKetabrah->cat = $catStr;
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'ناشر چاپی'){
+                        if ($row->filterXPath('//td[1]')->text() == 'ناشر چاپی') {
                             $publisher_name = str_replace('انتشاراتی', '', $row->filterXPath('//td[2]')->text());
                             $publisher_name = str_replace('انتشارات', '', $publisher_name);
                             $publisher_name = str_replace('گروه', '', $publisher_name);
@@ -1522,7 +1484,7 @@ if(!function_exists('updateKetabrahInfo')){
                             $publisher_name = str_replace('نشر', '', $publisher_name);
                             $BookKetabrah->nasher = $publisher_name;
                         }
-                        if($row->filterXPath('//td[1]')->text() =='ناشر صوتی'){
+                        if ($row->filterXPath('//td[1]')->text() == 'ناشر صوتی') {
                             $audio_publisher_name = str_replace('انتشاراتی', '', $row->filterXPath('//td[2]')->text());
                             $audio_publisher_name = str_replace('انتشارات', '', $audio_publisher_name);
                             $audio_publisher_name = str_replace('گروه', '', $audio_publisher_name);
@@ -1531,39 +1493,40 @@ if(!function_exists('updateKetabrahInfo')){
                             $BookKetabrah->nasherSouti = $audio_publisher_name;
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'سال انتشار'){
+                        if ($row->filterXPath('//td[1]')->text() == 'سال انتشار') {
                             $BookKetabrah->saleNashr = enNumberKeepOnly(faCharToEN($row->filterXPath('//td[2]')->text()));
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'فرمت کتاب'){
+                        if ($row->filterXPath('//td[1]')->text() == 'فرمت کتاب') {
                             $BookKetabrah->format = $row->filterXPath('//td[2]')->text();
                         }
-                    
-                        if( $row->filterXPath('//td[1]')->text() == 'تعداد صفحات'){
+
+                        if ($row->filterXPath('//td[1]')->text() == 'تعداد صفحات') {
                             $BookKetabrah->tedadSafe = enNumberKeepOnly(faCharToEN($row->filterXPath('//td[2]')->text()));
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'زبان'){
-                            $BookKetabrah->lang =convert_arabic_char_to_persian($row->filterXPath('//td[2]')->text());
+                        if ($row->filterXPath('//td[1]')->text() == 'زبان') {
+                            $BookKetabrah->lang = convert_arabic_char_to_persian($row->filterXPath('//td[2]')->text());
                         }
 
-                        if( $row->filterXPath('//td[1]')->text() == 'شابک'){
+                        if ($row->filterXPath('//td[1]')->text() == 'شابک') {
                             $BookKetabrah->shabak = validateIsbnWithRemoveDash($row->filterXPath('//td[2]')->text());
                         }
                     }
                 }
 
                 // price 
-                if($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price')->count() > 0){
+                if ($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price')->count() > 0) {
 
                     $prices = $crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price span')->text();
-                    $price = explode('-',$prices);
-                    $BookKetabrah->price = (isset($price[0]) AND enNumberKeepOnly(faCharToEN($price[0])) > 0)? enNumberKeepOnly(faCharToEN($price[0])) : 0;
+                    $price = explode('-', $prices);
+                    $BookKetabrah->price = (isset($price[0]) and enNumberKeepOnly(faCharToEN($price[0])) > 0) ? enNumberKeepOnly(faCharToEN($price[0])) : 0;
                 }
                 $BookKetabrah->save();
-            } 
+            }
         } else {
             echo " \n ---------- Inappropriate Content              ----------- ";
         }
+        return $status_code;
     }
 }

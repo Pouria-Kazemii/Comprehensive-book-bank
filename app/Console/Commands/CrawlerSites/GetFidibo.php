@@ -4,11 +4,8 @@ namespace App\Console\Commands\CrawlerSites;
 
 use App\Models\BookFidibo;
 use App\Models\Crawler as CrawlerM;
-use Exception;
-use Goutte\Client;
 use Illuminate\Console\Command;
-use Symfony\Component\DomCrawler\Crawler;
-use Symfony\Component\HttpClient\HttpClient;
+
 
 class GetFidibo extends Command
 {
@@ -43,14 +40,15 @@ class GetFidibo extends Command
      */
     public function handle()
     {
-        $function_caller = 'Give-fidibo-Info-Books';
+        $function_caller = 'FidiboInfo';
+
         $total = BookFidibo::whereNull('title')->count();
 
         try {
             $startC = 0;
             $endC   = $total;
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Fidibo-info-Books-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
@@ -69,7 +67,8 @@ class GetFidibo extends Command
                     $this->info($book->recordNumber);
                     $bookFidibo = BookFidibo::where('id', $book->id)->first();
 
-                    updateBookFidibo($book->recordNumber,$bookFidibo,$function_caller);
+                    updateFidiboBook($book->recordNumber,$bookFidibo,'checkBook'.$function_caller);
+
                     $bar->advance();
                     $newCrawler->last = $book->recordNumber;
                     $newCrawler->save();
