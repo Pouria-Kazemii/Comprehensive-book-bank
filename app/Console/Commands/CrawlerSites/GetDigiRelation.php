@@ -50,11 +50,11 @@ class GetDigiRelation extends Command
                 if(isset($lastCrawler->end)){
                     $startC = $lastCrawler->start;
                     $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+                    $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             }catch (\Exception $e){
-                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ------------ ");
             }
         }else{
             try{
@@ -62,10 +62,10 @@ class GetDigiRelation extends Command
                 if(isset($lastCrawler->end))$startC = $lastCrawler->end +1;
                 else $startC=1;
                 $endC   = $startC + 10;
-                $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Create Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name'=>'Crawler-digiRel-'.$this->argument('crawlerId'), 'start'=>$startC, 'end'=>$endC, 'status'=>1, 'type'=>6));
             }catch (\Exception $e){
-                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  ".$this->argument('crawlerId')."              ------------ ");
             }
         }
         // $recordNumber = $startC = $endC = 338 ;
@@ -94,7 +94,7 @@ class GetDigiRelation extends Command
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  ".$book->recordNumber."              ---------=-- ");
+                        $this->info(" \n ---------- Failed Get  ".$book->recordNumber."              ------------ ");
                     }
 
                     if($status_code == 200 ){
@@ -113,7 +113,7 @@ class GetDigiRelation extends Command
                                     }
                                     $related = bookDigiRelated::firstOrCreate(array('book_id'=>$relatedBook->id));
                                     array_push($related_array, $related->id);
-                                    $this->info(" \n ---------- ‌‌book  ".$book->recordNumber." : Related : ".$relatedBook->id."              ---------=-- ");
+                                    $this->info(" \n ---------- ‌‌book  ".$book->recordNumber." : Related : ".$relatedBook->id."              ------------ ");
                                 }
                             }
                         }
@@ -126,7 +126,7 @@ class GetDigiRelation extends Command
 
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  ".$this->argument('crawlerId')."     $startC  -> $endC         ------------ ");
             $bar->finish();
         }
     }
@@ -144,7 +144,7 @@ class GetDigiRelation extends Command
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
-            $this->info(" \n ---------- Failed Get  ".$id."   $productUrl   ".$e->getMessage()."        ---------=-- ");
+            $this->info(" \n ---------- Failed Get  ".$id."   $productUrl   ".$e->getMessage()."        ------------ ");
         }
 
         if($status_code == 200 ){

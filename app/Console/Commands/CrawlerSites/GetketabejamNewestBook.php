@@ -3,7 +3,7 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use App\Models\SiteBookLinks;
+use App\Models\Crawler as CrawlerM;
 
 class GetketabejamNewestBook extends Command
 {
@@ -38,22 +38,35 @@ class GetketabejamNewestBook extends Command
      */
     public function handle()
     {
-        
-        if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
-            $function_caller = 'updateKetabejamCategories';
-            updateKetabejamCategories( $function_caller);
-            updateKetabejamCategoriesAllBooks();
-            
-        } else {
-            updateKetabejamCategoriesFirstPageBooks();
+        $function_caller = 'KetabejamNewestBooks';
+
+        try {
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "            ------------ ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-' . $function_caller . '-' . $this->argument('crawlerId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
-        SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('status', 0)->chunk(100, function ($bookLinks) {
-            foreach ($bookLinks as $bookLink) {
-                $this->info($bookLink->book_links);
-                $function_caller = 'updateKetabejamBookInfo';
-                updateKetabejamBook($bookLink, $function_caller);
+        if (isset($newCrawler)) {
+            if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
+                $catCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabejamAllCategoriesAndAllBooks-' . $this->argument('crawlerId'), 'status' => 1));
+
+                updateKetabejamCategories();
+                updateKetabejamCategoriesAllBooks();
+
+                $catCrawler->status = 2;
+                $catCrawler->save();
+            } else {
+                $catCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-KetabejamCategoriesFirstPageBooks-' . $this->argument('crawlerId'), 'status' => 1));
+
+                updateKetabejamCategoriesFirstPageBooks();
+
+                $catCrawler->status = 2;
+                $catCrawler->save();
             }
-        });
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+       
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use App\Models\SiteBookLinks;
 use App\Models\Crawler as CrawlerM;
 
 
@@ -40,37 +39,36 @@ class GetBarKhatBookNewestBook extends Command
      */
     public function handle()
     {
-        $function_caller = 'barkhatBook-newest-book';
-        $startC = 1;
-        $endC = 2;
+        $function_caller = 'BarkhatBookNewestBooks';
 
         try {
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-' . $function_caller . '-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "           ------------ ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-' . $function_caller . '-' . $this->argument('crawlerId'),  'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
 
-
             if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
-                $function_caller = 'updateBarKhatBookCategories';
-                updateBarKhatBookCategories($function_caller);
+
+                $catCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-BarkhatBookAllCategoriesAndAllBooks-' . $this->argument('crawlerId'),  'status' => 1));
+                updateBarKhatBookCategories();
                 updateBarKhatBookCategoriesAllBooks();
+                $catCrawler->status = 2;
+                $catCrawler->save();
+
             } else {
 
-                $function_caller = 'updateBarKhatBookCategoriesAllBooks';
-                updateBarKhatBookCategoriesFirstPageBooks($function_caller);
+                $catCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-BarkhatBookCategoriesFirstPageBooks-' . $this->argument('crawlerId'),  'status' => 1));
+                updateBarKhatBookCategoriesFirstPageBooks();
+                $catCrawler->status = 2;
+                $catCrawler->save();
+
             }
 
-            SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->chunk(1, function ($bookLinks) {
-                foreach ($bookLinks as $bookLink) {
-                    $this->info($bookLink->book_links);
-                    $function_caller = 'updateBarkhatBookInfo';
-                    updateBarkhatBook($bookLink, $function_caller);
-                }
-            });
+            $newCrawler->status = 2;
+            $newCrawler->save();
         }
     }
 }

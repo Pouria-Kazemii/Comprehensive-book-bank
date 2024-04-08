@@ -47,12 +47,12 @@ class GetDigiContradictionsList extends Command
                 if (isset($lastCrawler) AND !empty($lastCrawler)) {
                     $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                     $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-digi-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
 
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ------------ ");
             }
         } else {
             try {
@@ -66,10 +66,10 @@ class GetDigiContradictionsList extends Command
                     $endC = $startC + CrawlerM::$crawlerSize;
                 }
 
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-digi-' . $this->argument('rowId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ---------=-- ");
+                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
             }
         }
         if (isset($newCrawler)) {

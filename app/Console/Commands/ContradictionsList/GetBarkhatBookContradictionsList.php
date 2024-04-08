@@ -47,10 +47,10 @@ class GetBarkhatBookContradictionsList extends Command
             try {
                 $startC = 1;
                 $endC = $count_check;
-                $this->info(" \n ---------- Check      $startC  -> $endC         ---------=-- ");
+                $this->info(" \n ---------- Check      $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhat', 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler                ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler                ------------ ");
             }
         }
 

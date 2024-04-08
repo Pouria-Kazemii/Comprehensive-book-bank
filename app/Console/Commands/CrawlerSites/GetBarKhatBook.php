@@ -39,10 +39,11 @@ class GetBarKhatBook extends Command
      */
     public function handle()
     {
+        $function_caller = 'BarkhatBookInfo';
         $total = SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->count();
         $startC = 1;
         $endC = $total;
-        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Give-BarKhat-Book-Info-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+        $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
 
         if (isset($newCrawler)) {
 
@@ -50,19 +51,20 @@ class GetBarKhatBook extends Command
             $bar->start();
 
 
-            SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) use ($bar,$newCrawler) {
+            SiteBookLinks::where('domain', 'https://barkhatbook.com/')->where('status', 0)->orderBy('id','ASC')->chunk(100, function ($bookLinks) use ($bar,$newCrawler,$function_caller) {
                 foreach ($bookLinks as $bookLink) {
-                    $this->info($bookLink->book_links);
-                    $function_caller = 'updateBarkhatBookInfo';
-                    updateBarkhatBook($bookLink, $function_caller);
+
+                    updateBarkhatBook($bookLink, 'checkBook'.$function_caller);
+
                     $bar->advance();
+                    
                     $newCrawler->last = $bookLink->id;
                     $newCrawler->save();
                 }
             });
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $bar->finish();
         }
     }

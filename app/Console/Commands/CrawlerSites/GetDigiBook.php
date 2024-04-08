@@ -7,14 +7,14 @@ use App\Models\Crawler as CrawlerM;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class GetDigiBooksInfo extends Command
+class GetDigiBook extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:digiBooksInfo {crawlerId}';
+    protected $signature = 'get:digiBook {crawlerId}';
 
     /**
      * The console command description.
@@ -40,15 +40,16 @@ class GetDigiBooksInfo extends Command
      */
     public function handle()
     {
-        $function_caller = 'Give_Digi-Book-Info';
-        $total = BookDigi::whereNull('title')->count();
+        $function_caller = 'DigiBookInfo';
+
+        $total = BookDigi::whereNull('title')->where('is_book','!=',4)->count();
         try {
             $startC = 0;
             $endC   = $total;
-            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-Give_Digi-Book-Info-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
@@ -57,15 +58,15 @@ class GetDigiBooksInfo extends Command
             $bar = $this->output->createProgressBar($total);
             $bar->start();
 
-            BookDigi::whereNull('title')->orderby('id', 'DESC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+            BookDigi::whereNull('title')->where('is_book','!=',4)->orderby('id', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
 
                 foreach ($books as $book) {
                     
-                    $this->info($book->id);
+                    // $this->info($book->id);
                     $bookDigi = BookDigi::where('recordNumber', $book->recordNumber)->firstOrNew();
                     $bookDigi->recordNumber = $book->recordNumber;
-                    $api_status = updateBookDigi($book->recordNumber, $bookDigi, $function_caller);
-                    $this->info($api_status);
+                    $api_status = updateBookDigi($book->recordNumber, $bookDigi, 'checkBook'.$function_caller);
+                    // $this->info($api_status);
 
                     $bar->advance();
                     $newCrawler->last = $book->id;
@@ -77,7 +78,7 @@ class GetDigiBooksInfo extends Command
 
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $bar->finish();
         }
     }

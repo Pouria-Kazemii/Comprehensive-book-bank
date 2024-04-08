@@ -67,7 +67,7 @@ class GetTaaghchePeriodicReportedDefects extends Command
                 } catch (\Exception $e) {
                     $crawler = null;
                     $status_code = 500;
-                    $this->info(" \n ---------- Failed Get  " . $product_id . "              ---------=-- ");
+                    $this->info(" \n ---------- Failed Get  " . $product_id . "              ------------ ");
                 }
 
 
