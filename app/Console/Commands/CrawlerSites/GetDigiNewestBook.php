@@ -40,14 +40,14 @@ class GetDigiNewestBook extends Command
     public function handle()
     {
 
-        $function_caller = 'digi-newest-book';
+        $function_caller = 'DigiNewestBooks';
         $startC = 1;
         $endC = 2;
 
         try {
 
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-newest-book-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-'.$function_caller.'-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
         }

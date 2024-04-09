@@ -30,10 +30,11 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetDigiBook::class, 
         Commands\CorrectInfo\CheckIsBookDigi::class, 
 
-
+        Commands\CrawlerSites\GetFidibo::class,
         Commands\CrawlerSites\GetIranketab::class, 
         Commands\CrawlerSites\GetKetabRah::class, 
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
+        Commands\CrawlerSites\GetGissom::class, 
         Commands\CrawlerSites\get30Book::class, 
         Commands\GetKetabirForNewBooks::class,
         Commands\GetKetabirLastDays::class,
@@ -80,6 +81,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:ketabejamNewestBooks 1 1')->monthlyOn(20, '18:15'); // for check amin categories
         $schedule->command('get:ketabejam')->dailyAt('18:30');
 
+        //gissom 
+        $schedule->command('get:gissom 1')->dailyAt('17:00');
         //30book 
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
