@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -34,12 +35,15 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetIranketab::class, 
         Commands\CrawlerSites\GetKetabRah::class, 
         Commands\CrawlerSites\GetShahreKetabOnline::class, 
+        Commands\CrawlerSites\GetBarKhatBookNewestBook::class,
+        commands\CrawlerSites\GetBarKhatBook::class, 
+        commands\CrawlerSites\GetketabejamNewestBook::class,
+        commands\CrawlerSites\Getketabejam::class,
         Commands\CrawlerSites\GetGissom::class, 
         Commands\CrawlerSites\get30Book::class, 
         Commands\GetKetabirForNewBooks::class,
         Commands\GetKetabirLastDays::class,
         Commands\GetKetabirFutureDays::class,
-        commands\CrawlerSites\GetBarKhatBook::class, 
 
         commands\CorrectInfo\RecheckNotfoundBooks::class, 
 
