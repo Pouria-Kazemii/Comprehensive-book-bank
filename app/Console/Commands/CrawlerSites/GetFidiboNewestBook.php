@@ -7,14 +7,14 @@ use App\Models\Crawler as CrawlerM;
 use Illuminate\Console\Command;
 
 
-class GetFidibo extends Command
+class GetFidiboNewestBook extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:fidibo {crawlerId}';
+    protected $signature = 'get:fidiboNewestBooks {crawlerId}';
 
     /**
      * The console command description.
@@ -40,12 +40,13 @@ class GetFidibo extends Command
      */
     public function handle()
     {
-        $function_caller = 'ّFidiboBookInfo';
-        $total = BookFidibo::whereNotNull('title')->count();
+        $function_caller = 'FidiboewestBooks';
+
+        $Last_id = BookFidibo::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber;
         try {
 
-            $startC = 0;
-            $endC = $total;
+            $startC = $Last_id + 1;
+            $endC = $startC + 100;
             $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-' . $function_caller . '-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
         } catch (\Exception $e) {
@@ -55,24 +56,24 @@ class GetFidibo extends Command
 
         if (isset($newCrawler)) {
 
-            $bar = $this->output->createProgressBar($total);
+            $bar = $this->output->createProgressBar(100);
             $bar->start();
 
-            BookFidibo::whereNull('title')->orderby('id', 'ASC')->chunk(200, function ($books) use ($bar, $function_caller, $newCrawler) {
+            $recordNumber = $startC;
 
-                foreach ($books as $book) {
-                    
-                    // $this->info($book->id);
-                    $bookFidibo = BookFidibo::where('recordNumber', $book->recordNumber)->firstOrNew();
-                    updateFidiboBook($book->recordNumber, $bookFidibo, 'checkBook'.$function_caller);
+            while ($recordNumber <= $endC) {
 
+                $bookFidibo = BookFidibo::where('recordNumber', $recordNumber)->firstOrNew();
+                
+                updateFidiboBook($recordNumber, $bookFidibo, 'checkBook'.$function_caller);
 
-                    $bar->advance();
-                    $newCrawler->last = $book->id;
-                    $newCrawler->save();
-                }
-            });
+                $newCrawler->last = $recordNumber;
+                $newCrawler->save();
 
+                $bar->advance();
+
+                $recordNumber++;
+            }
             $newCrawler->status = 2;
             $newCrawler->save();
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
