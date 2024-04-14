@@ -31,6 +31,7 @@ class Kernel extends ConsoleKernel
         Commands\CrawlerSites\GetDigiBook::class, 
         Commands\CorrectInfo\CheckIsBookDigi::class, 
 
+        Commands\CrawlerSites\GetFidiboNewestBook::class,
         Commands\CrawlerSites\GetFidibo::class,
         Commands\CrawlerSites\GetIranketab::class, 
         Commands\CrawlerSites\GetKetabRah::class, 
@@ -70,6 +71,7 @@ class Kernel extends ConsoleKernel
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo 
+        $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
         //ketabrah
         $schedule->command('get:ketabRah 1')->dailyAt('16:15');
