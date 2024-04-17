@@ -559,11 +559,9 @@ if (!function_exists('updateFidiboBook')) {
                 $status_code = 500;
             }
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $status_code = 500;
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         }
         if ($status_code == "200") {
 
@@ -587,8 +585,8 @@ if (!function_exists('updateFidiboBook')) {
             if ($book_status_code == "200") {
                 if (isset($book_info->data->result) and !empty($book_info->data->result)) {
                     foreach ($book_info->data->result as $book_result) {
-                        $bookFidibo->images = (isset($book_result->cover->image))? $book_result->cover->image: NULL;
-                        if(isset($book_result->breadcrumb) AND !empty($book_result->breadcrumb)){
+                        $bookFidibo->images = (isset($book_result->cover->image)) ? $book_result->cover->image : NULL;
+                        if (isset($book_result->breadcrumb) and !empty($book_result->breadcrumb)) {
                             $tagStr = '';
                             foreach ($book_result->breadcrumb  as $tag) {
                                 $tagStr .= $tag->name . '#';
@@ -605,12 +603,12 @@ if (!function_exists('updateFidiboBook')) {
             if (isset($page_info->data->result) and !empty($page_info->data->result)) {
                 foreach ($page_info->data->result as $result) {
                     if (isset($result->subtitle) and $result->subtitle == 'معرفی') {
-                        $book_title  = ltrim($result->items['0']->introduction->title,'درباره');
+                        $book_title  = ltrim($result->items['0']->introduction->title, 'درباره');
                         $book_title = ltrim($book_title, 'کتاب');
                         $bookFidibo->title = $book_title;
                         $bookFidibo->desc = (isset($result->items['0']->introduction->description)) ? $result->items['0']->introduction->description : NULL;
                         // $this->info( $bookFidibo->desc );
-                       
+
                     }
 
 
@@ -689,8 +687,6 @@ if (!function_exists('updateFidiboBook')) {
                 }
             }
         }
-        
-
     }
 }
 
@@ -708,12 +704,10 @@ if (!function_exists('updateGisoomBook')) {
             $crawler = $client->request('GET', 'http://asr.dmedia.ir/getgisoom/' . $recordNumber . '/');
             $status_code = $client->getInternalResponse()->getStatusCode();
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         } catch (\Exception $e) {
             $crawler = null;
             $status_code = 500;
             MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => $status_code, 'xfunction_caller' => $function_caller]);
-
         }
         // dd($crawler->filter('body div.bookinfocol')->count());
         if ($status_code == 200 && $crawler->filter('body')->text('') != '' && $crawler->filter('body div.bookinfocol')->count() > 0) {
@@ -1101,9 +1095,19 @@ if (!function_exists('updateKetabejamCategoriesAllBooks')) {
                 if ($status_code == 200 /*and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0*/) {
                     foreach ($crawler->filter('body main section ul li') as $book) {
                         $book_li = new Crawler($book);
-                        $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
-                        if (empty($SiteBookLinks)) {
-                            SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href')));
+                        // $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
+                        // if (empty($SiteBookLinks)) {
+                        //     SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href')));
+                        // }
+
+                        if($book_li->filter('a.ct-media-container')->count() > 0){
+                            if (!empty($book_li->filter('a.ct-media-container')->attr('href'))) {
+                                $href = $book_li->filter('a.ct-media-container')->attr('href');
+                                $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $href)->first();
+                                if (empty($SiteBookLinks)) {
+                                    SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $href));
+                                }
+                            }
                         }
                     }
                 }
@@ -1119,6 +1123,7 @@ if (!function_exists('updateKetabejamCategoriesFirstPageBooks')) {
         //category
         $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
         foreach ($cats as $cat) {
+
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
             try {
@@ -1136,9 +1141,16 @@ if (!function_exists('updateKetabejamCategoriesFirstPageBooks')) {
             if ($status_code == 200 and $crawler->filterXPath('//*[@id="main-container"]')->count() > 0) {
                 foreach ($crawler->filter('body main section ul li') as $book) {
                     $book_li = new Crawler($book);
-                    $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $book_li->filter('a')->attr('href'))->first();
-                    if (empty($SiteBookLinks)) {
-                        SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $book_li->filter('a')->attr('href')));
+                    // echo $book_li->html();
+                    if($book_li->filter('a.ct-media-container')->count() > 0){
+                        echo $book_li->filter('a.ct-media-container')->attr('href');
+                        if (!empty($book_li->filter('a.ct-media-container')->attr('href'))) {
+                            $href = $book_li->filter('a.ct-media-container')->attr('href');
+                            $SiteBookLinks = SiteBookLinks::where('domain', 'https://ketabejam.com/')->where('book_links', $href)->first();
+                            if (empty($SiteBookLinks)) {
+                                SiteBookLinks::firstOrCreate(array('domain' => 'https://ketabejam.com/', 'book_links' => $href));
+                            }
+                        }
                     }
                 }
             }
