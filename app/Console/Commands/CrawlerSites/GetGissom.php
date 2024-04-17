@@ -38,7 +38,7 @@ class GetGissom extends Command
 
     public function handle()
     {
-        $function_caller = 'ّGissomBookInfo';
+        $function_caller = 'GissomBookInfo';
         if ($this->argument('runNumber') && $this->argument('runNumber') == 1) {
             $startC = 11000000;
             $endC = 11400000;

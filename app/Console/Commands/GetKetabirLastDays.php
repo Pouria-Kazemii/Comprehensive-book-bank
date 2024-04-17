@@ -146,12 +146,13 @@ class GetKetabirLastDays extends Command
                 $crawlerItems->status = 2 ;
                 $crawlerItems->save();
             }
+            $newCrawler->status = 2;
+            $newCrawler->save();
             $bar->finish();
 
            
         }
-        $newCrawler->status = 2;
-        $newCrawler->save();
+        
         $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
     }
 
