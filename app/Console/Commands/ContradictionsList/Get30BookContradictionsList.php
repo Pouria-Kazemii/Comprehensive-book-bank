@@ -43,7 +43,7 @@ class Get30BookContradictionsList extends Command
     public function handle()
     {
         $check_count = Book30book::where('check_status', 0)->where('has_permit', 0)->count();
-        CrawlerM::firstOrCreate(array('name' => 'Contradictions-30book-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+        CrawlerM::firstOrCreate(array('name' => 'Contradictions-30book-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
 
         $items = Book30book::where('check_status', 0)->where('has_permit', 0)->get();
         foreach ($items as $item) {
