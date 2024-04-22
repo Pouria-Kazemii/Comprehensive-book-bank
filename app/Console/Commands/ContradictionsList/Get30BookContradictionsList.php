@@ -70,6 +70,8 @@ class Get30BookContradictionsList extends Command
                     $update_data['check_status'] = 4;
                     $update_data['has_permit'] = 4;
                 }
+                Book30book::where('id', $item->id)->update($update_data);
+
             }
         }
 
