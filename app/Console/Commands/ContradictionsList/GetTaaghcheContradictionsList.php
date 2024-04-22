@@ -42,43 +42,19 @@ class GetTaaghcheContradictionsList extends Command
      */
     public function handle()
     {
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('type', 2)->where('status', 1)->orderBy('end', 'ASC')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->start;
-                    $endC = $lastCrawler->end;
-                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
-                    $newCrawler = $lastCrawler;
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ------------ ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Contradictions-Taaghche-%')->where('type', 2)->orderBy('end', 'desc')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->end + 1;
-                } else {
-                    $startC = 1;
-                }
 
-                $endC = $startC + CrawlerM::$crawlerSize;
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-Taaghche-' . $this->argument('rowId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
-            }
+        $check_count = BookTaaghche::where('check_status', 0)->where('has_permit', 0)->count();
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-Taaghche-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
         }
+
         if (isset($newCrawler)) {
-            $rowId = $startC;
-            while ($rowId <= $endC) {
-                $book_data = BookTaaghche::where('id', $rowId)->first();
+            $items = BookTaaghche::where('check_status', 0)->where('has_permit', 0)->get();
+            foreach ($items as $book_data) {
                 if (isset($book_data) and !empty($book_data)) {
-                    // $update_data = array(
-                    //     'check_status' => 0,
-                    //     'has_permit' => 0,
-                    // );
+
                     if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak))) {
                         $this->info($book_data->shabak);
                         // $this->info($book_data->saleNashr);
@@ -118,7 +94,7 @@ class GetTaaghcheContradictionsList extends Command
                         
                     }
 
-                    BookTaaghche::where('id', $rowId)->update($update_data);
+                    BookTaaghche::where('id', $book_data->id)->update($update_data);
                 }
 
 
@@ -147,9 +123,8 @@ class GetTaaghcheContradictionsList extends Command
                 );
                 BookTaaghche::where('id', $fidibo_book->id)->update($update_data);
                 }*/
-                CrawlerM::where('name', 'Contradictions-Taaghche-' . $this->argument('rowId'))->where('start', $startC)->update(['last' => $rowId]);
-                $rowId++;
-            }
+                $newCrawler->last = $book_data->id;
+                $newCrawler->save();            }
         }
     }
 }
