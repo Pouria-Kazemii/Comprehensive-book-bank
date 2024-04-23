@@ -16,7 +16,7 @@ class GetShahreketabOnlineContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:shahreKetabOnlineContradictionsList {rowId} {miss?}';
+    protected $signature = 'get:shahreKetabOnlineContradictionsList {rowId}';
 
     /**
      * The console command description.
@@ -42,44 +42,19 @@ class GetShahreketabOnlineContradictionsList extends Command
      */
     public function handle()
     {
-       $count = BookShahreKetabOnline::where('check_status',0)->count();
-        if ($this->argument('miss') && $this->argument('miss') == 1) {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Contradictions-ShahreketabOnline-%')->where('status', 1)->orderBy('end', 'ASC')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->last;
-                    $endC = $count;
-                    $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
-                    $newCrawler = $lastCrawler;
-                }
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('rowId') . "              ------------ ");
-            }
-        } else {
-            try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Contradictions-ShahreketabOnline-%')->where('status', 2)->orderBy('end', 'desc')->first();
-                if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->end + 1;
-                } else {
-                    $startC = 1;
-                }
+        $check_count = BookShahreKetabOnline::where('check_status', 0)->where('has_permit', 0)->count();
 
-                $endC = $count;
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "     $startC  -> $endC         ------------ ");
-                $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ShahreketabOnline-' . $this->argument('rowId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
-            } catch (\Exception $e) {
-                $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
-            }
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ShahreketabOnline-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
         }
+
         if (isset($newCrawler)) {
-            $rowId = $startC;
-            while ($rowId <= $endC) {
-                $book_data = BookShahreKetabOnline::where('id', $rowId)->first();
+            $items = BookShahreKetabOnline::where('check_status', 0)->where('has_permit', 0)->get();
+            foreach ($items as $book_data) {
                 if (isset($book_data) and !empty($book_data)) {
-                    // $update_data = array(
-                    //     'check_status' => 0,
-                    //     'has_permit' => 0,
-                    // );
                     if ((isset($book_data->shabak) and $book_data->shabak != null and !empty($book_data->shabak))) {
                         $this->info($book_data->shabak);
                         // $this->info($book_data->saleNashr);
@@ -119,10 +94,10 @@ class GetShahreketabOnlineContradictionsList extends Command
                         
                     }
 
-                    BookShahreKetabOnline::where('id', $rowId)->update($update_data);
+                    BookShahreKetabOnline::where('id', $book_data->id)->update($update_data);
                 }
-                CrawlerM::where('name', 'Contradictions-ShahreketabOnline-' . $this->argument('rowId'))->where('start', $startC)->update(['last' => $rowId]);
-                $rowId++;
+                $newCrawler->last = $book_data->id;
+                $newCrawler->save();
             }
         }
     }
