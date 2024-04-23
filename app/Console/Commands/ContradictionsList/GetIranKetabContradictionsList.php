@@ -6,6 +6,7 @@ use App\Models\BookIranketab;
 use App\Models\BookirBook;
 use App\Models\Crawler as CrawlerM;
 use App\Models\ErshadBook;
+use App\Models\UnallowableBook;
 use Illuminate\Console\Command;
 
 class GetIranKetabContradictionsList extends Command
@@ -43,7 +44,6 @@ class GetIranKetabContradictionsList extends Command
     {
 
         $check_count = BookIranketab::where('check_status', 0)->where('has_permit', 0)->count();
-
 
         try {
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-IranKetab' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
@@ -94,6 +94,35 @@ class GetIranKetabContradictionsList extends Command
                 $newCrawler->last = $book_data->id;
                 $newCrawler->save();
             }
+
+            //  unallowable_book
+            UnallowableBook::chunk(1, function ($items) {
+                foreach ($items as $item) {
+                    $this->info($item->xtitle);
+                    $iranketab = BookIranketab::select('id');
+                    if (!empty($item->xtitle)) {
+                        $iranketab->where('title', 'LIKE', '%' . $item->xtitle . '%');
+                    }
+                    if (!empty($item->xauthor)) {
+                        $iranketab->where('partnerArray', 'LIKE', '%{"roleId":1,"name":"' . $item->xauthor . '"}%');
+                    }
+                    if (!empty($item->xpublisher_name)) {
+                        $iranketab->where('nasher', 'LIKE', '%' . $item->xpublisher_name);
+                    }
+                    if (!empty($item->xtranslator)) {
+                        $iranketab->where('partnerArray', 'LIKE', '%{"roleId":2,"name":"' . $item->xtranslator . '"}%');
+                    }
+                    $iranketab_books = $iranketab->get();
+                    foreach ($iranketab_books as $iranketab_book) {
+                        if (isset($iranketab_book) and !empty($iranketab_book)) {
+                            BookIranketab::where('id', $Ketabejam_book->id)->update(array('unallowed' => 1));
+                        }
+                    }
+                }
+            });
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
         }
     }
 }
