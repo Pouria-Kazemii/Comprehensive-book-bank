@@ -15,7 +15,7 @@ class GetDigiContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:digiContradictionsList {rowId} {miss?}';
+    protected $signature = 'get:digiContradictionsList {rowId}';
 
     /**
      * The console command description.
@@ -45,7 +45,6 @@ class GetDigiContradictionsList extends Command
 
         try {
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-digi-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
-
         } catch (\Exception $e) {
             $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
         }
@@ -90,9 +89,10 @@ class GetDigiContradictionsList extends Command
                 }
                 $newCrawler->last = $book_data->id;
                 $newCrawler->save();
-                }
-
             }
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
         }
     }
 }

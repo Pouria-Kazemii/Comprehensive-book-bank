@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands\ContradictionsList;
 
-use App\Models\BookBarkhatBook;
 use App\Models\BookirBook;
+use App\Models\BookKetabrah;
 use App\Models\Crawler as CrawlerM;
 use App\Models\ErshadBook;
 use App\Models\UnallowableBook;
 use Illuminate\Console\Command;
 
-class GetBarkhatBookContradictionsList extends Command
+class GetKetabrahContradictionsList extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'get:barkhatBookContradictionsList';
+    protected $signature = 'get:ketabrahContradictionsList';
 
     /**
      * The console command description.
@@ -42,17 +42,17 @@ class GetBarkhatBookContradictionsList extends Command
      */
     public function handle()
     {
-        $check_count = BookBarkhatBook::where('check_status', 0)->where('has_permit', 0)->count();
+        $check_count = BookKetabrah::where('check_status', 0)->where('has_permit', 0)->count();
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhatBook-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ketabrah-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
             $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
         }
 
 
         if (isset($newCrawler)) {
-            $items = BookBarkhatBook::where('check_status', 0)->where('has_permit', 0)->get();
+            $items = BookKetabrah::where('check_status', 0)->where('has_permit', 0)->get();
             foreach ($items as $book_data) {
                 // bookirbook with ershad book
                 if (isset($book_data) and !empty($book_data)) {
@@ -87,31 +87,34 @@ class GetBarkhatBookContradictionsList extends Command
                         $update_data['has_permit'] = 4;
                     }
 
-                    BookBarkhatBook::where('id', $book_data->id)->update($update_data);
+                    BookKetabrah::where('id', $book_data->id)->update($update_data);
                 }
+
+                $newCrawler->last = $book_data->id;
+                $newCrawler->save();
             }
 
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {
                 foreach ($items as $item) {
                     $this->info($item->xtitle);
-                    $barkhatbook = BookBarkhatBook::select('id');
+                    $ketabrah = BookKetabrah::select('id');
                     if (!empty($item->xtitle)) {
-                        $barkhatbook->where('title', 'LIKE', '%' . $item->xtitle . '%');
+                        $ketabrah->where('title', 'LIKE', '%' . $item->xtitle . '%');
                     }
                     if (!empty($item->xauthor)) {
-                        $barkhatbook->where('partnerArray', 'LIKE', '%{"roleId":1,"name":"' . $item->xauthor . '"}%');
+                        $ketabrah->where('partnerArray', 'LIKE', '%{"roleId":1,"name":"' . $item->xauthor . '"}%');
                     }
                     if (!empty($item->xpublisher_name)) {
-                        $barkhatbook->where('nasher', 'LIKE', '%' . $item->xpublisher_name);
+                        $ketabrah->where('nasher', 'LIKE', '%' . $item->xpublisher_name);
                     }
                     if (!empty($item->xtranslator)) {
-                        $barkhatbook->where('partnerArray', 'LIKE', '%{"roleId":2,"name":"' . $item->xtranslator . '"}%');
+                        $ketabrah->where('partnerArray', 'LIKE', '%{"roleId":2,"name":"' . $item->xtranslator . '"}%');
                     }
-                    $barkhatbook_books = $barkhatbook->get();
-                    foreach ($barkhatbook_books as $barkhatbook_book) {
-                        if (isset($barkhatbook_book) and !empty($barkhatbook_book)) {
-                            BookBarkhatBook::where('id', $barkhatbook_book->id)->update(array('unallowed' => 1));
+                    $ketabrah_books = $ketabrah->get();
+                    foreach ($ketabrah_books as $ketabrah_book) {
+                        if (isset($ketabrah_book) and !empty($ketabrah_book)) {
+                            BookKetabrah::where('id', $ketabrah_book->id)->update(array('unallowed' => 1));
                         }
                     }
                 }
