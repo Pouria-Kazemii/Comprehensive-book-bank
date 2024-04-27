@@ -40,7 +40,7 @@ class GetFidibo extends Command
      */
     public function handle()
     {
-        $function_caller = 'ّFidiboBookInfo';
+        $function_caller = 'FidiboBookInfo';
         $total = BookFidibo::whereNull('title')->count();
         try {
 

@@ -40,7 +40,7 @@ class GetFidiboNewestBook extends Command
      */
     public function handle()
     {
-        $function_caller = 'FidiboewestBooks';
+        $function_caller = 'FidiboNewestBooks';
 
         $Last_id = BookFidibo::whereNotNull('title')->orderBy('recordNumber', 'DESC')->first()->recordNumber;
         try {
