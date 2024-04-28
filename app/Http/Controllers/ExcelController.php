@@ -163,15 +163,16 @@ class ExcelController extends Controller
         return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
     }
 
-    public function exportExcelContradictionsDigi($status)
+    public function exportExcelContradictionsDigi($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        $excel_name = 'لیست مغایرت دیجیکالا'.time().'.xlsx';
+        $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
+        // return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
+        return Excel::download(new ContradictionsDigiExport($$excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
     public function exportExcelContradictionsKetabejam($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)

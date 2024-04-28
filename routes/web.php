@@ -57,7 +57,7 @@ Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelCon
 Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
 Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 //digi
-Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsDigi']);
+Route::get('exportExcelContradictionsDigi//{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsDigi']);
 Route::get('exportExcelWebsiteBookLinkDefectsCheckResultDigi/{excel_id}/{excel_name}', [ExcelController::class, 'exportExcelWebsiteBookLinkDefectsCheckResultDigi']);
 Route::get('importDigiExcel/{excel_type}/{excel_name}', [ImportController::class, 'importDigiExcel']);
 
