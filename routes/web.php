@@ -62,7 +62,7 @@ Route::get('exportExcelWebsiteBookLinkDefectsCheckResultDigi/{excel_id}/{excel_n
 Route::get('importDigiExcel/{excel_type}/{excel_name}', [ImportController::class, 'importDigiExcel']);
 
 Route::get('exportExcelContradictionsIranketab/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsIranketab']);
-Route::get('exportExcelContradictions30book/{status}', [ExcelController::class, 'exportExcelContradictions30book']);
+Route::get('exportExcelContradictions30book/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictions30book']);
 Route::get('exportExcelContradictionsShahreKetabOnline/{status}', [ExcelController::class, 'exportExcelContradictionsShahreKetabOnline']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
 Route::get('test_get_books_majma/{from_date}/{to_date}/{from}/{result_count}', [TestController::class, 'test_get_books_majma']);
