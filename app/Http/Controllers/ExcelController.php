@@ -223,12 +223,17 @@ class ExcelController extends Controller
         return Excel::download(new ContradictionsIranketabExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
 
     }
-    public function exportExcelContradictions30book($status)
+    public function exportExcelContradictions30book($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
 
-        return Excel::download(new Contradictions30bookExport($status), 'لیست مغایرت 30book' . time() . '.xlsx');
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new Contradictions30bookExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
     }
 
     public function exportExcelContradictionsShahreKetabOnline($status)
