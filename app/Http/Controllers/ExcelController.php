@@ -211,11 +211,17 @@ class ExcelController extends Controller
         return Excel::download(new WebsiteBookLinkDigiExport($excel_id), $excel_name);
     }
 
-    public function exportExcelContradictionsIranketab($status)
+    public function exportExcelContradictionsIranketab($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        return Excel::download(new ContradictionsIranketabExport($status), 'لیست مغایرت ایرانکتاب' . time() . '.xlsx');
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsIranketabExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
     }
     public function exportExcelContradictions30book($status)
     {
