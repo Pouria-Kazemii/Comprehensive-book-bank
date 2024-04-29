@@ -60,7 +60,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             if($item->has_permit == 2){
                 if((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))){
                     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                    if(strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')){
+                    if(strtotime($georgianCarbonDate) < strtotime('2024-03-29 00:00:00')){
                         $report[$key]->images = '**';
                     }
                 }
@@ -79,7 +79,7 @@ class ContradictionsTaaghcheExport implements FromCollection,WithHeadings
             
             // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
             //     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
-            //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2018-03-21 00:00:00') ) {
+            //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2024-03-29 00:00:00') ) {
             //         $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
             //     }else{
             //         $report[$key]->images = '';

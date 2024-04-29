@@ -75,7 +75,7 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
                 if ($item->has_permit == 2) {
                     if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
                         $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
-                        if (strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')) {
+                        if (strtotime($georgianCarbonDate) < strtotime('2024-03-29 00:00:00')) {
                             $report[$key]->images = '**';
                         }
                     }

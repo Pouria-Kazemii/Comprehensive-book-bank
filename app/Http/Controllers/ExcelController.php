@@ -21,6 +21,7 @@ use App\Exports\ContradictionsGisoomExport;
 use App\Exports\ContradictionsKetabejamExport;
 use App\Exports\NewBookEveryYearExport;
 use App\Exports\WebsiteBookLinkDigiExport;
+use App\Models\BookirBook;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
 
@@ -176,7 +177,7 @@ class ExcelController extends Controller
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsDigiExport($$excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+        return Excel::download(new ContradictionsDigiExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
     public function exportExcelContradictionsKetabejam($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
