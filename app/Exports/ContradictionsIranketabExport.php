@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\BookIranketab;
+use App\Models\BookirBook;
 use App\Models\WebSiteBookLinksDefects;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -47,7 +48,7 @@ class ContradictionsIranketabExport implements FromCollection, WithHeadings
 
                 $report[$key]->tags = '';
                 if ($item->check_status == 2) {
-                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
+                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr) and $item->saleNashr <= \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime(date('Y/m/d'))))) {
                         if (strlen($item->saleNashr) != 4) {
                             $report[$key]->images = '***';
                         } else {
@@ -71,12 +72,12 @@ class ContradictionsIranketabExport implements FromCollection, WithHeadings
 
                 $report[$key]->images = '';
                 if ($item->has_permit == 2) {
-                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
+                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr)and $item->saleNashr <= \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime(date('Y/m/d'))))) {
                         if (strlen($item->saleNashr) != 4) {
                             $report[$key]->images = '***';
                         } else {
                             $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr, 0, 4) . '/01/01')->toCarbon();
-                            if (strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')) {
+                            if (strtotime($georgianCarbonDate) < strtotime('2024-03-29 00:00:00')) {
                                 $report[$key]->images = '**';
                             }
                         }

@@ -340,7 +340,7 @@ class GetIranketab extends Command
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'تعداد صفحه :' && empty($filtered['tedadSafe']))
                                         $filtered['tedadSafe'] = trim($trtag->filterXPath('//td[2]')->text());
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'سال انتشار شمسی :' && empty($filtered['saleNashr']))
-                                        $filtered['saleNashr'] = trim($trtag->filterXPath('//td[2]')->text());
+                                        $filtered['saleNashr'] = (trim($trtag->filterXPath('//td[2]')->text()) <= \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime(date('Y/m/d')))) ? trim($trtag->filterXPath('//td[2]')->text()) : 0;
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'نوع جلد :' && empty($filtered['jeld']))
                                         $filtered['jeld'] = trim($trtag->filterXPath('//td[2]')->text());
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'سری چاپ :' && empty($filtered['nobatChap']))
