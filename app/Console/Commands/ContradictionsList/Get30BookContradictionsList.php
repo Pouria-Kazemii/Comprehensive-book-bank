@@ -47,7 +47,7 @@ class Get30BookContradictionsList extends Command
         try {
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-30book-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
@@ -85,9 +85,9 @@ class Get30BookContradictionsList extends Command
         }
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-30book-' . $this->argument('rowId'), 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-30book-' . $this->argument('crawlerId'), 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {

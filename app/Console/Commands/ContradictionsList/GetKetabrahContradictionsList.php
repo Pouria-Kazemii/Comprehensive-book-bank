@@ -16,7 +16,7 @@ class GetKetabrahContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:ketabrahContradictionsList';
+    protected $signature = 'get:ketabrahContradictionsList {crawlerId}';
 
     /**
      * The console command description.
@@ -45,9 +45,9 @@ class GetKetabrahContradictionsList extends Command
         $check_count = BookKetabrah::where('check_status', 0)->where('has_permit', 0)->count();
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ketabrah-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-ketabrah-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
 
@@ -101,9 +101,9 @@ class GetKetabrahContradictionsList extends Command
         }
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-ketabrah-' . $this->argument('rowId'), 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-ketabrah-' . $this->argument('crawlerId'), 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
