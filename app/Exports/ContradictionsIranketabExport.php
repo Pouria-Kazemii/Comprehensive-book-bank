@@ -34,7 +34,7 @@ class ContradictionsIranketabExport implements FromCollection, WithHeadings
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    WebSiteBookLinksDefects::create(array('siteName' => 'ketabejam', 'book_links' => $item->pageUrl, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'iranketab', 'book_links' => $item->pageUrl, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {

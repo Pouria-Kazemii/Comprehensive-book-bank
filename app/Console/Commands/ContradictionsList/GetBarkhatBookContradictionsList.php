@@ -16,7 +16,7 @@ class GetBarkhatBookContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:barkhatBookContradictionsList';
+    protected $signature = 'get:barkhatBookContradictionsList {crawlerId}';
 
     /**
      * The console command description.
@@ -45,9 +45,9 @@ class GetBarkhatBookContradictionsList extends Command
         $check_count = BookBarkhatBook::where('check_status', 0)->where('has_permit', 0)->count();
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhatBook-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhatBook-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
 
@@ -96,9 +96,9 @@ class GetBarkhatBookContradictionsList extends Command
         }
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-barkhatBook-' . $this->argument('rowId'), 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-barkhatBook-' . $this->argument('crawlerId'), 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
