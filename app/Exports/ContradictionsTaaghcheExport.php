@@ -28,21 +28,33 @@ class ContradictionsTaaghcheExport implements FromCollection, WithHeadings
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
             $report = BookTaaghche::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang','fileSize', 'price', 'check_status',  'tags','has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
+
+                if ($item->fileSize != NULL and $item->price != NULL) {
+                    $report[$key]->fileSize = 'چاپی و الکترونیکی';
+                } elseif ($item->fileSize != NULL and $item->price == 0) {
+                    $report[$key]->fileSize = 'الکترونیکی';
+                } elseif ($item->fileSize == NULL and $item->price > 0) {
+                    $report[$key]->fileSize = 'چاپی';
+                } else {
+                    $report[$key]->fileSize = 'ناموجود';
+                }
+                
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://taaghche.com/book/' . $item->recordNumber;
+            }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    $report[$key]->recordNumber = 'https://taaghche.com/book/' . $item->recordNumber;
-                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
             $report = BookTaaghche::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'price', 'check_status', 'tags', 'has_permit', 'images')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
-                if ($item->translate == 1) {
-                    $report[$key]->translate = 'ترجمه';
-                } else {
-                    $report[$key]->translate = 'تالیف';
-                }
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
+
                 if ($item->fileSize != NULL and $item->price != NULL) {
                     $report[$key]->fileSize = 'چاپی و الکترونیکی';
                 } elseif ($item->fileSize != NULL and $item->price == 0) {

@@ -29,11 +29,14 @@ class ContradictionsBarkhatExport implements FromCollection, WithHeadings
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
             $report = BookBarkhatBook::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'shabak', 'ghatechap', 'check_status', 'cats', 'has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->main_recordNumber = 'bk_' . $item->recordNumber;
+                $report[$key]->recordNumber = 'https://barkhatbook.com/product/bk_' . $item->recordNumber . '/' . $item->title . '/';
+            }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    $report[$key]->recordNumber = 'https://barkhatbook.com/product/bk_' . $item->recordNumber . '/' . $item->title . '/';
-                    WebSiteBookLinksDefects::create(array('siteName' => 'barkhatbook', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'barkhatbook', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {

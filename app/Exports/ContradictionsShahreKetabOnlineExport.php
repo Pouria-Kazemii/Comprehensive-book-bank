@@ -28,21 +28,21 @@ class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadi
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
             $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
+            }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
-                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
             $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
-                if ($item->translate == 1) {
-                    $report[$key]->translate = 'ترجمه';
-                } else {
-                    $report[$key]->translate = 'تالیف';
-                }
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
 
                 if ($item->check_status == 1) {
                     $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
