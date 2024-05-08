@@ -162,11 +162,16 @@ class ExcelController extends Controller
    
     }
 
-    public function exportExcelContradictionsTaaghche($status)
+    public function exportExcelContradictionsTaaghche($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsTaaghcheExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
     public function exportExcelContradictionsDigi($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
@@ -237,15 +242,19 @@ class ExcelController extends Controller
 
     }
 
-    public function exportExcelContradictionsShahreKetabOnline($status)
+    public function exportExcelContradictionsShahreKetabOnline($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
 
-        return Excel::download(new ContradictionsShahreKetabOnlineExport($status), 'لیست مغایرت شهرکتاب آنلاین' . time() . '.xlsx');
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsShahreKetabOnlineExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
-   /* public function exportExcelContradictionsBarkhatBook($status,$excel_name)
+    public function exportExcelContradictionsBarkhatBook($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
 
         $status =  explode(',',$status);
@@ -254,8 +263,8 @@ class ExcelController extends Controller
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsBarkhatExport($status,$contradictionsExcelExport->id), $excel_name);
-    }*/
+        return Excel::download(new ContradictionsBarkhatExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
 
 
     public static function create_excel($row, $list, $file_name, $sheet_name, $requestFormat)

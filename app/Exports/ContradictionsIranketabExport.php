@@ -31,21 +31,22 @@ class ContradictionsIranketabExport implements FromCollection, WithHeadings
 
         if ($excel_type == 'unallowed') {
             $report = BookIranketab::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'traslate','price', 'check_status', 'cats', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.iranketab.ir/book/' . $item->recordNumber;
+                $report[$key]->traslate = ($item->traslate == 1) ? 'ترجمه': 'تالیف';
+
+            }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    $report[$key]->recordNumber = 'https://www.iranketab.ir/book/' . $item->recordNumber;
-                    WebSiteBookLinksDefects::create(array('siteName' => 'iranketab', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'iranketab', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
             $report = BookIranketab::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'traslate', 'price', 'check_status', 'tags', 'has_permit', 'images')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
-                if ($item->traslate == 1) {
-                    $report[$key]->traslate = 'ترجمه';
-                } else {
-                    $report[$key]->traslate = 'تالیف';
-                }
+                $report[$key]->traslate = ($item->traslate == 1) ? 'ترجمه': 'تالیف';
 
                 $report[$key]->tags = '';
                 if ($item->check_status == 2) {
