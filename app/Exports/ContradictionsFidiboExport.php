@@ -30,11 +30,12 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
 
         if ($excel_type == 'unallowed') {
-            $report = BookFidibo::select('id','recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'check_status', 'tags', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = BookFidibo::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'check_status', 'tags', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    WebSiteBookLinksDefects::create(array('siteName' => 'ّfidibo', 'book_links' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    $report[$key]->recordNumber = 'https://www.fidibo.ir/book/' . $item->recordNumber;
+                    WebSiteBookLinksDefects::create(array('siteName' => 'ّfidibo', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {

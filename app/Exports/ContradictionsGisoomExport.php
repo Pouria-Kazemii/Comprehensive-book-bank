@@ -33,7 +33,9 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name', 'recordNumber' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    $report[$key]->recordNumber = 'https://www.gisoom.ir/book/' . $item->recordNumber;
+
+                    WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => $item->recordNumber, 'recordNumber' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {

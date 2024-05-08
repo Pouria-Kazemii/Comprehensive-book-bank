@@ -2,14 +2,14 @@
 
 namespace App\Exports;
 
-use App\Models\BookShahreKetabOnline;
+use App\Models\BookKetabrah;
 use App\Models\WebSiteBookLinksDefects;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 
-class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadings
+class ContradictionsKetabrahExport implements FromCollection, WithHeadings
 {
     public function __construct($excel_type, $status, $excel_id, $saveInWebsiteBooklinksDefects = 0)
     {
@@ -27,23 +27,41 @@ class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadi
         $data = array();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
-            $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = BookKetabrah::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status',  'tags','has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
+                    $report[$key]->recordNumber = 'https://www.ketabrah.ir/book_name/book/'.$item->recordNumber;
                     WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
-            $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
+            $report = BookKetabrah::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'tags', 'has_permit', 'images')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
                 if ($item->translate == 1) {
                     $report[$key]->translate = 'ترجمه';
                 } else {
                     $report[$key]->translate = 'تالیف';
                 }
+                if ($item->fileSize != NULL and $item->price != NULL) {
+                    $report[$key]->fileSize = 'چاپی و الکترونیکی';
+                } elseif ($item->fileSize != NULL and $item->price == 0) {
+                    $report[$key]->fileSize = 'الکترونیکی';
+                } elseif ($item->fileSize == NULL and $item->price > 0) {
+                    $report[$key]->fileSize = 'چاپی';
+                } else {
+                    $report[$key]->fileSize = 'ناموجود';
+                }
 
+                $report[$key]->tags = '';
+                if ($item->check_status == 2) {
+                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
+                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
+                        if (strtotime($georgianCarbonDate) > strtotime('2022-03-21 00:00:00')) {
+                            $report[$key]->tags = '*';
+                        }
+                    }
+                }
                 if ($item->check_status == 1) {
                     $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
                 } elseif ($item->check_status == 2) {
@@ -55,6 +73,15 @@ class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadi
                 }
 
 
+                $report[$key]->images = '';
+                if ($item->has_permit == 2) {
+                    if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
+                        $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $item->saleNashr)->toCarbon();
+                        if (strtotime($georgianCarbonDate) < strtotime('2024-03-29 00:00:00')) {
+                            $report[$key]->images = '**';
+                        }
+                    }
+                }
 
                 if ($item->has_permit == 1) {
                     $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
@@ -81,7 +108,7 @@ class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadi
 
 
 
-                $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.ketabrah.ir/book_name/book/'.$item->recordNumber;
             }
         }
         return $report;
@@ -89,6 +116,6 @@ class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadi
 
     public function headings(): array
     {
-        return ["لینک کتاب در شهرکتاب آنلاین", "عنوان کتاب", "ناشر", "تاریخ انتشار", "تعداد صفحه", "شابک", "تالیف یا ترجمه", "زبان", "قیمت", "وضعیت در خانه کتاب", "وضعیت در اداره کتاب"];
+        return ["لینک کتاب در کتابراه", "عنوان کتاب", "ناشر", "تاریخ انتشار", "تعداد صفحه", "شابک", "تالیف یا ترجمه", "زبان", "قیمت", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
     }
 }
