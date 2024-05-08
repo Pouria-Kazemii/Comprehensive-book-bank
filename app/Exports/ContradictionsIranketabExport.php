@@ -30,7 +30,7 @@ class ContradictionsIranketabExport implements FromCollection, WithHeadings
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
 
         if ($excel_type == 'unallowed') {
-            $report = BookIranketab::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'traslate','price', 'check_status', 'cats', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = BookIranketab::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'traslate','price', 'check_status', 'tags', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->main_recordNumber =  $item->recordNumber;
                 $report[$key]->recordNumber = 'https://www.iranketab.ir/book/' . $item->recordNumber;
