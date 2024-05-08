@@ -28,7 +28,7 @@ class Contradictions30bookExport implements FromCollection, WithHeadings
         // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
-            $report = Book30book::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'tarjome','price', 'check_status', 'cats', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = Book30book::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'tarjome','price', 'check_status', 'cats', 'has_permit', 'image', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->main_recordNumber =  $item->recordNumber;
                 $report[$key]->recordNumber = 'https://www.30book.com/book/' . $item->recordNumber;

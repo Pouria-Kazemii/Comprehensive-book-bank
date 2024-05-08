@@ -33,7 +33,7 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
             $report = BookFidibo::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'check_status', 'tags', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->main_recordNumber =  $item->recordNumber;
-                $report[$key]->recordNumber = 'https://www.fidibo.ir/book/' . $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.fidibo.com/book/' . $item->recordNumber;
                 $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
             }
             if ($saveInWebsiteBooklinksDefects == 1) {
