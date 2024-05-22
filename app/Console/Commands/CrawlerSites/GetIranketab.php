@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\CrawlerSites;
 
 use Goutte\Client;
 use App\Models\Author;
@@ -13,6 +13,8 @@ use App\Models\Crawler as CrawlerM;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 use Exception;
+use Illuminate\Support\Facades\Log;
+
 class GetIranketab extends Command
 {
     /**
@@ -46,48 +48,54 @@ class GetIranketab extends Command
      */
     public function handle()
     {
+        // die('stop'); /// stop from kandoonews
+        
+        
         $illegal_characters = explode(",", "ç,Ç,æ,œ,À,Á,Â,Ã,Ä,Å,Æ,á,È,É,Ê,Ë,é,í,Ì,Í,Î,Ï,ð,Ñ,ñ,Ò,Ó,Ô,Õ,Ö,ó,ú,Ù,Ú,Û,Ü,à,ã,è,ì,ò,õ,ō,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
         $Allowed_characters = explode(",", "c,C,ae,oe,A,A,A,A,A,A,AE,a,E,E,E,E,e,i,I,I,I,I,o,N,n,O,O,O,O,O,o,u,U,U,U,U,a,a,e,i,o,o,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
 
         if ($this->argument('miss') && $this->argument('miss') == 1) {
             try {
-                $lastCrawler = CrawlerM::where('type', 2)->where('status', 1)->orderBy('end', 'ASC')->first();
+                $lastCrawler = CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('status', 1)->orderBy('end', 'ASC')->first();
                 if (isset($lastCrawler->end)) {
-                    $startC = $lastCrawler->start;
+                    $startC = $lastCrawler->last;
                     $endC   = $lastCrawler->end;
-                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+
+                    $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
                     $newCrawler = $lastCrawler;
                 }
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         } else {
             try {
-                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-IranKetab-%')->where('type', 2)->orderBy('end', 'desc')->first();
-                if (isset($lastCrawler->end)) $startC = $lastCrawler->end + 1;
-                else $startC = 24;
-                $endC   = $startC + CrawlerM::$crawlerSize;
-                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
+                $lastCrawler = CrawlerM::where('name', 'LIKE', 'Crawler-IranKetab-%')->where('status', 2)->orderBy('end', 'desc')->first();
+                if (isset($lastCrawler) and !empty($lastCrawler)) {
+                    $startC = $lastCrawler->end ;
+                } else {
+                    $startC = 24;
+                }
+
+                // $endC = $startC + CrawlerM::$crawlerSize;
+                $endC = $startC + 1;
+                $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
                 $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-IranKetab-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1, 'type' => 2));
             } catch (\Exception $e) {
-                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ---------=-- ");
+                $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         }
-
-        // $recordNumber = $startC = $endC = 9037;
-
-
+        
         if (isset($newCrawler)) {
 
             $client = new Client(HttpClient::create(['timeout' => 30]));
 
-            $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
-            $bar->start();
+            // $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
+            // $bar->start();
 
             $recordNumber = $startC;
-            while ($recordNumber <= $endC) {
+            while ($recordNumber < $endC) {
                 $timeout= 120;
-                $url = 'https://www.iranketab.ir/book/' . $recordNumber;
+                $url = 'https://kandoonews.com/iranketab/' . $recordNumber.'/';
                 $ch = curl_init($url);
                 curl_setopt($ch, CURLOPT_FAILONERROR, true);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -96,28 +104,53 @@ class GetIranketab extends Command
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true );
                 curl_setopt($ch, CURLOPT_AUTOREFERER, true );
                 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout );
-                curl_setopt($ch, CURLOPT_TIMEOUT, $timeout );
-                curl_setopt($ch, CURLOPT_MAXREDIRS, 10 );
-                curl_setopt($ch, CURLOPT_REFERER, 'http://www.google.com/');
+                // curl_setopt($ch, CURLOPT_TIMEOUT, $timeout );
+                // curl_setopt($ch, CURLOPT_MAXREDIRS, 10 );
                 $content = curl_exec($ch);
-                if(curl_errno($ch))
-                {
-                    $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                    echo 'error:' . curl_error($ch);
-                }
-                else
-                {
+                $redirectedUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+                curl_close($ch);
+            // dd($content);
+            if (str_contains($content, 'Transferring to the website')) {
+                $this->info('Transferring to the website');
+            }
+            if (str_contains($content, 'itemid')) {
+                $this->info('id itemid');
+            }
+            
+            //  die('stop');
+            // dd('stop');
+
+                // if(curl_errno($ch))  // not work in server
+                // {
+                //     $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
+                //     echo 'error:' . curl_error($ch);
+                // }
+                // else
+                // {
                     try {
                         $this->info(" \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ");
-                        $crawler = $client->request('GET', 'https://www.iranketab.ir/book/' . $recordNumber);
+                        $crawler = $client->request('GET', 'https://kandoonews.com/iranketab/' . $recordNumber.'/');
                         $status_code = $client->getInternalResponse()->getStatusCode();
                     } catch (\Exception $e) {
                         $crawler = null;
                         $status_code = 500;
-                        $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ---------=-- ");
+                        $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                     }
     
-                    if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' && $crawler->filterXPath('//*[@itemid="' . $recordNumber . '"]')->count() > 0) {
+                    $this->info($url);
+                    $this->info($redirectedUrl);
+
+                    $redirectedUrl = (str_contains($redirectedUrl,"https://kandoonews.com/iranketab/")) ? str_replace("https://kandoonews.com/iranketab/", '', $redirectedUrl) : $redirectedUrl;
+                    $redirectedUrl = (str_contains($redirectedUrl,"/")) ? str_replace("/", '', $redirectedUrl) : $redirectedUrl;
+                    $slug_array  = explode("-", $redirectedUrl);
+                    $this->info($slug_array[0]);
+                    $parentNumber = $slug_array[0];
+
+                    $this->info($parentNumber);
+                    $this->info($crawler->filterXPath('//*[@itemid="' . $parentNumber . '"]')->count());
+                    // dd($crawler->filter('body')->text());
+                    if ($status_code == 200 &&  $crawler->filter('body')->text('') != ''  && $crawler->filterXPath('//*[@itemid="' . $parentNumber . '"]')->count() > 0 ) {
+                        $this->info('in body');
                         //tags
                         if($crawler->filter('body div.product-description')->count() > 0){
                             $bookDesc = $crawler->filter('body div.product-description')->text();
@@ -163,9 +196,10 @@ class GetIranketab extends Command
                         }
                         $bookFeature = json_encode($featuresResult, JSON_UNESCAPED_UNICODE);
                         /////////////////////////////////////////////////////////////////////////////////////
-                        $allbook = $crawler->filterXPath('//*[@itemid="' . $recordNumber . '"]')->filter('div.product-container div.clearfix');
+                        $allbook = $crawler->filterXPath('//*[@itemid="' . $parentNumber . '"]')->filter('div.product-container div.clearfix');
                         $refCode = md5(time());
                         foreach ($allbook->filter('div.clearfix') as $book) {
+                            $this->info('books');
                             unset($row);
                             $row = new Crawler($book);
                             unset($filtered);
@@ -195,7 +229,7 @@ class GetIranketab extends Command
                                             } catch (\Exception $e) {
                                                 $author_crawler = null;
                                                 $author_status_code = 500;
-                                                $this->info(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ---------=-- ");
+                                                $this->info(" \n ---------- Failed Get author " . $authorLink->attr('href') . "              ------------ ");
                                             }
                                             if ($author_status_code == 200 &&  $author_crawler->filter('body')->text('') != '') {
                                                 unset($authorData);
@@ -259,7 +293,7 @@ class GetIranketab extends Command
                                                 } catch (\Exception $e) {
                                                     $translator_crawler = null;
                                                     $translator_status_code = 500;
-                                                    $this->info(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ---------=-- ");
+                                                    $this->info(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ------------ ");
                                                 }
                                                 if ($translator_status_code == 200 &&  $translator_crawler->filter('body')->text('') != '') {
         
@@ -316,8 +350,12 @@ class GetIranketab extends Command
                                 // $filtered['prizes']='';
                                 // $filtered['saveBook']='';
                                 if(isset($filtered['recordNumber']) && $filtered['recordNumber'] >0){
-                                    $selected_book = BookIranketab::where('recordNumber', $filtered['recordNumber'])->first();
-                                    if ($selected_book == null) {
+                                    $filtered['recheck_info'] = 1;
+                                    $selected_book = BookIranketab::where('recordNumber', $filtered['recordNumber'])->firstOrNew();
+                                    $selected_book->fill($filtered);
+                                    // dd($selected_book);
+                                    $selected_book->save();
+                                    /*if ($selected_book == null) {
                                         try {
                                             BookIranketab::create($filtered);
                                             $this->info(" \n ----------Save book info              ---------- ");
@@ -327,9 +365,10 @@ class GetIranketab extends Command
                                             $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
                                         }
                                     }else{
+                                        BookIranketab::update($filtered);
                                         $this->info(" \n ---------- Book info is exist             ---------- ");
             
-                                    }
+                                    }*/
                                 }else{
                                     $this->info(" \n ---------- This url does not include the book             ---------- ");
                                 }
@@ -340,17 +379,20 @@ class GetIranketab extends Command
                         //var_dump($filtered);
                         // exit;
                     }else{
-                        $this->info(" \n ---------- Inappropriate Content              ---------=-- ");
+                        $this->info(" \n ---------- Inappropriate Content              ------------ ");
                     }    
-                }
+
+               // }
               
                 // $bar->advance();
+                CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
             }
             $newCrawler->status = 2;
             $newCrawler->save();
-            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ---------=-- ");
-            $bar->finish();
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+            // $bar->finish();
         }
+        
     }
 }

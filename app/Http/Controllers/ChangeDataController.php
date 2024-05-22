@@ -3,23 +3,24 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use App\Models\BookK24;
+// use App\Models\BookK24;
 use App\Models\BookDigi;
 use App\Models\Book30book;
 use App\Models\BookGisoom;
 use App\Models\BookirBook;
-use App\Models\BookirRules;
-use Illuminate\Http\Request;
+
 use App\Models\BookIranketab;
 use App\Models\BookirPartner;
 use App\Models\BookirPartnerrule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Models\BookIranKetabPartner;
-use DateTime;
+
+
 
 class ChangeDataController extends Controller
 {
+
     public function check_is_translate($roleid, $from, $limit, $order)
     {
 
@@ -352,6 +353,42 @@ class ChangeDataController extends Controller
     }
 
 
+    public function consensus_similar_books_isbn($limit){
+        bookirbook::where('xparent',0)->orderBy('xid','DESC')->chunk(100, function ($books) {
+            foreach($books as $book){
+                $same_books = BookirBook::where('xisbn3',$book->xisbn3)->where('xparent','!=',0)->get();
+                
+            }
+        });
+
+    }
+    public function consensus_similar_books_by_iranketab_parentId_new($limit)
+    {
+        DB::enableQueryLog();
+        /////////////////////////////////////////پرونده سازی براساس پرونده های خانه کتاب /////////////////
+        // سرگروه های پرونده در ایران کتاب
+        $parentIranketabBooks = BookIranketab::whereColumn('parentId', 'recordNumber')->skip(0)->take($limit)->get();
+        foreach($parentIranketabBooks as $parentIranketabBook){
+            //  کتاب های پرونده کتاب در ایران کتاب 
+            $childrenIranketabBooks = BookIranketab::select('shabak')->where('parentId',$parentIranketabBook->recordNumber )->get();
+            // شابک های پرونده کتاب در ایران کتاب
+            $dossier_isbns = array_unique(array_filter($childrenIranketabBooks->pluck('shabak')->all()));
+            // کتاب های مشابه پرونده در خانه کتاب
+            // $books = BookirBook::whereIN('xisbn',$dossier_isbns)->orWhereIN('xisbn2',$dossier_isbns)->orWhereIN('xisbn3',$dossier_isbns)->get();
+
+            // پیدا کردن سرگروه براساس خانه کتاب  
+            // سال چاپ پایین تر و شماره چاپ پایین تر = اولین کتاب چاپ شده در پرونده
+            $bookIrBookParent = BookirBook::whereIN('xisbn3',$dossier_isbns)/*->orWhereIN('xisbn2',$dossier_isbns)->orWhereIN('xisbn',$dossier_isbns)*/->orderBy('xpublishdate', 'DESC')->orderBy('xprintnumber', 'ASC')->first();
+            BookirBook::whereIN('xisbn3',$dossier_isbns)/*->orWhereIN('xisbn2',$dossier_isbns)->orWhereIN('xisbn',$dossier_isbns)*/->update(['xtempparent' => $bookIrBookParent->xid]);
+            BookirBook::where('xid',$bookIrBookParent->xid)->update(['xtempparent' => -1]);
+        }
+        ///////////////////////////////////////// پرونده سازی براساس نام کتاب ////////////////////////////////////////
+        ///////////////////////////////////////// پرونده سازی کتا ب های خارجی براساس نام نویسنده ////////////////////////////////////////
+
+        // echo '<pre>'; print_r($books);
+        $query = DB::getQueryLog();
+        dd($query);
+    }
     public function consensus_similar_books_by_iranketab_parentId($limit)
     {
         $allIranketabBooks = BookIranketab::where('temp_book_master_id', 0)->where('enTitle', '!=', '')->skip(0)->take($limit)->get();

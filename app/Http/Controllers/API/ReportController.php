@@ -16,7 +16,7 @@ class ReportController extends Controller
     // publisher
     public function publisher(Request $request)
     {
-        
+
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -388,7 +388,7 @@ class ReportController extends Controller
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50; 
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $dioData = null;
         $totalRows = 0;
         $totalPages = 0;
@@ -466,7 +466,7 @@ class ReportController extends Controller
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50; 
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $subjectsData = null;
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
@@ -484,7 +484,6 @@ class ReportController extends Controller
                 $subjectsData[$subject->xid] = $subject->xsubject;
             }
         }
-
         if($subjectsData != null and count($subjectsData) > 0)
         {
             foreach ($subjectsData as $subjectId => $subjectTitle)
@@ -622,7 +621,7 @@ class ReportController extends Controller
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        
+
         $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xpublishdate";
         $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
@@ -806,7 +805,7 @@ class ReportController extends Controller
 
         $yearStart = ($yearStart > 0) ? BookirBook::generateMiladiDate($yearStart) : "";
         $yearEnd = ($yearEnd > 0) ? BookirBook::generateMiladiDate($yearEnd, true) : "";
-                
+
         // read
         if($publisherId > 0)
         {

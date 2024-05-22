@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\CorrectInfo;
 
 use App\Models\BookirBook;
 use App\Models\BookirPartnerrule;

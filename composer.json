@@ -8,7 +8,11 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3",
+        "php": "^7.4",
+        "ext-curl": "*",
+        "ext-intl": "*",
+        "ext-json": "*",
+        "ext-mongodb": "*",
         "browner12/helpers": "^3.1",
         "doctrine/dbal": "^3.3",
         "fabpot/goutte": "^4.0",
@@ -21,6 +25,9 @@
         "laravel/framework": "^8.0",
         "laravel/tinker": "^2.0",
         "maatwebsite/excel": "^3.1",
+        "makhov/phpmorphy": "dev-master",
+        "mongodb/laravel-mongodb": "^3.8",
+        "mongodb/mongodb": "^1.12",
         "morilog/jalali": "3.*",
         "tymon/jwt-auth": "^1.0"
     },

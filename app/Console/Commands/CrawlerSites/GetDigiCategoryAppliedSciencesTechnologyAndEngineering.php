@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Console\Commands\CrawlerSites;
+
+use Illuminate\Console\Command;
+use App\Models\BookDigi;
+use App\Models\Crawler as CrawlerM;
+
+class GetDigiCategoryAppliedSciencesTechnologyAndEngineering extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'get:digiCategoryAppliedSciencesTechnologyAndEngineering {crawlerId}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Get DigiKala Book Command';
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle()
+    {
+        $search_books_category = 'category-applied-sciences-technology-and-engineering';
+        $function_caller = $search_books_category;
+        $startC = 1;
+        $endC = 2;
+        try {
+
+            $this->info(" \n ---------- Create Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Crawler-digi-' . $function_caller . '-' . $this->argument('crawlerId'), 'start' => $startC, 'end' => $endC, 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
+
+            $pageCounter = $startC;
+            
+            while ($pageCounter <= $endC) {
+
+                try {
+                    $pageUrl = 'https://www.digikala.com/ajax/search/' . $search_books_category . '/?pageno=' . $pageCounter . '&sortby=1';
+                    $this->info(" \n ---------- Page URL  " . $pageUrl . "              ------------ ");
+                    $json = file_get_contents($pageUrl);
+                    $headers = get_headers($pageUrl);
+                    $status_code = substr($headers[0], 9, 3);
+                } catch (\Exception $e) {
+                    $crawler = null;
+                    $status_code = 500;
+                }
+                $this->info(" \n ---------- STATUS Get  " . $status_code . "              ------------ ");
+
+                if ($status_code == "200") {
+
+                    $products_all = json_decode($json);
+
+                    $bar = $this->output->createProgressBar(count($products_all->data->trackerData->products));
+                    $bar->start();
+
+                    foreach ($products_all->data->trackerData->products as $pp) {
+                        if (check_digi_id_is_book($pp->product_id)) {
+                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
+                            $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
+                            updateDigiBook($pp->product_id, $bookDigi,  'checkBook'.$function_caller);
+                        }
+
+                        $bar->advance();
+                    }
+                    $bar->finish();
+                }
+                $newCrawler->last = $pageCounter;
+                $newCrawler->save();
+                $pageCounter++;
+            }
+            $newCrawler->status = 2;
+            $newCrawler->save();
+            $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
+        }
+    }
+}

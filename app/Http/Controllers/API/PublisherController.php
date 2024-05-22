@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\BookirBook;
 use App\Models\BookirRules;
+use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Http\Request;
 use App\Models\BookirPartner;
 use App\Models\BookirPublisher;
@@ -130,6 +131,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
+        $status = 404;
 
         // read books for year printCount by title
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
@@ -162,6 +164,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
+        $status = 404;
 
         // read books for year printCount by circulation
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
@@ -194,6 +197,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $dataMaster = null;
+        $status = 404 ;
 
         // read
         $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
@@ -370,7 +374,7 @@ class PublisherController extends Controller
                 $role_creators = $collection->filter(function ($item) use ($role_item) {
                     return data_get($item, 'xroleid') == $role_item;
                 });
-                // dd($$role_creators);
+                // dd($role_creators);
                 $role_creator_collection = $role_creators->pluck('xcreatorid')->all();
                 $role_creator_collection =  array_unique($role_creator_collection);
                 // dd($role_creator_collection);
@@ -408,5 +412,5 @@ class PublisherController extends Controller
             $status
         );
     }
-  
+
 }

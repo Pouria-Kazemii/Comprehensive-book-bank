@@ -13,9 +13,9 @@ class ChangeRateInBookiranketabTable extends Migration
      */
     public function up()
     {
-        Schema::table('bookIranketab', function (Blueprint $table) {
-            $table->float('rate')->nullable()->change();
-        });
+//        Schema::table('bookIranketab', function (Blueprint $table) {
+//            $table->float('rate')->nullable()->change();
+//        });
     }
 
     /**

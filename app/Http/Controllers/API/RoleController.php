@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     // list subject
-  
+
     // search
     public function search(Request $request)
     {

@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Crawler extends Model
 {
     protected $table = 'crawler';
-    protected $fillable = ['name','start','end','status','type'];
-    static $crawlerSize = 40000;
+    protected $fillable = ['name','start','end','status','type','last'];
+    static $crawlerSize = 100000;
 }
