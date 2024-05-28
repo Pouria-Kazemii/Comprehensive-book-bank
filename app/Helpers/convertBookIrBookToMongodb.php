@@ -13,12 +13,14 @@ if (!function_exists('convertCreators')) {
     function convertCreators($xbookid)
     {
         $output = [];
-        $processedCreator = [];
+        $processedCreatorById = [];
+        $processedCreatorByName = [];
         $books = BookirPartnerrule::where('xbookid', $xbookid)->get();
         foreach ($books as $book) {
-            if (!in_array($book->xcreatorid, $processedCreator)) {
+            if (!in_array($book->xcreatorid, $processedCreatorById)) {
                 $creator = BookIrCreator::where('xsqlid', '=', $book->xcreatorid)->get();
-                if (count($creator) > 0) {
+
+                if (count($creator) > 0 and !in_array($creator[0]->xcreatorname , $processedCreatorByName)) {
                     $output [] = [
                         'xcreator_id' => $creator[0]->_id,
                         'xcreatorname' => $creator[0]->xcreatorname,
@@ -26,7 +28,8 @@ if (!function_exists('convertCreators')) {
                         'xblack' => $creator[0]->xblack,
                         'xrule' => BookirRules::where('xid', '=', $book->xroleid)->pluck('xrole')[0]
                     ];
-                    $processedCreator [] = $book->xcreatorid;
+                    $processedCreatorById [] = $book->xcreatorid;
+                    $processedCreatorByName [] = $creator[0]->xcreatorname;
                 }
             }
         }

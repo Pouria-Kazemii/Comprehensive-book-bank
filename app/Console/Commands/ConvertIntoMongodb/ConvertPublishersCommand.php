@@ -40,7 +40,7 @@ class ConvertPublishersCommand extends Command
         {
             $this::info("Start converting bookir_publishers table");
             $startTime = microtime(true);
-            BookirPublisher::chunk(50, function ($books)  {
+            BookirPublisher::chunk(1000, function ($books)  {
                 foreach ($books as $book) {
                     ConvertPublishersJob::dispatch($book);
                 }

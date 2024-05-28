@@ -13,6 +13,7 @@ class BookDossier extends Model
     protected $primaryKey = '_id';
 
     protected $fillable = [
+        'xbooks_id',
         'xmain_name',
         'xtotal_page' ,
         'xtotal_price' ,

@@ -46,16 +46,10 @@ class ConvertCreatorsCommand extends Command
         $this::info("Start converting bookir_creators table");
 
         $startTime = microtime(true);
-        DB::table('bookir_partner')
-        ->whereRaw('xcreatorname IN (
-                SELECT xcreatorname
-                FROM bookir_partner
-                GROUP BY xcreatorname
-                HAVING COUNT(*) = 1
-            )')
-        ->orderBy('xcreatorname')
-        ->chunk(1000, function ($books) {
-            ConvertCreatorsJob::dispatch($books);
+        BookirPartner::chunk(1000, function ($books) {
+            foreach ($books as $book) {
+                ConvertCreatorsJob::dispatch($book);
+            }
         });
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

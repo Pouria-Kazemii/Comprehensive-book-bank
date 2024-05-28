@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb;
 
 use App\Jobs\ConvertBookDossierJob;
+use App\Jobs\ConvertTranslatedBookDossierJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Console\Command;
 
@@ -42,8 +43,11 @@ class ConvertBookir_bookIntoBook_dossier extends Command
         $this::info("Start converting book_dossier table");
 
         $startTime = microtime(true);
+        ConvertTranslatedBookDossierJob::dispatch();
+        $this->info('translated books done');
+        //TODO : Non translate books have very complicate rules.
+        //ConvertBookDossierJob::dispatch();
 
-        ConvertBookDossierJob::dispatch();
 
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

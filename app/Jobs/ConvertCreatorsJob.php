@@ -31,16 +31,13 @@ class ConvertCreatorsJob implements ShouldQueue
      */
     public function handle()
     {
-        for($i=0 ; $i < count($this->partners); $i++) {
-            $mongoData = [] ;
-                $mongoData = [
-                "xsqlid" => $this->partners[$i]->xid,
-                'xcreatorname' => $this->partners[$i]->xcreatorname,
-                'ximageurl' => null,
-                'xwhite' => $this->partners[$i]->xwhite,
-                'xblack' => $this->partners[$i]->xblack
+        $mongoData = [
+            "xsqlid" => $this->partners->xid,
+            'xcreatorname' => $this->partners->xcreatorname,
+            'ximageurl' => null,
+            'xwhite' => $this->partners->xwhite,
+            'xblack' => $this->partners->xblack
             ];
             BookIrCreator::create($mongoData);
-        }
     }
 }

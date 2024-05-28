@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Client;
 
-class ConvertBookDossierJob implements ShouldQueue
+class ConvertTranslatedBookDossierJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -33,9 +33,13 @@ class ConvertBookDossierJob implements ShouldQueue
      */
     public function handle()
     {
+        $client = new Client();
+        $collection = $client->datacollector->bookir_books;
+        $collection->createIndex(['xname' => 'text']);
+
         $pipeline1 = [
             ['$match' => [
-                'is_translate' => 1
+                'is_translate' => 2
             ]],
         ];
         $books =BookIrBook2::raw(function($collection) use ($pipeline1) {
@@ -45,7 +49,7 @@ class ConvertBookDossierJob implements ShouldQueue
         $processedBooks = [];
 
         foreach ($books as $book1) {
-            // Skip if book1 has already been processed
+
             if (in_array($book1->_id, $processedBooks)) {
                 continue;
             }
@@ -57,7 +61,7 @@ class ConvertBookDossierJob implements ShouldQueue
             $pipeline = [
 
                 ['$match' => [
-                    'is_translate' => 1
+                    'is_translate' => 2
                 ]],
 
                 ['$project' => [
@@ -111,7 +115,6 @@ class ConvertBookDossierJob implements ShouldQueue
                     ]
                 ]],
 
-                // Final match stage with the $or conditions
                 ['$match' => [
                     '$or' => [
                         ['xisbn3' => $book1->xisbn3],
@@ -133,6 +136,7 @@ class ConvertBookDossierJob implements ShouldQueue
             $relatedBooks = BookIrBook2::raw(function($collection) use ($pipeline) {
                 return $collection->aggregate($pipeline);
             });
+
             $mainId = $this->takeMain($relatedBooks)['_id'];
             //TODO question if there isn't eny writer . instead have poet
             if (count($relatedBooks) == 1) {
@@ -152,8 +156,8 @@ class ConvertBookDossierJob implements ShouldQueue
                     $relatedBookWords = $this->takeWords($relatedBook->xname);
                     $relatedBookSubjects = $this->takeSubjects($relatedBook);
 
-                    if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) / 2.5) and
-                        count(array_intersect($mainSubjects, $relatedBookSubjects)) >= 2) {
+                    if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) /2) and
+                        count(array_intersect($mainSubjects, $relatedBookSubjects)) >= 2 ) {
                         $booksOfDossier [] = $relatedBook;
                         $processedBooks [] = $relatedBook->_id;
                     }
@@ -166,7 +170,7 @@ class ConvertBookDossierJob implements ShouldQueue
                 $book1Words = $this->takeWords($book1->xname);
                 $book1Subjects = $this->takeSubjects($book1);
 
-                if (count(array_intersect($mainWords, $book1Words)) >= intval(count($mainWords) / 2.5) and
+                if (count(array_intersect($mainWords, $book1Words)) >= intval(count($mainWords) / 2) and
                     count(array_intersect($mainSubjects, $book1Subjects)) >= 2) {
                     $booksOfDossier [] = $book1;
 
@@ -179,7 +183,7 @@ class ConvertBookDossierJob implements ShouldQueue
                         }
                         $relatedBookWords = $this->takeWords($relatedBook->xname);
                         $relatedBookSubjects = $this->takeSubjects($relatedBook);
-                        if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) / 2.5) and
+                        if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) / 2) and
                             count(array_intersect($mainSubjects, $relatedBookSubjects)) >= 2) {
                             $booksOfDossier [] = $relatedBook;
                             $processedBooks [] = $relatedBook->_id;
@@ -202,10 +206,8 @@ class ConvertBookDossierJob implements ShouldQueue
 
             $mongoData = array_merge($firstPartOfArray, $this->takeOthersField($booksOfDossier));
 
-            // Create BookDossier document
             BookDossier::create($mongoData);
 
-            // Mark book1 as processed
             $processedBooks[] = $book1->_id;
         }
     }
@@ -328,7 +330,6 @@ class ConvertBookDossierJob implements ShouldQueue
         }
         return ['name' =>$smallestXname , '_id' =>$id];
     }
-
 
     private function getCreators($id)
     {
