@@ -71,7 +71,7 @@ class GetFidiboContradictionsList extends Command
                         // } else {
                         //     $update_data['check_status'] = 3;
                         // }
-                        // if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
+                        // if ($georgianCarbonDate > date('2024-03-29 00:00:00')) {
                         $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
                         if (!empty($ershad_book)) {
                             $update_data['has_permit'] = 1;
@@ -90,6 +90,18 @@ class GetFidiboContradictionsList extends Command
                     BookFidibo::where('id', $book_data->id)->update($update_data);
                 }
             }
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-Fidibo-' . $this->argument('rowId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
 
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {
@@ -116,7 +128,7 @@ class GetFidiboContradictionsList extends Command
                     }
                 }
             });
-
+            
             $newCrawler->status = 2;
             $newCrawler->save();
         }

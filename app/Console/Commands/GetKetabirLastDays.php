@@ -52,7 +52,7 @@ class GetKetabirLastDays extends Command
         $lastDate = CrawlerM::where('name','Crawler-Ketabir-Last-days-1')->where('status',2)->orderBy('id','DESC')->first()->start;
         $lastDate= substr_replace($lastDate, '-', 4, 0);
         $lastDate= substr_replace($lastDate, '-', 7, 0);
-
+        
         $to_date = date($lastDate);
         $from_date = date("Y-m-d", strtotime("-30 days", strtotime($to_date)));
 
@@ -130,16 +130,16 @@ class GetKetabirLastDays extends Command
                 foreach ($books_content->items as $item) {
                     $recordNumber = $item->id;
                     $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
-
+                   
 
                     if(empty($bookIrBook->xpageurl)){
                         MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetKetabirLastDays-Command']);
                     }
 
-
+                    
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
-
+                    
                     $bar->advance();
                 }
 
@@ -150,11 +150,11 @@ class GetKetabirLastDays extends Command
             $newCrawler->save();
             $bar->finish();
 
-
+           
         }
-
+        
         $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
     }
 
-
+   
 }

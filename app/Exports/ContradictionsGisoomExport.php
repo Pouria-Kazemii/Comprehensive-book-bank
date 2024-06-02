@@ -29,11 +29,14 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
         if ($excel_type == 'unallowed') {
             $report = BookGisoom::select('recordNumber', 'title', 'nasher', 'tedadSafe', 'saleNashr', 'shabak10', 'shabak13', 'ghatechap', 'check_status', 'catText', 'has_permit', 'image', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
-
+            foreach ($report as $key => $item) {
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.gisoom.ir/book/' . $item->recordNumber;
+            }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => 'https://www.gisoom.com/book/' . $item->recordNumber . '/book_name', 'recordNumber' => $item->recordNumber, 'bookId' => $item->id, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    WebSiteBookLinksDefects::create(array('siteName' => 'gisoom', 'book_links' => $item->recordNumber, 'recordNumber' => $item->main_recordNumber, 'bookId' => $item->recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
@@ -57,7 +60,7 @@ class ContradictionsGisoomExport implements FromCollection, WithHeadings
                 if ($item->has_permit == 2) {
                     if ((isset($item->saleNashr) and $item->saleNashr != null and !empty($item->saleNashr))) {
                         $georgianCarbonDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', substr($item->saleNashr, 0, 4) . '/01/01')->toCarbon();
-                        if (strtotime($georgianCarbonDate) < strtotime('2018-03-21 00:00:00')) {
+                        if (strtotime($georgianCarbonDate) < strtotime('2024-03-29 00:00:00')) {
                             $report[$key]->image = '**';
                         }
                     }

@@ -372,7 +372,7 @@ if (!function_exists('updateDigiBook')) {
             if (isset($product_info->data->product->specifications['0']->title) and $product_info->data->product->specifications['0']->title == 'مشخصات') {
                 foreach ($product_info->data->product->specifications['0']->attributes as $attribute) {
 
-                    // نویسنده تو جدول author_book_digi ذخیره میشه
+                    // نویسنده تو جدول author_book_digi ذخیره میشه 
                     if ($attribute->title == 'نویسنده') {
                         $authorsobj = Author::firstOrCreate(array("d_name" => $attribute->values['0']));
                     }
@@ -1376,7 +1376,7 @@ if (!function_exists('updateShahreketabonlineBook')) {
                     $book->images =  $book->images . '=|=' . 'https://shahreketabonline.com' . $crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap div.OtherImages a img')->attr('src');
                 }
 
-                // price
+                // price 
                 if ($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->count() > 0) {
                     $price  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->text()));
                     if (strlen($price) < 10) {
@@ -1384,7 +1384,7 @@ if (!function_exists('updateShahreketabonlineBook')) {
                     }
                 }
 
-                // desc
+                // desc 
                 if ($crawler->filter('body div.ProductDetails div.description')->count() > 0) {
                     $book->Desc  = $crawler->filter('body div.ProductDetails div.description')->text();
                 }
@@ -1506,7 +1506,7 @@ if (!function_exists('updateKetabrahBook')) {
 
         if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' and $crawler->filterXPath('//div[contains(@id, "InternalPageContents")]')->count() > 0) {
             if ($crawler->filter('article')->count() > 0) {
-                //tag
+                //tag 
                 if ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol')->count() > 0) {
                     $tagStr = '';
                     foreach ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol ol li') as $key => $cat) {
@@ -1622,7 +1622,7 @@ if (!function_exists('updateKetabrahBook')) {
                     }
                 }
 
-                // price
+                // price 
                 if ($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price')->count() > 0) {
 
                     $prices = $crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price span')->text();
@@ -1769,7 +1769,7 @@ if (!function_exists('update30Book')) {
                 echo " \n ---------- Rejected Book   ".$recordNumber."           ---------- ";
             }
         }
-
+    
     }
 }
 

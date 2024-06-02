@@ -47,7 +47,7 @@ class GetKetabejamContradictionsList extends Command
         try {
             $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-Ketabejam-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
         if (isset($newCrawler)) {
@@ -80,6 +80,19 @@ class GetKetabejamContradictionsList extends Command
                 }
             }
 
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-Ketabejam-' . $this->argument('crawlerId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
+            
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {
                 foreach ($items as $item) {

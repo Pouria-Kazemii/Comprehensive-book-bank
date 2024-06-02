@@ -21,6 +21,7 @@ use App\Exports\ContradictionsGisoomExport;
 use App\Exports\ContradictionsKetabejamExport;
 use App\Exports\NewBookEveryYearExport;
 use App\Exports\WebsiteBookLinkDigiExport;
+use App\Models\BookirBook;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
 
@@ -149,29 +150,39 @@ class ExcelController extends Controller
         return $response;
     }
 
-    public function exportExcelContradictionsFidibo($status)
+    public function exportExcelContradictionsFidibo($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        return Excel::download(new ContradictionsFidiboExport($status), 'لیست مغایرت فدیبو' . time() . '.xlsx');
-    }
-
-    public function exportExcelContradictionsTaaghche($status)
-    {
-        $status =  explode(',',$status);
-        set_time_limit(0);
-        return Excel::download(new ContradictionsTaaghcheExport($status), 'لیست مغایرت طاقچه' . time() . '.xlsx');
-    }
-
-    public function exportExcelContradictionsDigi($status)
-    {
-        $status =  explode(',',$status);
-        set_time_limit(0);
-        $excel_name = 'لیست مغایرت دیجیکالا'.time().'.xlsx';
+        $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsDigiExport($status,$contradictionsExcelExport->id), $excel_name);
+        return Excel::download(new ContradictionsFidiboExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+   
+    }
+
+    public function exportExcelContradictionsTaaghche($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsTaaghcheExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
+
+    public function exportExcelContradictionsDigi($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsDigiExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
     public function exportExcelContradictionsKetabejam($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
@@ -206,29 +217,44 @@ class ExcelController extends Controller
         return Excel::download(new WebsiteBookLinkDigiExport($excel_id), $excel_name);
     }
 
-    public function exportExcelContradictionsIranketab($status)
+    public function exportExcelContradictionsIranketab($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
-        return Excel::download(new ContradictionsIranketabExport($status), 'لیست مغایرت ایرانکتاب' . time() . '.xlsx');
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsIranketabExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
     }
-    public function exportExcelContradictions30book($status)
+    public function exportExcelContradictions30book($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
 
-        return Excel::download(new Contradictions30bookExport($status), 'لیست مغایرت 30book' . time() . '.xlsx');
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new Contradictions30bookExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
     }
 
-    public function exportExcelContradictionsShahreKetabOnline($status)
+    public function exportExcelContradictionsShahreKetabOnline($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
         $status =  explode(',',$status);
         set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
 
-        return Excel::download(new ContradictionsShahreKetabOnlineExport($status), 'لیست مغایرت شهرکتاب آنلاین' . time() . '.xlsx');
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+        
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsShahreKetabOnlineExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
 
-   /* public function exportExcelContradictionsBarkhatBook($status,$excel_name)
+    public function exportExcelContradictionsBarkhatBook($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
 
         $status =  explode(',',$status);
@@ -237,8 +263,8 @@ class ExcelController extends Controller
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
         
         Storage::disk('local')->put($excel_name, 'Contents');
-        return Excel::download(new ContradictionsBarkhatExport($status,$contradictionsExcelExport->id), $excel_name);
-    }*/
+        return Excel::download(new ContradictionsBarkhatExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
 
 
     public static function create_excel($row, $list, $file_name, $sheet_name, $requestFormat)

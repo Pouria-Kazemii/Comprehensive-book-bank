@@ -73,7 +73,7 @@ class GetIranKetabContradictionsList extends Command
                         // } else {
                         //     $update_data['check_status'] = 3;
                         // }
-                        // if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
+                        // if ($georgianCarbonDate > date('2024-03-29 00:00:00')) {
                         $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
                         if (!empty($ershad_book)) {
                             $update_data['has_permit'] = 1;
@@ -95,6 +95,44 @@ class GetIranKetabContradictionsList extends Command
                 $newCrawler->save();
             }
 
+            //  unallowable_book
+            UnallowableBook::chunk(1, function ($items) {
+                foreach ($items as $item) {
+                    $this->info($item->xtitle);
+                    $iranketab = BookIranketab::select('id');
+                    if (!empty($item->xtitle)) {
+                        $iranketab->where('title', 'LIKE', '%' . $item->xtitle . '%');
+                    }
+                    if (!empty($item->xauthor)) {
+                        $iranketab->where('partnerArray', 'LIKE', '%{"roleId":1,"name":"' . $item->xauthor . '"}%');
+                    }
+                    if (!empty($item->xpublisher_name)) {
+                        $iranketab->where('nasher', 'LIKE', '%' . $item->xpublisher_name);
+                    }
+                    if (!empty($item->xtranslator)) {
+                        $iranketab->where('partnerArray', 'LIKE', '%{"roleId":2,"name":"' . $item->xtranslator . '"}%');
+                    }
+                    $iranketab_books = $iranketab->get();
+                    foreach ($iranketab_books as $iranketab_book) {
+                        if (isset($iranketab_book) and !empty($iranketab_book)) {
+                            BookIranketab::where('id', $iranketab_book->id)->update(array('unallowed' => 1));
+                        }
+                    }
+                }
+            });
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-IranKetab-' . $this->argument('rowId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
+            
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {
                 foreach ($items as $item) {

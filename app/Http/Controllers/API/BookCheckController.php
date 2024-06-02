@@ -43,7 +43,7 @@ class BookCheckController extends Controller
                 $publisher_books = BiBookBiPublisher::select('bi_book_xid')->whereIN('bi_publisher_xid',$publisher_ids)->get();
                 $publisher_book_ids = $publisher_books->pluck('bi_book_xid');
             }
-
+            
             //creators
             // $bookPartners = BookirPartner::select('xid')->whereIN('xcreatorname',array_map('trim', explode(',', $creators)))->get();
             $bookPartners = BookirPartner::select('xid')->whereIN('xcreatorname',explode(',', $creators))->get();
@@ -54,9 +54,9 @@ class BookCheckController extends Controller
                 $partner_books_ids = $partner_books->pluck('xbookid');
 
             }
-            //
+            // 
             $book_ids = $partner_books_ids->merge($publisher_book_ids);
-
+      
 
             if(isset( $book_name) AND !empty( $book_name)){
                 $bookirbook_data = BookirBook::select('xid')->where('xname', $book_name)->whereIN('xid',$book_ids )->get();
@@ -70,7 +70,7 @@ class BookCheckController extends Controller
                 $data['bookir_book'] = FALSE;
             }
         }
-
+       
 
         ////////////////////////////////////////////ershadbook//////////////////////////////////////////
         if(isset($shabak) AND !empty($shabak)){
@@ -100,7 +100,7 @@ class BookCheckController extends Controller
             }
 
         }
-
+       
         return json_encode($data);
     }
     public function exist(Request $request){

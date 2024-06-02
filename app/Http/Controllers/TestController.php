@@ -27,7 +27,6 @@ class TestController extends Controller
 {
     public function test_majma_api()
     {
-        //testing for connection
         $timeout = 120;
         $url = 'https://core.ketab.ir/api/Majma/get-books/?MaxResultCount=200&SkipCount=0&From=2023-08-18&To=2023-08-20';
         $ch = curl_init($url);
@@ -43,7 +42,6 @@ class TestController extends Controller
         $content = curl_exec($ch);
         var_dump($content);
     }
-
     public function test_get_books_majma($from_date, $to_date, $from, $result_count)
     {
 
@@ -74,6 +72,7 @@ class TestController extends Controller
         $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
         die($response);
     }
+
 
 
     public function test_get_publishers_majma($from, $result_count)

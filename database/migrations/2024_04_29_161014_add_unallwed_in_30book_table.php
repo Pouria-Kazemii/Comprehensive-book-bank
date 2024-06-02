@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddLastInCrawlerTable extends Migration
+class AddUnallwedIn30bookTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddLastInCrawlerTable extends Migration
      */
     public function up()
     {
-        Schema::table('crawler', function (Blueprint $table) {
-            $table->integer('last')->default(0)->after('end');
+        Schema::table('book30book', function (Blueprint $table) {
+            $table->integer('unallowed')->default(0)->index()->after('has_permit');
         });
     }
 
@@ -25,8 +25,8 @@ class AddLastInCrawlerTable extends Migration
      */
     public function down()
     {
-        Schema::table('crawler', function (Blueprint $table) {
-            $table->dropColumn('last');
+        Schema::table('book30book', function (Blueprint $table) {
+            //
         });
     }
 }

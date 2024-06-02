@@ -13,12 +13,12 @@ class AddCheckStatusAndHasPermitToGisoomTable extends Migration
      */
     public function up()
     {
-//        Schema::table('bookgisoom', function (Blueprint $table) {C
-//            $table->integer('check_status')->default(0)->index()->after('book_master_id');
-//            $table->integer('has_permit')->default(0)->index()->after('check_status');
-//            $table->string('mongo_id', 255)->nullable()->index()->collation('utf8_persian_ci')->after('has_permit');
-//
-//        });
+        Schema::table('bookgisoom', function (Blueprint $table) {
+            $table->integer('check_status')->default(0)->index()->after('book_master_id');
+            $table->integer('has_permit')->default(0)->index()->after('check_status');
+            $table->string('mongo_id', 255)->nullable()->index()->collation('utf8_persian_ci')->after('has_permit');
+
+        });
     }
 
     /**

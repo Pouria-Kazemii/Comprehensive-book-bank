@@ -1,77 +1,94 @@
 <?php
+
 namespace App\Exports;
 
-use App\Models\BookirBook;
 use App\Models\BookShahreKetabOnline;
-use App\Models\BookTaaghche;
+use App\Models\WebSiteBookLinksDefects;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 
-class ContradictionsShahreKetabOnlineExport implements FromCollection,WithHeadings
+class ContradictionsShahreKetabOnlineExport implements FromCollection, WithHeadings
 {
-    public function __construct($status)
+    public function __construct($excel_type, $status, $excel_id, $saveInWebsiteBooklinksDefects = 0)
     {
+        $this->excel_type = $excel_type;
         $this->status = $status;
+        $this->excel_id = $excel_id;
+        $this->saveInWebsiteBooklinksDefects = $saveInWebsiteBooklinksDefects;
     }
     public function collection()
     {
+        $excel_type = $this->excel_type;
         $status = $this->status;
+        $excel_id = $this->excel_id;
+        $saveInWebsiteBooklinksDefects = $this->saveInWebsiteBooklinksDefects;
         $data = array();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-        $report = BookShahreKetabOnline::select('recordNumber','title','nasher','saleNashr','tedadSafe','shabak','translate','lang','price','check_status','has_permit')->where('title','!=',NULL)->whereIN('has_permit',  $status)->whereIN('check_status',$status)->get();
-        foreach($report as $key=>$item){
-            if($item->translate == 1 ){
-                $report[$key]->translate = 'ترجمه';
-            }else{
-                $report[$key]->translate = 'تالیف';
+        if ($excel_type == 'unallowed') {
+            $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
             }
-
-            if($item->check_status == 1){
-                $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
-            }elseif($item->check_status == 2){
-                $report[$key]->check_status = 'کتاب در خانه کتاب وجود ندارد';
-            }elseif($item->check_status == 3){
-                $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
-            }elseif($item->check_status == 4){
-                $report[$key]->check_status = 'کتاب شابک ندارد';
+            if ($saveInWebsiteBooklinksDefects == 1) {
+                foreach ($report as $key => $item) {
+                    $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
+                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                }
             }
+        } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
+            $report = BookShahreKetabOnline::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'has_permit')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
+            foreach ($report as $key => $item) {
+                $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
 
-            
-         
-            if($item->has_permit == 1){
-                $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
-            }elseif($item->has_permit == 2){
-                $report[$key]->has_permit = 'کتاب در اداره کتاب وجود ندارد';
-            }elseif($item->has_permit == 3){
-                $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
-            }elseif($item->has_permit == 4){
-                $report[$key]->has_permit = 'کتاب شابک ندارد';
+                if ($item->check_status == 1) {
+                    $report[$key]->check_status = 'کتاب در خانه کتاب وجود دارد';
+                } elseif ($item->check_status == 2) {
+                    $report[$key]->check_status = 'کتاب در خانه کتاب وجود ندارد';
+                } elseif ($item->check_status == 3) {
+                    $report[$key]->check_status = 'جستجو نشده به دلیل محدودیت سال انتشار';
+                } elseif ($item->check_status == 4) {
+                    $report[$key]->check_status = 'کتاب شابک ندارد';
+                }
+
+
+
+                if ($item->has_permit == 1) {
+                    $report[$key]->has_permit = 'کتاب در اداره کتاب وجود دارد';
+                } elseif ($item->has_permit == 2) {
+                    $report[$key]->has_permit = 'کتاب در اداره کتاب وجود ندارد';
+                } elseif ($item->has_permit == 3) {
+                    $report[$key]->has_permit = 'جستجو نشده به دلیل محدودیت سال انتشار';
+                } elseif ($item->has_permit == 4) {
+                    $report[$key]->has_permit = 'کتاب شابک ندارد';
+                }
+
+
+                // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
+                //     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
+                //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2024-03-29 00:00:00') ) {
+                //         $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
+                //     }else{
+                //         $report[$key]->images = '';
+                //     }
+                // }else{
+                //     $report[$key]->images = '';
+                // }
+
+
+
+
+                $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/' . $item->recordNumber;
             }
-
-            
-            // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
-            //     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
-            //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2018-03-21 00:00:00') ) {
-            //         $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
-            //     }else{
-            //         $report[$key]->images = '';
-            //     }
-            // }else{
-            //     $report[$key]->images = '';
-            // }
-
-           
-
-            
-            $report[$key]->recordNumber = 'https://shahreketabonline.com/Products/Details/'.$item->recordNumber;
         }
         return $report;
     }
 
     public function headings(): array
     {
-        return ["لینک کتاب در شهرکتاب آنلاین", "عنوان کتاب","ناشر","تاریخ انتشار","تعداد صفحه","شابک","تالیف یا ترجمه","زبان","قیمت","وضعیت در خانه کتاب","وضعیت در اداره کتاب"];
+        return ["لینک کتاب در شهرکتاب آنلاین", "عنوان کتاب", "ناشر", "تاریخ انتشار", "تعداد صفحه", "شابک", "تالیف یا ترجمه", "زبان", "قیمت", "وضعیت در خانه کتاب", "وضعیت در اداره کتاب"];
     }
 }

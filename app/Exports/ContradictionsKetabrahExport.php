@@ -2,15 +2,14 @@
 
 namespace App\Exports;
 
-use App\Models\BookFidibo;
-use App\Models\BookirBook;
+use App\Models\BookKetabrah;
 use App\Models\WebSiteBookLinksDefects;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
 
-class ContradictionsFidiboExport implements FromCollection, WithHeadings
+class ContradictionsKetabrahExport implements FromCollection, WithHeadings
 {
     public function __construct($excel_type, $status, $excel_id, $saveInWebsiteBooklinksDefects = 0)
     {
@@ -26,27 +25,45 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
         $excel_id = $this->excel_id;
         $saveInWebsiteBooklinksDefects = $this->saveInWebsiteBooklinksDefects;
         $data = array();
-        // DB::enableQueryLog();
         DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-
         if ($excel_type == 'unallowed') {
-            $report = BookFidibo::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'check_status', 'tags', 'has_permit', 'images', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
+            $report = BookKetabrah::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status',  'tags','has_permit', 'images', 'id', 'unallowed')->where('title', '!=', NULL)->whereIN('unallowed',  $status)->get();
             foreach ($report as $key => $item) {
-                $report[$key]->main_recordNumber =  $item->recordNumber;
-                $report[$key]->recordNumber = 'https://www.fidibo.com/book/' . $item->recordNumber;
                 $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
+
+                if ($item->fileSize != NULL and $item->price != NULL) {
+                    $report[$key]->fileSize = 'چاپی و الکترونیکی';
+                } elseif ($item->fileSize != NULL and $item->price == 0) {
+                    $report[$key]->fileSize = 'الکترونیکی';
+                } elseif ($item->fileSize == NULL and $item->price > 0) {
+                    $report[$key]->fileSize = 'چاپی';
+                } else {
+                    $report[$key]->fileSize = 'ناموجود';
+                }
+                $report[$key]->main_recordNumber =  $item->recordNumber;
+                $report[$key]->recordNumber = 'https://www.ketabrah.ir/book_name/book/'.$item->recordNumber;
             }
             if ($saveInWebsiteBooklinksDefects == 1) {
                 foreach ($report as $key => $item) {
                     $bugId = siteBookLinkDefects($report[$key]->check_status, $report[$key]->has_permit);
-                    WebSiteBookLinksDefects::create(array('siteName' => 'ّfidibo', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
+                    $report[$key]->recordNumber = 'https://www.ketabrah.ir/book_name/book/'.$item->recordNumber;
+                    WebSiteBookLinksDefects::create(array('siteName' => 'shahreketabonline', 'book_links' => $item->recordNumber, 'bookId' => $item->main_recordNumber, 'bugId' => $bugId, 'old_check_status' => $item->check_status, 'old_has_permit' => $item->has_permit, 'old_unallowed' => $item->unallowed, 'excelId' => $excel_id));
                 }
             }
         } elseif (($excel_type == 'withoutIsbn') or ($excel_type == 'withIsbn')) {
-            $report = BookFidibo::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'fileSize', 'check_status', 'tags', 'has_permit', 'images')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
+            $report = BookKetabrah::select('recordNumber', 'title', 'nasher', 'saleNashr', 'tedadSafe', 'shabak', 'translate', 'lang', 'price', 'check_status', 'tags', 'has_permit', 'images')->where('title', '!=', NULL)->whereIN('has_permit',  $status)->whereIN('check_status', $status)->get();
             foreach ($report as $key => $item) {
                 $report[$key]->translate = ($item->translate == 1) ? 'ترجمه': 'تالیف';
-                $report[$key]->fileSize = ($item->fileSize != NULL) ? 'الکترونیکی': 'چاپی';
+
+                if ($item->fileSize != NULL and $item->price != NULL) {
+                    $report[$key]->fileSize = 'چاپی و الکترونیکی';
+                } elseif ($item->fileSize != NULL and $item->price == 0) {
+                    $report[$key]->fileSize = 'الکترونیکی';
+                } elseif ($item->fileSize == NULL and $item->price > 0) {
+                    $report[$key]->fileSize = 'چاپی';
+                } else {
+                    $report[$key]->fileSize = 'ناموجود';
+                }
 
                 $report[$key]->tags = '';
                 if ($item->check_status == 2) {
@@ -88,7 +105,22 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
                     $report[$key]->has_permit = 'کتاب شابک ندارد';
                 }
 
-                $report[$key]->recordNumber = 'https://fidibo.com/book/' . $item->recordNumber;
+
+                // if(($item->has_permit == 2 OR $item->check_status == 2) and (isset($report[$key]->saleNashr) and $report[$key]->saleNashr != null and !empty($report[$key]->saleNashr))){
+                //     $georgianCarbonDate=\Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $report[$key]->saleNashr)->toCarbon();
+                //     if ($georgianCarbonDate < date('2022-03-21 00:00:00') OR $georgianCarbonDate > date('2024-03-29 00:00:00') ) {
+                //         $report[$key]->images = '('.$item->saleNashr.' )جستجو نشده به دلیل محدودیت سال انتشار';
+                //     }else{
+                //         $report[$key]->images = '';
+                //     }
+                // }else{
+                //     $report[$key]->images = '';
+                // }
+
+
+
+
+                $report[$key]->recordNumber = 'https://www.ketabrah.ir/book_name/book/'.$item->recordNumber;
             }
         }
         return $report;
@@ -96,6 +128,6 @@ class ContradictionsFidiboExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return ["لینک کتاب در فیدیبو", "عنوان کتاب", "ناشر", "تاریخ انتشار", "تعداد صفحه", "شابک", "تالیف یا ترجمه", "زبان", "چاپی یا الکترونیکی", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
+        return ["لینک کتاب در کتابراه", "عنوان کتاب", "ناشر", "تاریخ انتشار", "تعداد صفحه", "شابک", "تالیف یا ترجمه", "زبان", "قیمت", "وضعیت در خانه کتاب", "راهنمای خانه کتاب", "وضعیت در اداره کتاب", "راهنمای اداره کتاب"];
     }
 }

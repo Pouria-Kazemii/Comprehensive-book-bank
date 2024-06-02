@@ -64,7 +64,7 @@ class GetGissom extends Command
 
                 $bookGissom = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
                 updateGisoomBook($recordNumber, $bookGissom, 'checkBook'.$function_caller);
-
+                
                 $newCrawler->last = $recordNumber;
                 $newCrawler->save();
 

@@ -58,5 +58,5 @@ class ImportController extends Controller
         Excel::import(new TaaghcheBookLinksDefectsImport($excel_type,$excel_id), storage_path('app/'.$excel_name));
     }
 
-
+   
 }

@@ -16,7 +16,7 @@ class GetBarkhatBookContradictionsList extends Command
      *
      * @var string
      */
-    protected $signature = 'get:barkhatBookContradictionsList';
+    protected $signature = 'get:barkhatBookContradictionsList {crawlerId}';
 
     /**
      * The console command description.
@@ -45,9 +45,9 @@ class GetBarkhatBookContradictionsList extends Command
         $check_count = BookBarkhatBook::where('check_status', 0)->where('has_permit', 0)->count();
 
         try {
-            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhatBook-' . $this->argument('rowId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-barkhatBook-' . $this->argument('crawlerId'), 'start' => '1', 'end' => $check_count, 'status' => 1));
         } catch (\Exception $e) {
-            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
         }
 
 
@@ -71,7 +71,7 @@ class GetBarkhatBookContradictionsList extends Command
                         // } else {
                         //     $update_data['check_status'] = 3;
                         // }
-                        // if ($georgianCarbonDate > date('2018-03-21 00:00:00')) {
+                        // if ($georgianCarbonDate > date('2024-03-29 00:00:00')) {
                         $ershad_book = ErshadBook::where('xisbn', $book_data->shabak)->first();
                         if (!empty($ershad_book)) {
                             $update_data['has_permit'] = 1;
@@ -90,6 +90,18 @@ class GetBarkhatBookContradictionsList extends Command
                     BookBarkhatBook::where('id', $book_data->id)->update($update_data);
                 }
             }
+
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-barkhatBook-' . $this->argument('crawlerId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('crawlerId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
 
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {

@@ -81,6 +81,18 @@ class GetGissomContradictionsList extends Command
                 }
             }
 
+            $newCrawler->status = 2;
+            $newCrawler->save();
+        }
+
+        try {
+            $newCrawler = CrawlerM::firstOrCreate(array('name' => 'Contradictions-UnallowableBook-gisoom-' . $this->argument('rowId'), 'status' => 1));
+        } catch (\Exception $e) {
+            $this->info(" \n ---------- Check  " . $this->argument('rowId') . "              ------------ ");
+        }
+
+        if (isset($newCrawler)) {
+            
             //  unallowable_book
             UnallowableBook::chunk(1, function ($items) {
                 foreach ($items as $item) {
@@ -110,5 +122,6 @@ class GetGissomContradictionsList extends Command
             $newCrawler->status = 2;
             $newCrawler->save();
         }
+        
     }
 }

@@ -49,8 +49,8 @@ class GetIranketab extends Command
     public function handle()
     {
         // die('stop'); /// stop from kandoonews
-
-
+        
+        
         $illegal_characters = explode(",", "ç,Ç,æ,œ,À,Á,Â,Ã,Ä,Å,Æ,á,È,É,Ê,Ë,é,í,Ì,Í,Î,Ï,ð,Ñ,ñ,Ò,Ó,Ô,Õ,Ö,ó,ú,Ù,Ú,Û,Ü,à,ã,è,ì,ò,õ,ō,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
         $Allowed_characters = explode(",", "c,C,ae,oe,A,A,A,A,A,A,AE,a,E,E,E,E,e,i,I,I,I,I,o,N,n,O,O,O,O,O,o,u,U,U,U,U,a,a,e,i,o,o,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
 
@@ -84,7 +84,7 @@ class GetIranketab extends Command
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         }
-
+        
         if (isset($newCrawler)) {
 
             $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
@@ -116,7 +116,7 @@ class GetIranketab extends Command
             if (str_contains($content, 'itemid')) {
                 $this->info('id itemid');
             }
-
+            
             //  die('stop');
             // dd('stop');
 
@@ -136,7 +136,7 @@ class GetIranketab extends Command
                         $status_code = 500;
                         $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                     }
-
+    
                     $this->info($url);
                     $this->info($redirectedUrl);
 
@@ -340,7 +340,7 @@ class GetIranketab extends Command
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'تعداد صفحه :' && empty($filtered['tedadSafe']))
                                         $filtered['tedadSafe'] = trim($trtag->filterXPath('//td[2]')->text());
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'سال انتشار شمسی :' && empty($filtered['saleNashr']))
-                                        $filtered['saleNashr'] = trim($trtag->filterXPath('//td[2]')->text());
+                                        $filtered['saleNashr'] = (trim($trtag->filterXPath('//td[2]')->text()) <= \Morilog\Jalali\CalendarUtils::strftime('Y/m/d', strtotime(date('Y/m/d')))) ? trim($trtag->filterXPath('//td[2]')->text()) : 0;
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'نوع جلد :' && empty($filtered['jeld']))
                                         $filtered['jeld'] = trim($trtag->filterXPath('//td[2]')->text());
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'سری چاپ :' && empty($filtered['nobatChap']))
@@ -367,7 +367,7 @@ class GetIranketab extends Command
                                     }else{
                                         BookIranketab::update($filtered);
                                         $this->info(" \n ---------- Book info is exist             ---------- ");
-
+            
                                     }*/
                                 }else{
                                     $this->info(" \n ---------- This url does not include the book             ---------- ");
@@ -380,10 +380,10 @@ class GetIranketab extends Command
                         // exit;
                     }else{
                         $this->info(" \n ---------- Inappropriate Content              ------------ ");
-                    }
+                    }    
 
                // }
-
+              
                 // $bar->advance();
                 CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
@@ -393,6 +393,6 @@ class GetIranketab extends Command
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             // $bar->finish();
         }
-
+        
     }
 }
