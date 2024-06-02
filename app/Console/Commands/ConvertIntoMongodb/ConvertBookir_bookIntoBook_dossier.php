@@ -52,5 +52,6 @@ class ConvertBookir_bookIntoBook_dossier extends Command
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return true;
     }
 }

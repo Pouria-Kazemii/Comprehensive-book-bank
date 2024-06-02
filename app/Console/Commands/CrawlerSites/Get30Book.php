@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\Book30book;
 use App\Models\Crawler as CrawlerM;
 
-class get30Book extends Command
+class Get30Book extends Command
 {
     /**
      * The name and signature of the console command.

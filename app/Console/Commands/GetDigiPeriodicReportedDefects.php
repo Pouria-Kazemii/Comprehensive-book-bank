@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
@@ -49,13 +49,13 @@ class GetDigiPeriodicReportedDefects extends Command
     public function handle()
     {
 
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
 
         $items = WebSiteBookLinksDefects::where('siteName', 'digikala')->WhereNull('crawlerStatus')->WhereNotNull('book_links')->get();
         if (isset($items) and !empty($items)) {
             foreach ($items as $item) {
-                // check bookirbook and ershad and witout isbn 
+                // check bookirbook and ershad and witout isbn
                 $product_id = str_replace("dkp-", "", $item->recordNumber);
                 $productUrl = "https://api.digikala.com/v1/product/" . $product_id . "/";
                 try {
@@ -188,7 +188,7 @@ class GetDigiPeriodicReportedDefects extends Command
                         $CrawlerData['desc'] = (isset($product_info->data->product->expert_reviews->description)) ? $product_info->data->product->expert_reviews->description : NULL;
                         $item->crawlerInfo = json_encode($CrawlerData);
                     //end crawler site
-                    // check status and has permit 
+                    // check status and has permit
                     if ($item->old_unallowed == 1) { // کتاب های غیر مجاز
                         if (isset($product_info->data->product->is_inactive) and $product_info->data->product->is_inactive == true) {
                             $item->new_check_status = 9;

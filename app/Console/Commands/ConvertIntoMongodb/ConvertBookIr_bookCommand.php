@@ -40,15 +40,21 @@ class ConvertBookIr_bookCommand extends Command
     public function handle()
     {
         $this::info("Start converting bookir_books table");
-
+        $totalBooks = BookirBook::count();
+        $progressBar = $this->output->createProgressBar($totalBooks);
+        $progressBar->start();
         $startTime = microtime(true);
-        BookirBook::chunk(1000, function ($books) {
+        BookirBook::chunk(1000, function ($books) use($progressBar) {
             foreach ($books as $book) {
                 ConvertBookirBookJob::dispatch($book);
+                $progressBar->advance();
             }
         });
+        $progressBar->finish();
+        $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return true;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 
@@ -43,7 +43,7 @@ class UserController extends Controller
         $user = User::where('phone', $request->phone)->first();
         if ($user != NULL) {
             if ($user->sms_code === $request->smsCode) {
-                //todo get authenticated user here 
+                //todo get authenticated user here
                 if (!$token = JWTAuth::fromUser($user)) {
                     return response()->json(['error' => 'invalid_credentials'], 400);
                 }
@@ -265,15 +265,15 @@ class UserController extends Controller
             if (!$user = JWTAuth::parseToken()->authenticate()) {
                 return response()->json(['user_not_found'], 404);
             }
-        } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+        }catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
 
-            return response()->json(['token_expired'], $e->getStatusCode());
-        } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['error' => $e->getMessage()] ,);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
 
-            return response()->json(['token_invalid'], $e->getStatusCode());
-        } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json(['error' => $e->getMessage()]);
+        }  catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
 
-            return response()->json(['token_absent'], $e->getStatusCode());
+            return response()->json(['error' => $e->getMessage()]);
         }
 
         return response()->json(compact('user'));

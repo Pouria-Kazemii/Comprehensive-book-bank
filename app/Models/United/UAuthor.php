@@ -1,9 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Models\United;
 
 use Jenssegers\Mongodb\Eloquent\Model;
-use App\Models\United\UBook;
 
 class UAuthor extends Model
 {

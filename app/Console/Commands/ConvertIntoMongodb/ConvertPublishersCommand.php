@@ -40,13 +40,20 @@ class ConvertPublishersCommand extends Command
         {
             $this::info("Start converting bookir_publishers table");
             $startTime = microtime(true);
-            BookirPublisher::chunk(1000, function ($books)  {
+            $totalPublisher = BookirPublisher::count();
+            $progressBar = $this->output->createProgressBar($totalPublisher);
+            $progressBar->start();
+            BookirPublisher::chunk(1000, function ($books) use($progressBar) {
                 foreach ($books as $book) {
                     ConvertPublishersJob::dispatch($book);
+                    $progressBar->advance();
                 }
             });
+            $progressBar->finish();
+            $this->line('');
             $endTime = microtime(true);
             $duration = $endTime - $startTime;
             $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+            return  true;
         }
 }

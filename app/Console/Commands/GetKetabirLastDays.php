@@ -7,9 +7,9 @@ use App\Models\BookirBook;
 
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
-use Goutte\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
 class GetKetabirLastDays extends Command
@@ -52,7 +52,7 @@ class GetKetabirLastDays extends Command
         $lastDate = CrawlerM::where('name','Crawler-Ketabir-Last-days-1')->where('status',2)->orderBy('id','DESC')->first()->start;
         $lastDate= substr_replace($lastDate, '-', 4, 0);
         $lastDate= substr_replace($lastDate, '-', 7, 0);
-        
+
         $to_date = date($lastDate);
         $from_date = date("Y-m-d", strtotime("-30 days", strtotime($to_date)));
 
@@ -91,14 +91,14 @@ class GetKetabirLastDays extends Command
 
 
         if (isset($newCrawler) and $totalCount > 0 ) {
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
             $last_id_recived_info = CrawlerM::where('name','Crawler-Ketabir-Last-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
-            
+
             $last_id_recived = (isset($last_id_recived_info->last) and !empty($last_id_recived_info->last))? $last_id_recived_info->last + $limit_book : 0 ;
-          
+
             $remained_Count = $totalCount -$last_id_recived;
-            
+
             $bar = $this->output->createProgressBar($remained_Count);
             $bar->start();
 
@@ -130,16 +130,16 @@ class GetKetabirLastDays extends Command
                 foreach ($books_content->items as $item) {
                     $recordNumber = $item->id;
                     $bookIrBook = BookirBook::where('xpageurl', 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber)->firstOrNew();
-                   
+
 
                     if(empty($bookIrBook->xpageurl)){
                         MajmaApiBook::create(['xbook_id' => $recordNumber, 'xstatus' => '0', 'xfunction_caller' => 'GetKetabirLastDays-Command']);
                     }
 
-                    
+
                     $bookIrBook->xpageurl = 'http://ketab.ir/bookview.aspx?bookid=' . $recordNumber;
                     $bookIrBook->save();
-                    
+
                     $bar->advance();
                 }
 
@@ -150,11 +150,11 @@ class GetKetabirLastDays extends Command
             $newCrawler->save();
             $bar->finish();
 
-           
+
         }
-        
+
         $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
     }
 
-   
+
 }

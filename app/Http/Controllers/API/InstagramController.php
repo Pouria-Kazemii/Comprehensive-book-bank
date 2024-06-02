@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -24,12 +24,12 @@ class InstagramController extends Controller
                 "X-RapidAPI-Key: 1014920952mshb5123325507ce54p170b04jsn6a56c027c05a"
             ],
         ]);
-        
+
         $response = curl_exec($curl);
         $err = curl_error($curl);
-        
+
         curl_close($curl);
-        
+
         if ($err) {
             echo "cURL Error #:" . $err;
         } else {

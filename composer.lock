@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb5ca2fdf9a20efcbef570290c1d94f9",
+    "content-hash": "60b393e7f3349ca06b03af16f48ca067",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2842,48 +2842,6 @@
                 }
             ],
             "time": "2022-11-25T18:57:19+00:00"
-        },
-        {
-            "name": "makhov/phpmorphy",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/makhov/phpmorphy.git",
-                "reference": "d1eabce8ee4b5abf5d0bba6ae51bdb0033435856"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/makhov/phpmorphy/zipball/d1eabce8ee4b5abf5d0bba6ae51bdb0033435856",
-                "reference": "d1eabce8ee4b5abf5d0bba6ae51bdb0033435856",
-                "shasum": ""
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "phpMorphy": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GNU GPL 2.1"
-            ],
-            "authors": [
-                {
-                    "name": "Kamaev Vladimir",
-                    "email": "heromantor@users.sourceforge.net"
-                }
-            ],
-            "description": "phpMorphy - morphological analyzer library for Russisan, English and German languages",
-            "homepage": "http://phpmorphy.sourceforge.net/",
-            "keywords": [
-                "php-morphy",
-                "phpmorphy"
-            ],
-            "support": {
-                "source": "https://github.com/makhov/phpmorphy/tree/master"
-            },
-            "time": "2018-02-28T07:14:52+00:00"
         },
         {
             "name": "markbaker/complex",
@@ -10176,9 +10134,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "makhov/phpmorphy": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

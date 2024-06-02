@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Console\Commands\GetIranketab;
+use App\Console\Commands\CrawlerSites\GetIranketab;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ExcelController;
 use App\Models\Author;

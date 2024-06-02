@@ -71,8 +71,6 @@ Route::get('test_get_publishers_majma/{from}/{result_count}', [TestController::c
 Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
 Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::class, 'test_get_authors_majma']);
 Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
-Route::get('test', [TestController::class, 'areBooksSimilar']);
-Route::get('test2', [TestController::class, 'takeMainName']);
 Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
 Route::get('exportExcelContradictionsKetabejam/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsKetabejam']);
 Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsGisoom']);

@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands\CrawlerSites;
 
-use Goutte\Client;
 use App\Models\Author;
 use App\Models\BookIranketab;
 use App\Models\BookirPartner;
@@ -10,6 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Models\BookIranKetabPartner;
 use App\Models\Crawler as CrawlerM;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 use Exception;
@@ -49,8 +49,8 @@ class GetIranketab extends Command
     public function handle()
     {
         // die('stop'); /// stop from kandoonews
-        
-        
+
+
         $illegal_characters = explode(",", "ç,Ç,æ,œ,À,Á,Â,Ã,Ä,Å,Æ,á,È,É,Ê,Ë,é,í,Ì,Í,Î,Ï,ð,Ñ,ñ,Ò,Ó,Ô,Õ,Ö,ó,ú,Ù,Ú,Û,Ü,à,ã,è,ì,ò,õ,ō,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
         $Allowed_characters = explode(",", "c,C,ae,oe,A,A,A,A,A,A,AE,a,E,E,E,E,e,i,I,I,I,I,o,N,n,O,O,O,O,O,o,u,U,U,U,U,a,a,e,i,o,o,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
 
@@ -84,10 +84,10 @@ class GetIranketab extends Command
                 $this->info(" \n ---------- Failed Crawler  " . $this->argument('crawlerId') . "              ------------ ");
             }
         }
-        
+
         if (isset($newCrawler)) {
 
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
             // $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
             // $bar->start();
@@ -116,7 +116,7 @@ class GetIranketab extends Command
             if (str_contains($content, 'itemid')) {
                 $this->info('id itemid');
             }
-            
+
             //  die('stop');
             // dd('stop');
 
@@ -136,7 +136,7 @@ class GetIranketab extends Command
                         $status_code = 500;
                         $this->info(" \n ---------- Failed Get  " . $recordNumber . "              ------------ ");
                     }
-    
+
                     $this->info($url);
                     $this->info($redirectedUrl);
 
@@ -155,7 +155,7 @@ class GetIranketab extends Command
                         if($crawler->filter('body div.product-description')->count() > 0){
                             $bookDesc = $crawler->filter('body div.product-description')->text();
                         }else{
-                            $bookDesc ='';  
+                            $bookDesc ='';
                         }
                         $bookTags = '';
                         foreach ($crawler->filter('body div.product-tags h5 a') as $tag) {
@@ -243,7 +243,7 @@ class GetIranketab extends Command
                                                 $authorData['partnerDesc'] = $author_crawler->filter('body div.container div.container-fluid h5')->text();
                                                 $authorData['partnerImage'] = 'https://www.iranketab.ir' .$author_crawler->filter('body div.container div.container-fluid img.img-responsive')->attr('src');
                                                 $authorData['partnerName'] = trim(preg_replace("/\r|\n/", " ", $author_crawler->filter('body div.container div.container-fluid h1')->text()), " ");
-    
+
                                                 $author_info = BookIranKetabPartner::where('partnerId', $authorData['partnerId'])->first();
                                                 if (empty($author_info)) {
                                                     BookIranKetabPartner::create($authorData);
@@ -296,7 +296,7 @@ class GetIranketab extends Command
                                                     $this->info(" \n ---------- Failed Get translator " . $translatorLink->attr('href') . "              ------------ ");
                                                 }
                                                 if ($translator_status_code == 200 &&  $translator_crawler->filter('body')->text('') != '') {
-        
+
                                                     unset($translatorData);
                                                     $translatorData = array();
                                                     $translatorLinkArray = explode("-", $translatorLink->attr('href'));
@@ -308,7 +308,7 @@ class GetIranketab extends Command
                                                     $translatorData['partnerDesc'] = $translator_crawler->filter('body div.container div.container-fluid h5')->text();
                                                     $translatorData['partnerImage'] = $translator_crawler->filter('body div.container div.container-fluid img.img-responsive')->attr('src');
                                                     $translatorData['partnerName'] = trim(preg_replace("/\r|\n/", " ", $translator_crawler->filter('body div.container div.container-fluid h1')->text()), " ");
-        
+
                                                     $translatorData_info = BookIranKetabPartner::where('partnerId', $translatorData['partnerId'])->first();
                                                     if (empty($translatorData_info)) {
                                                         BookIranKetabPartner::create($translatorData);
@@ -328,9 +328,9 @@ class GetIranketab extends Command
                                                 $partner[$index_key + 1]['roleId'] = 2;
                                                 $partner[$index_key + 1]['en_name'] = '';
                                                 $partner[$index_key + 1]['name'] = $atag->textContent;
-                                            } 
+                                            }
                                         }
-                                        
+
                                     }
                                     $filtered['partnerArray'] = json_encode($partner, JSON_UNESCAPED_UNICODE);
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'شابک :' && empty($filtered['shabak']))
@@ -346,7 +346,7 @@ class GetIranketab extends Command
                                     if (trim($trtag->filterXPath('//td[1]')->text()) == 'سری چاپ :' && empty($filtered['nobatChap']))
                                         $filtered['nobatChap'] = trim($trtag->filterXPath('//td[2]')->text());
                                 }
-    
+
                                 // $filtered['prizes']='';
                                 // $filtered['saveBook']='';
                                 if(isset($filtered['recordNumber']) && $filtered['recordNumber'] >0){
@@ -359,7 +359,7 @@ class GetIranketab extends Command
                                         try {
                                             BookIranketab::create($filtered);
                                             $this->info(" \n ----------Save book info              ---------- ");
-        
+
                                         } catch (Exception $Exception) {
                                             //throw $th;
                                             $this->info(" \n ---------- Save book info exception error " . $Exception->getMessage() . "              ---------- ");
@@ -367,23 +367,23 @@ class GetIranketab extends Command
                                     }else{
                                         BookIranketab::update($filtered);
                                         $this->info(" \n ---------- Book info is exist             ---------- ");
-            
+
                                     }*/
                                 }else{
                                     $this->info(" \n ---------- This url does not include the book             ---------- ");
                                 }
-                                
+
                             }
-                            
+
                         }
                         //var_dump($filtered);
                         // exit;
                     }else{
                         $this->info(" \n ---------- Inappropriate Content              ------------ ");
-                    }    
+                    }
 
                // }
-              
+
                 // $bar->advance();
                 CrawlerM::where('name', 'Crawler-IranKetab-' . $this->argument('crawlerId'))->where('start', $startC)->update(['last' => $recordNumber]);
                 $recordNumber++;
@@ -393,6 +393,6 @@ class GetIranketab extends Command
             $this->info(" \n ---------- Finish Crawler  " . $this->argument('crawlerId') . "     $startC  -> $endC         ------------ ");
             // $bar->finish();
         }
-        
+
     }
 }

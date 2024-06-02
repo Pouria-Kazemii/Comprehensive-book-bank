@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Requests\ErshadBookRequest;
 use App\Http\Requests\UnallowableBookRequest;
@@ -58,5 +58,5 @@ class ImportController extends Controller
         Excel::import(new TaaghcheBookLinksDefectsImport($excel_type,$excel_id), storage_path('app/'.$excel_name));
     }
 
-   
+
 }

@@ -14,7 +14,6 @@ use App\Models\BookLanguage;
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
 use App\Models\MajmaApiPublisher;
-use Goutte\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpClient\HttpClient;
@@ -67,12 +66,12 @@ class ConsensusSimilarBooksByIsbn extends Command
         if (isset($newCrawler)) {
 
             // DB::enableQueryLog();
-            // 0 نیاشه 
+            // 0 نیاشه
             // - نباشه
             // خالی نیاشه
             // N نباشه
-            // ز نباشه 
-            // ت نباشه 
+            // ز نباشه
+            // ت نباشه
             // dossier by same isbn
             bookirbook::where('xparent', 0)->whereNotNull('xisbn3')->whereNotNull('xisbn2')->where('xisbn3','!=','N')->where('xisbn3','!=','0')->where('xisbn3','!=','-')->orderBy('xid', 'DESC')->chunk(1, function ($books,$startC) {
                 foreach ($books as $book) {

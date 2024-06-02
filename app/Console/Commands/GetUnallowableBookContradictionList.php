@@ -15,7 +15,6 @@ use App\Models\Crawler as CrawlerM;
 use App\Models\ErshadBook;
 use App\Models\UnallowableBook;
 use Exception;
-use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
@@ -95,7 +94,7 @@ class GetUnallowableBookContradictionList extends Command
                     $book_data->xtitle = ltrim($book_data->xtitle);
                     $book_data->xtitle = rtrim($book_data->xtitle);
                     /////////////////////////////////////////////fidibo///////////////////////////////////////////
-                    //fidibo 
+                    //fidibo
                     $fidibo_query = bookFidibo::where(function($fidibo_query) use ($book_data){
                         $fidibo_query->where('title',"$book_data->xtitle");
                         $fidibo_query->orwhere('title','like','کتاب '."$book_data->xtitle");
@@ -114,7 +113,7 @@ class GetUnallowableBookContradictionList extends Command
                     }
                     $fidibo_query->update(['has_permit' => 2]);
 
-                    // fidibo like 
+                    // fidibo like
                     if($book_data->xpublisher_name != NULL || $book_data->xauthor != NULL || $book_data->xtranslator){
                         $fidibo_query = bookFidibo::where('title','like',"%$book_data->xtitle%");
                         if ($book_data->xpublisher_name != NULL) {
@@ -148,8 +147,8 @@ class GetUnallowableBookContradictionList extends Command
                     $taaghche_query->update(['has_permit' => 2]);*/
 
 
-                    
-                    //taaghche like 
+
+                    //taaghche like
                     if($book_data->xpublisher_name != NULL || $book_data->xauthor != NULL || $book_data->xtranslator){
                         $taaghche_query = BookTaaghche::where('title','like',"%$book_data->xtitle%");
                         if ($book_data->xpublisher_name != NULL) {
@@ -185,7 +184,7 @@ class GetUnallowableBookContradictionList extends Command
                     }
                     $iranKetab_query->update(['has_permit'=>2]);
 
-                    // iranketab like 
+                    // iranketab like
                     if($book_data->xpublisher_name != NULL || $book_data->xauthor != NULL || $book_data->xtranslator){
                         $iranKetab_query = BookIranketab::where('title','like',"%$book_data->xtitle%");
                         if($book_data->	xpublisher_name != NULL){
@@ -205,10 +204,10 @@ class GetUnallowableBookContradictionList extends Command
                     // 30book
                     /* $author_book30book_status = FALSE;
                     $translator_book30book_status = FALSE;
-                    
+
 
                     if($book_data->	xpublisher_name != NULL){
-                        
+
                         $book30book_info = Book30book::where('nasher',$book_data->xpublisher_name)->where(function($query) use ($book_data){
                            $query->where('title',"$book_data->xtitle");
                            $query->orwhere('title','like','کتاب '."$book_data->xtitle");
@@ -223,16 +222,16 @@ class GetUnallowableBookContradictionList extends Command
                             if($book_data->xauthor != NULL){
                                 $author_info = Author::where('d_name',"$book_data->xauthor")->first();
                                 if(!empty($author_info)){
-                                    
+
                                     $author_book30book = AuthorBook30book::where('book30book_id',$info->id)->where('author_id',$author_info->id)->get();
-                                    
+
                                     $author_book30book_status = ($author_book30book->count() > 0) ? TRUE : FALSE;
                                     if( $author_book30book_status){
                                         $this->info('author_book30book_status : ' . 'true');
                                     }else{
                                         $this->info('author_book30book_status : ' . 'false');
                                     }
-                                   
+
                                 }
                             }
                             $this->info('xtranslator : '.$book_data->xtranslator);
@@ -246,7 +245,7 @@ class GetUnallowableBookContradictionList extends Command
                                     }else{
                                         $this->info('translator_book30book_status : ' . 'false');
                                     }
-                                   
+
                                 }
                             }
                             if($author_book30book_status AND  $translator_book30book_status){
@@ -255,8 +254,8 @@ class GetUnallowableBookContradictionList extends Command
                             }
                             $this->info('-------------------------------------------------------');
                         }
-                        
-                        
+
+
                     // }*/
 
 
@@ -305,7 +304,7 @@ class GetUnallowableBookContradictionList extends Command
 
                     BookFidibo::where('id',$rowId)->update($update_data);*/
 
-               
+
                 $rowId++;
             }
         }

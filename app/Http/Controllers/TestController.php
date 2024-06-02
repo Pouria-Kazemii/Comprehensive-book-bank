@@ -9,7 +9,6 @@ use App\Models\BookirRules;
 use App\Models\MongoDBModels\BookDossier;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
-use Goutte\Client;
 use App\Models\Author;
 use App\Models\BookIranketab;
 use App\Models\BookirPartner;
@@ -20,6 +19,7 @@ use App\Models\Crawler as CrawlerM;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use MongoDB\BSON\ObjectId;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -126,7 +126,7 @@ class TestController extends Controller
         // BookIranketab::select(DB::raw('count(parentId) as count_group'),'parentId')->where('recheck_info',0)->groupBy('parentId')->having('count_group','>',1)->orderBy('count_group','DESC')->chunk(1000, function($check_books) {
         $check_books = BookIranketab::select(DB::raw('count(parentId) as count_group'), 'parentId')->where('recheck_info', 0)->groupBy('parentId')->having('count_group', '>', 1)->orderBy('count_group', 'DESC')->limit('1')->get();
         foreach ($check_books as $check_book) {
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
             $illegal_characters = explode(",", "ç,Ç,æ,œ,À,Á,Â,Ã,Ä,Å,Æ,á,È,É,Ê,Ë,é,í,Ì,Í,Î,Ï,ð,Ñ,ñ,Ò,Ó,Ô,Õ,Ö,ó,ú,Ù,Ú,Û,Ü,à,ã,è,ì,ò,õ,ō,ù,ä,ë,ï,ö,ü,ÿ,â,ê,î,ô,û,å,e,i,ø,u");
             $Allowed_characters = explode(",", "c,C,ae,oe,A,A,A,A,A,A,AE,a,E,E,E,E,e,i,I,I,I,I,o,N,n,O,O,O,O,O,o,u,U,U,U,U,a,a,e,i,o,o,o,u,a,e,i,o,u,y,a,e,i,o,u,a,e,i,o,u");
 

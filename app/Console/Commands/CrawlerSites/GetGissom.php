@@ -3,7 +3,7 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 use App\Models\BookGisoom;
 use App\Models\Crawler as CrawlerM;
@@ -56,7 +56,7 @@ class GetGissom extends Command
         }
 
         if (isset($newCrawler)) {
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
             $bar = $this->output->createProgressBar(CrawlerM::$crawlerSize);
             $bar->start();
             $recordNumber = $startC;
@@ -64,7 +64,7 @@ class GetGissom extends Command
 
                 $bookGissom = BookGisoom::where('recordNumber', $recordNumber)->firstOrNew();
                 updateGisoomBook($recordNumber, $bookGissom, 'checkBook'.$function_caller);
-                
+
                 $newCrawler->last = $recordNumber;
                 $newCrawler->save();
 

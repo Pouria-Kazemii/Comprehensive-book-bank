@@ -19,7 +19,7 @@ use App\Models\MajmaApiPublisher;
 use App\Models\SiteBookLinks;
 use App\Models\SiteCategories;
 use App\Models\Book30book;
-use Goutte\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -372,7 +372,7 @@ if (!function_exists('updateDigiBook')) {
             if (isset($product_info->data->product->specifications['0']->title) and $product_info->data->product->specifications['0']->title == 'مشخصات') {
                 foreach ($product_info->data->product->specifications['0']->attributes as $attribute) {
 
-                    // نویسنده تو جدول author_book_digi ذخیره میشه 
+                    // نویسنده تو جدول author_book_digi ذخیره میشه
                     if ($attribute->title == 'نویسنده') {
                         $authorsobj = Author::firstOrCreate(array("d_name" => $attribute->values['0']));
                     }
@@ -696,7 +696,7 @@ if (!function_exists('updateFidiboBook')) {
 if (!function_exists('updateGisoomBook')) {
     function updateGisoomBook($recordNumber, $bookGissom, $function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
         try {
             echo " \n ---------- Try Get BOOK " . $recordNumber . " ---------- ";
@@ -939,7 +939,7 @@ if (!function_exists('updateBarKhatBookCategories')) {
 if (!function_exists('updateBarkhatBook')) {
     function updateBarkhatBook($bookLink, $function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         try {
             echo " \n ---------- Try Get BOOK " . $bookLink->book_links . "              ---------- ";
 
@@ -1053,7 +1053,7 @@ if (!function_exists('updateKetabejamCategoriesAllBooks')) {
         $cats = SiteCategories::where('domain', 'https://ketabejam.com/')->get();
         foreach ($cats as $cat) {
             // find count  books for loop
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
             try {
                 $crawler = $client->request('GET', $cat->cat_link, [
                     'headers' => [
@@ -1080,7 +1080,7 @@ if (!function_exists('updateKetabejamCategoriesAllBooks')) {
             $x = 1;
             while ($x <= $cat_pages) {
 
-                $client = new Client(HttpClient::create(['timeout' => 30]));
+                $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
                 try {
                     $crawler = $client->request('GET', $cat->cat_link . '/page/' . $x . '/', [
                         'headers' => [
@@ -1126,7 +1126,7 @@ if (!function_exists('updateKetabejamCategoriesFirstPageBooks')) {
         foreach ($cats as $cat) {
 
 
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
             try {
                 $crawler = $client->request('GET', $cat->cat_link, [
                     'headers' => [
@@ -1164,7 +1164,7 @@ if (!function_exists('updateKetabejamCategories')) {
     function updateKetabejamCategories()
     {
         // menu
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         try {
             $crawler = $client->request('GET', 'https://ketabejam.com/', [
                 'headers' => [
@@ -1203,7 +1203,7 @@ if (!function_exists('updateKetabejamCategories')) {
 if (!function_exists('updateKetabejamBook')) {
     function updateKetabejamBook($bookLink, $function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         try {
             echo " \n ---------- Try Get BOOK " . $bookLink->book_links . "              ---------- ";
             $crawler = $client->request('GET', $bookLink->book_links, [
@@ -1336,7 +1336,7 @@ if (!function_exists('updateKetabejamBook')) {
 if (!function_exists('updateShahreketabonlineBook')) {
     function updateShahreketabonlineBook($recordNumber, $book, $function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
         try {
             echo " \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ";
@@ -1376,7 +1376,7 @@ if (!function_exists('updateShahreketabonlineBook')) {
                     $book->images =  $book->images . '=|=' . 'https://shahreketabonline.com' . $crawler->filter('body div.ProductDetails div.ProductInfo div.Image div.book-wrap div.OtherImages a img')->attr('src');
                 }
 
-                // price 
+                // price
                 if ($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->count() > 0) {
                     $price  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.ProductDetails div.ProductInfo div.AddProductToCart div.Price')->text()));
                     if (strlen($price) < 10) {
@@ -1384,7 +1384,7 @@ if (!function_exists('updateShahreketabonlineBook')) {
                     }
                 }
 
-                // desc 
+                // desc
                 if ($crawler->filter('body div.ProductDetails div.description')->count() > 0) {
                     $book->Desc  = $crawler->filter('body div.ProductDetails div.description')->text();
                 }
@@ -1492,7 +1492,7 @@ if (!function_exists('updateShahreketabonlineBook')) {
 if (!function_exists('updateKetabrahBook')) {
     function updateKetabrahBook($BookKetabrah, $recordNumber, $function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         try {
             echo " \n ---------- Try Get BOOK " . $recordNumber . "              ---------- ";
             $crawler = $client->request('GET', 'https://www.ketabrah.ir/book_name/book/' . $recordNumber);
@@ -1506,7 +1506,7 @@ if (!function_exists('updateKetabrahBook')) {
 
         if ($status_code == 200 &&  $crawler->filter('body')->text('') != '' and $crawler->filterXPath('//div[contains(@id, "InternalPageContents")]')->count() > 0) {
             if ($crawler->filter('article')->count() > 0) {
-                //tag 
+                //tag
                 if ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol')->count() > 0) {
                     $tagStr = '';
                     foreach ($crawler->filterXPath('//div[contains(@class, "book")]')->filter('div.breadcrumb-container div.breadcrumb-ol ol li') as $key => $cat) {
@@ -1622,7 +1622,7 @@ if (!function_exists('updateKetabrahBook')) {
                     }
                 }
 
-                // price 
+                // price
                 if ($crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price')->count() > 0) {
 
                     $prices = $crawler->filterXPath('//div[contains(@class, "book-description-content")]')->filter('div.book-details div.book-page-price-table div.book-price span')->text();
@@ -1643,7 +1643,7 @@ if (!function_exists('updateKetabrahBook')) {
 if (!function_exists('update30Book')) {
     function update30Book( $recordNumber ,$function_caller = NULL)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         try {
            echo " \n ---------- Try Get BOOK ".$recordNumber."              ---------- ";
             $crawler = $client->request('GET', 'https://www.30book.com/Book/'.$recordNumber , [
@@ -1769,7 +1769,7 @@ if (!function_exists('update30Book')) {
                 echo " \n ---------- Rejected Book   ".$recordNumber."           ---------- ";
             }
         }
-    
+
     }
 }
 

@@ -33,9 +33,6 @@ class ConvertTranslatedBookDossierJob implements ShouldQueue
      */
     public function handle()
     {
-        $client = new Client();
-        $collection = $client->datacollector->bookir_books;
-        $collection->createIndex(['xname' => 'text']);
 
         $pipeline1 = [
             ['$match' => [

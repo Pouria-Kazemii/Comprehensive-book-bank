@@ -115,7 +115,7 @@ class GetIranKetabContradictionsList extends Command
                     $iranketab_books = $iranketab->get();
                     foreach ($iranketab_books as $iranketab_book) {
                         if (isset($iranketab_book) and !empty($iranketab_book)) {
-                            BookIranketab::where('id', $Ketabejam_book->id)->update(array('unallowed' => 1));
+                            BookIranketab::where('id', $iranketab_book->id)->update(array('unallowed' => 1));
                         }
                     }
                 }

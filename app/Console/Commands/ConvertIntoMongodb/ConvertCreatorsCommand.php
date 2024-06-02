@@ -44,15 +44,21 @@ class ConvertCreatorsCommand extends Command
     public function handle()
     {
         $this::info("Start converting bookir_creators table");
-
+        $totalBooks = BookirPartner::count();
+        $progressBar = $this->output->createProgressBar($totalBooks);
+        $progressBar->start();
         $startTime = microtime(true);
-        BookirPartner::chunk(1000, function ($books) {
+        BookirPartner::chunk(1000, function ($books) use($progressBar){
             foreach ($books as $book) {
                 ConvertCreatorsJob::dispatch($book);
+                $progressBar->advance();
             }
         });
+        $progressBar->finish();
+        $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return true;
     }
 }

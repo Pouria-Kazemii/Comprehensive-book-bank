@@ -38,7 +38,7 @@ Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabir
 
 //MongoDB Check
 //Route::get('/v2/book/check', [BookCheckController::class,'check']);//TODO working wrong
-Route::post('/v2/book/check_ketabir_ershad', [BookCheckController::class,'check_ketabir_and_ershad']);//TODO must implement later
+/*Route::post('/v2/book/check_ketabir_ershad', [BookCheckController::class,'check_ketabir_and_ershad']);//TODO must implement later*/
 Route::get('/v2/book/exist', [BookCheckController::class,'exist']);
 Route::put('/v2/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');//TODO must implement later
 
@@ -75,9 +75,9 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/user/save', 'API\UserController@store');
     Route::post('/v1/user/edit/{id}', 'API\UserController@update');
     Route::get('/v1/user/info/{id}', 'API\UserController@info');
+    Route::get('user', 'API\UserController@getAuthenticatedUser');
 
     //SQL Books
-    Route::get('user', 'API\UserController@getAuthenticatedUser');
     Route::post('/v1/book/save', 'API\BookController@store');
     Route::post('/v1/book/update/{id}', 'API\BookController@update');
     Route::post('/v1/book/find', 'API\BookController@find');
@@ -108,7 +108,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     //MongoDB Books
     Route::post('/v2/book/find' , [BookController::class , 'find']);
-    Route::post('/v2/book/find-isbn', [BookController::class ,'findIsbn']);//not tested
+    Route::post('/v2/book/find-isbn', [BookController::class ,'findIsbn']);
     Route::post('/v2/book/find/publisher', [BookController::class , 'findByPublisher']);
     Route::post('/v2/export-excel-book/find/publisher', [ BookController::class, 'exportExcelBookFindByPublisher']);
     Route::post('/v2/book/find/creator', [BookController::class ,'findByCreator']);
