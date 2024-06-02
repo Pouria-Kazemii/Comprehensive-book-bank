@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Models\BookirBook;
 use App\Models\BookirRules;
+use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Http\Request;
 use App\Models\BookirPartner;
 use App\Models\BookirPublisher;
@@ -130,6 +131,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
+        $status = 404;
 
         // read books for year printCount by title
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
@@ -162,6 +164,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
+        $status = 404;
 
         // read books for year printCount by circulation
         $books = BookirBook::whereRaw("xid In (Select bi_book_xid From bi_book_bi_publisher Where bi_publisher_xid='$publisherId')")->orderBy('xpublishdate', 'asc')->get();
@@ -194,6 +197,7 @@ class PublisherController extends Controller
     {
         $publisherId = $request["publisherId"];
         $dataMaster = null;
+        $status = 404 ;
 
         // read
         $publisher = BookirPublisher::where('xid', '=', $publisherId)->first();
@@ -408,5 +412,5 @@ class PublisherController extends Controller
             $status
         );
     }
-  
+
 }

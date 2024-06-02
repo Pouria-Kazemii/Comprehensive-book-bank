@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookirPublisher;
@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class RoleController extends Controller
 {
     // list subject
-  
+
     // search
     public function search(Request $request)
     {

@@ -15,7 +15,6 @@ use App\Models\Crawler as CrawlerM;
 use App\Models\ErshadBook;
 use App\Models\UnallowableBook;
 use Exception;
-use Goutte\Client;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;

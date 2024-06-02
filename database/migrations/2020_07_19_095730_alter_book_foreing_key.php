@@ -26,6 +26,8 @@ class AlterBookForeingKey extends Migration
      */
     public function down()
     {
-        //
+        Schema::table('books', function($table) {
+            $table->dropForeign(['author_id']);
+        });
     }
 }

@@ -7,9 +7,9 @@ use App\Models\BookirBook;
 
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
-use Goutte\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
 class GetKetabirLastDays extends Command
@@ -91,14 +91,14 @@ class GetKetabirLastDays extends Command
 
 
         if (isset($newCrawler) and $totalCount > 0 ) {
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
             $last_id_recived_info = CrawlerM::where('name','Crawler-Ketabir-Last-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
-            
+
             $last_id_recived = (isset($last_id_recived_info->last) and !empty($last_id_recived_info->last))? $last_id_recived_info->last + $limit_book : 0 ;
-          
+
             $remained_Count = $totalCount -$last_id_recived;
-            
+
             $bar = $this->output->createProgressBar($remained_Count);
             $bar->start();
 

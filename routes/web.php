@@ -54,16 +54,16 @@ Route::get('detail_with_crawler_info/{isbn}', [BookController::class, 'detailWit
 Route::get('exportExcelParentBook/{startDate}/{endDate}/{dio}', [ExcelController::class, 'exportExcelParentBook']);
 Route::get('exportExcelTopPublisher/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopPublisher']);
 Route::get('exportExcelTopAuthor/{startDate}/{endDate}/{dio}/{limit}', [ExcelController::class, 'exportExcelTopAuthor']);
-Route::get('exportExcelContradictionsFidibo/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
-Route::get('exportExcelContradictionsTaaghche/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
+Route::get('exportExcelContradictionsFidibo/{status}', [ExcelController::class, 'exportExcelContradictionsFidibo']);
+Route::get('exportExcelContradictionsTaaghche/{status}', [ExcelController::class, 'exportExcelContradictionsTaaghche']);
 //digi
-Route::get('exportExcelContradictionsDigi/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsDigi']);
+Route::get('exportExcelContradictionsDigi/{status}', [ExcelController::class, 'exportExcelContradictionsDigi']);
 Route::get('exportExcelWebsiteBookLinkDefectsCheckResultDigi/{excel_id}/{excel_name}', [ExcelController::class, 'exportExcelWebsiteBookLinkDefectsCheckResultDigi']);
 Route::get('importDigiExcel/{excel_type}/{excel_name}', [ImportController::class, 'importDigiExcel']);
 
-Route::get('exportExcelContradictionsIranketab/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsIranketab']);
-Route::get('exportExcelContradictions30book/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictions30book']);
-Route::get('exportExcelContradictionsShahreKetabOnline/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsShahreKetabOnline']);
+Route::get('exportExcelContradictionsIranketab/{status}', [ExcelController::class, 'exportExcelContradictionsIranketab']);
+Route::get('exportExcelContradictions30book/{status}', [ExcelController::class, 'exportExcelContradictions30book']);
+Route::get('exportExcelContradictionsShahreKetabOnline/{status}', [ExcelController::class, 'exportExcelContradictionsShahreKetabOnline']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
 Route::get('test_get_books_majma/{from_date}/{to_date}/{from}/{result_count}', [TestController::class, 'test_get_books_majma']);
 Route::get('test_get_book_id_majma/{book_id}', [TestController::class, 'test_get_book_id_majma']);
@@ -71,11 +71,9 @@ Route::get('test_get_publishers_majma/{from}/{result_count}', [TestController::c
 Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
 Route::get('test_get_authors_majma/{from}/{result_count}', [TestController::class, 'test_get_authors_majma']);
 Route::get('test_get_iranketab', [TestController::class, 'test_get_iranketab']);
-Route::get('test', [TestController::class, 'test']);
-Route::get('exportExcelContradictionsBarkhatBook/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
+Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelController::class, 'exportExcelContradictionsBarkhatBook']);
 Route::get('exportExcelContradictionsKetabejam/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsKetabejam']);
 Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsGisoom']);
 Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
-
 
 

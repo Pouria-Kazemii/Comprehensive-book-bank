@@ -6,8 +6,8 @@ namespace App\Console\Commands;
 use App\Models\BookirBook;
 use App\Models\Crawler as CrawlerM;
 use App\Models\MajmaApiBook;
-use Goutte\Client;
 use Illuminate\Console\Command;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 
 class GetKetabirFutureDays extends Command
@@ -51,7 +51,7 @@ class GetKetabirFutureDays extends Command
         $last_futureDate = (isset($last_futureDate) AND !empty($last_futureDate))? $last_futureDate->end: '20240113';
         $last_futureDate= substr_replace($last_futureDate, '-', 4, 0);
         $last_futureDate= substr_replace($last_futureDate, '-', 7, 0);
-        
+
         $ast_month_date = date("Y-m-d", strtotime("-30 days"));
         // $this->info($ast_month_date);
         $from_date = (date($last_futureDate) < $ast_month_date)? date($last_futureDate) : $ast_month_date;
@@ -59,7 +59,7 @@ class GetKetabirFutureDays extends Command
 
         $this->info($from_date);
         $this->info($to_date);
-       
+
         //give total for foreach
         $timeout = 120;
         $url = 'http://dcapi.k24.ir/test_get_books_majma/' . $from_date . '/' . $to_date . '/0/' . $limit_book;
@@ -95,15 +95,15 @@ class GetKetabirFutureDays extends Command
 
 
         if (isset($newCrawler)) {
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
             $future_id_recived_info = CrawlerM::where('name','Crawler-Ketabir-future-days-items-' . $this->argument('crawlerId'))->where('start',enNumberKeepOnly($from_date))->where('end',enNumberKeepOnly($to_date))->where('status',2)->orderBy('id','DESC')->first();
-            
-            
+
+
             $future_id_recived = (isset($future_id_recived_info->last) and !empty($future_id_recived_info->last))? $future_id_recived_info->last + $limit_book : 0 ;
-          
+
             $remained_Count = $totalCount -$future_id_recived;
-            
+
             $bar = $this->output->createProgressBar($remained_Count);
             $bar->start();
 

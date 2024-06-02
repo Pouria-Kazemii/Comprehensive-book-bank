@@ -36,6 +36,7 @@ class CreateBooksTable extends Migration
             $table->longText('Creator')->nullable();
             $table->longText('Image_Address')->nullable();
             $table->json('all')->nullable();
+            $table->unsignedInteger('author_id')->nullable();
             $table->timestamps();
         });
     }

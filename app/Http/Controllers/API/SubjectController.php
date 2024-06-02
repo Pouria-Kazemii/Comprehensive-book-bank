@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookirPublisher;
@@ -15,7 +15,7 @@ class SubjectController extends Controller
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"]['sortField'] : "xsubject";
         $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? $request["sortDirection"] : "asc";
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0; 
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $data = null;
         $status = 404;
         $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;

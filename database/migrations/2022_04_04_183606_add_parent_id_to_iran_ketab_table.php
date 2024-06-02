@@ -13,9 +13,9 @@ class AddParentIdToIranKetabTable extends Migration
      */
     public function up()
     {
-        Schema::table('bookIranketab', function (Blueprint $table) {
-            $table->integer('parentId')->nullable()->after('recordNumber')->index()->default(0);
-        });
+//        Schema::table('bookIranketab', function (Blueprint $table) {
+//            $table->integer('parentId')->nullable()->after('recordNumber')->index()->default(0);
+//        });
     }
 
     /**

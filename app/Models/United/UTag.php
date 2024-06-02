@@ -1,9 +1,9 @@
 <?php
 
-namespace App;
+namespace App\Models\United;
+
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\United\UBook;
 
 class UTag extends Model
 {

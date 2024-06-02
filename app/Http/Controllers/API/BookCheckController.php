@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Helpers\BookMasterData;
 use App\Http\Controllers\Controller;
@@ -128,20 +128,20 @@ class BookCheckController extends Controller
                 $temp['title'] = $book->xname;
                 $resultArray[] = $temp;
             }
-           
+
         }
 
         // $query = DB::getQueryLog();
         // dd($query);
         $resultCount = count($resultArray);
-       
+
         if($resultCount == 0){
             return response()->json(['error'=>'NOT FOUND','error_code'=>'2001','result_count'=>0 , 'result'=>''], 404);
         }else{
             return response()->json(['error'=>'','result_count'=>$resultCount ,'results'=>$resultArray]);
         }
 
-       
+
     }
     public function check()
     {
@@ -190,7 +190,6 @@ class BookCheckController extends Controller
             }
         }
         $where = ($where != "") ? "or (".rtrim($where, " or ").")" : "";
-
         $bookCreators = BookirPartnerrule::where('xbookid', '=', $id)->where('xroleid', '=', '1')->get();
         if($bookCreators != null)
         {

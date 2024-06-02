@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Console\Commands\GetIranketab;
+use App\Console\Commands\CrawlerSites\GetIranketab;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ExcelController;
 use App\Models\Author;
@@ -78,6 +78,7 @@ class BookController extends Controller
 
                 $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where " . rtrim($where, " or ") . ")";
             }
+
         }
         return $where;
     }
@@ -172,6 +173,7 @@ class BookController extends Controller
         }
 
 
+
         if ($publisher_books->count() > 0) {
             foreach ($publisher_books as $key => $item) {
                 $collection_data[$key]["id"] = $item->xid;
@@ -218,6 +220,7 @@ class BookController extends Controller
         $possibilityEmptyLogicalOperator = true;
         $beforeLogicalOperator = '';
         foreach ($request['search'] as $key => $item) {
+
             if (gettype($item) != 'array') {
                 $search_item = json_decode($item, true);
             } else {
@@ -243,7 +246,7 @@ class BookController extends Controller
                     $searchValue = '';
                 }
 
-                // serach bby name  
+                // serach bby name
                 if (($searchField == 'name') and !empty($comparisonOperators) and !empty($searchValue)) {  // $books->where('xname', 'like', "%$name%");
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
@@ -361,6 +364,7 @@ class BookController extends Controller
                     $possibilityEmptyLogicalOperator = false;
                 }
             }
+
         }
         return $this->lists($request, false, false, $where);
     }
@@ -383,6 +387,7 @@ class BookController extends Controller
             // read books
             DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
             $books = BookirBook::orderBy($column, $sortDirection);
+
             // $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
@@ -598,7 +603,6 @@ class BookController extends Controller
                             $subjects[] = ["id" => $bookSubject->xid, "name" => $bookSubject->xsubject];
                         }
                     }
-
                     //authors
                     $authors = null;
                     $authorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 1)->get(); // writer
@@ -619,6 +623,7 @@ class BookController extends Controller
                         }
                     }
 
+
                     //imager
                     $imagers = null;
                     $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
@@ -628,6 +633,8 @@ class BookController extends Controller
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
                         }
                     }
+
+
 
                     //
                     $data[] =
@@ -948,7 +955,7 @@ class BookController extends Controller
                 $bookId = $book->xid;
             }
 
-            //SELECT clidren id 
+            //SELECT clidren id
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
@@ -1000,7 +1007,7 @@ class BookController extends Controller
                 }
 
                 //
-                // price 
+                // price
                 $coverPrice = BookirBook::where('xcoverprice', '>', 0);
                 $coverPrice = $coverPrice->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -1056,7 +1063,7 @@ class BookController extends Controller
                 $min_publish_date = $publish_date->min('xpublishdate');
                 $max_publish_date = $publish_date->max('xpublishdate');
 
-                //publish place 
+                //publish place
                 $publishPlaceData = '';
                 DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
@@ -1221,7 +1228,7 @@ class BookController extends Controller
                         "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
                         "weights" => !empty($digi_weightData) ? $digi_weightData : null,
                         "features" => !empty($digi_featuresData) ? $digi_featuresData : null,
-                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null,
                         "numberPages" => (!empty($digi_min_tedadSafe) && !empty($digi_max_tedadSafe)) ? ' بین ' . $digi_min_tedadSafe . ' تا ' . $digi_max_tedadSafe : null,
                         "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null,
                     ];
@@ -1347,7 +1354,7 @@ class BookController extends Controller
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null,
                         "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null,
                         "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null,
-                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null,
                         "numberPages" => (!empty($gisoom_min_tedadSafe) && !empty($gisoom_max_tedadSafe)) ? ' بین ' . $gisoom_min_tedadSafe . ' تا ' . $gisoom_max_tedadSafe : null,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
@@ -1449,7 +1456,7 @@ class BookController extends Controller
                         "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null,
                         "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null,
                         "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null,
-                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null,
                         "numberPages" => (!empty($iranketab_min_tedadSafe) && !empty($iranketab_max_tedadSafe)) ? ' بین ' . $iranketab_min_tedadSafe . ' تا ' . $iranketab_max_tedadSafe : null,
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ? ' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date : null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ? ' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' تومان ' : null,
@@ -1502,7 +1509,7 @@ class BookController extends Controller
                 $book = BookirBook::where('xid', '=', $book->xparent)->first();
                 $bookId = $book->xid;
             }
-            //SELECT clidren id 
+            //SELECT clidren id
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
@@ -1554,7 +1561,7 @@ class BookController extends Controller
                 }
 
                 //
-                // price 
+                // price
                 $coverPrice = BookirBook::where('xcoverprice', '>', 0);
                 $coverPrice = $coverPrice->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -1610,7 +1617,7 @@ class BookController extends Controller
                 $min_publish_date = $publish_date->min('xpublishdate');
                 $max_publish_date = $publish_date->max('xpublishdate');
 
-                //publish place 
+                //publish place
                 $publishPlaceData = '';
                 DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
@@ -1775,7 +1782,7 @@ class BookController extends Controller
                         "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
                         "weights" => !empty($digi_weightData) ? $digi_weightData : null,
                         "features" => !empty($digi_featuresData) ? $digi_featuresData : null,
-                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null,
                         "numberPages" => (!empty($digi_min_tedadSafe) && !empty($digi_max_tedadSafe)) ? ' بین ' . $digi_min_tedadSafe . ' تا ' . $digi_max_tedadSafe : null,
                         "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null,
                     ];
@@ -1901,7 +1908,7 @@ class BookController extends Controller
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null,
                         "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null,
                         "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null,
-                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null,
                         "numberPages" => (!empty($gisoom_min_tedadSafe) && !empty($gisoom_max_tedadSafe)) ? ' بین ' . $gisoom_min_tedadSafe . ' تا ' . $gisoom_max_tedadSafe : null,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
@@ -2003,7 +2010,7 @@ class BookController extends Controller
                         "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null,
                         "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null,
                         "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null,
-                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null,
                         "numberPages" => (!empty($iranketab_min_tedadSafe) && !empty($iranketab_max_tedadSafe)) ? ' بین ' . $iranketab_min_tedadSafe . ' تا ' . $iranketab_max_tedadSafe : null,
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ? ' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date : null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ? ' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' تومان ' : null,
@@ -2491,7 +2498,7 @@ class BookController extends Controller
         );
     }
 
-    /*public function isbn3ToIsbn($isbn) افزودن خط تیره قانون پیچیده ایی داره 
+    /*public function isbn3ToIsbn($isbn) افزودن خط تیره قانون پیچیده ایی داره
     {
         if (strlen($isbn) == 13) {
             $isbn = substr_replace($isbn, '-', 3, 0);

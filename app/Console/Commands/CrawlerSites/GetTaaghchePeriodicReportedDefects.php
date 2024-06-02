@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
@@ -49,7 +49,7 @@ class GetTaaghchePeriodicReportedDefects extends Command
     public function handle()
     {
 
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
 
         $items = WebSiteBookLinksDefects::where('siteName', 'digikala')->WhereNull('crawlerStatus')->WhereNotNull('book_links')->get();

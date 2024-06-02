@@ -3,7 +3,7 @@
 namespace App\Console\Commands\CrawlerSites;
 
 use Illuminate\Console\Command;
-use Goutte\Client;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DomCrawler\Crawler;
 use App\Models\BookDigi;
@@ -74,7 +74,7 @@ class GetDigiRelation extends Command
 
         if(isset($newCrawler)){
 
-            $client = new Client(HttpClient::create(['timeout' => 30]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
 
                 $recordNumber = $startC;
 
@@ -133,7 +133,7 @@ class GetDigiRelation extends Command
 
     public function createDigiBook($id)
     {
-        $client = new Client(HttpClient::create(['timeout' => 30]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 30]));
         $productUrl="https://www.digikala.com/product/dkp-".$id."/";
         //$productUrl="https://www.digikala.com/product/dkp-5547149/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D8%B9%D8%AC%D8%B2%D9%87-%D8%B4%DA%A9%D8%B1%DA%AF%D8%B2%D8%A7%D8%B1%DB%8C-%D8%A7%D8%AB%D8%B1-%D8%B1%D8%A7%D9%86%D8%AF%D8%A7-%D8%A8%D8%B1%D9%86-%D8%A7%D9%86%D8%AA%D8%B4%D8%A7%D8%B1%D8%A7%D8%AA-%D9%86%DA%AF%DB%8C%D9%86-%D8%A7%DB%8C%D8%B1%D8%A7%D9%86";
 

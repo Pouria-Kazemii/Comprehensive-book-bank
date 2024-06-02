@@ -46,7 +46,13 @@ class Kernel extends ConsoleKernel
         Commands\GetKetabirLastDays::class,
         Commands\GetKetabirFutureDays::class,
 
-        commands\CorrectInfo\RecheckNotfoundBooks::class, 
+        commands\CorrectInfo\RecheckNotfoundBooks::class,
+
+        commands\ConvertIntoMongodb\ConvertBookIr_bookCommand::class,
+        commands\ConvertIntoMongodb\ConvertCreatorsCommand::class,
+        commands\ConvertIntoMongodb\ConvertPublishersCommand::class
+
+
 
 
     ];

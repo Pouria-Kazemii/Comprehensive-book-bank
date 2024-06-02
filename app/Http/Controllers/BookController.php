@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Http;
 
 
 
+
 class BookController extends Controller
 {
     public function index(Request $request)
@@ -618,7 +619,7 @@ class BookController extends Controller
         );
     }
 
-    
-  
+
+
 
 }

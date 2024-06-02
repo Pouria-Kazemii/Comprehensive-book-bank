@@ -139,6 +139,7 @@ return [
         /*
          * Laravel Framework Service Providers...
          */
+//        MongoDB\Laravel\MongoDBServiceProvider::class,
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
@@ -163,6 +164,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         /* Add Custome Helper Provider */
         browner12\helpers\HelperServiceProvider::class,
+        Jenssegers\Mongodb\MongodbServiceProvider::class,
 
         /*
          * Package Service Providers...
@@ -238,6 +240,7 @@ return [
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'MongoDB' => Jenssegers\Mongodb\MongodbServiceProvider::class,
     ],
 
 ];
