@@ -6,14 +6,14 @@ use App\Jobs\ConvertBookirBookJob;
 use App\Models\BookirBook;
 use Illuminate\Console\Command;
 
-class ConvertBookIr_bookCommand extends Command
+class ConvertBookIr_bookCommand2 extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'convert:bookirbook1';
+    protected $signature = 'convert:bookirbook2';
 
     /**
      * The console command description.
@@ -39,14 +39,12 @@ class ConvertBookIr_bookCommand extends Command
      */
     public function handle()
     {
-        \App\Models\MongoDBModels\BookIrBook2::truncate();
-        $this->info('All Mongo data Deleted');
-        $this::info("Start converting bookir_books table part1");
-        $totalBooks = BookirBook::where('xid' , '<=' , 500000)->count();
+        $this::info("Start converting bookir_books table part2");
+        $totalBooks = BookirBook::where('xid' , '>' , 500000)->where('xid' , '<=' , 1000000)->count();
         $progressBar = $this->output->createProgressBar($totalBooks);
         $progressBar->start();
         $startTime = microtime(true);
-        BookirBook::where('xid' , '<=' , 500000)->chunk(1000, function ($books) use($progressBar) {
+        BookirBook::where('xid' , '>' , 500000)->where('xid' , '<=' , 1000000)->chunk(1000, function ($books) use($progressBar) {
             foreach ($books as $book) {
                 ConvertBookirBookJob::dispatch($book);
                 $progressBar->advance();

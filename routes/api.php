@@ -53,7 +53,7 @@ Route::get('/v2/book/exist', [BookCheckController::class,'exist']);
 //        Route::post('/v1/', 'API\BookController@detail');
 //    }
 //);
-//Route::group(['middleware' => ['ChToken']], function () {
+Route::group(['middleware' => ['ChToken']], function () {
 
     //SQL Webs
     Route::post('/web/v1/publisher/detail', 'API\PublisherController@detail');
@@ -66,9 +66,9 @@ Route::get('/v2/book/exist', [BookCheckController::class,'exist']);
     Route::post('/web/v2/creator/detail', [CreatorController::class,'detail']);
     Route::post('/web/v2/book/find', [BookController::class,'find']);
     Route::post('/web/v2/book/detail', [BookController::class,'detail']);
-//});
+});
 
-Route::group(['middleware' => ['jwt.verify']], function () {
+//Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::post('/v1/user/find', 'API\UserController@find');
     Route::post('/v1/user/save', 'API\UserController@store');
@@ -238,7 +238,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
-});
+//});
 
 
 

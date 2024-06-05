@@ -154,31 +154,31 @@ class BookController extends Controller
     }
 
 
-    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
+    public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? (int)$request["perPage"] : 50;
+        $offset = max(0, ($currentPageNumber - 1) * $pageRows); // Ensure offset is non-negative
+
+        $data = [];
+        $status = 200;
         $totalRows = 0;
         $totalPages = 0;
-        $offset = ($currentPageNumber - 1) * $pageRows;
-
 
         if (!$isNull) {
-            // Read books
-            $books = BookIrBook2::orderBy($column, $sortDirection);
+            // Prepare the base query with filters
+            $query = BookIrBook2::query();
 
             if ($searchText != "") {
-                $books->where('xname', 'like', "%$searchText%");
+                $query->where('xname', 'like', "%$searchText%");
             }
 
             if ($isbn != "") {
-                $books->where(function ($query) use ($isbn) {
+                $query->where(function ($query) use ($isbn) {
                     $query->where('xisbn2', '=', $isbn)
                         ->orWhere('xisbn3', '=', $isbn);
                 });
@@ -186,26 +186,20 @@ class BookController extends Controller
 
             if (count($where) > 0) {
                 if (count($where[0]) == 2) {
-                    $books->where(function ($query) use ($where) {
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
+                    $query->where(function ($query) use ($where) {
+                        $query->where($where[0][0], $where[0][1]);
                         for ($i = 1; $i < count($where); $i++) {
                             $query->orWhere($where[$i][0], $where[$i][1]);
                         }
                     });
-                };
-
-                if (count($where[0]) == 4) {
-
+                } elseif (count($where[0]) == 4) {
                     for ($i = 0; $i < count($where); $i++) {
                         if ($where[$i][3] == '') {
-                            $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                            $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
                         } elseif ($where[$i][3] == 'AND') {
-                            $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
-
+                            $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
                         } elseif ($where[$i][3] == 'OR') {
-
-                            $books->where(function ($query) use ($where, &$i) {
+                            $query->where(function ($query) use ($where, &$i) {
                                 $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
                                 $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
                                 $i++;
@@ -223,69 +217,103 @@ class BookController extends Controller
                 }
             }
 
-            //TODO : must implement later
-            //$books->groupBy('xparent')->orderBy('xparent');
-            /////give count ///////////////////
+            // Fetch filtered and sorted books IDs
+            $bookIds = $query->orderBy($column, $sortDirection)->pluck('_id')->toArray();
 
-            $countBooks = $books->get();
-
-            $totalRows = count($countBooks);
-
-            /////give result //////////////////
-            $books = $books->skip($offset)->take($pageRows)->get();
-
-            if ($books != null and count($books) > 0) {
-                foreach ($books as $book) {
-                    if ($book->xparent == -1 or $book->xparent == 0) {
-                        $dossier_id = $book->_id;
-                    } else {
-                        $dossier_id = $book->xparent;
-                    }
-
-                    //publishers
-                    $publishers = null;
-                    $bookPublishers = $book->publisher;
-                    if ($bookPublishers != null and count($bookPublishers) > 0) {
-                        foreach ($bookPublishers as $bookPublisher) {
-                            $publishers[] = ["id" => $bookPublisher['xpublisher_id'], "name" => $bookPublisher['xpublishername']];
-                        }
-                    }
-                    //
-                    $data[] =
-                        [
-                            "id" => $book->_id,
-                            "dossier_id" => $dossier_id,
-                            "name" => $book->xname,
-                            "publishers" => $publishers,
-                            "language" => $book->languages,
-                            "year" => $book->xpublishdate_shamsi,
-                            "printNumber" => $book->xprintnumber,
-                            "circulation" => priceFormat($book->xcirculation),
-                            "format" => $book->xformat,
-                            "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
-                            "pageCount" => $book->xpagecount,
-                            "isbn" => $book->xisbn,
-                            "price" => priceFormat($book->xcoverprice),
-                            "image" => $book->ximgeurl,
-                            "description" => $book->xdescription,
-                            "doi" => $book->xdiocode,
-                        ];
-                }
-            }
+            // Use raw MongoDB aggregation to group by xparent, sort and apply pagination
+            $books = BookIrBook2::raw(function ($collection) use ($bookIds, $offset, $pageRows) {
+                return $collection->aggregate([
+                    ['$match' => ['_id' => ['$in' => $bookIds]]],
+                    ['$sort' => ['xparent' => 1]],
+                    ['$group' => [
+                        '_id' => '$xparent',
+                        'dossier_id' => ['$first' => '$dossier_id'],
+                        'name' => ['$first' => '$xname'],
+                        'publishers' => ['$first' => '$publishers'],
+                        'language' => ['$first' => '$language'],
+                        'year' => ['$first' => '$xpublishdate_shamsi'],
+                        'printNumber' => ['$first' => '$xprintnumber'],
+                        'circulation' => ['$first' => '$xcirculation'],
+                        'format' => ['$first' => '$xformat'],
+                        'cover' => ['$first' => '$xcover'],
+                        'pageCount' => ['$first' => '$xpagecount'],
+                        'isbn' => ['$first' => '$xisbn'],
+                        'price' => ['$first' => '$xcoverprice'],
+                        'image' => ['$first' => '$ximgeurl'],
+                        'description' => ['$first' => '$xdescription'],
+                        'doi' => ['$first' => '$xdiocode'],
+                    ]],
+                    ['$sort' => ['_id' => 1]],
+                    ['$skip' => $offset],
+                    ['$limit' => $pageRows]
+                ]);
+            });
+//            dd($books);
+            // Get total rows after aggregation
+            $totalRows = BookIrBook2::raw(function ($collection) use ($bookIds) {
+                return $collection->aggregate([
+                    ['$match' => ['_id' => ['$in' => $bookIds]]],
+                    ['$group' => ['_id' => '$xparent']]
+                ]);
+            })->toArray();
+            $totalRows = count($totalRows);
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-        }
-            if ($data != null or $subjectTitle != "") $status = 200;
 
-            // response
-            return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
-                ],
-                $status
-            );
+            // Process the grouped books
+            foreach ($books as $book) {
+                $dossier_id = $book->_id == -1 || $book->_id == 0 ? $book->dossier_id : $book->_id;
+
+                // Process publishers
+                $publishers = null;
+                $bookPublishers = $book->publishers;
+                if ($bookPublishers != null && count($bookPublishers) > 0) {
+                    foreach ($bookPublishers as $bookPublisher) {
+                        $publishers[] = ["id" => $bookPublisher['xpublisher_id'], "name" => $bookPublisher['xpublishername']];
+                    }
+                }
+
+                // Add book to data
+                $data[] = [
+                    "id" => $book->_id,
+                    "dossier_id" => $dossier_id,
+                    "name" => $book->name,
+                    "publishers" => $publishers,
+                    "language" => $book->language,
+                    "year" => $book->year,
+                    "printNumber" => $book->printNumber,
+                    "circulation" => $book->circulation,
+                    "format" => $book->format,
+                    "cover" => ($book->cover != null && $book->cover != "null") ? $book->cover : "",
+                    "pageCount" => $book->pageCount,
+                    "isbn" => $book->isbn,
+                    "price" => $book->price,
+                    "image" => $book->image,
+                    "description" => $book->description,
+                    "doi" => $book->doi,
+                ];
+            }
+
+            if (empty($data)) {
+                $status = 404;
+            }
         }
+
+        // Response
+        return response()->json([
+            "status" => $status,
+            "message" => $status == 200 ? "ok" : "not found",
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows,
+                "subjectTitle" => $subjectTitle,
+                "publisherName" => $publisherName,
+                "creatorName" => $creatorName
+            ]
+        ], $status);
+    }
 
 
     public function exportLists(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
@@ -665,7 +693,7 @@ class BookController extends Controller
             $bookCreators = $book->partners;
             if ($bookCreators != null and count($bookCreators) > 0) {
                 foreach ($bookCreators as $bookCreator) {
-                    $creatorsData[] = ["id" => $bookCreator['xcreator_id'], "name" => $bookCreator['xcreatorname']];
+                    $creatorsData[] = ["id" => $bookCreator['xcreator_id'], "name" => $bookCreator['xcreatorname'] , 'role' =>$bookCreator['xrule']];
                 }
             }
 

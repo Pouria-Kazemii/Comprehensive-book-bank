@@ -233,15 +233,19 @@ class CreatorController extends Controller
                 return $collection->aggregate([
                     ['$unwind' => '$partners'],
                     ['$match' => ['partners.xcreator_id' => $creatorId]],
-                    ['$project' => ['_id' => 0, 'title' => 1, 'role' => '$partners.xrule']],
-                    ['$sort' => ['partners.xrole' => 1]]
+                    ['$project' => ['_id' => 0, 'role' => '$partners.xrule']],
+                    ['$group' => ['_id' => '$role']],
+                    ['$sort' => ['_id' => 1]]
                 ]);
             });
+            //TODO should make a script for add bookIranKetabPartner to BookIrCreators
 //            BookIranKetabPartner::where('partner_master_id', $creatorId)->first();
             $dataMaster =
                 [
                     "name" => $creator->xcreatorname,
-                    "roles" => $roles,
+                    "roles" =>  $roles->map(function($role) {
+                        return ['title' => $role->_id];
+                    }),
                     "image" => !empty($partnerInfo->partnerImage) ? $partnerInfo->partnerImage : null,
                     "desc" => !empty($partnerInfo->partnerDesc) ? $partnerInfo->partnerDesc : null,
                     "enName" => !empty($partnerInfo->partnerEnName) ? $partnerInfo->partnerEnName : null,
