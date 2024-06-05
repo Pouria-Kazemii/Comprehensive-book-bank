@@ -89,7 +89,8 @@ class ConvertBookirBookJob implements ShouldQueue
             'age_group' => $ageGroup
 
         ];
-        BookIrBook2::create($mongoData);
+        $mongoBook = BookIrBook2::create($mongoData);
+        $this->bookir_book->update(['mongo_id' => $mongoBook->_id]);
     }
 
 }

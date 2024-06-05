@@ -218,42 +218,48 @@ class CreatorController extends Controller
         );
     }
     ///////////////////////////////////////////////Detail///////////////////////////////////////////////////
-    /// TODO : Must implement later
-//    public function detail(Request $request)
-//    {
-//        $creatorId = $request["creatorId"];
-//        $dataMaster = null;
-//
-//        // read
-//        $creator = BookirPartner::where('xid', '=', $creatorId)->first();
-//        if ($creator != null and $creator->xid > 0) {
-//            $rolesData = null;
-//            $creatorId = $creator->xid;
-//
-//            $roles = BookirRules::orderBy('xrole', 'asc')->whereRaw("xid In (Select xroleid From bookir_partnerrule Where xcreatorid='$creatorId')")->select('xrole as title')->get();
-//            $partnerInfo = BookIranKetabPartner::where('partner_master_id', $creatorId)->first();
-//            $dataMaster =
-//                [
-//                    "name" => $creator->xcreatorname,
-//                    "roles" => $roles,
-//                    "image" => !empty($partnerInfo->partnerImage) ? $partnerInfo->partnerImage : null,
-//                    "desc" => !empty($partnerInfo->partnerDesc) ? $partnerInfo->partnerDesc : null,
-//                    "enName" => !empty($partnerInfo->partnerEnName) ? $partnerInfo->partnerEnName : null,
-//                ];
-//        }
-//
-//        if ($dataMaster != null) $status = 200;
-//
-//        // response
-//        return response()->json(
-//            [
-//                "status" => $status,
-//                "message" => $status == 200 ? "ok" : "not found",
-//                "data" => ["master" => $dataMaster]
-//            ],
-//            $status
-//        );
-//    }
+    public function detail(Request $request)
+    {
+        $creatorId = $request["creatorId"];
+        $status = 404;
+        $dataMaster = null;
+
+
+        $creator = BookIrCreator::where('_id', $creatorId)->first();
+        if ($creator != null && $creator->_id > 0) {
+            $creatorId = $creator->_id;
+
+            $roles = BookIrBook2::raw(function ($collection) use ($creatorId) {
+                return $collection->aggregate([
+                    ['$unwind' => '$partners'],
+                    ['$match' => ['partners.xcreator_id' => $creatorId]],
+                    ['$project' => ['_id' => 0, 'title' => 1, 'role' => '$partners.xrule']],
+                    ['$sort' => ['partners.xrole' => 1]]
+                ]);
+            });
+//            BookIranKetabPartner::where('partner_master_id', $creatorId)->first();
+            $dataMaster =
+                [
+                    "name" => $creator->xcreatorname,
+                    "roles" => $roles,
+                    "image" => !empty($partnerInfo->partnerImage) ? $partnerInfo->partnerImage : null,
+                    "desc" => !empty($partnerInfo->partnerDesc) ? $partnerInfo->partnerDesc : null,
+                    "enName" => !empty($partnerInfo->partnerEnName) ? $partnerInfo->partnerEnName : null,
+                ];
+        }
+
+        if ($dataMaster != null) $status = 200;
+
+        // response
+        return response()->json(
+            [
+                "status" => $status,
+                "message" => $status == 200 ? "ok" : "not found",
+                "data" => ["master" => $dataMaster]
+            ],
+            $status
+        );
+    }
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
     public function search(Request $request)
     {

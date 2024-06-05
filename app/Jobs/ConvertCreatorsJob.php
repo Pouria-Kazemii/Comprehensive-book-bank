@@ -38,6 +38,9 @@ class ConvertCreatorsJob implements ShouldQueue
             'xwhite' => $this->partners->xwhite,
             'xblack' => $this->partners->xblack
             ];
-            BookIrCreator::create($mongoData);
+            $mongoCreator = BookIrCreator::create($mongoData);
+            $this->partners->update([
+                'mongo_id' => $mongoCreator->_id
+            ]);
     }
 }

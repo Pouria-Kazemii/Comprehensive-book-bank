@@ -68,6 +68,8 @@ class ConvertPublishersJob implements ShouldQueue
             'check_publisher' => $this->publisher->check_publisher
         ];
 
-        BookIrPublisher::create($mongoData);
+        $mongoPublisher = BookIrPublisher::create($mongoData);
+
+        $this->publisher->update(['mongo_id' => $mongoPublisher->_id]);
     }
 }

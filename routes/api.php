@@ -37,10 +37,10 @@ Route::get('/v1/book/exist', 'API\BookCheckController@exist');
 Route::put('/v1/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');
 
 //MongoDB Check
-//Route::get('/v2/book/check', [BookCheckController::class,'check']);//TODO working wrong
+//Route::get('/v2/book/check', [BookCheckController::class,'check']);//TODO must implement later
 /*Route::post('/v2/book/check_ketabir_ershad', [BookCheckController::class,'check_ketabir_and_ershad']);//TODO must implement later*/
 Route::get('/v2/book/exist', [BookCheckController::class,'exist']);
-Route::put('/v2/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');//TODO must implement later
+//Route::put('/v2/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabirController@crawler_ketabir_with_circulation');//TODO must implement later
 
 
 
@@ -53,7 +53,7 @@ Route::put('/v2/book/crawler-ketabir-with-circulation/{id}', 'API\CrawlerKetabir
 //        Route::post('/v1/', 'API\BookController@detail');
 //    }
 //);
-Route::group(['middleware' => ['ChToken']], function () {
+//Route::group(['middleware' => ['ChToken']], function () {
 
     //SQL Webs
     Route::post('/web/v1/publisher/detail', 'API\PublisherController@detail');
@@ -66,7 +66,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/web/v2/creator/detail', [CreatorController::class,'detail']);
     Route::post('/web/v2/book/find', [BookController::class,'find']);
     Route::post('/web/v2/book/detail', [BookController::class,'detail']);
-});
+//});
 
 Route::group(['middleware' => ['jwt.verify']], function () {
 

@@ -187,6 +187,7 @@ class CreatorController extends Controller
     public function detail(Request $request)
     {
         $creatorId = $request["creatorId"];
+        $status = 404;
         $dataMaster = null;
 
         // read
