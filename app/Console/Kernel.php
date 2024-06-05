@@ -15,40 +15,40 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         // Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
-        Commands\CrawlerSites\GetDigiCategoryForeignPrintedBook::class, 
-        Commands\CrawlerSites\GetDigiCategoryChildrenBook::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfBiographyAndEncyclopedia::class, 
-        Commands\CrawlerSites\GetDigiCategoryAppliedSciencesTechnologyAndEngineering::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedHistoryAndGeographyBook::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPhilosophyAndPsychology::class, 
-        Commands\CrawlerSites\GetDigiCategoryTextbookTutorialsAndTests::class, 
-        Commands\CrawlerSites\GetDigiCategoryLanguageBooks::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfArtAndEntertainment::class, 
-        Commands\CrawlerSites\GetDigiCategoryReligiousPrintedBook::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfSocialSciences::class, 
-        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPoetryAndLiterature::class, 
-        Commands\CrawlerSites\GetDigiNewestBook::class, 
-        Commands\CrawlerSites\GetDigiBook::class, 
-        Commands\CorrectInfo\CheckIsBookDigi::class, 
+        Commands\CrawlerSites\GetDigiCategoryForeignPrintedBook::class,
+        Commands\CrawlerSites\GetDigiCategoryChildrenBook::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfBiographyAndEncyclopedia::class,
+        Commands\CrawlerSites\GetDigiCategoryAppliedSciencesTechnologyAndEngineering::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedHistoryAndGeographyBook::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPhilosophyAndPsychology::class,
+        Commands\CrawlerSites\GetDigiCategoryTextbookTutorialsAndTests::class,
+        Commands\CrawlerSites\GetDigiCategoryLanguageBooks::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfArtAndEntertainment::class,
+        Commands\CrawlerSites\GetDigiCategoryReligiousPrintedBook::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfSocialSciences::class,
+        Commands\CrawlerSites\GetDigiCategoryPrintedBookOfPoetryAndLiterature::class,
+        Commands\CrawlerSites\GetDigiNewestBook::class,
+        Commands\CrawlerSites\GetDigiBook::class,
+        Commands\CorrectInfo\CheckIsBookDigi::class,
 
         Commands\CrawlerSites\GetFidiboNewestBook::class,
         Commands\CrawlerSites\GetFidibo::class,
-        Commands\CrawlerSites\GetIranketab::class, 
-        Commands\CrawlerSites\GetKetabRah::class, 
-        Commands\CrawlerSites\GetShahreKetabOnline::class, 
+        Commands\CrawlerSites\GetIranketab::class,
+        Commands\CrawlerSites\GetKetabRah::class,
+        Commands\CrawlerSites\GetShahreKetabOnline::class,
         Commands\CrawlerSites\GetBarKhatBookNewestBook::class,
-        commands\CrawlerSites\GetBarKhatBook::class, 
+        commands\CrawlerSites\GetBarKhatBook::class,
         commands\CrawlerSites\GetketabejamNewestBook::class,
         commands\CrawlerSites\Getketabejam::class,
-        Commands\CrawlerSites\GetGissom::class, 
-        Commands\CrawlerSites\get30Book::class, 
+        Commands\CrawlerSites\GetGissom::class,
+        Commands\CrawlerSites\get30Book::class,
         Commands\GetKetabirForNewBooks::class,
         Commands\GetKetabirLastDays::class,
         Commands\GetKetabirFutureDays::class,
 
         commands\CorrectInfo\RecheckNotfoundBooks::class,
 
-        commands\ConvertIntoMongodb\ConvertBookIr_bookCommand::class,
+        commands\ConvertIntoMongodb\ConvertBookIr_bookCommand1::class,
         commands\ConvertIntoMongodb\ConvertCreatorsCommand::class,
         commands\ConvertIntoMongodb\ConvertPublishersCommand::class
 
@@ -66,7 +66,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        
+
         $schedule->command('get:KetabirFutureDays 1')->dailyAt('02:00');
         $schedule->command('get:KetabirLastDays 1')->dailyAt('02:30');
         $schedule->command('get:KetabirForNewBookInfo 1')->dailyAt('03:00');
@@ -76,7 +76,7 @@ class Kernel extends ConsoleKernel
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        // fidibo 
+        // fidibo
         $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');
         $schedule->command('get:fidibo 1')->dailyAt('16:00');
         //ketabrah
@@ -93,9 +93,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:ketabejamNewestBooks 1 1')->monthlyOn(20, '18:15'); // for check amin categories
         $schedule->command('get:ketabejam')->dailyAt('18:30');
 
-        //gissom 
+        //gissom
         $schedule->command('get:gissom 1')->dailyAt('17:00');
-        //30book 
+        //30book
         // $schedule->command('get:30book 1')->dailyAt('02:00');
 
         // $schedule->command('get:iranKetab 1')->everyMinute();   // stop from kandoo news
