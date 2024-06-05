@@ -38,7 +38,9 @@ class ConvertPublishersCommand extends Command
      */
         public function handle()
         {
-            $this::info("Start converting bookir_publishers table");
+            \App\Models\MongoDBModels\BookIrPublisher::truncate();
+            $this->info('All Mongo data Deleted');
+            $this->info("Start converting bookir_publishers table");
             $startTime = microtime(true);
             $totalPublisher = BookirPublisher::count();
             $progressBar = $this->output->createProgressBar($totalPublisher);

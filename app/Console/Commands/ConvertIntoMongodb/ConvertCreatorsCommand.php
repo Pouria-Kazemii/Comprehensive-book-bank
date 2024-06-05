@@ -43,7 +43,9 @@ class ConvertCreatorsCommand extends Command
 
     public function handle()
     {
-        $this::info("Start converting bookir_creators table");
+        \App\Models\MongoDBModels\BookIrCreator::truncate();
+        $this->info('All Mongo data Deleted');
+        $this->info("Start converting bookir_creators table");
         $totalBooks = BookirPartner::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
         $progressBar->start();
