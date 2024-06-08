@@ -41,8 +41,8 @@ class ConvertBookIr_bookCommand extends Command
     {
         \App\Models\MongoDBModels\BookIrBook2::truncate();
         $this->info('All Mongo data Deleted');
-        $this::info("Start converting bookir_books table");
-        $totalBooks = BookirBook::all()->count();
+        $this->info("Start converting bookir_books table");
+        $totalBooks = BookirBook::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
         $progressBar->start();
         $startTime = microtime(true);

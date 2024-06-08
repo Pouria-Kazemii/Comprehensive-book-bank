@@ -906,6 +906,7 @@ class BookController extends Controller
             ->select('bookir_publisher.xpublishername as name', DB::raw('SUM(bookir_book.xpagecount) as printCount'))
             ->groupBy('bookir_publisher.xid')
             ->get();
+
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
             foreach ($books as $book) {

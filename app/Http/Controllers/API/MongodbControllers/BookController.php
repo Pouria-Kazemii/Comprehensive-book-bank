@@ -94,6 +94,7 @@ class BookController extends Controller
                     ], 404);
                 }
             }
+
             /////give count ///////////////////
             $countBooks = $books->get();
             $totalRows = count($countBooks);
@@ -117,7 +118,6 @@ class BookController extends Controller
                         }
                     }
 
-                    //
                     $data[] =
                         [
                             "id" => $book->_id,
@@ -318,17 +318,18 @@ class BookController extends Controller
                 });
             }
 
-            if (count($where) > 0) {
-                if (count($where[0]) == 2) {
-                    $books->where(function ($query) use ($where) {
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
-                        for ($i = 1; $i < count($where); $i++) {
-                            $query->orWhere($where[$i][0], $where[$i][1]);
-                        }
-                    });
-                };
-                if (!$defaultWhere) {
+            if (!$defaultWhere) {
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $books->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+
                     if (count($where[0]) == 4) {
 
                         for ($i = 0; $i < count($where); $i++) {
@@ -437,7 +438,6 @@ class BookController extends Controller
                         }
                     }
 
-                    //
                     $data[] =
                         [
                             "id" => $book->_id,
@@ -519,7 +519,7 @@ class BookController extends Controller
     public function exportExcelBookFindByPublisher(Request $request)
     {
         $where = $this->findByPublisherSelect($request);
-        $result = $this->exportLists($request, true, ($where == ""), $where);
+        $result = $this->exportLists($request, false, ($where == []), $where);
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
             $publisherInfo = BookIrPublisher::where('_id', $request["publisherId"])->first();
@@ -536,7 +536,7 @@ class BookController extends Controller
     public function findByCreator(Request $request)
     {
         $where = $this->findByCreatorSelect($request);
-        return $this->lists($request, true, ($where == ""), $where);
+        return $this->lists($request, false, ($where == []), $where);
     }
     public function findByCreatorSelect(Request $request)
     {
@@ -566,7 +566,7 @@ class BookController extends Controller
     public function exportExcelBookFindByCreator(Request $request)
     {
         $where = $this->findByCreatorSelect($request);
-        $result = $this->exportLists($request, true, ($where == ""), $where);
+        $result = $this->exportLists($request, false, ($where == []), $where);
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
             $creatorInfo = BookIrCreator::where('_id', $request["creatorId"])->first();
@@ -598,11 +598,14 @@ class BookController extends Controller
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
-        // $bookId = 13349;
+            $book = BookIrBook2::find($bookId);
+            if ($book != null) {
+                //TODO : must change after implement book dossier collection
+                $where [] = [ 'xparent' , $book->get()->xsqlid];
+            }
         $where [] = ['_id' , $bookId];
-        $where [] = [ 'xparent' , $bookId];
 
-        return $this->listsWithOutGroupby($request, true, ($where == ""), $where);
+        return $this->listsWithOutGroupby($request, false, ($where == []), $where);
     }
 
 
@@ -631,7 +634,7 @@ class BookController extends Controller
 
         $where[] =  ['subjects.xsubject_id' , (int)$subjectId ] ;
 
-        return $this->lists($request, true, ($where == ""), $where, $subjectTitle);
+        return $this->lists($request, false, ($where == []), $where, $subjectTitle);
 
     }
 
@@ -711,7 +714,8 @@ class BookController extends Controller
         }
 
         // read books for year printCount
-        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $bookId)->get();
+        //TODO : must change after implement book dossier collection
+        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year =$book->xpublishdate_shamsi;
@@ -719,14 +723,13 @@ class BookController extends Controller
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
             }
-
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
 
         // read books for publisher PrintCount
-        //must testing for more complicate examples ?!?!?!?!?!?
-        $books = BookIrBook2::where('_id' , $bookId)->orWhere('xparent' , $bookId)->get();
+        //TODO : must change after implement book dossier collection
+        $books = BookIrBook2::where('_id' , $bookId)->orWhere('xparent' , $book != null ? $book->xsqlid : '')->get();
 
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
@@ -746,7 +749,7 @@ class BookController extends Controller
             $publisherPrintCountData = ["label" => array_column($publisherPrintCountData, 'name'), "value" => array_column($publisherPrintCountData, 'percentPrintCount')];
         }
 
-        //
+
         if ($dataMaster != null) $status = 200;
 
         // response
@@ -769,6 +772,7 @@ class BookController extends Controller
         $status = 404;
 
         $book = BookIrBook2::where('_id', '=', $bookId)->first();
+
         if ($book != null and $book->_id > 0) {
             $publishersData = null;
             $subjectsData = null;
@@ -805,7 +809,7 @@ class BookController extends Controller
                     "isbn3" => $book->xisbn3,
                     "name" => $book->xname,
                     "dioCode" => $book->xdiocode,
-                    "lang" => $book->xlang,
+                    "lang" => $book->languages,
                     "publishers" => $publishersData,
                     "subjects" => $subjectsData,
                     "creators" => $creatorsData,
@@ -824,11 +828,12 @@ class BookController extends Controller
         }
 
         // read books for year printCount
-        $books = BookirBook::where('xid', '=', $bookId)->orwhere('xparent', '=', $bookId)->get();
+        //TODO : must change after implement book dossier collection
+//        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
-            foreach ($books as $book) {
-                $year = BookirBook::getShamsiYear($book->xpublishdate);
-                $printCount = $book->xcirculation;
+            foreach ($books as $value) {
+                $year =$value->xpublishdate_shamsi;
+                $printCount = $value->xcirculation;
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
             }
@@ -836,24 +841,46 @@ class BookController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        // read books for year printCount
-        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $bookId)->get();
-        if ($books != null and count($books) > 0) {
-            foreach ($books as $book) {
-                $year =$book->xpublishdate_shamsi;
-                $printCount = $book->xcirculation;
-
-                $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
-            }
-
-            $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
+        if ($book!=$bookId){
+            $bookSqlId = BookIrBook2::where('_id' , $bookId)->get()->xsqlid;
         }
-
-
         // read books for publisher PrintCount
-        //must testing for more complicate examples ?!?!?!?!?!?
-        $books = BookIrBook2::where('_id' , $bookId)->orWhere('xparent' , $bookId)->get();
+        //TODO : must change after implement book dossier collection
+        $pipeline = [
+            // Match documents based on xid or xparent
+            [
+                '$match' => [
+                    '$or' => [
+                        ['xid' => $bookId],
+                        ['xparent' => $bookSqlId]
+                    ]
+                ]
+            ],
+            // Unwind the nested publishers array
+            [
+                '$unwind' => '$publishers'
+            ],
+            // Group by publisher ID and calculate the sum of xpagecount
+            [
+                '$group' => [
+                    '_id' => '$publishers.xid',
+                    'name' => ['$first' => '$publishers.xpublishername'],
+                    'printCount' => ['$sum' => '$xpagecount']
+                ]
+            ],
+            // Project the desired output
+            [
+                '$project' => [
+                    '_id' => 0,
+                    'name' => 1,
+                    'printCount' => 1
+                ]
+            ]
+        ];
 
+        $books = DB::collection('bookirbook')->raw(function ($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
             foreach ($books as $book) {
