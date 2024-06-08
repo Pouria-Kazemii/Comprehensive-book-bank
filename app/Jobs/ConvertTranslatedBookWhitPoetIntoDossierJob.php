@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use MongoDB\Client;
 
 
-class ConvertTranslatedBookWhitPoetIntoDossier implements ShouldQueue
+class ConvertTranslatedBookWhitPoetIntoDossierJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 

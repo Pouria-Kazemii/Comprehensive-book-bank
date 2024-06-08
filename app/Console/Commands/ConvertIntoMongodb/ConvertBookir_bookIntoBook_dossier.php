@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
-use App\Jobs\ConvertNonTranslatedBookWhitPoetIntoDossier;
+use App\Jobs\ConvertNonTranslatedBookWhitPoetIntoDossierJob;
 use App\Jobs\ConvertNonTranslatedBookWithWriterIntoDossierJob;
-use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossier;
-use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossier;
+use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossierJob;
+use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossierJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Console\Command;
 use MongoDB\Client;
@@ -49,12 +49,12 @@ class ConvertBookir_bookIntoBook_dossier extends Command
         $this::info("Start converting book_dossier table");
 
         $startTime = microtime(true);
-//        ConvertTranslatedBookWhitPoetIntoDossier::dispatch();
+//        ConvertTranslatedBookWhitPoetIntoDossierJob::dispatch();
         $this->info('translated books with poet done');
-        ConvertTranslatedBookWhitWriterIntoDossier::dispatch();
+        ConvertTranslatedBookWhitWriterIntoDossierJob::dispatch();
         $this->info('translated books with writer done');
         //TODO : Non translate books have very complicate rules.
-        //ConvertNonTranslatedBookWhitPoetIntoDossier::dispatch();
+        //ConvertNonTranslatedBookWhitPoetIntoDossierJob::dispatch();
         $this->info('non translated books with poet done');
         //ConvertNonTranslatedBookWithWriterIntoDossierJob::dispatch();
         $this->info('non translated books with writer done');

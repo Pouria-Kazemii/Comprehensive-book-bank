@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\MongoDBModels\BookIrCreator;
+use App\Models\BookirPublisher;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -10,18 +10,18 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class ConvertCreatorsJob implements ShouldQueue
+class UpdatePublishersMongoIdInSqlJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    private $partners;
+    private $publisher;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($partners)
+    public function __construct($publisher)
     {
-        $this->partners = $partners;
+        $this->publisher = $publisher;
     }
 
     /**
@@ -31,13 +31,9 @@ class ConvertCreatorsJob implements ShouldQueue
      */
     public function handle()
     {
-        $mongoData = [
-            "xsqlid" => $this->partners->xid,
-            'xcreatorname' => $this->partners->xcreatorname,
-            'ximageurl' => null,
-            'xwhite' => $this->partners->xwhite,
-            'xblack' => $this->partners->xblack
-            ];
-        BookIrCreator::create($mongoData);
+        BookirPublisher::find($this->publisher->xsqlid)
+            ->update([
+                'mongo_id' => $this->publisher->_id
+            ]);
     }
 }

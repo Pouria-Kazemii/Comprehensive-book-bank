@@ -75,5 +75,5 @@ Route::get('exportExcelContradictionsBarkhatBook/{status}/{excel_name}', [ExcelC
 Route::get('exportExcelContradictionsKetabejam/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsKetabejam']);
 Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{saveInWebsiteBooklinksDefects}', [ExcelController::class, 'exportExcelContradictionsGisoom']);
 Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
-
+Route::get('/test_mongo' , [\App\Http\Controllers\API\MongodbControllers\BookController::class , 'getTotal']);
 

@@ -9,13 +9,17 @@ use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
 use Illuminate\Http\Request;
+use MongoDB\BSON\ObjectId;
 
 
 class BookController extends Controller
 {
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
-
-    public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = "", $subjectTitle = "", $publisherName = "", $creatorName = "")
+    public function getTotal()
+    {
+        return count(BookIrBook2::all());
+    }
+    public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
@@ -45,53 +49,51 @@ class BookController extends Controller
                 });
             }
 
+            if (!$defaultWhere) {
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $books->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+                    if (count($where[0]) == 4) {
 
-            if (count($where) > 0) {
-                if (count($where[0]) == 2) {
-                    $books->where(function ($query) use($where){
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
-                        for ($i = 1; $i < count($where); $i++) {
-                            $query->orWhere($where[$i][0], $where[$i][1]);
-                        }
-                    });
-                };
+                        for ($i = 0; $i < count($where); $i++) {
+                            if ($where[$i][3] == '') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                            } elseif ($where[$i][3] == 'AND') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
 
-                if (count($where[0]) == 4) {
+                            } elseif ($where[$i][3] == 'OR') {
 
-                    for ($i = 0 ; $i < count($where) ; $i++){
-                        if ($where[$i][3] == ''){
-                            $books->where($where[$i][0] , $where[$i][2] , $where[$i][1]);
-                        } elseif ($where[$i][3] == 'AND'){
-                            $books->where($where[$i][0] ,$where[$i][2] ,$where[$i][1]);
-
-                        }elseif($where[$i][3] == 'OR'){
-
-                            $books->where(function ($query) use($where,&$i){
-                                $query->where($where[$i][0],$where[$i][2],$where[$i][1]);
-                                $query->orWhere($where[$i+1][0], $where[$i+1][2] , $where[$i+1][1]);
-                                $i++;
-                                for ($j = $i ; $j<count($where) ; $j++){
-                                    if ($where[$j][3] == 'OR'){
-                                        $query->orWhere($where[$j+1][0],$where[$j+1][2],$where[$j+1][1]);
-                                        $i++;
-                                    }else{
-                                        break;
+                                $books->where(function ($query) use ($where, &$i) {
+                                    $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                                    $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
+                                    $i++;
+                                    for ($j = $i; $j < count($where); $j++) {
+                                        if ($where[$j][3] == 'OR') {
+                                            $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
+                                            $i++;
+                                        } else {
+                                            break;
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
+                } else {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "not found",
+                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+                    ], 404);
                 }
             }
-            else {
-                return response()->json([
-                    "status" => 404,
-                    "message" => "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
-                ], 404);
-            }
-
             /////give count ///////////////////
             $countBooks = $books->get();
             $totalRows = count($countBooks);
@@ -154,7 +156,7 @@ class BookController extends Controller
     }
 
 
-        //TODO : must implement after making book Dossier for groupBys
+    //TODO : must implement after making book Dossier for groupBys
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
@@ -184,53 +186,59 @@ class BookController extends Controller
                         ->orWhere('xisbn3', '=', $isbn);
                 });
             }
+            if (!$defaultWhere) {
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $books->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
 
-            if (count($where) > 0) {
-                if (count($where[0]) == 2) {
-                    $books->where(function ($query) use ($where) {
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
-                        for ($i = 1; $i < count($where); $i++) {
-                            $query->orWhere($where[$i][0], $where[$i][1]);
-                        }
-                    });
-                };
+                    if (count($where[0]) == 4) {
 
-                if (count($where[0]) == 4) {
+                        for ($i = 0; $i < count($where); $i++) {
+                            if ($where[$i][3] == '') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                            } elseif ($where[$i][3] == 'AND') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
 
-                    for ($i = 0; $i < count($where); $i++) {
-                        if ($where[$i][3] == '') {
-                            $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
-                        } elseif ($where[$i][3] == 'AND') {
-                            $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                            } elseif ($where[$i][3] == 'OR') {
 
-                        } elseif ($where[$i][3] == 'OR') {
-
-                            $books->where(function ($query) use ($where, &$i) {
-                                $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
-                                $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
-                                $i++;
-                                for ($j = $i; $j < count($where); $j++) {
-                                    if ($where[$j][3] == 'OR') {
-                                        $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
-                                        $i++;
-                                    } else {
-                                        break;
+                                $books->where(function ($query) use ($where, &$i) {
+                                    $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                                    $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
+                                    $i++;
+                                    for ($j = $i; $j < count($where); $j++) {
+                                        if ($where[$j][3] == 'OR') {
+                                            $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
+                                            $i++;
+                                        } else {
+                                            break;
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
+                } else {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "not found",
+                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+                    ], 404);
                 }
             }
-
             /////give count ///////////////////
 
             $countBooks = $books->get();
 
             $totalRows = count($countBooks);
 
-            $books = $books->skip($offset)->take($pageRows);
+            $books = $books->skip($offset)->take($pageRows)->get();
             /////give result //////////////////
             if ($books != null and count($books) > 0) {
                 foreach ($books as $book) {
@@ -272,6 +280,7 @@ class BookController extends Controller
             }
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
         }
+
         if ($data != null or $subjectTitle != "") $status = 200;
 
         // response
@@ -311,7 +320,7 @@ class BookController extends Controller
 
             if (count($where) > 0) {
                 if (count($where[0]) == 2) {
-                    $books->where(function ($query) use($where){
+                    $books->where(function ($query) use ($where) {
                         $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
                         // Apply subsequent conditions using orWhere()
                         for ($i = 1; $i < count($where); $i++) {
@@ -319,40 +328,40 @@ class BookController extends Controller
                         }
                     });
                 };
+                if (!$defaultWhere) {
+                    if (count($where[0]) == 4) {
 
-                if (count($where[0]) == 4) {
+                        for ($i = 0; $i < count($where); $i++) {
+                            if ($where[$i][3] == '') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                            } elseif ($where[$i][3] == 'AND') {
+                                $books->where($where[$i][0], $where[$i][2], $where[$i][1]);
 
-                    for ($i = 0 ; $i < count($where) ; $i++){
-                        if ($where[$i][3] == ''){
-                            $books->where($where[$i][0] , $where[$i][2] , $where[$i][1]);
-                        } elseif ($where[$i][3] == 'AND'){
-                            $books->where($where[$i][0] ,$where[$i][2] ,$where[$i][1]);
+                            } elseif ($where[$i][3] == 'OR') {
 
-                        }elseif($where[$i][3] == 'OR'){
-
-                            $books->where(function ($query) use($where,&$i){
-                                $query->where($where[$i][0],$where[$i][2],$where[$i][1]);
-                                $query->orWhere($where[$i+1][0], $where[$i+1][2] , $where[$i+1][1]);
-                                $i++;
-                                for ($j = $i ; $j<count($where) ; $j++){
-                                    if ($where[$j][3] == 'OR'){
-                                        $query->orWhere($where[$j+1][0],$where[$j+1][2],$where[$j+1][1]);
-                                        $i++;
-                                    }else{
-                                        break;
+                                $books->where(function ($query) use ($where, &$i) {
+                                    $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                                    $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
+                                    $i++;
+                                    for ($j = $i; $j < count($where); $j++) {
+                                        if ($where[$j][3] == 'OR') {
+                                            $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
+                                            $i++;
+                                        } else {
+                                            break;
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
                         }
                     }
+                } else {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "not found",
+                        "data" => ["list" => $data, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+                    ], 404);
                 }
-            }
-            else {
-                return response()->json([
-                    "status" => 404,
-                    "message" => "not found",
-                    "data" => ["list" => $data,  "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
-                ], 404);
             }
 
             if ($yearStart != "") {
@@ -479,7 +488,8 @@ class BookController extends Controller
     public function findByPublisher(Request $request)
     {
         $where = $this->findByPublisherSelect($request);
-        return $this->lists($request, true, ($where == ""), $where);
+        return $this->lists($request, false, ($where == []), $where);
+
     }
 
     public function findByPublisherSelect(Request $request)
