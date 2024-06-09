@@ -18,10 +18,12 @@ class BookFormatController extends Controller
         $formats = array_unique($formats);
         if ($formats != null and count($formats) > 0){
             foreach ($formats as $format){
-                $data[] =
-                    [
-                        "value" => $format,
-                    ];
+                if ($format != '') {
+                    $data[] =
+                        [
+                            "value" => $format,
+                        ];
+                }
                 $status = 200;
             }
         }

@@ -68,7 +68,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/web/v2/book/detail', [BookController::class,'detail']);
 });
 
-//Route::group(['middleware' => ['jwt.verify']], function () {
+Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::post('/v1/user/find', 'API\UserController@find');
     Route::post('/v1/user/save', 'API\UserController@store');
@@ -150,9 +150,9 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/v2/creator/find/subject', [CreatorController::class ,'findBySubject']);
     Route::post('/v2/creator/find/publisher', [CreatorController::class , 'findByPublisher']);
     Route::post('/v2/creator/find/creator', [CreatorController::class,'findByCreator']);
-    Route::post('/v2/creator/role', [CreatorController::class,'role']);
+    Route::post('/v2/creator/role', [CreatorController::class,'role']);//use sql method is better
     Route::post('/v2/creator/search', [CreatorController::class ,'search']);
-    Route::post('/v2/creator/detail', [CreatorController::class,'detail']);//TODO : Must implement later
+    Route::post('/v2/creator/detail', [CreatorController::class,'detail']);//TODO : need change after added bookiranketab_partner
     Route::post('/v2/creator/annual-activity', [CreatorController::class,'annualActivity']);
 
     //SQL Subjects
@@ -228,17 +228,17 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::get('/v1/bookCover/list/', 'API\BookCoverController@list');
 
     //MongoDB Role , Languages , Formats and Covers
-    Route::post('/v2/role/search', [RoleController::class ,'search']);
-    Route::post('/v2/bookLanguage/list/', [BookLanguageController::class,'list']);
-    Route::get('/v2/bookFormat/list/', [BookFormatController::class,'list']);
-    Route::get('/v2/bookCover/list/', [BookCoverController::class ,'list']);
+    Route::post('/v2/role/search', [RoleController::class ,'search']);//use sql method is better
+    Route::post('/v2/bookLanguage/list/', [BookLanguageController::class,'list']);//use sql method is better
+    Route::get('/v2/bookFormat/list/', [BookFormatController::class,'list']);//use sql method is better
+    Route::get('/v2/bookCover/list/', [BookCoverController::class ,'list']);//use sql method is better
 
 
     //TODO must implement later
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
-//});
+});
 
 
 

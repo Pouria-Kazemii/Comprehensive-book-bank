@@ -12,7 +12,7 @@ class CreatorController extends Controller
 {
 
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
-    public function lists(Request $request, $isNull = false, $where = "", $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
+    public function lists(Request $request, $isNull = false,$defaultWhere = true, $where = [], $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
         $roleName = (isset($request["roleName"])) ? $request["roleName"] : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
@@ -49,22 +49,24 @@ class CreatorController extends Controller
                 });
             }
 
-            if (count($where) > 0) {
-                if (count($where[0]) == 2) {
-                    $creators->where(function ($query) use ($where) {
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
-                        for ($i = 1; $i < count($where); $i++) {
-                            $query->orWhere($where[$i][0], $where[$i][1]);
-                        }
-                    });
-                };
-            } else {
-                return response()->json([
-                    "status" => 404,
-                    "message" => "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-                ], 404);
+            if (!$defaultWhere) {
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $creators->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+                } else {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "not found",
+                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                    ], 404);
+                }
             }
 
             $totalRows = $creators->count();
@@ -122,7 +124,7 @@ class CreatorController extends Controller
                 $where [] = ['_id', $value['xcreator_id']];
             }
         }
-        return $this->lists($request, ($where == ""), $where, $subjectId);
+        return $this->lists($request,false ,false, $where, $subjectId);
     }
 
     ///////////////////////////////////////////////Publisher///////////////////////////////////////////////////
@@ -137,7 +139,7 @@ class CreatorController extends Controller
                 $where [] = ['_id', $value['xcreator_id']];
             }
         }
-        return $this->lists($request, ($where == ""), $where, 0, 0, $publisherId);
+        return $this->lists($request,false ,false, $where, 0,  0, $publisherId);
     }
     ///////////////////////////////////////////////Creators///////////////////////////////////////////////////
     public function findByCreator(Request $request)
@@ -151,7 +153,7 @@ class CreatorController extends Controller
                 $where [] = ['_id', $value['xcreator_id']];
             }
         }
-        return $this->lists($request, ($where == ""), $where, 0, $creatorId);
+        return $this->lists($request, false , false, $where, 0, $creatorId);
     }
     ///////////////////////////////////////////////Role///////////////////////////////////////////////////
     public function role(Request $request)

@@ -14,14 +14,16 @@ class BookCoverController extends Controller
         $status = 404;
         $data = null;
 
-        $formats = BookIrBook2::all()->pluck('xcover')->toArray();
-        $formats = array_unique($formats);
-        if ($formats != null and count($formats) > 0){
-            foreach ($formats as $format){
-                $data[] =
-                    [
-                        "value" => $format,
-                    ];
+        $covers = BookIrBook2::all()->pluck('xcover')->toArray();
+        $covers = array_unique($covers);
+        if ($covers != null and count($covers) > 0){
+            foreach ($covers as $cover){
+                if ($cover != '') {
+                    $data[] =
+                        [
+                            "value" => $cover
+                        ];
+                }
                 $status = 200;
             }
         }

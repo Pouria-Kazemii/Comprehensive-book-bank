@@ -29,24 +29,26 @@ class PublisherController extends Controller
 
             if ($searchText != "") $publishers->where('xpublishername', 'like', "%$searchText%");
 
-            if (count($where) > 0) {
-                if (count($where[0]) == 2) {
-                    $publishers->where(function ($query) use ($where) {
-                        $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                        // Apply subsequent conditions using orWhere()
-                        for ($i = 1; $i < count($where); $i++) {
-                            $query->orWhere($where[$i][0], $where[$i][1]);
-                        }
-                    });
-                };
-            } else {
-                return response()->json([
-                    "status" => 404,
-                    "message" => "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "creatorId" => $creatorId]
-                ], 404);
-            }
 
+            if (!$defaultWhere) {
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $publishers->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+                } else {
+                    return response()->json([
+                        "status" => 404,
+                        "message" => "not found",
+                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "creatorId" => $creatorId]
+                    ], 404);
+                }
+            }
 
             $totalRows = $publishers->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
@@ -117,7 +119,7 @@ class PublisherController extends Controller
                 $where[] = ['_id', $value['xpublisher_id']];
             }
         }
-        return $this->lists($request, false, ($where == ""), $where, $creatorId);
+        return $this->lists($request, false, ($where == []), $where, $creatorId);
     }
 
     ///////////////////////////////////////////////Subject///////////////////////////////////////////////////
@@ -132,7 +134,7 @@ class PublisherController extends Controller
                 $where[] = ['_id', $value['xpublisher_id']];
             }
         }
-        return $this->lists($request, false, ($where == ""), $where);
+        return $this->lists($request, false, ($where == []), $where);
     }
 
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
@@ -143,7 +145,7 @@ class PublisherController extends Controller
         $status = 404;
 
         // read
-        $publishers = BookIrPublisher::where('xpublishername', '!=', '')->where('xpublishername', 'like', "%$searchWord%")->orderBy('xpublishername', 'asc')->get();
+        $publishers = BookIrPublisher::where('xpublishername', '!=', '')->where('xpublishername', 'like', "%$searchWord%")->orderBy('xpublishername', 1)->get();
         if ($publishers != null and count($publishers) > 0) {
             foreach ($publishers as $publisher) {
                 $data[] =
@@ -378,12 +380,9 @@ class PublisherController extends Controller
 
             foreach ($unique_partners as $unique_partner) {
                 if ($unique_partner['xrule'] == $unique_role) {
-                    foreach ($books as $book) {
-                    $bookCount = $book->where('partners.xcreator_id' , $unique_partner['xcreator_id'])->where('partners.xrule',$unique_role)->count();
-                }
+                    $bookCount = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->where('partners.xcreator_id' , $unique_partner['xcreator_id'])->where('partners.xrule',$unique_role)->count();
                     $role_partner [] = [$unique_partner['xcreator_id'] => ['partner_id' => $unique_partner['xcreator_id'], 'partnername' => $unique_partner['xcreatorname'] , 'book_count' => $bookCount]];
                     $partnerCount++;
-
                 }
             }
 

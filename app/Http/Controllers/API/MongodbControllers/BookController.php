@@ -729,27 +729,64 @@ class BookController extends Controller
 
         // read books for publisher PrintCount
         //TODO : must change after implement book dossier collection
-        $books = BookIrBook2::where('_id' , $bookId)->orWhere('xparent' , $book != null ? $book->xsqlid : '')->get();
+        if ($bookId != null) {
+            $bookSqlId = BookIrBook2::where('_id', $bookId)->first();
+            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
+        }else{
+            $bookSqlId = null;
+        }
+
+        $pipeline = [
+            // Match documents based on xid or xparent
+            [
+                '$match' => [
+                    '$or' => [
+                        ['_id' => new ObjectId($bookId)],
+                        ['xparent' => $bookSqlId]
+                    ]
+                ]
+            ],
+            // Unwind the nested publishers array
+            [
+                '$unwind' => '$publisher'
+            ],
+            // Group by publisher ID and calculate the sum of xpagecount
+            [
+                '$group' => [
+                    '_id' => '$publisher.xpublisher_id',
+                    'name' => ['$first' => '$publisher.xpublishername'],
+                    'printCount' => ['$sum' => '$xpagecount']
+                ]
+            ],
+            // Project the desired output
+            [
+                '$project' => [
+                    '_id' => 0,
+                    'name' => 1,
+                    'printCount' => 1
+                ]
+            ]
+        ];
+
+        $books = BookIrBook2::raw(function ($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
 
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
             foreach ($books as $book) {
-                $totalPrintCount += $book->sum('xpagecount');
+                $totalPrintCount += $book->printCount;
             }
 
             foreach ($books as $book) {
-                foreach ($book->publisher as $publisher) {
-                    $publisherName = $publisher['xpublishername'];
-                    $percentPrintCount = ($book->sum('xpagecount') > 0 and $totalPrintCount > 0) ? round(($book->sum('xpagecount') / $totalPrintCount) * 100, 2) : 0;
+                $publisherName = $book->name;
+                $percentPrintCount = ($book->printCount > 0 and $totalPrintCount > 0) ? round(($book->printCount / $totalPrintCount) * 100, 2) : 0;
 
-                    $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
-                }
+                $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
             }
 
             $publisherPrintCountData = ["label" => array_column($publisherPrintCountData, 'name'), "value" => array_column($publisherPrintCountData, 'percentPrintCount')];
         }
-
-
         if ($dataMaster != null) $status = 200;
 
         // response
@@ -829,7 +866,7 @@ class BookController extends Controller
 
         // read books for year printCount
         //TODO : must change after implement book dossier collection
-//        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
+        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $value) {
                 $year =$value->xpublishdate_shamsi;
@@ -837,34 +874,38 @@ class BookController extends Controller
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
             }
-
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if ($book!=$bookId){
-            $bookSqlId = BookIrBook2::where('_id' , $bookId)->get()->xsqlid;
-        }
+
         // read books for publisher PrintCount
         //TODO : must change after implement book dossier collection
+        if ($bookId != null) {
+            $bookSqlId = BookIrBook2::where('_id', $bookId)->first();
+            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
+        }else{
+            $bookSqlId = null;
+        }
+
         $pipeline = [
             // Match documents based on xid or xparent
             [
                 '$match' => [
                     '$or' => [
-                        ['xid' => $bookId],
+                        ['_id' => new ObjectId($bookId)],
                         ['xparent' => $bookSqlId]
                     ]
                 ]
             ],
             // Unwind the nested publishers array
             [
-                '$unwind' => '$publishers'
+                '$unwind' => '$publisher'
             ],
             // Group by publisher ID and calculate the sum of xpagecount
             [
                 '$group' => [
-                    '_id' => '$publishers.xid',
-                    'name' => ['$first' => '$publishers.xpublishername'],
+                    '_id' => '$publisher.xpublisher_id',
+                    'name' => ['$first' => '$publisher.xpublishername'],
                     'printCount' => ['$sum' => '$xpagecount']
                 ]
             ],
@@ -878,22 +919,21 @@ class BookController extends Controller
             ]
         ];
 
-        $books = DB::collection('bookirbook')->raw(function ($collection) use ($pipeline) {
+        $books = BookIrBook2::raw(function ($collection) use ($pipeline) {
             return $collection->aggregate($pipeline);
         });
+
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
             foreach ($books as $book) {
-                $totalPrintCount += $book->sum('xpagecount');
+                $totalPrintCount += $book->printCount;
             }
 
             foreach ($books as $book) {
-                foreach ($book->publisher as $publisher) {
-                    $publisherName = $publisher['xpublishername'];
-                    $percentPrintCount = ($book->sum('xpagecount') > 0 and $totalPrintCount > 0) ? round(($book->sum('xpagecount') / $totalPrintCount) * 100, 2) : 0;
+                $publisherName = $book->name;
+                $percentPrintCount = ($book->printCount > 0 and $totalPrintCount > 0) ? round(($book->printCount / $totalPrintCount) * 100, 2) : 0;
 
-                    $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
-                }
+                $publisherPrintCountData[] = ["name" => $publisherName, "percentPrintCount" => $percentPrintCount];
             }
 
             $publisherPrintCountData = ["label" => array_column($publisherPrintCountData, 'name'), "value" => array_column($publisherPrintCountData, 'percentPrintCount')];
@@ -914,7 +954,7 @@ class BookController extends Controller
     }
 
 
-    ///////////////////////////////////////////////Info///////////////////////////////////////////////////
+    ///////////////////////////////////////////////Dio///////////////////////////////////////////////////
     public function searchDio(Request $request)
     {
         $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
@@ -957,17 +997,25 @@ class BookController extends Controller
         $publisherName = '';
         $where = [];
 
-        if ($publisherId != "" or $creatorId != "") {
+        if ($publisherId != "" and $creatorId != "") {
+            $publisherBooks = BookIrBook2::where('partners.xcreator_id', $creatorId)->where('publisher.xpublisher_id', $publisherId)->get();
+            if (BookIrPublisher::where('_id', $publisherId)->count() > 0)
+                $publisherName = BookIrPublisher::where('_id', $publisherId)->first()->xpublishername;
+            if ($creatorId != 0 and BookIrCreator::where('_id', $creatorId)->count() > 0) {
+                $creatorName = BookIrCreator::where('_id', $creatorId)->first()->xcreatorname;
+            }
+        } elseif ($publisherId != "" or $creatorId != "") {
             if ($publisherId == 0) {
                 $publisherBooks = BookIrBook2::where('partners.xcreator_id', $creatorId)->get();
             } else {
                 $publisherBooks = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->get();
                 if (BookIrPublisher::where('_id', $publisherId)->count() > 0)
-                $publisherName = BookIrPublisher::where('_id', $publisherId)->first()->xpublishername;
+                    $publisherName = BookIrPublisher::where('_id', $publisherId)->first()->xpublishername;
             }
             if ($creatorId != 0 and BookIrCreator::where('_id', $creatorId)->count() > 0) {
-                    $creatorName = BookIrCreator::where('_id', $creatorId)->first()->xcreatorname;
+                $creatorName = BookIrCreator::where('_id', $creatorId)->first()->xcreatorname;
             }
+        }
 
 
             if ($publisherBooks->count() > 0) {
@@ -975,8 +1023,8 @@ class BookController extends Controller
                     $where [] = ['_id', $publisherBook->_id];
                 }
             }
-        }
-        return $this->lists($request, true, ($where == ""), $where, "", $publisherName, $creatorName);
+
+        return $this->lists($request, false, ($where == []), $where, "", $publisherName, $creatorName);
     }
 
 
@@ -1006,17 +1054,15 @@ class BookController extends Controller
             $creatorName = [BookIrCreator::where('_id', $creatorId)->pluck('xcreatorname')[0] , $teammateName];
         }
 
-        return $this->lists($request, true, ($where == ""), $where, "", "", $creatorName);
+        return $this->lists($request, false, ($where == []), $where, "", "", $creatorName);
     }
 
 
     ///////////////////////////////////////////////AdvanceSearch///////////////////////////////////////////////////
-    //TODO : have rule for search in ui . where must always be true but or where can be false
     public function advanceSearch(Request $request)
     {
         $where = [];
-        $possibilityEmptyLogicalOperator = true;
-        $beforeLogicalOperator = '';
+
         foreach ($request['search'] as $key => $item) {
             if (gettype($item) != 'array') {
                 $search_item = json_decode($item, true);
@@ -1051,10 +1097,12 @@ class BookController extends Controller
 
                 // search by name
                 if (($searchField == 'name') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
+                    if ($comparisonOperators == 'Like') {
                         $where [] = ['xname', "%$searchValue%", 'like', $logicalOperator];
+
                     }else{
                         $where [] = ['xname', "$searchValue", $comparisonOperators, $logicalOperator];
+
                     }
                 }
 

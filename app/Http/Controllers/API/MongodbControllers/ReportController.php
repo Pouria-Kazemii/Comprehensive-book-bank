@@ -51,21 +51,20 @@ class ReportController extends Controller
         $books->where('publisher.xpublisher_id', $publisherId);
         if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-        $books->select("xcirculation", "languages", "xdiocode");
-        $totalRows = count($books->get()); //$books->count(); // get total records count
+        $books->select("xcirculation", "is_translate", "xdiocode");
         $books = $books->skip($offset)->take($pageRows)->get(); // get list
+
+
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $allUniqueDiocodes [] = $book->xdiocode;
                 $allUniqueDiocodes = array_unique($allUniqueDiocodes);
             }
             foreach ($allUniqueDiocodes as $uniqueDiocode) {
-                foreach ($books as $book) {
-                    if ($book->xdiocode == $uniqueDiocode) {
-                        $totalCirculation += $book->xcirculation;
-                        $translate = $book->is_translate == 2 ? 1 : 0;
-                    }
-                }
+                $booksOfDiocode= BookIrBook2::where('xdiocode' , $uniqueDiocode);
+                $totalCirculation = $booksOfDiocode->sum('xcirculation');
+                $translate = $booksOfDiocode->first()->is_translate;
+
                 $data[$uniqueDiocode] = array
                 (
                     "translate" => $translate,
@@ -73,10 +72,11 @@ class ReportController extends Controller
                     "dio" => $uniqueDiocode,
                 );
             }
-            $totalCirculation = 0;
+
             $data = array_values($data);
         }
         if ($data != null) $status = 200;
+        $totalRows = count($allUniqueDiocodes);
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
         // response
@@ -602,7 +602,7 @@ class ReportController extends Controller
         // read
         $books = BookIrBook2::orderBy($column,$sortDirection);
         $books->where('partners.xcreator_id' , $creatorId);
-        if($subjectId > 0) $books->where('subject.xsubject_id' , (int)$subjectId);
+        if($subjectId > 0) $books->where('subjects.xsubject_id' , (int)$subjectId);
         if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
         $totalRows = $books->count(); // get total records count
@@ -624,7 +624,7 @@ class ReportController extends Controller
                 //
                 $data[] = array
                 (
-                    "id" => $book->xid,
+                    "id" => $book->_id,
                     "name" => $book->xname,
                     "publishers" => $publishers,
                     "circulation" => priceFormat($book->xcirculation),
@@ -666,6 +666,7 @@ class ReportController extends Controller
         $status = 404;
         $totalRows = 0;
         $totalPages = 0;
+        $unique_entries = [];
         $offset = ($currentPageNumber - 1) * $pageRows;
 
 
@@ -716,9 +717,8 @@ class ReportController extends Controller
                 $isTranslate = 0;
             }
 
-            $unique_entries = [];
             $seen = [];
-
+            if ($data != null)
             foreach ($data as $entry) {
                 $name = trim($entry["creator"]["name"]);
                 $role = $entry["role"];

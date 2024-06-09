@@ -11,40 +11,40 @@ class RoleController extends Controller
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
     public function search(Request $request)
     {
-        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
-        $data = null;
+        $searchWord = $request->input('searchWord', '');
         $status = 404;
+        $data = [];
         $roles = [];
 
-        // read
-        $partnersRule = BookIrBook2::where('partners.xrule', 'LIKE' , "%$searchWord%")->pluck('partners');
-        foreach ($partnersRule as $partnerRules) {
-            foreach ($partnerRules as $partnerRule) {
-                $roles [] = $partnerRule['xrule'];
-            }
-        }
-        if ($roles != null and count($roles ) > 0) {
-            $roles = array_unique($roles);
-            $matches = [];
-            foreach ($roles as $key => $value) {
-                if (stripos($value, $searchWord) !== false) {
-                    $matches[] = $value;
+        if ($searchWord !== '') {
+            // Read partners.xrule that matches the search word
+            $partnersRule = BookIrBook2::where('partners.xrule', 'LIKE', "%$searchWord%")
+                ->pluck('partners');
+
+            // Extract roles
+            foreach ($partnersRule as $partnerRules) {
+                foreach ($partnerRules as $partnerRule) {
+                    if (isset($partnerRule['xrule']) && stripos($partnerRule['xrule'], $searchWord) !== false) {
+                        $roles[] = $partnerRule['xrule'];
+                    }
                 }
             }
-            foreach ($matches as $match) {
-                {
-                    $data[] =
-                        [
-                            "value" => $match,
-                        ];
-                    $status = 200;
-                }
+
+            // Get unique roles
+            $uniqueRoles = array_unique($roles);
+
+            // Format the data for response
+            foreach ($uniqueRoles as $role) {
+                $data[] = ["value" => $role];
+            }
+
+            if (!empty($data)) {
+                $status = 200;
             }
         }
 
-        // response
-        return response()->json
-        (
+        // Response
+        return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
@@ -52,5 +52,6 @@ class RoleController extends Controller
             ],
             $status
         );
+        }
+
     }
-}

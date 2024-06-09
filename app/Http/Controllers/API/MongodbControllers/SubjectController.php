@@ -40,7 +40,6 @@ class SubjectController extends Controller
                 }
             }
         }
-
         $collator = new Collator('fa_IR');
         if ($searchText != "") {
             $uniqueSubjects = array_filter($uniqueSubjects, function ($uniqueSubjects) use ($searchText) {
@@ -48,21 +47,38 @@ class SubjectController extends Controller
             });
         }
 
+
         if ($sortDirection == 1) {
-            usort($uniqueSubjects, function ($a, $b) use ($collator, $column) {
-                return $collator->compare($a[$column], $b[$column]);
+            usort($uniqueSubjects, function ($a, $b) use ($collator) {
+                return -$collator->compare($a['xsubject_name'], $b['xsubject_name']);
+            });
+
+            $totalRows = count($uniqueSubjects);
+            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+            $uniqueSubjects = array_slice($uniqueSubjects, $offset, $pageRows);
+
+
+            usort($uniqueSubjects, function ($a, $b) use ($collator) {
+                return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
             });
         }
+
 
         if ($sortDirection == -1) {
-            usort($uniqueSubjects, function ($a, $b) use ($collator, $column) {
-                return $collator->compare($b[$column], $a[$column]);
+            usort($uniqueSubjects, function ($a, $b) use ($collator) {
+                return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
+            });
+
+            $totalRows = count($uniqueSubjects);
+            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+            $uniqueSubjects = array_slice($uniqueSubjects, $offset, $pageRows);
+
+
+            usort($uniqueSubjects, function ($a, $b) use ($collator) {
+                return -$collator->compare($a['xsubject_name'], $b['xsubject_name']);
             });
         }
 
-        $totalRows = count($uniqueSubjects);
-        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
-        $uniqueSubjects = array_slice($uniqueSubjects, $offset, $pageRows);
 
         if ($uniqueSubjects != null and count($uniqueSubjects) > 0) {
             foreach ($uniqueSubjects as $uniqueSubject) {
@@ -118,6 +134,8 @@ class SubjectController extends Controller
                 return strpos($uniqueSubjects['xsubject_name'], $searchWord) !== false;
             });
         }
+
+
         usort($uniqueSubjects, function ($a, $b) use ($collator) {
                 return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
         });
