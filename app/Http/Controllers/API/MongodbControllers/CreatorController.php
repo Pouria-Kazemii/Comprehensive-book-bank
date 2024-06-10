@@ -240,17 +240,15 @@ class CreatorController extends Controller
                     ['$sort' => ['_id' => 1]]
                 ]);
             });
-            //TODO should make a script for add bookIranKetabPartner to BookIrCreators
-//            BookIranKetabPartner::where('partner_master_id', $creatorId)->first();
             $dataMaster =
                 [
                     "name" => $creator->xcreatorname,
                     "roles" =>  $roles->map(function($role) {
                         return ['title' => $role->_id];
                     }),
-                    "image" => !empty($partnerInfo->partnerImage) ? $partnerInfo->partnerImage : null,
-                    "desc" => !empty($partnerInfo->partnerDesc) ? $partnerInfo->partnerDesc : null,
-                    "enName" => !empty($partnerInfo->partnerEnName) ? $partnerInfo->partnerEnName : null,
+                    'englishName' => $creator->iranketabinfo['enName'],
+                    'description' => $creator->iranketabinfo['partnerDesc'],
+                    'image' => $creator->iranketabinfo['image']
                 ];
         }
 

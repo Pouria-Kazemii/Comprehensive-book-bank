@@ -2,14 +2,9 @@
 
 use App\Http\Controllers\API\MongodbControllers\BookCheckController;
 use App\Http\Controllers\API\MongodbControllers\BookController;
-use App\Http\Controllers\API\MongodbControllers\BookCoverController;
-use App\Http\Controllers\API\MongodbControllers\BookFormatController;
-use App\Http\Controllers\API\MongodbControllers\BookLanguageController;
-use App\Http\Controllers\api\MongodbControllers\CreatorController;
+use App\Http\Controllers\API\MongodbControllers\CreatorController;
 use App\Http\Controllers\API\MongodbControllers\PublisherController;
 use App\Http\Controllers\API\MongodbControllers\ReportController;
-use App\Http\Controllers\API\MongodbControllers\RoleController;
-use App\Http\Controllers\API\MongodbControllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -150,9 +145,9 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v2/creator/find/subject', [CreatorController::class ,'findBySubject']);
     Route::post('/v2/creator/find/publisher', [CreatorController::class , 'findByPublisher']);
     Route::post('/v2/creator/find/creator', [CreatorController::class,'findByCreator']);
-    Route::post('/v2/creator/role', [CreatorController::class,'role']);//use sql method is better
+    Route::post('/v2/creator/role', 'API\CreatorController@role');
     Route::post('/v2/creator/search', [CreatorController::class ,'search']);
-    Route::post('/v2/creator/detail', [CreatorController::class,'detail']);//TODO : need change after added bookiranketab_partner
+    Route::post('/v2/creator/detail', [CreatorController::class,'detail']);
     Route::post('/v2/creator/annual-activity', [CreatorController::class,'annualActivity']);
 
     //SQL Subjects
@@ -161,9 +156,10 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/subject/searchForSelectComponent', 'API\SubjectController@searchForSelectComponent');
 
     //MongoDB Subjects
-    Route::post('/v2/subject/find', [SubjectController::class ,'find']);
-    Route::post('/v2/subject/search', [SubjectController::class ,'search']);
-    Route::post('/v2/subject/searchForSelectComponent', [SubjectController::class ,'searchForSelectComponent']);
+    //TODO : using SQL until make collection for subject
+    Route::post('/v2/subject/find', 'API\SubjectController@find');
+    Route::post('/v2/subject/search', 'API\SubjectController@search');
+    Route::post('/v2/subject/searchForSelectComponent', 'API\SubjectController@searchForSelectComponent');
 
     //SQL Publisher
     Route::post('/v1/publisher/search', 'API\PublisherController@search');
@@ -227,11 +223,11 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('/v1/bookFormat/list/', 'API\BookFormatController@list');
     Route::get('/v1/bookCover/list/', 'API\BookCoverController@list');
 
-    //MongoDB Role , Languages , Formats and Covers
-    Route::post('/v2/role/search', [RoleController::class ,'search']);//use sql method is better
-    Route::post('/v2/bookLanguage/list/', [BookLanguageController::class,'list']);//use sql method is better
-    Route::get('/v2/bookFormat/list/', [BookFormatController::class,'list']);//use sql method is better
-    Route::get('/v2/bookCover/list/', [BookCoverController::class ,'list']);//use sql method is better
+    //MongoDB Role , Languages , Formats and Covers (using sql tables)
+    Route::post('/v2/role/search', 'API\RoleController@search');
+    Route::post('/v2/bookLanguage/list/', 'API\BookLanguageController@list');
+    Route::get('/v2/bookFormat/list/', 'API\BookFormatController@list');
+    Route::get('/v2/bookCover/list/', 'API\BookCoverController@list');
 
 
     //TODO must implement later
@@ -239,9 +235,3 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
 });
-
-
-
-
-
-

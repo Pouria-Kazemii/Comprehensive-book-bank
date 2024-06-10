@@ -13,7 +13,7 @@ class UpdateCreatorsMongoIdInSqlCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'update:bookirpartners_mongoid';
+    protected $signature = 'update:bookircreators_mongoid';
 
     /**
      * The console command description.

@@ -839,10 +839,10 @@ class ReportController extends Controller
         $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "publishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
         $data = null;
         $dioData = null;
         $status = 404;
-        $pageRows = 50;
         $totalRows = 0;
         $totalPages = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;

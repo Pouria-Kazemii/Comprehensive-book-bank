@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\MongoDBModels\BookIrCreator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,6 +31,13 @@ class ConvertIranketabPartnerIntoBookIrCreatorCollectionJob implements ShouldQue
      */
     public function handle()
     {
-
+        BookIrCreator::where('xsqlid',$this->partner->partner_master_id)
+        ->update([
+            'iranketabinfo' => [
+                'enName' => $this->partner->partnerEnName,
+                'partnerDesc' => $this->partner->partnerDesc,
+                'image' => $this->partner->partnerImage
+            ]
+        ]);
     }
 }

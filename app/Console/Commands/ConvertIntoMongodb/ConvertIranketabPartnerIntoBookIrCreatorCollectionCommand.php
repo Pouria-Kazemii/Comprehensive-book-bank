@@ -3,8 +3,10 @@
 namespace App\Console\Commands\ConvertIntoMongodb;
 
 use App\Jobs\ConvertIranketabPartnerIntoBookIrCreatorCollectionJob;
+use App\Jobs\ConvertIranketabPartnerIntoBookIrCreatorCollectionJob2;
 use App\Models\BookIranKetabPartner;
 use Illuminate\Console\Command;
+
 
 class ConvertIranketabPartnerIntoBookIrCreatorCollectionCommand extends Command
 {
@@ -39,14 +41,20 @@ class ConvertIranketabPartnerIntoBookIrCreatorCollectionCommand extends Command
      */
     public function handle()
     {
-        $this->info("Start converting bookir_creators table");
+        $this->info("Start adding iranketab-partner table to bookir_creators table");
         $totalBooks = BookIranKetabPartner::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
         $progressBar->start();
         $startTime = microtime(true);
-        BookIranKetabPartner::where('partner_master_id' , '!=' , -10)->chunk(1000, function ($books) use($progressBar){
-            foreach ($books as $book) {
-                ConvertIranketabPartnerIntoBookIrCreatorCollectionJob::dispatch($book);
+        BookIranKetabPartner::where('partner_master_id' , '!=' , -10)->chunk(1000, function ($partners) use($progressBar){
+            foreach ($partners as $partner) {
+                ConvertIranketabPartnerIntoBookIrCreatorCollectionJob::dispatch($partner);
+                $progressBar->advance();
+            }
+        });
+        BookIranKetabPartner::where('partner_master_id' , '=' , -10)->chunk(1000, function ($partners) use($progressBar){
+            foreach ($partners as $partner) {
+                ConvertIranketabPartnerIntoBookIrCreatorCollectionJob2::dispatch($partner);
                 $progressBar->advance();
             }
         });
