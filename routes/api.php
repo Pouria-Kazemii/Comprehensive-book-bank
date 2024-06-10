@@ -18,9 +18,14 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
+//SQL User
 Route::post('/v1/user/login', 'API\UserController@login');
 Route::post('/v1/user/auth', 'API\UserController@authenticate');
+
+//MongoDB User
+Route::post('/v2/user/login', 'API\UserController@login');
+Route::post('/v2/user/auth', 'API\UserController@authenticate');
+
 
 //Route::get('/v1/book/find', 'API\BookController@find');
 //Route::get('/v1/book/check', 'API\BookController@checkBookK24');
@@ -65,11 +70,24 @@ Route::group(['middleware' => ['ChToken']], function () {
 
 Route::group(['middleware' => ['jwt.verify']], function () {
 
+    //SQL User
     Route::post('/v1/user/find', 'API\UserController@find');
     Route::post('/v1/user/save', 'API\UserController@store');
     Route::post('/v1/user/edit/{id}', 'API\UserController@update');
     Route::get('/v1/user/info/{id}', 'API\UserController@info');
+
+
+    //MongoDB User
+    Route::post('/v2/user/find', 'API\UserController@find');
+    Route::post('/v2/user/save', 'API\UserController@store');
+    Route::post('/v2/user/edit/{id}', 'API\UserController@update');
+    Route::get('/v2/user/info/{id}', 'API\UserController@info');
+
+
+
     Route::get('user', 'API\UserController@getAuthenticatedUser');
+
+
 
     //SQL Books
     Route::post('/v1/book/save', 'API\BookController@store');

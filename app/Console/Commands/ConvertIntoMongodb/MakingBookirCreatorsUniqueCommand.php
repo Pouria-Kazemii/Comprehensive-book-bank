@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb;
 
 use App\Jobs\MakingBookirCreatorsUniqueJob;
+use App\Models\MongoDBModels\BookIrCreator;
 use Illuminate\Console\Command;
 
 class MakingBookirCreatorsUniqueCommand extends Command
@@ -38,6 +39,31 @@ class MakingBookirCreatorsUniqueCommand extends Command
      */
     public function handle()
     {
-        MakingBookirCreatorsUniqueJob::dispatch();
+        $this->info("Start find and deleting repeated creators");
+        $startTime = microtime(true);
+
+        $duplicatesCursor = BookIrCreator::raw(function($collection) {
+            return $collection->aggregate([
+                ['$group' => ['_id' => '$xcreatorname', 'count' => ['$sum' => 1], 'docs' => ['$push' => '$_id']]],
+                ['$match' => ['count' => ['$gt' => 1]]],
+            ]);
+        });
+        $totalRepeatedCreators = count($duplicatesCursor);
+
+        $duplicates = iterator_to_array($duplicatesCursor);
+
+        $progressBar = $this->output->createProgressBar($totalRepeatedCreators);
+        $progressBar->start();
+
+        foreach ($duplicates as $duplicate) {
+            $progressBar->advance();
+            MakingBookirCreatorsUniqueJob::dispatch($duplicate['docs']);
+        }
+        $progressBar->finish();
+        $this->line('');
+        $endTime = microtime(true);
+        $duration = $endTime - $startTime;
+        $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return  true;
     }
 }

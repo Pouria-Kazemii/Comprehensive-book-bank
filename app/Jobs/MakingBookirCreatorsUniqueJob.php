@@ -9,19 +9,20 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use MongoDB\BSON\ObjectId;
 
 class MakingBookirCreatorsUniqueJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    private $docs;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($docs)
     {
-        //
+        $this->docs = $docs;
     }
 
     /**
@@ -31,31 +32,12 @@ class MakingBookirCreatorsUniqueJob implements ShouldQueue
      */
     public function handle()
     {
-        // Step 1: Identify Duplicate Documents
-        $duplicates = BookIrCreator::raw(function($collection) {
-            return $collection->aggregate([
-                ['$group' => ['_id' => '$xcreatorname', 'count' => ['$sum' => 1], 'docs' => ['$push' => '$_id']]],
-                ['$match' => ['count' => ['$gt' => 1]]],
-            ]);
-        });
-
-        $duplicateIds = [];
-        foreach ($duplicates as $duplicate) {
-            $duplicateIds = array_merge($duplicateIds, $duplicate->docs);
-        }
-
-        // Step 2: Check References in Another Collection
-        $toDelete = [];
-        foreach ($duplicateIds as $id) {
-            $isReferenced = BookIrBook2::where('psrtners.xcreator_id', $id)->exists();
+        foreach ($this->docs as $key=>$doc) {
+            dd($this->docs);
+            $isReferenced = BookIrBook2::where('partners.xcreator_id', (string)$doc)->exists();
             if (!$isReferenced) {
-                $toDelete[] = $id;
+//                BookIrCreator::where('_id', new ObjectId((string)$doc))->delete();
             }
-        }
-        dd($toDelete[0]);
-        // Step 3: Delete Non-Referenced Documents
-        if (!empty($toDelete)) {
-            BookIrCreator::whereIn('_id', $toDelete)->delete();
         }
     }
 }
