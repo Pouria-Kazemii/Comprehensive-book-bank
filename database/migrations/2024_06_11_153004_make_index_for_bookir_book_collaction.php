@@ -13,16 +13,16 @@ class MakeIndexForBookirBookCollaction extends Migration
      */
     public function up()
     {
-        Schema::connection('mongodb')->table('bookir_books', function (Blueprint $collection) {
-            $collection->index('xname', 'text');
-            $collection->index('publisher.xpublishername', 'publisher_text');
-            $collection->index('creators.xcreatorname', 'creator_text');
-            $collection->index('subjects.xsubject_name', 'subject_text');
-            $collection->index('publisher.xpublishername', );
-            $collection->index('xisbn');
-            $collection->index('xformat');
-            $collection->index('xdiocode');
-        });
+//        Schema::connection('mongodb')->table('bookir_books', function (Blueprint $collection) {
+//            $collection->index('xname', 'text');
+//            $collection->index('publisher.xpublishername', 'publisher_text');
+//            $collection->index('creators.xcreatorname', 'creator_text');
+//            $collection->index('subjects.xsubject_name', 'subject_text');
+//            $collection->index('publisher.xpublishername', );
+//            $collection->index('xisbn');
+//            $collection->index('xformat');
+//            $collection->index('xdiocode');
+//        });
     }
 
 
@@ -33,13 +33,13 @@ class MakeIndexForBookirBookCollaction extends Migration
      */
     public function down()
     {
-        Schema::connection('mongodb')->table('bookir_books', function (Blueprint $collection) {
-            $collection->dropIndex('xname_text');
-            $collection->dropIndex('xpublisher_name_text');
-            $collection->dropIndex('xisbn');
-            $collection->dropIndex('xformat');
-            $collection->dropIndex('xdescription_text');
-            $collection->dropIndex('xdiocode');
-        });
+//        Schema::connection('mongodb')->table('bookir_books', function (Blueprint $collection) {
+//            $collection->dropIndex('xname_text');
+//            $collection->dropIndex('xpublisher_name_text');
+//            $collection->dropIndex('xisbn');
+//            $collection->dropIndex('xformat');
+//            $collection->dropIndex('xdescription_text');
+//            $collection->dropIndex('xdiocode');
+//        });
     }
 }
