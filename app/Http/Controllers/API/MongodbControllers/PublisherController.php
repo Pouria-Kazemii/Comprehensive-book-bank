@@ -28,9 +28,7 @@ class PublisherController extends Controller
             $publishersQuery = BookIrPublisher::query();
 
             if (!empty($searchText)) {
-                $publishersQuery->where(function ($query) use ($searchText) {
-                    $query->where('xpublishername', 'regexp', "/$searchText/i");
-                });
+                $publishersQuery->where(['$text' => ['$search' => $searchText]]);
             }
 
             if (!$defaultWhere && !empty($where)) {
