@@ -31,13 +31,27 @@ class MakingBookirCreatorsUniqueJob implements ShouldQueue
      * @return void
      */
     public function handle()
-    {
-        foreach ($this->docs as $key=>$doc) {
-            dd($this->docs);
-            $isReferenced = BookIrBook2::where('partners.xcreator_id', (string)$doc)->exists();
-            if (!$isReferenced) {
-//                BookIrCreator::where('_id', new ObjectId((string)$doc))->delete();
-            }
+    {//TODO:START
+        dd($this->docs->count());
+        $relatedCreators = [];
+        $nonRelatedCreators = [];
+        foreach ($this->docs as $key => $doc) {
+            $exist = BookIrBook2::where('partners.xcreator_id', (string)$doc)->exists();
+            $repeatedCreators [] = [(string)$doc => $exist];
+
+//            if (!$isReferenced) {
+////                BookIrCreator::where('_id', new ObjectId((string)$doc))->delete();
+//            }
+//        }
+//        if (count($repeatedCreators) == 2){
+//            if (){
+//
+//            }
+//        }
+//        foreach ($repeatedCreators as $reference){
+//
+//        }
+            dd($allReferences);
         }
     }
 }

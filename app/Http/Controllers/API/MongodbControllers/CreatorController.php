@@ -12,100 +12,119 @@ class CreatorController extends Controller
 {
 
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
-    public function lists(Request $request, $isNull = false,$defaultWhere = true, $where = [], $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
+    public function lists(Request $request, $isNull = false, $defaultWhere = true, $where = [], $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
-        $roleName = (isset($request["roleName"])) ? $request["roleName"] : "";
-        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xcreatorname";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
-        $totalRows = 0;
-        $totalPages = 0;
+        $roleName = $request->input("roleName", "");
+        $searchText = $request->input("searchText", "");
+        $column = $request->input("column", "xcreatorname");
+        $sortDirection = (int)$request->input("sortDirection", 1);
+        $currentPageNumber = (int)$request->input("page", 1);
+        $pageRows = (int)$request->input("perPage", 50);
+
         $offset = ($currentPageNumber - 1) * $pageRows;
 
-        if (!$isNull) {
-            // read books
-            $creators = BookIrCreator::orderBy($column, $sortDirection);
-            if ($searchText != "") $creators->where('xcreatorname', 'like', "%$searchText%");
+        $data = [];
+        $status = 404;
 
-            if ($roleName != "") {
-                $creatorsId = [];
-                $partners = BookIrBook2::where('partners.xrule', $roleName)->pluck('partners');
-                foreach ($partners as $partner) {
-                    foreach ($partner as $key => $value) {
-                        if ($value['xrule'] == $roleName) {
-                            $creatorsId [] = [$value['xcreator_id']];
-                        }
-                    }
-                }
-                $creators->where(function ($query) use ($creatorsId) {
-                    $query->where('_id', $creatorsId[0][0]);
-                    for ($i = 1; $i < count($creatorsId); $i++) {
-                        $query->orWhere('_id', $creatorsId[$i][0]);
+        if (!$isNull) {
+            // Read books
+            $creatorsQuery = BookIrCreator::orderBy($column, $sortDirection);
+
+            if (!empty($searchText)) {
+                $creatorsQuery->where('xcreatorname', 'like', "%$searchText%");
+            }
+
+            // Role filtering using aggregation pipeline
+            if (!empty($roleName)) {
+                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleName) {
+                    return $collection->aggregate([
+                        ['$unwind' => '$partners'],
+                        ['$match' => ['partners.xrule' => $roleName]],
+                        ['$group' => ['_id' => '$partners.xcreator_id']],
+                    ]);
+                })->pluck('_id')->toArray();
+
+                $creatorsQuery->whereIn('_id', $creatorsId);
+            }
+
+            // Default and additional where conditions
+            if (!$defaultWhere) {
+                $creatorsQuery->where(function ($query) use ($where) {
+                    foreach ($where as $condition) {
+                        $query->orWhere($condition[0], $condition[1]);
                     }
                 });
             }
 
-            if (!$defaultWhere) {
-                if (count($where) > 0) {
-                    if (count($where[0]) == 2) {
-                        $creators->where(function ($query) use ($where) {
-                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                            // Apply subsequent conditions using orWhere()
-                            for ($i = 1; $i < count($where); $i++) {
-                                $query->orWhere($where[$i][0], $where[$i][1]);
-                            }
-                        });
-                    };
-                } else {
-                    return response()->json([
-                        "status" => 404,
-                        "message" => "not found",
-                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-                    ], 404);
-                }
-            }
-
-            $totalRows = $creators->count();
+            $totalRows = $creatorsQuery->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-            $creators = $creators->skip($offset)->take($pageRows)->get();
 
-            if ($creators != null and count($creators) > 0) {
+            $creators = $creatorsQuery->skip($offset)->take($pageRows)->get();
+
+            if ($creators->isNotEmpty()) {
+                $creatorIds = $creators->pluck('_id')->toArray();
+
+                // Batch fetch all necessary counts in one go using aggregation
+                $bookCounts = BookIrBook2::raw(function ($collection) use ($creatorIds, $subjectId, $publisherId, $mainCreatorId) {
+                    $pipeline = [
+                        ['$match' => ['partners.xcreator_id' => ['$in' => $creatorIds]]],
+                        ['$unwind' => '$partners'],
+                        ['$match' => ['partners.xcreator_id' => ['$in' => $creatorIds]]]
+                    ];
+
+                    if ($subjectId > 0) {
+                        $pipeline[] = ['$match' => ['subjects.xsubject_id' => $subjectId]];
+                    }
+
+                    if ($publisherId > 0) {
+                        $pipeline[] = ['$match' => ['publisher.xpublisher_id' => $publisherId]];
+                    }
+
+                    if ($mainCreatorId > 0) {
+                        $pipeline[] = ['$match' => ['partners.xcreator_id' => $mainCreatorId]];
+                    }
+
+                    $pipeline[] = [
+                        '$group' => [
+                            '_id' => '$partners.xcreator_id',
+                            'book_count' => ['$sum' => 1],
+                        ],
+                    ];
+
+                    return $collection->aggregate($pipeline);
+                })->pluck('book_count', '_id')->toArray();
+
                 foreach ($creators as $creator) {
                     $creatorId = $creator->_id;
-                    if ($subjectId > 0) $bookCount = BookIrBook2::orderBy('xpublishdate_shamsi', -1)->where('partners.xcreator_id', $creatorId)->where('subjects.xsubject_id', (int)$subjectId)->count();
-                    else if ($publisherId > 0) $bookCount = BookIrBook2::orderBy('xpublishdate_shamsi', -1)->where('partners.xcreator_id', $creatorId)->where('publisher.xpublisher_id', $publisherId)->count();
-                    elseif ($mainCreatorId > 0 and $mainCreatorId != $creatorId) $bookCount = BookIrBook2::where('partners.xcreator_id', $creatorId)->where('partners.xcreator_id', $mainCreatorId)->count();
-                    elseif ($subjectId == 0 and $publisherId == 0) $bookCount = BookIrBook2::where('partners.xcreator_id', $creatorId)->count();
-                    else  $bookCount = 0;
-                    $data[] =
-                        [
-                            "publisherId" => $publisherId,
-                            "publisherName" => $publisherId > 0 ? BookIrPublisher::where('_id', $publisherId)->first()->xpublishername : "",
-                            "mainCreatorId" => $mainCreatorId,
-                            "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::where('_id', $mainCreatorId)->first()->xcreatorname : "",
-                            "subjectId" => $subjectId,
-                            "id" => $creator->_id,
-                            "bookCount" => $bookCount,
-                            "name" => $creator->xcreatorname,
-                        ];
+                    $bookCount = $bookCounts[$creatorId] ?? 0;
+
+                    $data[] = [
+                        "publisherId" => $publisherId,
+                        "publisherName" => $publisherId > 0 ? BookIrPublisher::find($publisherId)->xpublishername : "",
+                        "mainCreatorId" => $mainCreatorId,
+                        "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::find($mainCreatorId)->xcreatorname : "",
+                        "subjectId" => $subjectId,
+                        "id" => $creator->_id,
+                        "bookCount" => $bookCount,
+                        "name" => $creator->xcreatorname,
+                    ];
                 }
                 $status = 200;
             }
         }
-        if ($data != null)
-            // response
-            return response()->json(
-                [
-                    "status" => $status,
-                    "message" => $status == 200 ? "ok" : "not found",
-                    "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
-                ],
-                $status
-            );
+
+        // Response
+        return response()->json([
+            "status" => $status,
+            "message" => $status == 200 ? "ok" : "not found",
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows
+            ]
+        ], $status);
     }
     ///////////////////////////////////////////////Find///////////////////////////////////////////////////
     public function find(Request $request)

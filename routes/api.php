@@ -68,7 +68,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/web/v2/book/detail', [BookController::class,'detail']);
 });
 
-Route::group(['middleware' => ['jwt.verify']], function () {
+//Route::group(['middleware' => ['jwt.verify']], function () {
 
     //SQL User
     Route::post('/v1/user/find', 'API\UserController@find');
@@ -252,4 +252,4 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
-});
+//});

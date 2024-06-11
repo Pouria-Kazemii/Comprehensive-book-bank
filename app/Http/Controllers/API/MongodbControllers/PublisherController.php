@@ -12,71 +12,62 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $creatorId = "")
     {
-        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublishername";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["currentPageNumber"])) ? $request["currentPageNumber"] : 0;
-        $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
-        $totalRows = 0;
-        $totalPages = 0;
+        $searchText = $request->input("searchText", "");
+        $column = $request->input("column", "xpublishername");
+        $sortDirection = (int)$request->input("sortDirection", 1);
+        $currentPageNumber = (int)$request->input("currentPageNumber", 1);
+        $pageRows = (int)$request->input("perPage", 50);
+
         $offset = ($currentPageNumber - 1) * $pageRows;
 
+        $data = [];
+        $status = 404;
+
         if (!$isNull) {
-            // read books
-            $publishers = BookIrPublisher::orderBy($column, $sortDirection)->where('xpublishername', '!=', '');
+            // Initialize query
+            $publishersQuery = BookIrPublisher::orderBy($column, $sortDirection)->where('xpublishername', '!=', '');
 
-            if ($searchText != "") $publishers->where('xpublishername', 'like', "%$searchText%");
-
-
-            if (!$defaultWhere) {
-                if (count($where) > 0) {
-                    if (count($where[0]) == 2) {
-                        $publishers->where(function ($query) use ($where) {
-                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                            // Apply subsequent conditions using orWhere()
-                            for ($i = 1; $i < count($where); $i++) {
-                                $query->orWhere($where[$i][0], $where[$i][1]);
-                            }
-                        });
-                    };
-                } else {
-                    return response()->json([
-                        "status" => 404,
-                        "message" => "not found",
-                        "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "creatorId" => $creatorId]
-                    ], 404);
-                }
+            if (!empty($searchText)) {
+                $publishersQuery->where('xpublishername', 'like', "%$searchText%");
             }
 
-            $totalRows = $publishers->count();
+            if (!$defaultWhere && !empty($where)) {
+                $publishersQuery->where(function ($query) use ($where) {
+                    foreach ($where as $condition) {
+                        $query->orWhere($condition[0], $condition[1]);
+                    }
+                });
+            }
+
+            $totalRows = $publishersQuery->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
-            $publishers = $publishers->skip($offset)->take($pageRows)->get();
+            $publishers = $publishersQuery->skip($offset)->take($pageRows)->get();
 
-            if ($publishers != null and count($publishers) > 0) {
+            if ($publishers->isNotEmpty()) {
                 foreach ($publishers as $publisher) {
-                    $data[] =
-                        [
-                            "id" => $publisher->_id,
-                            "name" => $publisher->xpublishername,
-                        ];
+                    $data[] = [
+                        "id" => $publisher->_id,
+                        "name" => $publisher->xpublishername,
+                    ];
                 }
+                $status = 200;
             }
         }
 
-        // response
-        if ($data != null) $status = 200;
-
-        return response()->json(
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "creatorId" => $creatorId]
-            ],
-            $status
-        );
+        // Response
+        return response()->json([
+            "status" => $status,
+            "message" => $status == 200 ? "ok" : "not found",
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows,
+                "creatorId" => $creatorId
+            ]
+        ], $status);
     }
 
     function unique_multidim_array($array, $keys) {

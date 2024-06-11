@@ -415,83 +415,72 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Subject Aggregation///////////////////////////////////////////////////
     public function subjectAggregation(Request $request)
     {
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
-        $translate = (isset($request["translate"])) ? $request["translate"] : 0;
-        $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
-        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
-        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $subjectId = $request->get('subjectId', 0);
+        $translate = $request->get('translate', 0);
+        $authorship = $request->get('authorship', 0);
+        $yearStart = $request->get('yearStart', 0);
+        $yearEnd = $request->get('yearEnd', 0);
+        $column = $request->get('column', 'publisher.xpublishername');
+        $sortDirection = (int)$request->get('sortDirection', 1);
+        $currentPageNumber = (int)$request->get('page', 1);
+        $pageRows = (int)$request->get('perPage', 50);
 
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "publisher.xpublishername";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
-        $publishersData = null;
+        $skip = ($currentPageNumber - 1) * $pageRows;
 
-        // read
-        $booksPublishers = BookIrBook2::orderBy($column,$sortDirection);
-        $booksPublishers->where('subjects.xsubject_id',(int)$subjectId)->pluck('publisher');
-        $booksPublishers = $booksPublishers->get(); // get list
-        if($booksPublishers != null and count($booksPublishers) > 0)
-        {
-            foreach ($booksPublishers as $bookPublishers) {
-                foreach ($bookPublishers->publisher as $booksPublisher) {
-                    $publishersData[$booksPublisher['xpublisher_id']] = $booksPublisher['xpublishername'];
-                }
-            }
+        $matchConditions = [
+            ['subjects.xsubject_id' => (int)$subjectId],
+        ];
+
+        if ($translate == 1) {
+            $matchConditions[] = ['is_translate' => 2];
+        } elseif ($authorship == 1) {
+            $matchConditions[] = ['is_translate' => 1];
         }
 
-        if($publishersData != null and count($publishersData) > 0)
-        {
-            foreach ($publishersData as $publisherId => $publisherName)
-            {
-                $books = BookIrBook2::orderBy('xdiocode', 'asc');
-                $books->where('subjects.xsubject_id',(int)$subjectId);
-                $books->where('publisher.xpublisher_id' , $publisherId);
-                // if($translate == 1) $books->where("xlang", "!=", "فارسی");
-                if($translate == 1) $books->where("is_translate", 2);
-                // if($authorship == 1) $books->where("xlang", "=", "فارسی");
-                if($authorship == 1) $books->where("is_translate", 1);
-                if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
-                if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-                $books = $books->get(); // get list
-                if($books != null and count($books) > 0)
-                {
-                    foreach ($books as $book)
-                    {
-                        $data[$subjectId] = array
-                        (
-                            "publisher" => ["id" => $publisherId, "name" => $publisherName],
-                            "countTitle" => 1 + ((isset($data[$subjectId])) ? $data[$subjectId]["countTitle"] : 0),
-                            "circulation" => $book->xcirculation + ((isset($data[$subjectId])) ? $data[$subjectId]["circulation"] : 0),
-                        );
-                    }
-
-                    foreach ($data as $key => $item)
-                    {
-                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
-                    }
-
-                    $data = array_values($data);
-                }
-            }
+        if ($yearStart != "") {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
         }
 
-        //
-        if($data != null) $status = 200;
+        if ($yearEnd != "") {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$yearEnd]];
+        }
 
-        // response
-        return response()->json
-        (
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
+        $pipeline = [
+            ['$match' => ['$and' => $matchConditions]],
+            ['$unwind' => '$publisher'],
+            ['$group' => [
+                '_id' => '$publisher.xpublisher_id',
+                'publisherName' => ['$first' => '$publisher.xpublishername'],
+                'countTitle' => ['$sum' => 1],
+                'circulation' => ['$sum' => '$xcirculation']
+            ]],
+            ['$sort' => [$column => $sortDirection]],
+            ['$skip' => $skip],
+            ['$limit' => $pageRows]
+        ];
+
+        $result = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline, ['allowDiskUse' => true]);
+        });
+
+        $data = [];
+        foreach ($result as $item) {
+            $data[] = [
+                'publisher' => ['id' => $item->_id, 'name' => $item->publisherName],
+                'countTitle' => $item->countTitle,
+                'circulation' => priceFormat($item->circulation)
+            ];
+        }
+
+        $status = !empty($data) ? 200 : 404;
+
+        return response()->json([
+            'status' => $status,
+            'message' => $status == 200 ? 'ok' : 'not found',
+            'data' => ['list' => $data]
+        ], $status);
     }
+
 
     ///////////////////////////////////////////////Subject///////////////////////////////////////////////////
     public function subject(Request $request)
@@ -761,6 +750,7 @@ class ReportController extends Controller
         $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
 
 
         $data = null;
