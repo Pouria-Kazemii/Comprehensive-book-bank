@@ -14,14 +14,14 @@ class CreatorController extends Controller
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
     public function lists(Request $request, $isNull = false, $defaultWhere = true, $where = [], $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
-        $roleName = $request->input("roleName", "");
-        $searchText = $request->input("searchText", "");
-        $column = $request->input("column", "xcreatorname");
-        $sortDirection = (int)$request->input("sortDirection", 1);
-        $currentPageNumber = (int)$request->input("page", 1);
-        $pageRows = (int)$request->input("perPage", 50);
-
+        $roleName = (isset($request["roleName"]) && !empty($request["roleName"])) ? $request["roleName"] : "";
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xcreatorname";
+        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
+
 
         $data = [];
         $status = 404;
@@ -31,7 +31,7 @@ class CreatorController extends Controller
             $creatorsQuery = BookIrCreator::orderBy($column, $sortDirection);
 
             if (!empty($searchText)) {
-                $creatorsQuery->where('xcreatorname', 'like', "%$searchText%");
+                $creatorsQuery->whereRaw(['$text' => ['$search' => $searchText]]);
             }
 
             // Role filtering using aggregation pipeline

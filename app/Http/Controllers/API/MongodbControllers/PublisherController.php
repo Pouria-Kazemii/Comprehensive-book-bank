@@ -12,32 +12,43 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $creatorId = "")
     {
-        $searchText = $request->input("searchText", "");
-        $column = $request->input("column", "xpublishername");
-        $sortDirection = (int)$request->input("sortDirection", 1);
-        $currentPageNumber = (int)$request->input("currentPageNumber", 1);
-        $pageRows = (int)$request->input("perPage", 50);
-
+        $start = $start = microtime(true);
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublisher_name";
+        $sortDirection = 1;
+//        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
-
         $data = [];
         $status = 404;
 
         if (!$isNull) {
             // Initialize query
-            $publishersQuery = BookIrPublisher::orderBy($column, $sortDirection)->where('xpublishername', '!=', '');
+            $publishersQuery = BookIrPublisher::query();
 
             if (!empty($searchText)) {
-                $publishersQuery->where('xpublishername', 'like', "%$searchText%");
+                $publishersQuery->where(function ($query) use ($searchText) {
+                    $query->where('xpublishername', 'regexp', "/$searchText/i");
+                });
             }
 
             if (!$defaultWhere && !empty($where)) {
-                $publishersQuery->where(function ($query) use ($where) {
-                    foreach ($where as $condition) {
-                        $query->orWhere($condition[0], $condition[1]);
-                    }
-                });
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $publishersQuery->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+                }
             }
+
+            // Order by clause
+            $publishersQuery->orderBy($column, $sortDirection);
 
             $totalRows = $publishersQuery->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
@@ -54,6 +65,8 @@ class PublisherController extends Controller
                 $status = 200;
             }
         }
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
 
         // Response
         return response()->json([
@@ -66,7 +79,8 @@ class PublisherController extends Controller
                 "pageRows" => $pageRows,
                 "totalRows" => $totalRows,
                 "creatorId" => $creatorId
-            ]
+            ],
+            'time' => $elapsedTime
         ], $status);
     }
 

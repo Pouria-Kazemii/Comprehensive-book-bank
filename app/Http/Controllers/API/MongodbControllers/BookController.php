@@ -38,8 +38,8 @@ class BookController extends Controller
 
         $query = BookIrBook2::orderBy($column, $sortDirection);
 
-        if ($searchText != "") {
-            $query->where('xname', 'like', "%$searchText%");
+        if (!empty($searchText)) {
+            $query->whereRaw(['$text' => ['$search' => $searchText]]);
         }
 
         if ($isbn != "") {
@@ -156,9 +156,10 @@ class BookController extends Controller
 
         $query = BookIrBook2::orderBy($column, $sortDirection);
 
-        if ($searchText != "") {
-            $query->where('xname', 'like', "%$searchText%");
+        if (!empty($searchText)) {
+            $query->whereRaw(['$text' => ['$search' => $searchText]]);
         }
+
 
         if ($isbn != "") {
             $query->where(function ($query) use ($isbn) {
