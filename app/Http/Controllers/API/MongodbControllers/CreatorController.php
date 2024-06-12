@@ -7,6 +7,7 @@ use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
 use Illuminate\Http\Request;
+use MongoDB\BSON\ObjectId;
 
 class CreatorController extends Controller
 {
@@ -14,24 +15,25 @@ class CreatorController extends Controller
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
     public function lists(Request $request, $isNull = false, $defaultWhere = true, $where = [], $subjectId = 0, $mainCreatorId = 0, $publisherId = 0)
     {
+        $start = microtime(true);
         $roleName = (isset($request["roleName"]) && !empty($request["roleName"])) ? $request["roleName"] : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xcreatorname";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xcreatorname";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
-
-
+        $totalPages = 0 ;
+        $totalRows = 0;
         $data = [];
         $status = 404;
 
         if (!$isNull) {
             // Read books
-            $creatorsQuery = BookIrCreator::orderBy($column, $sortDirection);
+            $creatorsQuery = BookIrCreator::query();
 
             if (!empty($searchText)) {
-                $creatorsQuery->whereRaw(['$text' => ['$search' => $searchText]]);
+                $creatorsQuery->where(['$text' => ['$search' => $searchText]]);
             }
 
             // Role filtering using aggregation pipeline
@@ -49,12 +51,20 @@ class CreatorController extends Controller
 
             // Default and additional where conditions
             if (!$defaultWhere) {
-                $creatorsQuery->where(function ($query) use ($where) {
-                    foreach ($where as $condition) {
-                        $query->orWhere($condition[0], $condition[1]);
-                    }
-                });
+                if (count($where) > 0) {
+                    if (count($where[0]) == 2) {
+                        $creatorsQuery->where(function ($query) use ($where) {
+                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
+                            // Apply subsequent conditions using orWhere()
+                            for ($i = 1; $i < count($where); $i++) {
+                                $query->orWhere($where[$i][0], $where[$i][1]);
+                            }
+                        });
+                    };
+                }
             }
+
+            $creatorsQuery->orderBy($column, $sortDirection);
 
             $totalRows = $creatorsQuery->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
@@ -113,6 +123,8 @@ class CreatorController extends Controller
             }
         }
 
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         // Response
         return response()->json([
             "status" => $status,
@@ -123,7 +135,8 @@ class CreatorController extends Controller
                 "totalPages" => $totalPages,
                 "pageRows" => $pageRows,
                 "totalRows" => $totalRows
-            ]
+            ],
+            'time' => $elapsedTime,
         ], $status);
     }
     ///////////////////////////////////////////////Find///////////////////////////////////////////////////
@@ -140,7 +153,7 @@ class CreatorController extends Controller
         $where = [];
         foreach ($partners as $partner) {
             foreach ($partner as $key => $value) {
-                $where [] = ['_id', $value['xcreator_id']];
+                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
             }
         }
         return $this->lists($request,false ,false, $where, $subjectId);
@@ -155,7 +168,7 @@ class CreatorController extends Controller
         $where = [];
         foreach ($partners as $partner) {
             foreach ($partner as $key => $value) {
-                $where [] = ['_id', $value['xcreator_id']];
+                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
             }
         }
         return $this->lists($request,false ,false, $where, 0,  0, $publisherId);
@@ -169,52 +182,19 @@ class CreatorController extends Controller
         foreach ($partners as $partner) {
             foreach ($partner as $key => $value) {
                 if ($value['xcreator_id'] != $creatorId)
-                $where [] = ['_id', $value['xcreator_id']];
+                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
             }
         }
         return $this->lists($request, false , false, $where, 0, $creatorId);
     }
-    ///////////////////////////////////////////////Role///////////////////////////////////////////////////
-    public function role(Request $request)
-    {
-        $data = null;
-        $status = 404;
-
-        $books = BookIrBook2::all();
-        $uniqueRules = [];
-
-        foreach ($books as $book) {
-            $uniqueRules = array_merge($uniqueRules, array_column($book->partners, 'xrule'));
-        }
-
-        $uniqueRules = array_unique($uniqueRules);;
-        if ($uniqueRules != null and count($uniqueRules) > 0) {
-            foreach ($uniqueRules as $uniqueRule) {
-                $data[] =
-                    [
-                        "name" => $uniqueRule,
-                    ];
-            }
-            $status = 200;
-        }
-        // response
-        return response()->json(
-            [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
-            ],
-            $status
-        );
-    }
-    ///////////////////////////////////////////////Annual Activity///////////////////////////////////////////////////
+      ///////////////////////////////////////////////Annual Activity///////////////////////////////////////////////////
     public function annualActivity(Request $request)
     {
+        $start = microtime(true);
         $creatorId = $request["creatorId"];
         $yearPrintCountData = null;
-
         // read books for year printCount by title
-        $books = BookIrBook2::where('partners.xcreator_id' , $creatorId)->get();
+        $books = BookIrBook2::where('partners.xcreator_id' ,$creatorId)->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year = $book->xpublishdate_shamsi;
@@ -227,13 +207,15 @@ class CreatorController extends Controller
         }
 
         $yearPrintCountData != null ? $status = 200:$status =404;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["yearPrintCount" => $yearPrintCountData]
+                "data" => ["yearPrintCount" => $yearPrintCountData],
+                'time' => $time
             ],
             $status
         );
@@ -241,12 +223,13 @@ class CreatorController extends Controller
     ///////////////////////////////////////////////Detail///////////////////////////////////////////////////
     public function detail(Request $request)
     {
+        $start = microtime(true);
         $creatorId = $request["creatorId"];
         $status = 404;
         $dataMaster = null;
 
 
-        $creator = BookIrCreator::where('_id', $creatorId)->first();
+        $creator = BookIrCreator::where('_id', new ObjectId($creatorId))->first();
         if ($creator != null && $creator->_id > 0) {
             $creatorId = $creator->_id;
 
@@ -272,13 +255,15 @@ class CreatorController extends Controller
         }
 
         if ($dataMaster != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster]
+                "data" => ["master" => $dataMaster],
+                'time' => $time
             ],
             $status
         );
@@ -286,11 +271,12 @@ class CreatorController extends Controller
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
     public function search(Request $request)
     {
+        $start = microtime(true);
         $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
         $data = null;
         $status = 404;
         // read
-        $creators = BookIrCreator::where('xcreatorname', '!=', '')->where('xcreatorname', 'like', "%$searchWord%")->orderBy('xcreatorname', 'asc')->get();
+        $creators = BookIrCreator::where(['$text' => ['$search' => $searchWord]])->orderBy('xcreatorname', 1)->get();
         if ($creators != null and count($creators) > 0) {
             foreach ($creators as $creator) {
                 $data[] =
@@ -302,12 +288,15 @@ class CreatorController extends Controller
 
             $status = 200;
         }
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data],
+                'time' => $time
             ],
             $status
         );

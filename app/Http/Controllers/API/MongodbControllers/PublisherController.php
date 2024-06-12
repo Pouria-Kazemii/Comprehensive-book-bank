@@ -6,20 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrPublisher;
 use Illuminate\Http\Request;
+use MongoDB\BSON\ObjectId;
 
 class PublisherController extends Controller
 {
     ///////////////////////////////////////////////General///////////////////////////////////////////////////
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $creatorId = "")
     {
-        $start = $start = microtime(true);
+        $start = microtime(true);
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublisher_name";
-        $sortDirection = 1;
-//        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishername";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
+        $totalPages = 0 ;
+        $totalRows = 0;
         $data = [];
         $status = 404;
 
@@ -31,7 +33,7 @@ class PublisherController extends Controller
                 $publishersQuery->where(['$text' => ['$search' => $searchText]]);
             }
 
-            if (!$defaultWhere && !empty($where)) {
+            if (!$defaultWhere) {
                 if (count($where) > 0) {
                     if (count($where[0]) == 2) {
                         $publishersQuery->where(function ($query) use ($where) {
@@ -79,7 +81,7 @@ class PublisherController extends Controller
                 "creatorId" => $creatorId
             ],
             'time' => $elapsedTime
-        ], $status);
+        ], $status );
     }
 
     function unique_multidim_array($array, $keys) {
@@ -143,12 +145,13 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
     public function search(Request $request)
     {
+        $start = microtime(true);
         $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
         $data = null;
         $status = 404;
 
         // read
-        $publishers = BookIrPublisher::where('xpublishername', '!=', '')->where('xpublishername', 'like', "%$searchWord%")->orderBy('xpublishername', 1)->get();
+        $publishers = BookIrPublisher::where(['$text' => ['$search' => $searchWord]])->orderBy('xpublishername', 1)->get();
         if ($publishers != null and count($publishers) > 0) {
             foreach ($publishers as $publisher) {
                 $data[] =
@@ -160,12 +163,15 @@ class PublisherController extends Controller
 
             $status = 200;
         }
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data],
+                'time' => $time
             ],
             $status
         );
@@ -174,12 +180,13 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Detail///////////////////////////////////////////////////
     public function detail(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $dataMaster = null;
         $status = 404;
 
         // read
-        $publisher = BookIrPublisher::where('_id', $publisherId)->first();
+        $publisher = BookIrPublisher::where('_id', new ObjectId($publisherId))->first();
         if ($publisher != null and $publisher->_id > 0) {
             $dataMaster =
                 [
@@ -200,13 +207,15 @@ class PublisherController extends Controller
         }
 
         if ($dataMaster != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["master" => $dataMaster]
+                "data" => ["master" => $dataMaster] ,
+                'time' => $time
             ],
             $status
         );
@@ -215,12 +224,13 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Annual Activity By Title///////////////////////////////////////////////////
     public function annualActivityByTitle(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
         $status = 404;
 
         // read books for year printCount by title
-        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 'asc')->get();
+        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year = $book->xpublishdate_shamsi;
@@ -233,13 +243,15 @@ class PublisherController extends Controller
         }
 
         if ($yearPrintCountData != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["yearPrintCount" => $yearPrintCountData]
+                "data" => ["yearPrintCount" => $yearPrintCountData] ,
+                'time' => $time
             ],
             $status
         );
@@ -248,12 +260,13 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Annual Activity By Circulation///////////////////////////////////////////////////
     public function annualActivityByCirculation(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
         $status = 404;
 
         // read books for year printCount by circulation
-        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 'asc')->get();
+        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year = $book->xpublishdate_shamsi;
@@ -266,13 +279,15 @@ class PublisherController extends Controller
         }
 
         if ($yearPrintCountData != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["yearPrintCount" => $yearPrintCountData]
+                "data" => ["yearPrintCount" => $yearPrintCountData] ,
+                'time' => $time
             ],
             $status
         );
@@ -281,12 +296,13 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Translate Authorship///////////////////////////////////////////////////
     public function translateAuthorship(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
         $status = 404;
 
         // read books
-        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 'asc')->get();
+        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
         if ($books != null and count($books) > 0) {
             $totalBooks = count($books);
             $data["authorship"] = 0;
@@ -307,13 +323,15 @@ class PublisherController extends Controller
 
         //
         if ($data != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["data" => $data]
+                "data" => ["data" => $data] ,
+                'time' => $time
             ],
             $status
         );
@@ -322,13 +340,14 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Statistic Subject///////////////////////////////////////////////////
     public function statisticSubject(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
         $status = 404;
         $totalSubjects = 0;
 
         // read books
-        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 'asc')->get();
+        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi',1)->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $bookSubjects = $book->subjects;
@@ -344,13 +363,15 @@ class PublisherController extends Controller
         }
 
         if ($data != null) $status = 200;
-
+        $end = microtime(true);
+        $time = $end-$start;
         // response
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["data" => $data]
+                "data" => ["data" => $data] ,
+                'time' => $time
             ],
             $status
         );
@@ -359,6 +380,7 @@ class PublisherController extends Controller
     ///////////////////////////////////////////////Publisher Role///////////////////////////////////////////////////
     public function publisherRole(Request $request)
     {
+        $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
         $status = 404;
@@ -401,12 +423,14 @@ class PublisherController extends Controller
         }
 
         if ($data != null) $status = 200;
-
+        $end= microtime(true);
+        $time = $end - $start;
         return response()->json(
             [
                 "status" => $status,
                 "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["data" => $data]
+                "data" => ["data" => $data] ,
+                'time' => $time
             ],
             $status
         );

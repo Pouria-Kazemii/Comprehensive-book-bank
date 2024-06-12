@@ -13,10 +13,10 @@ class MakeIndexForBookirCreatorsCollaction extends Migration
      */
     public function up()
     {
-//        Schema::connection('mongodb')->table('bookir_creators', function (Blueprint $collection) {
-//            $collection->index('xcreatorname', 'text');
-//            $collection->index('xrole');
-//        });
+        Schema::connection('mongodb')->table('bookir_creators', function (Blueprint $collection) {
+            $collection->index('xcreatorname', 'creator_name');
+            $collection->index(['xcreatorname' => 'text'] , 'creator_name_text');
+        });
     }
 
     /**
@@ -26,9 +26,9 @@ class MakeIndexForBookirCreatorsCollaction extends Migration
      */
     public function down()
     {
-//        Schema::connection('mongodb')->table('bookir_creators', function (Blueprint $collection) {
-//            $collection->dropIndex('xcreatorname_text');
-//            $collection->dropIndex('xrole');
-//        });
+        Schema::connection('mongodb')->table('bookir_creators', function (Blueprint $collection) {
+            $collection->dropIndex('creator_name_text');
+            $collection->dropIndex('creator_name');
+        });
     }
 }

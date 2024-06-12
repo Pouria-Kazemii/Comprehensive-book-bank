@@ -20,10 +20,11 @@ class BookController extends Controller
     }
     public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
+        $start  = microtime(true);
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublishdate_shamsi";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublisherdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -36,16 +37,17 @@ class BookController extends Controller
             ], 404);
         }
 
-        $query = BookIrBook2::orderBy($column, $sortDirection);
+        $query = BookIrBook2::query();
 
         if (!empty($searchText)) {
-            $query->whereRaw(['$text' => ['$search' => $searchText]]);
+            $query->where(['$text' => ['$search' => $searchText]]);
         }
 
         if ($isbn != "") {
             $query->where(function ($query) use ($isbn) {
-                $query->where('xisbn2', '=', $isbn)
-                    ->orWhere('xisbn3', '=', $isbn);
+                $query->where('xisbn2', 'LIKE', "%$isbn%")
+                    ->orWhere('xisbn3', 'LIKE', "%$isbn%")
+                    ->orWhere('xisbn1', 'LIKE', "%$isbn%");
             });
         }
 
@@ -89,6 +91,8 @@ class BookController extends Controller
             }
         }
 
+        $query->orderBy($column, $sortDirection);
+
         // Get total count without fetching all records
         $totalRows = $query->count();
         $totalPages = (int) ceil($totalRows / $pageRows);
@@ -124,13 +128,15 @@ class BookController extends Controller
                 "doi" => $book->xdiocode,
             ];
         }
-
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         $status = !empty($data) || $subjectTitle != "" ? 200 : 404;
 
         return response()->json([
             "status" => $status,
             "message" => $status == 200 ? "ok" : "not found",
-            "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+            "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName],
+            'time' => $elapsedTime,
         ], $status);
     }
 
@@ -138,10 +144,11 @@ class BookController extends Controller
     //TODO : must implement after making book Dossier for groupBys
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
+        $start  = microtime(true);
         $isbn = (isset($request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xpublishdate_shamsi";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublisherdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -154,17 +161,17 @@ class BookController extends Controller
             ], 404);
         }
 
-        $query = BookIrBook2::orderBy($column, $sortDirection);
+        $query = BookIrBook2::query();
 
         if (!empty($searchText)) {
-            $query->whereRaw(['$text' => ['$search' => $searchText]]);
+            $query->where(['$text' => ['$search' => $searchText]]);
         }
-
 
         if ($isbn != "") {
             $query->where(function ($query) use ($isbn) {
-                $query->where('xisbn2', '=', $isbn)
-                    ->orWhere('xisbn3', '=', $isbn);
+                $query->where('xisbn2', 'LIKE', "%$isbn%")
+                    ->orWhere('xisbn3', 'LIKE', "%$isbn%")
+                    ->orWhere('xisbn1', 'LIKE', "%$isbn%");
             });
         }
 
@@ -208,6 +215,8 @@ class BookController extends Controller
             }
         }
 
+        $query->orderBy($column, $sortDirection);
+
         // Get total count without fetching all records
         $totalRows = $query->count();
         $totalPages = (int) ceil($totalRows / $pageRows);
@@ -243,13 +252,15 @@ class BookController extends Controller
                 "doi" => $book->xdiocode,
             ];
         }
-
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         $status = !empty($data) || $subjectTitle != "" ? 200 : 404;
 
         return response()->json([
             "status" => $status,
             "message" => $status == 200 ? "ok" : "not found",
-            "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName]
+            "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName],
+            'time' => $elapsedTime,
         ], $status);
     }
 
@@ -264,16 +275,17 @@ class BookController extends Controller
         $status = 404;
 
         if (!$isNull) {
-            $books = BookIrBook2::orderBy('xpublishdate_shamsi', -1);
+            $books = BookIrBook2::query();
             if ($name != "") {
-                $books->where('xname', 'like', "%$name%");
+                $books->where(['$text' => ['$search' => $name]]);
             }
 
 
             if ($isbn != "") {
                 $books->where(function ($query) use ($isbn) {
-                    $query->where('xisbn2', '=', $isbn)
-                        ->orWhere('xisbn3', '=', $isbn);
+                    $query->where('xisbn2', 'LIKE', "%$isbn%")
+                        ->orWhere('xisbn3', 'LIKE', "%$isbn%")
+                        ->orWhere('xisbn1', 'LIKE', "%$isbn%");
                 });
             }
 
@@ -437,6 +449,7 @@ class BookController extends Controller
         );
     }
 
+
     ///////////////////////////////////////////////Find Books///////////////////////////////////////////////////
     public function find(Request $request)
     {
@@ -460,7 +473,7 @@ class BookController extends Controller
             $where[] = ['publisher.xpublisher_id' , $publisherId];
         } elseif ($bookId > 0) {
             // get publisher
-            $books = BookIrBook2::where('_id', $bookId)->get();
+            $books = BookIrBook2::where('_id', new ObjectId($bookId))->get();
             $publishers = [];
             foreach ($books as $book) {
                 $publishers = $book->publisher;
@@ -503,11 +516,11 @@ class BookController extends Controller
         $where = [];
 
         if ($creatorId > 0) {
-            $where[] = ['partners.xcreator_id' , "$creatorId" ];
+            $where[] = ['partners.xcreator_id' , $creatorId];
 
         } elseif ($bookId > 0) {
             // get publisher
-            $books = BookIrBook2::where('_id', $bookId)->get();
+            $books = BookIrBook2::where('_id', new ObjectId($bookId))->get();
             $creators = [];
 
             foreach ($books as $book) {
@@ -539,10 +552,10 @@ class BookController extends Controller
 
     public function findIsbn(Request $request)
     {
-        $book = BookIrBook2::where('xparent', -1);
-        $book = $book->where(function ($query) use ($book, $request) {
+        $book = BookIrBook2::where(function ($query) use ($request) {
             $query->where('xisbn', $request["searchIsbnBook"])->OrWhere('xisbn2', $request["searchIsbnBook"])->OrWhere('xisbn3', $request["searchIsbnBook"]);
         });
+        $book->where('xparent', -1);
         $book = $book->first();
         if ($book != null and $book->_id > 0) {
             return '/book/edit/' . $book->_id;
@@ -556,7 +569,7 @@ class BookController extends Controller
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
-            $book = BookIrBook2::find($bookId);
+            $book = BookIrBook2::where('_id' , new ObjectId($bookId))->first();
             if ($book != null) {
                 //TODO : must change after implement book dossier collection
                 $where [] = [ 'xparent' , $book->xsqlid];
@@ -575,10 +588,10 @@ class BookController extends Controller
         $subjectTitle = "";
         $mainSubject = [];
 
-        $bookSubjects = BookIrBook2::where('subjects.xsubject_id', (int)$subjectId);
+        $bookSubjects = BookIrBook2::where('subjects.xsubject_id', (int)$subjectId)->first();
 
             if($bookSubjects->count() > 0) {
-                $bookSubjects = $bookSubjects->first()['subjects'];
+                $bookSubjects = $bookSubjects['subjects'];
                 foreach ($bookSubjects as $subject) {
                     if ($subject['xsubject_id'] == (int)$subjectId) {
                         $mainSubject = $subject;
@@ -609,7 +622,7 @@ class BookController extends Controller
         $status = 404;
 
         // read books
-        $book = BookIrBook2::where('_id', '=', $bookId)->first();
+        $book = BookIrBook2::where('_id', new ObjectId($bookId))->first();
         if ($book != null and $book->_id > 0) {
             $publishersData = null;
             $subjectsData = null;
@@ -673,7 +686,7 @@ class BookController extends Controller
 
         // read books for year printCount
         //TODO : must change after implement book dossier collection
-        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
+        $books = BookIrBook2::where('_id', new ObjectId($bookId))->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year =$book->xpublishdate_shamsi;
@@ -688,7 +701,7 @@ class BookController extends Controller
         // read books for publisher PrintCount
         //TODO : must change after implement book dossier collection
         if ($bookId != null) {
-            $bookSqlId = BookIrBook2::where('_id', $bookId)->first();
+            $bookSqlId = BookIrBook2::where('_id', new ObjectId($bookId))->first();
             $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
         }else{
             $bookSqlId = null;
@@ -766,7 +779,7 @@ class BookController extends Controller
         $publisherPrintCountData = null;
         $status = 404;
 
-        $book = BookIrBook2::where('_id', '=', $bookId)->first();
+        $book = BookIrBook2::where('_id',new ObjectId($bookId))->first();
 
         if ($book != null and $book->_id > 0) {
             $publishersData = null;
@@ -824,7 +837,7 @@ class BookController extends Controller
 
         // read books for year printCount
         //TODO : must change after implement book dossier collection
-        $books = BookIrBook2::where('_id', $bookId)->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
+        $books = BookIrBook2::where('_id',new ObjectId($bookId))->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $value) {
                 $year =$value->xpublishdate_shamsi;
@@ -839,7 +852,7 @@ class BookController extends Controller
         // read books for publisher PrintCount
         //TODO : must change after implement book dossier collection
         if ($bookId != null) {
-            $bookSqlId = BookIrBook2::where('_id', $bookId)->first();
+            $bookSqlId = BookIrBook2::where('_id', new ObjectId($bookId))->first();
             $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
         }else{
             $bookSqlId = null;
@@ -957,27 +970,27 @@ class BookController extends Controller
 
         if ($publisherId != "" and $creatorId != "") {
             $publisherBooks = BookIrBook2::where('partners.xcreator_id', $creatorId)->where('publisher.xpublisher_id', $publisherId)->get();
-            if (BookIrPublisher::where('_id', $publisherId)->count() > 0)
-                $publisherName = BookIrPublisher::where('_id', $publisherId)->first()->xpublishername;
-            if ($creatorId != 0 and BookIrCreator::where('_id', $creatorId)->count() > 0) {
-                $creatorName = BookIrCreator::where('_id', $creatorId)->first()->xcreatorname;
+            if (BookIrPublisher::where('_id',new ObjectId($publisherId))->count() > 0)
+                $publisherName = BookIrPublisher::where('_id', new ObjectId($publisherId))->first()->xpublishername;
+            if ($creatorId != 0 and BookIrCreator::where('_id',new ObjectId( $creatorId))->count() > 0) {
+                $creatorName = BookIrCreator::where('_id', new ObjectId($creatorId))->first()->xcreatorname;
             }
         } elseif ($publisherId != "" or $creatorId != "") {
             if ($publisherId == 0) {
                 $publisherBooks = BookIrBook2::where('partners.xcreator_id', $creatorId)->get();
             } else {
                 $publisherBooks = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->get();
-                if (BookIrPublisher::where('_id', $publisherId)->count() > 0)
-                    $publisherName = BookIrPublisher::where('_id', $publisherId)->first()->xpublishername;
+                if (BookIrPublisher::where('_id', new ObjectId($publisherId))->count() > 0)
+                    $publisherName = BookIrPublisher::where('_id', new ObjectId($publisherId))->first()->xpublishername;
             }
-            if ($creatorId != 0 and BookIrCreator::where('_id', $creatorId)->count() > 0) {
-                $creatorName = BookIrCreator::where('_id', $creatorId)->first()->xcreatorname;
+            if ($creatorId != 0 and BookIrCreator::where('_id', new ObjectId($creatorId))->count() > 0) {
+                $creatorName = BookIrCreator::where('_id', new ObjectId($creatorId))->first()->xcreatorname;
             }
         }
 
                 if ($publisherName != '' or $creatorName != '') {
                     foreach ($publisherBooks as $publisherBook) {
-                        $where [] = ['_id', $publisherBook->_id];
+                        $where [] = ['_id', new ObjectId($publisherBook->_id)];
                     }
                 }
 
@@ -1001,7 +1014,7 @@ class BookController extends Controller
                 foreach ($book->partners as $partner) {
                     if ($partner['xcreator_id'] == $teammateId) {
 
-                        $where [] = ['_id', $book->_id];
+                        $where [] = ['_id', new ObjectId($book->_id)];
 
                         $teammateName = $partner['xcreatorname'];
                         break;
@@ -1010,8 +1023,8 @@ class BookController extends Controller
             }
         }
 
-        if (BookIrCreator::where('_id', $creatorId)->count() > 0){
-            $creatorName = [BookIrCreator::where('_id', $creatorId)->pluck('xcreatorname')[0] , $teammateName];
+        if (BookIrCreator::where('_id', new ObjectId($creatorId))->count() > 0){
+            $creatorName = [BookIrCreator::where('_id', new ObjectId($creatorId))->pluck('xcreatorname')[0] , $teammateName];
         }
 
         return $this->lists($request, false, ($where == []), $where, "", "", $creatorName);
