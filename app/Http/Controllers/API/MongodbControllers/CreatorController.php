@@ -148,6 +148,7 @@ class CreatorController extends Controller
         $publisherId = $request["publisherId"];
 
         $partners = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->pluck('partners');
+
         $where = [];
         foreach ($partners as $partner) {
             foreach ($partner as $key => $value) {

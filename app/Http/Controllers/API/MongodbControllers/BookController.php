@@ -511,7 +511,7 @@ class BookController extends Controller
 
         } elseif ($bookId > 0) {
             // get publisher
-            $books = BookIrBook2::where('_id', new ObjectId($bookId))->get();
+            $books = BookIrBook2::where('_id', new ObjectId($bookId))->first();
             $creators = [];
 
             foreach ($books as $book) {

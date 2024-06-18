@@ -129,6 +129,7 @@ class ReportController extends Controller
                 if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
                 if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
                 $books->orderBy($column, $sortDirection);
+                $totalRows = $books->count(); // get total records count
                 $books = $books->skip($offset)->take($pageRows)->get();
                 if ($books != null and count($books) > 0) {
                     foreach ($books as $book) {
@@ -152,6 +153,7 @@ class ReportController extends Controller
                 }
             }
         }
+        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
         // response
         return response()->json
@@ -159,7 +161,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => "ok" ,
-                "data" => ["list" => $data]
+                "data" => ["list" => $data , "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
@@ -254,7 +256,7 @@ class ReportController extends Controller
     public function publisherSubject(Request $request)
     {
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
@@ -269,7 +271,7 @@ class ReportController extends Controller
         // read
         $books = BookIrBook2::query();
         $books->where('publisher.xpublisher_id', $publisherId);
-        if($subjectId > 0)  $books->where('subjects.xsubject_id', (int)$subjectId);
+        if($subjectTitle != "") $books->where("xsubject_name", "LIKE", "%$subjectTitle%");
         if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
         $totalRows = $books->count(); // get total records count
@@ -320,7 +322,7 @@ class ReportController extends Controller
     public function publisherSubjectAggregation(Request $request)
     {
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "subjects.xsubject_name";
@@ -336,7 +338,7 @@ class ReportController extends Controller
         // read
         $booksSubjects = BookIrBook2::query();
         $booksSubjects->where('publisher.xpublisher_id', $publisherId)->pluck('subjects');
-        if($subjectId > 0) $booksSubjects->where("xsubject_id", "=", (int) $subjectId);
+        if($subjectTitle != "") $booksSubjects->where("xsubject_name", "LIKE", "%$subjectTitle%");
         $booksSubjects->orderBy($column,$sortDirection);
         $booksSubjects = $booksSubjects->skip($offset)->take($pageRows)->get(); // get list
         if($booksSubjects != null and count($booksSubjects) > 0)
@@ -400,7 +402,7 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Subject Aggregation///////////////////////////////////////////////////
     public function subjectAggregation(Request $request)
     {
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $translate = (isset($request['translate']) && $request['translate'] ==(1 or 0)) ? (int)$request["translate"] : 0;
@@ -414,7 +416,7 @@ class ReportController extends Controller
         $subjectsData = null;
         $offset = ($currentPageNumber - 1) * $pageRows;
         $matchConditions = [
-            ['subjects.xsubject_id' => (int)$subjectId],
+            ['subjects.xsubject_name' => $subjectTitle],
         ];
 
         if ($translate == 1) {
@@ -471,7 +473,7 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Subject///////////////////////////////////////////////////
     public function subject(Request $request)
     {
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $translate = (isset($request['translate']) && $request['translate'] ==(1 or 0)) ? (int)$request["translate"] : 0;
@@ -486,11 +488,11 @@ class ReportController extends Controller
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read
-        if($subjectId > 0)
+        if($subjectTitle != "")
         {
             // DB::enableQueryLog();
             $books = BookIrBook2::query();
-            $books->where('subjects.xsubject_id',(int)$subjectId);
+             $books->where("xsubject_name", "LIKE", "%$subjectTitle%");
             // if($translate == 1) $books->where("xlang", "!=", "فارسی");
             if($translate == 1) $books->where("is_translate", 2);
             // if($authorship == 1) $books->where("xlang", "=", "فارسی");
@@ -551,7 +553,7 @@ class ReportController extends Controller
     public function creatorSubject(Request $request)
     {
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
-        $subjectId = (isset($request["subjectId"])) ? $request["subjectId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
@@ -565,7 +567,7 @@ class ReportController extends Controller
         // read
         $books = BookIrBook2::query();
         $books->where('partners.xcreator_id' , $creatorId);
-        if($subjectId > 0) $books->where('subjects.xsubject_id' , (int)$subjectId);
+        if($subjectTitle != "") $books->where('subjects.xsubject_name' , 'LIKE',"%$subjectTitle%");
         if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
         $totalRows = $books->count(); // get total records count
@@ -637,8 +639,8 @@ class ReportController extends Controller
         {
             $books = BookIrBook2::query();
             $books->where('publisher.xpublisher_id' , $publisherId);
-            if($yearStart != "") $books->where('publishdate_shamsi', '>=' , (int)$yearStart );
-            if($yearEnd != "") $books->where('publishdate_shamsi', '<=' , (int)$yearEnd );
+            if($yearStart != "") $books->where('xpublishdate_shamsi', '>=' , (int)$yearStart );
+            if($yearEnd != "") $books->where('xpublishdate_shamsi', '<=' , (int)$yearEnd );
             $books = $books->get();
             $creators = $books->pluck('partners');
             $uniqueCreators = $this->getUniqueCreators($creators);
@@ -722,15 +724,17 @@ class ReportController extends Controller
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
         $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
+        $totalRows = 0 ;
         $data = null;
         $publishersData = null;
         $status = 200;
 
 
         // read
-        $books = BookIrBook2::orderBy($column,$sortDirection);
+        $books = BookIrBook2::query();
         $books->where('partners.xcreator_id' , $creatorId);
-        $books = $books->get(); // get list
+        $books->orderBy($column,$sortDirection);
+        $books = $books->skip($offset)->take($pageRows)->get(); // get list
         if($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $publishers = $book->publisher;
@@ -744,13 +748,14 @@ class ReportController extends Controller
         {
             foreach ($publishersData as $publisherId => $publisherName)
             {
-                $books = BookIrBook2::orderBy('xpublishdate_shamsi', 1);
+                $books = BookIrBook2::query();
                 $books->where('partners.xcreator_id' , $creatorId);
                 $books->where('publisher.xpublisher_id' , $publisherId);
                 if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)$yearStart);
                 if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)$yearEnd);
-                $books = $books->get(); // get list
-                if($books != null and count($books) > 0)
+                $books->orderBy($column,$sortDirection);
+                $totalPages = $books->count();
+                $books = $books->skip($offset)->take($pageRows)->get(); // get list                if($books != null and count($books) > 0)
                 {
                     foreach ($books as $book)
                     {
@@ -778,7 +783,7 @@ class ReportController extends Controller
             [
                 "status" => $status,
                 "message" => "ok",
-                "data" => ["list" => $data]
+                "data" => ["list" => $data,"currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
             $status
         );
