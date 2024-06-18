@@ -8,7 +8,6 @@ use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
-
 class CreatorController extends Controller
 {
 
@@ -26,7 +25,7 @@ class CreatorController extends Controller
         $totalPages = 0 ;
         $totalRows = 0;
         $data = [];
-        $status = 404;
+        $status = 200;
 
         if (!$isNull) {
             // Read books
@@ -65,45 +64,30 @@ class CreatorController extends Controller
             }
 
             $creatorsQuery->orderBy($column, $sortDirection);
-
             $totalRows = $creatorsQuery->count();
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
             $creators = $creatorsQuery->skip($offset)->take($pageRows)->get();
-
             if ($creators->isNotEmpty()) {
                 $creatorIds = $creators->pluck('_id')->toArray();
-
                 // Batch fetch all necessary counts in one go using aggregation
-                $bookCounts = BookIrBook2::raw(function ($collection) use ($creatorIds, $subjectId, $publisherId, $mainCreatorId) {
-                    $pipeline = [
-                        ['$match' => ['partners.xcreator_id' => ['$in' => $creatorIds]]],
-                        ['$unwind' => '$partners'],
-                        ['$match' => ['partners.xcreator_id' => ['$in' => $creatorIds]]]
-                    ];
+                foreach ($creatorIds as $creatorId) {
+                    $book = BookIrBook2::where('partners.xcreator_id', $creatorId);
 
                     if ($subjectId > 0) {
-                        $pipeline[] = ['$match' => ['subjects.xsubject_id' => $subjectId]];
+                        $book->where('subjects.xsubject_id' ,(int) $subjectId) ;
                     }
 
                     if ($publisherId > 0) {
-                        $pipeline[] = ['$match' => ['publisher.xpublisher_id' => $publisherId]];
+                        $book->where('publisher.xpublisher_id' , $publisherId);
                     }
 
                     if ($mainCreatorId > 0) {
-                        $pipeline[] = ['$match' => ['partners.xcreator_id' => $mainCreatorId]];
+                        $book->where('partners.xcreator_id' , $mainCreatorId);
                     }
 
-                    $pipeline[] = [
-                        '$group' => [
-                            '_id' => '$partners.xcreator_id',
-                            'book_count' => ['$sum' => 1],
-                        ],
-                    ];
-
-                    return $collection->aggregate($pipeline);
-                })->pluck('book_count', '_id')->toArray();
-
+                    $bookCounts[$creatorId] = $book->count();
+                }
                 foreach ($creators as $creator) {
                     $creatorId = $creator->_id;
                     $bookCount = $bookCounts[$creatorId] ?? 0;
@@ -119,7 +103,6 @@ class CreatorController extends Controller
                         "name" => $creator->xcreatorname,
                     ];
                 }
-                $status = 200;
             }
         }
 
@@ -128,7 +111,7 @@ class CreatorController extends Controller
         // Response
         return response()->json([
             "status" => $status,
-            "message" => $status == 200 ? "ok" : "not found",
+            "message" =>  "ok" ,
             "data" => [
                 "list" => $data,
                 "currentPageNumber" => $currentPageNumber,
@@ -192,6 +175,7 @@ class CreatorController extends Controller
     {
         $start = microtime(true);
         $creatorId = $request["creatorId"];
+        $status = 200;
         $yearPrintCountData = null;
         // read books for year printCount by title
         $books = BookIrBook2::where('partners.xcreator_id' ,$creatorId)->get();
@@ -206,14 +190,13 @@ class CreatorController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        $yearPrintCountData != null ? $status = 200:$status =404;
         $end = microtime(true);
         $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["yearPrintCount" => $yearPrintCountData],
                 'time' => $time
             ],
@@ -225,7 +208,7 @@ class CreatorController extends Controller
     {
         $start = microtime(true);
         $creatorId = $request["creatorId"];
-        $status = 404;
+        $status = 200;
         $dataMaster = null;
 
 
@@ -248,9 +231,11 @@ class CreatorController extends Controller
                     "roles" =>  $roles->map(function($role) {
                         return ['title' => $role->_id];
                     }),
+                    $creator->iranketabinfo != null ?[
                     'englishName' => $creator->iranketabinfo['enName'],
                     'description' => $creator->iranketabinfo['partnerDesc'],
                     'image' => $creator->iranketabinfo['image']
+                    ]: ''
                 ];
         }
 
@@ -261,7 +246,7 @@ class CreatorController extends Controller
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["master" => $dataMaster],
                 'time' => $time
             ],
@@ -274,7 +259,7 @@ class CreatorController extends Controller
         $start = microtime(true);
         $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
         $data = null;
-        $status = 404;
+        $status = 200;
         // read
         $creators = BookIrCreator::where(['$text' => ['$search' => $searchWord]])->orderBy('xcreatorname', 1)->get();
         if ($creators != null and count($creators) > 0) {
@@ -285,8 +270,6 @@ class CreatorController extends Controller
                         "value" => $creator->xcreatorname,
                     ];
             }
-
-            $status = 200;
         }
         $end = microtime(true);
         $time = $end - $start;
@@ -294,7 +277,7 @@ class CreatorController extends Controller
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" =>"ok",
                 "data" => ["list" => $data],
                 'time' => $time
             ],

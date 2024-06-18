@@ -23,11 +23,13 @@ class PublisherController extends Controller
         $totalPages = 0 ;
         $totalRows = 0;
         $data = [];
-        $status = 404;
+        $status = 200;
 
         if (!$isNull) {
             // Initialize query
             $publishersQuery = BookIrPublisher::query();
+
+            $publishersQuery->where('xpublishername' ,'!=' , '');
 
             if (!empty($searchText)) {
                 $publishersQuery->where(['$text' => ['$search' => $searchText]]);
@@ -62,7 +64,6 @@ class PublisherController extends Controller
                         "name" => $publisher->xpublishername,
                     ];
                 }
-                $status = 200;
             }
         }
         $end = microtime(true);
@@ -71,7 +72,7 @@ class PublisherController extends Controller
         // Response
         return response()->json([
             "status" => $status,
-            "message" => $status == 200 ? "ok" : "not found",
+            "message" => "ok",
             "data" => [
                 "list" => $data,
                 "currentPageNumber" => $currentPageNumber,
@@ -136,7 +137,7 @@ class PublisherController extends Controller
 
         foreach ($publishers as $publisher) {
             foreach ($publisher as $key => $value) {
-                $where[] = ['_id', $value['xpublisher_id']];
+                $where[] = ['_id', new ObjectId($value['xpublisher_id'])];
             }
         }
         return $this->lists($request, false, ($where == []), $where);
@@ -148,7 +149,8 @@ class PublisherController extends Controller
         $start = microtime(true);
         $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
         $data = null;
-        $status = 404;
+        $status = 200;
+
 
         // read
         $publishers = BookIrPublisher::where(['$text' => ['$search' => $searchWord]])->orderBy('xpublishername', 1)->get();
@@ -160,8 +162,6 @@ class PublisherController extends Controller
                         "value" => $publisher->xpublishername,
                     ];
             }
-
-            $status = 200;
         }
         $end = microtime(true);
         $time = $end - $start;
@@ -169,7 +169,7 @@ class PublisherController extends Controller
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["list" => $data],
                 'time' => $time
             ],
@@ -183,7 +183,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $dataMaster = null;
-        $status = 404;
+        $status = 200;
 
         // read
         $publisher = BookIrPublisher::where('_id', new ObjectId($publisherId))->first();
@@ -206,14 +206,13 @@ class PublisherController extends Controller
                 ];
         }
 
-        if ($dataMaster != null) $status = 200;
         $end = microtime(true);
         $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" =>"ok" ,
                 "data" => ["master" => $dataMaster] ,
                 'time' => $time
             ],
@@ -227,7 +226,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
-        $status = 404;
+        $status = 200;
 
         // read books for year printCount by title
         $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
@@ -242,14 +241,13 @@ class PublisherController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if ($yearPrintCountData != null) $status = 200;
         $end = microtime(true);
         $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" =>"ok",
                 "data" => ["yearPrintCount" => $yearPrintCountData] ,
                 'time' => $time
             ],
@@ -263,7 +261,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $yearPrintCountData = null;
-        $status = 404;
+        $status = 200;
 
         // read books for year printCount by circulation
         $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
@@ -277,15 +275,13 @@ class PublisherController extends Controller
 
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
-
-        if ($yearPrintCountData != null) $status = 200;
         $end = microtime(true);
         $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["yearPrintCount" => $yearPrintCountData] ,
                 'time' => $time
             ],
@@ -299,7 +295,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
-        $status = 404;
+        $status = 200;
 
         // read books
         $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi', 1)->get();
@@ -321,15 +317,13 @@ class PublisherController extends Controller
             $data = ["label" => array_keys($dataTmp), "value" => array_values($dataTmp)];
         }
 
-        //
-        if ($data != null) $status = 200;
         $end = microtime(true);
         $time = $end - $start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["data" => $data] ,
                 'time' => $time
             ],
@@ -343,7 +337,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
-        $status = 404;
+        $status = 200;
         $totalSubjects = 0;
 
         // read books
@@ -362,14 +356,13 @@ class PublisherController extends Controller
             $data = ["label" => array_keys($data), "value" => array_values($data)];
         }
 
-        if ($data != null) $status = 200;
         $end = microtime(true);
         $time = $end-$start;
         // response
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["data" => $data] ,
                 'time' => $time
             ],
@@ -383,7 +376,7 @@ class PublisherController extends Controller
         $start = microtime(true);
         $publisherId = $request["publisherId"];
         $data = null;
-        $status = 404;
+        $status = 200;
         $roles = [];
         $partners = [];
         $role_partner = [];
@@ -422,13 +415,12 @@ class PublisherController extends Controller
             $bookCount = 0;
         }
 
-        if ($data != null) $status = 200;
         $end= microtime(true);
         $time = $end - $start;
         return response()->json(
             [
                 "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "message" => "ok",
                 "data" => ["data" => $data] ,
                 'time' => $time
             ],
