@@ -26,64 +26,97 @@ class PublisherController extends Controller
         $status = 200;
 
         if (!$isNull) {
-            // Initialize query
-            $publishersQuery = BookIrPublisher::query();
+                $matchConditions = ['xpublishername' => ['$ne' => '']];
 
-            $publishersQuery->where('xpublishername' ,'!=' , '');
+                if (!empty($searchText)) {
+                    $matchConditions['$text'] = ['$search' => $searchText];
+                }
 
-            if (!empty($searchText)) {
-                $publishersQuery->where(['$text' => ['$search' => $searchText]]);
-            }
-
-            if (!$defaultWhere) {
-                if (count($where) > 0) {
-                    if (count($where[0]) == 2) {
-                        $publishersQuery->where(function ($query) use ($where) {
-                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                            // Apply subsequent conditions using orWhere()
-                            for ($i = 1; $i < count($where); $i++) {
-                                $query->orWhere($where[$i][0], $where[$i][1]);
+                if (!$defaultWhere) {
+                    if (count($where) > 0) {
+                        if (count($where[0]) == 2) {
+                            $orConditions = [];
+                            foreach ($where as $condition) {
+                                $orConditions[] = [$condition[0] => $condition[1]];
                             }
-                        });
-                    };
+                            $matchConditions['$or'] = $orConditions;
+                        }
+                        if (count($where[0]) == 4) {
+                            for ($i = 0; $i < count($where); $i++) {
+                                if ($where[$i][3] == '') {
+                                    $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
+                                } elseif ($where[$i][3] == 'AND') {
+                                    $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
+                                } elseif ($where[$i][3] == 'OR') {
+                                    $orConditions = [];
+                                    for (; $i < count($where) && $where[$i][3] == 'OR'; $i++) {
+                                        $orConditions[] = [$where[$i][0] => [$where[$i][2] => $where[$i][1]]];
+                                    }
+                                    $matchConditions['$or'] = $orConditions;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Perform the count query
+                $totalRows = BookIrPublisher::raw(function ($collection) use ($matchConditions) {
+                    return $collection->countDocuments($matchConditions);
+                });
+
+                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+                // Fetch the paginated results
+                $publishers = BookIrPublisher::raw(function ($collection) use ($matchConditions, $offset, $pageRows, $column, $sortDirection, $searchText) {
+                    if ($searchText == "") {
+                        $pipeline = [
+                            ['$match' => (object)$matchConditions],
+                            ['$sort' => [$column => $sortDirection]],
+                            ['$skip' => $offset],
+                            ['$limit' => $pageRows]
+                        ];
+                    }else{
+                        $pipeline = [
+                            ['$match' => (object)$matchConditions],
+                            ['$addFields' => ['score' => ['$meta' => 'textScore']]],
+                            ['$sort' => ['score' => -1]],
+                            ['$skip' => $offset],
+                            ['$limit' => $pageRows]
+                        ];
+                    }
+                    return $collection->aggregate($pipeline);
+                });
+
+                $publishers = iterator_to_array($publishers);
+
+                if (!empty($publishers)) {
+                    foreach ($publishers as $publisher) {
+                        $data[] = [
+                            "id" => $publisher['_id'],
+                            "name" => $publisher['xpublishername'],
+                        ];
+                    }
                 }
             }
 
-            // Order by clause
-            $publishersQuery->orderBy($column, $sortDirection);
+            $end = microtime(true);
+            $elapsedTime = $end - $start;
 
-            $totalRows = $publishersQuery->count();
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-
-            $publishers = $publishersQuery->skip($offset)->take($pageRows)->get();
-
-            if ($publishers->isNotEmpty()) {
-                foreach ($publishers as $publisher) {
-                    $data[] = [
-                        "id" => $publisher->_id,
-                        "name" => $publisher->xpublishername,
-                    ];
-                }
-            }
-        }
-        $end = microtime(true);
-        $elapsedTime = $end - $start;
-
-        // Response
-        return response()->json([
-            "status" => $status,
-            "message" => "ok",
-            "data" => [
-                "list" => $data,
-                "currentPageNumber" => $currentPageNumber,
-                "totalPages" => $totalPages,
-                "pageRows" => $pageRows,
-                "totalRows" => $totalRows,
-                "creatorId" => $creatorId
-            ],
-            'time' => $elapsedTime
-        ], $status );
+            return response()->json([
+                "status" => $status,
+                "message" => "ok",
+                "data" => [
+                    "list" => $data,
+                    "currentPageNumber" => $currentPageNumber,
+                    "totalPages" => $totalPages,
+                    "pageRows" => $pageRows,
+                    "totalRows" => $totalRows,
+                    "creatorId" => $creatorId
+                ],
+                'time' => $elapsedTime
+            ], $status);
     }
+
 
     function unique_multidim_array($array, $keys) {
         $temp_array = [];

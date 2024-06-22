@@ -34,71 +34,95 @@ class BookController extends Controller
         $totalRows = 0;
 
         if (!$isNull) {
-
-            $bookQuery = BookIrBook2::query();
+            $matchConditions = [];
 
             if (!empty($searchText)) {
-                $bookQuery->where(['$text' => ['$search' => $searchText]]);
+                $matchConditions['$text'] = ['$search' => $searchText];
             }
 
             if ($isbn != "") {
-                $bookQuery->where(function ($query) use ($isbn) {
-                    $query->where('xisbn2', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn3', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn1', 'LIKE', "%$isbn%");
-                });
+                $matchConditions['$or'] = [
+                    ['xisbn2' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                    ['xisbn3' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                    ['xisbn1' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                ];
             }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
                     if (count($where[0]) == 2) {
-                        $bookQuery->where(function ($query) use ($where) {
-                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                            // Apply subsequent conditions using orWhere()
-                            for ($i = 1; $i < count($where); $i++) {
-                                $query->orWhere($where[$i][0], $where[$i][1]);
-                            }
-                        });
-                    };
+                        $orConditions = [];
+                        foreach ($where as $condition) {
+                            $orConditions[] = [$condition[0] => $condition[1]];
+                        }
+                        $matchConditions['$or'] = $orConditions;
+                    }
                     if (count($where[0]) == 4) {
-
                         for ($i = 0; $i < count($where); $i++) {
                             if ($where[$i][3] == '') {
-                                $bookQuery->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
                             } elseif ($where[$i][3] == 'AND') {
-                                $bookQuery->where($where[$i][0], $where[$i][2], $where[$i][1]);
-
+                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
                             } elseif ($where[$i][3] == 'OR') {
-
-                                $bookQuery->where(function ($query) use ($where, &$i) {
-                                    $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
-                                    $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
-                                    $i++;
-                                    for ($j = $i; $j < count($where); $j++) {
-                                        if ($where[$j][3] == 'OR') {
-                                            $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
-                                            $i++;
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                });
+                                $orConditions = [];
+                                for (; $i < count($where) && $where[$i][3] == 'OR'; $i++) {
+                                    $orConditions[] = [$where[$i][0] => [$where[$i][2] => $where[$i][1]]];
+                                }
+                                $matchConditions['$or'] = $orConditions;
                             }
                         }
                     }
                 }
             }
 
-            $bookQuery->orderBy($column, $sortDirection);
+            if (!empty($searchText)) {
+                // Execute raw MongoDB query to sort by text search score
+                $books = BookIrBook2::raw(function($collection) use ($matchConditions, $offset, $pageRows) {
+                    return $collection->aggregate([
+                        ['$match' => $matchConditions],
+                        ['$addFields' => ['score' => ['$meta' => 'textScore']]],
+                        ['$sort' => ['score' => -1]],
+                        ['$skip' => $offset],
+                        ['$limit' => $pageRows]
+                    ]);
+                });
 
-            // Get total count without fetching all records
-            $totalRows = $bookQuery->count();
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+                // Separate count query for totalRows
+                $totalRows = BookIrBook2::raw(function($collection) use ($matchConditions) {
+                    return $collection->countDocuments($matchConditions);
+                });
+
+                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+                $books = iterator_to_array($books);
+            } else {
+                $bookQuery = BookIrBook2::query();
+
+                if (!empty($matchConditions)) {
+                    foreach ($matchConditions as $field => $condition) {
+                        if ($field === '$or') {
+                            $bookQuery->where(function ($query) use ($condition) {
+                                foreach ($condition as $orCondition) {
+                                    $query->orWhere(key($orCondition), current($orCondition));
+                                }
+                            });
+                        } else {
+                            $bookQuery->where($field, $condition);
+                        }
+                    }
+                }
+
+                // Separate count query for totalRows
+                $totalRows = $bookQuery->count();
+                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+                $bookQuery->orderBy($column, $sortDirection);
+                $books = $bookQuery->skip($offset)->take($pageRows)->get();
+            }
 
             // Fetch paginated results
-            $books = $bookQuery->skip($offset)->take($pageRows)->get();
 
-            if ($books->isNotEmpty()) {
+            if ($books != null) {
                 foreach ($books as $book) {
                     $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
 
@@ -160,7 +184,6 @@ class BookController extends Controller
             $matchConditions = [];
 
             if (!empty($searchText)) {
-                // Add text search to match conditions
                 $matchConditions['$text'] = ['$search' => $searchText];
             }
 
@@ -211,7 +234,13 @@ class BookController extends Controller
                     ]);
                 });
 
-                // Convert MongoDB cursor to an array of documents
+                // Separate count query for totalRows
+                $totalRows = BookIrBook2::raw(function($collection) use ($matchConditions) {
+                    return $collection->countDocuments($matchConditions);
+                });
+
+                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
                 $books = iterator_to_array($books);
             } else {
                 $bookQuery = BookIrBook2::query();
@@ -230,6 +259,7 @@ class BookController extends Controller
                     }
                 }
 
+                // Separate count query for totalRows
                 $totalRows = $bookQuery->count();
                 $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
