@@ -9,6 +9,7 @@ use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\Regex;
 
 
 class BookController extends Controller
@@ -156,71 +157,89 @@ class BookController extends Controller
         $totalRows = 0;
 
         if (!$isNull) {
-
-            $bookQuery = BookIrBook2::query();
+            $matchConditions = [];
 
             if (!empty($searchText)) {
-                $bookQuery->where(['$text' => ['$search' => $searchText]]);
+                // Add text search to match conditions
+                $matchConditions['$text'] = ['$search' => $searchText];
             }
 
             if ($isbn != "") {
-                $bookQuery->where(function ($query) use ($isbn) {
-                    $query->where('xisbn2', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn3', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn1', 'LIKE', "%$isbn%");
-                });
+                $matchConditions['$or'] = [
+                    ['xisbn2' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                    ['xisbn3' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                    ['xisbn1' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                ];
             }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
                     if (count($where[0]) == 2) {
-                        $bookQuery->where(function ($query) use ($where) {
-                            $query->where($where[0][0], $where[0][1]); // Apply the first condition using where()
-                            // Apply subsequent conditions using orWhere()
-                            for ($i = 1; $i < count($where); $i++) {
-                                $query->orWhere($where[$i][0], $where[$i][1]);
-                            }
-                        });
-                    };
+                        $orConditions = [];
+                        foreach ($where as $condition) {
+                            $orConditions[] = [$condition[0] => $condition[1]];
+                        }
+                        $matchConditions['$or'] = $orConditions;
+                    }
                     if (count($where[0]) == 4) {
-
                         for ($i = 0; $i < count($where); $i++) {
                             if ($where[$i][3] == '') {
-                                $bookQuery->where($where[$i][0], $where[$i][2], $where[$i][1]);
+                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
                             } elseif ($where[$i][3] == 'AND') {
-                                $bookQuery->where($where[$i][0], $where[$i][2], $where[$i][1]);
-
+                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
                             } elseif ($where[$i][3] == 'OR') {
-
-                                $bookQuery->where(function ($query) use ($where, &$i) {
-                                    $query->where($where[$i][0], $where[$i][2], $where[$i][1]);
-                                    $query->orWhere($where[$i + 1][0], $where[$i + 1][2], $where[$i + 1][1]);
-                                    $i++;
-                                    for ($j = $i; $j < count($where); $j++) {
-                                        if ($where[$j][3] == 'OR') {
-                                            $query->orWhere($where[$j + 1][0], $where[$j + 1][2], $where[$j + 1][1]);
-                                            $i++;
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                });
+                                $orConditions = [];
+                                for (; $i < count($where) && $where[$i][3] == 'OR'; $i++) {
+                                    $orConditions[] = [$where[$i][0] => [$where[$i][2] => $where[$i][1]]];
+                                }
+                                $matchConditions['$or'] = $orConditions;
                             }
                         }
                     }
                 }
             }
 
-            $bookQuery->orderBy($column, $sortDirection);
+            if (!empty($searchText)) {
+                // Execute raw MongoDB query to sort by text search score
+                $books = BookIrBook2::raw(function($collection) use ($matchConditions, $offset, $pageRows) {
+                    return $collection->aggregate([
+                        ['$match' => $matchConditions],
+                        ['$addFields' => ['score' => ['$meta' => 'textScore']]],
+                        ['$sort' => ['score' => -1]],
+                        ['$skip' => $offset],
+                        ['$limit' => $pageRows]
+                    ]);
+                });
 
-            // Get total count without fetching all records
-            $totalRows = $bookQuery->count();
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+                // Convert MongoDB cursor to an array of documents
+                $books = iterator_to_array($books);
+            } else {
+                $bookQuery = BookIrBook2::query();
+
+                if (!empty($matchConditions)) {
+                    foreach ($matchConditions as $field => $condition) {
+                        if ($field === '$or') {
+                            $bookQuery->where(function ($query) use ($condition) {
+                                foreach ($condition as $orCondition) {
+                                    $query->orWhere(key($orCondition), current($orCondition));
+                                }
+                            });
+                        } else {
+                            $bookQuery->where($field, $condition);
+                        }
+                    }
+                }
+
+                $totalRows = $bookQuery->count();
+                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+                $bookQuery->orderBy($column, $sortDirection);
+                $books = $bookQuery->skip($offset)->take($pageRows)->get();
+            }
 
             // Fetch paginated results
-            $books = $bookQuery->skip($offset)->take($pageRows)->get();
 
-            if ($books->isNotEmpty()) {
+            if ($books != null) {
                 foreach ($books as $book) {
                     $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
 
@@ -254,13 +273,111 @@ class BookController extends Controller
         $end = microtime(true);
         $elapsedTime = $end - $start;
         $status = 200;
-
         return response()->json([
             "status" => $status,
             "message" => "ok",
             "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName],
             'time' => $elapsedTime,
         ], $status);
+    }
+    public function listsForAdvanceSearch(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
+    {
+        $start = microtime(true);
+        $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = [];
+        $totalPages = 0;
+        $totalRows = 0;
+
+        if (!$isNull) {
+            $bookQuery = BookIrBook2::query();
+
+            if (!empty($searchText)) {
+                $bookQuery->where(['$text' => ['$search' => $searchText]]);
+            }
+
+            if (!empty($isbn)) {
+                $bookQuery->where(function ($query) use ($isbn) {
+                    $query->orWhere('xisbn2', 'LIKE', "%$isbn%")
+                        ->orWhere('xisbn3', 'LIKE', "%$isbn%")
+                        ->orWhere('xisbn1', 'LIKE', "%$isbn%");
+                });
+            }
+
+            if (!$defaultWhere && !empty($where)) {
+                $bookQuery->where($where);
+            }
+
+            $bookQuery->orderBy($column, $sortDirection);
+
+            // Get total count without fetching all records
+            $totalRows = $bookQuery->count();
+            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+            // Fetch paginated results
+            $books = $bookQuery->skip($offset)->take($pageRows)->get([
+                '_id', 'xparent', 'xname', 'publisher', 'languages', 'xpublishdate_shamsi',
+                'xprintnumber', 'xcirculation', 'xformat', 'xcover', 'xpagecount',
+                'xisbn', 'xcoverprice', 'ximgeurl', 'xdescription', 'xdiocode'
+            ]);
+
+            if ($books->isNotEmpty()) {
+                foreach ($books as $book) {
+                    $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
+
+                    $publishers = [];
+                    foreach ($book->publisher as $bookPublisher) {
+                        $publishers[] = [
+                            "id" => $bookPublisher['xpublisher_id'],
+                            "name" => $bookPublisher['xpublishername']
+                        ];
+                    }
+
+                    $data[] = [
+                        "id" => $book->_id,
+                        "dossier_id" => $dossier_id,
+                        "name" => $book->xname,
+                        "publishers" => $publishers,
+                        "language" => $book->languages,
+                        "year" => $book->xpublishdate_shamsi,
+                        "printNumber" => $book->xprintnumber,
+                        "circulation" => priceFormat($book->xcirculation),
+                        "format" => $book->xformat,
+                        "cover" => ($book->xcover != null && $book->xcover != "null") ? $book->xcover : "",
+                        "pageCount" => $book->xpagecount,
+                        "isbn" => $book->xisbn,
+                        "price" => priceFormat($book->xcoverprice),
+                        "image" => $book->ximgeurl,
+                        "description" => $book->xdescription,
+                        "doi" => $book->xdiocode,
+                    ];
+                }
+            }
+        }
+
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
+
+        return response()->json([
+            "status" => 200,
+            "message" => "ok",
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows,
+                "subjectTitle" => $subjectTitle,
+                "publisherName" => $publisherName,
+                "creatorName" => $creatorName
+            ],
+            'time' => $elapsedTime,
+        ], 200);
     }
 
 
@@ -440,7 +557,6 @@ class BookController extends Controller
         );
     }
 
-
     ///////////////////////////////////////////////Find Books///////////////////////////////////////////////////
     public function find(Request $request)
     {
@@ -484,7 +600,7 @@ class BookController extends Controller
         $result = $this->exportLists($request, false, ($where == []), $where);
         $mainResult = $result->getData();
         if ($mainResult->status == 200) {
-            $publisherInfo = BookIrPublisher::where('_id', $request["publisherId"])->first();
+            $publisherInfo = BookIrPublisher::where('_id', new ObjectId($request["publisherId"]))->first();
             $response = ExcelController::booklist($mainResult, 'کتب ناشر' . time(), mb_substr($publisherInfo->xpublishername, 0, 30, 'UTF-8'));
             return response()->json($response);
         } else {
@@ -1021,131 +1137,55 @@ class BookController extends Controller
         $where = [];
 
         foreach ($request['search'] as $key => $item) {
-            if (gettype($item) != 'array') {
-                $search_item = json_decode($item, true);
-            } else {
-                $search_item = $item;
-            }
+            $search_item = is_array($item) ? $item : json_decode($item, true);
 
             if (!empty($search_item)) {
-                //    unset($search_item);
-                //    $search_item = array();
-                if (isset($search_item['field'])) {
-                    $searchField = $search_item['field'];
-                } else {
-                    $searchField = '';
-                }
-                if (isset($search_item['comparisonOperator'])) {
-                    $comparisonOperators = $search_item['comparisonOperator'];
-                } else {
-                    $comparisonOperators = '';
-                }
-                if (isset($search_item['value'])) {
-                    $searchValue = $search_item['value'];
-                } else {
-                    $searchValue = '';
-                }
-                if (isset($search_item['logicalOperator'])){
-                    $logicalOperator = $search_item['logicalOperator'] ;
-                } else {
-                    $logicalOperator = '';
-                }
+                $searchField = $search_item['field'] ?? '';
+                $comparisonOperators = strtolower($search_item['comparisonOperator'] ?? '');
+                $searchValue = $search_item['value'] ?? '';
+                $logicalOperator = strtoupper($search_item['logicalOperator'] ?? 'AND');
 
+                if (!empty($searchField) && !empty($comparisonOperators) && !empty($searchValue)) {
+                    $operatorMapping = [
+                        'like' => ['$regex' => new Regex($searchValue, 'i')],
+                        '=' => $searchValue,
+                        '>=' => ['$gte' => $searchValue],
+                        '<=' => ['$lte' => $searchValue]
+                    ];
 
-                // search by name
-                if (($searchField == 'name') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'Like') {
-                        $where [] = ['xname', "%$searchValue%", 'like', $logicalOperator];
+                    if ($searchField == 'isbn') {
+                        $isbnCondition = [
+                            '$or' => [
+                                ['xisbn' => $operatorMapping[$comparisonOperators]],
+                                ['xisbn2' => $operatorMapping[$comparisonOperators]],
+                                ['xisbn3' => $operatorMapping[$comparisonOperators]]
+                            ]
+                        ];
 
-                    }else{
-                        $where [] = ['xname', "$searchValue", $comparisonOperators, $logicalOperator];
-
-                    }
-                }
-
-
-                // search by dio
-                if (($searchField == 'dio') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where [] = ['xdiocode', "%$searchValue%", 'like', $logicalOperator];
-                    }else{
-                        $where [] = ['xdiocode', "$searchValue", $comparisonOperators, $logicalOperator];
-                    }
-                }
-
-
-                // search by doi
-                if (($searchField == 'isbn2') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where [] = ['xisbn2', "%$searchValue%", 'like', 'OR'];
-                        $where [] = ['xisbn', "%$searchValue%", 'like', 'OR'];
-                        $where [] = ['xisbn3', "%$searchValue%", 'like', $logicalOperator];
-                    }else{
-                        $where [] = ['xisbn2', "$searchValue", $comparisonOperators, 'OR'];
-                        $where [] = ['xisbn', "$searchValue", $comparisonOperators, "OR"];
-                        $where [] = ['xisbn3', "$searchValue", $comparisonOperators, $logicalOperator];
-
-                    }
-                }
-
-
-                // search by publish date
-                if (($searchField == 'publishDate') and !empty($comparisonOperators) and !empty($searchValue)) {
-                        if ($comparisonOperators == 'like') {
-                            $where [] = ['xpublishdate_shamsi' , "%$searchValue%" , 'like' , $logicalOperator];
+                        if ($logicalOperator == 'OR') {
+                            $where['$or'][] = $isbnCondition;
                         } else {
-                            $where []= ['xpublishdate_shamsi' , $searchValue , $comparisonOperators , $logicalOperator];
+                            $where['$and'][] = $isbnCondition;
                         }
-                }
+                    } else {
+                        $condition = [$searchField => $operatorMapping[$comparisonOperators]];
 
-                // search by price
-                if (($searchField == 'price') and !empty($comparisonOperators) and !empty($searchValue)) {
-                        if ($comparisonOperators == 'like') {
-                            $where []= ['xcoverprice' , "%$searchValue%" , 'like' , $logicalOperator];
+                        if ($logicalOperator == 'OR') {
+                            $where['$or'][] = $condition;
                         } else {
-                            $where []= [ 'xcoverprice' , $searchValue , $comparisonOperators , $logicalOperator];
+                            $where['$and'][] = $condition;
                         }
-
-                }
-                // search by circulation
-                if (($searchField == 'circulation') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where []= ['xcirculation' , "%$searchValue%" , 'like' , $logicalOperator];
-                    } else {
-                        $where [] = ['xcirculation' , $searchValue , $comparisonOperators , $logicalOperator];
-                    }
-                }
-
-                //search by publisher
-                if (($searchField == 'publisher') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where [] = ['publisher.xpublishername', "%$searchValue%", 'like', $logicalOperator];
-                    } else {
-                        $where [] = ['publisher.xpublishername', $searchValue, $comparisonOperators, $logicalOperator];
-                    }
-                }
-
-                //search by creator
-                if (($searchField == 'creator') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where [] = ['partners.xcreatorname', "%$searchValue%", 'like', $logicalOperator];
-                    } else {
-                        $where [] = ['partners.xcreatorname', $searchValue, $comparisonOperators, $logicalOperator];
-                    }
-                }
-
-                // search by subject
-                if (($searchField == 'subject') and !empty($comparisonOperators) and !empty($searchValue)) {
-                    if ($comparisonOperators == 'like') {
-                        $where [] = ['subjects.xsubject_name', "%$searchValue%", 'like', $logicalOperator];
-                    } else {
-                        $where [] = ['subjects.xsubject_name', $searchValue, $comparisonOperators, $logicalOperator];
                     }
                 }
             }
         }
-        return $this->lists($request, false, false, $where);
-    }
 
+        // If no conditions added to $where, initialize it as an empty array
+        if (empty($where)) {
+            $where = [];
+        }
+
+        return $this->listsForAdvanceSearch($request, empty($where), false, $where);
+    }
 }
 

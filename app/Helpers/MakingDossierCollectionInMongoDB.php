@@ -66,7 +66,7 @@ if (!function_exists('takeOthersField')) {
                 $fields['xpublishers'] = uniqueValuesWithKeys($fields['xpublishers']);
                 $fields['xsubjects'] = uniqueValuesWithKeys($fields['xsubjects']);
                 $fields['xpartners'] = uniqueValuesWithKeys($fields['xpartners']);
-                $fields['xage_groups'] = uniqueValuesWithKeys($fields['xage_groups']);
+//                $fields['xage_groups'] = uniqueValuesWithKeys($fields['xage_groups']);
 
             }
         }

@@ -33,41 +33,55 @@ class ConvertTranslatedBookWhitWriterIntoDossierJob implements ShouldQueue
      */
     public function handle()
     {
-        //take all translated books
-        $translateBooksWithParent = BookIrBook2::where('is_translate',2)
-            ->where('xparent' ,'!=' , 0)
-            ->where('xparent' , '!=', 1)
-            ->where('xparent' , '!=' , -1);
+        $translateBooksWithParent = BookIrBook2::where('is_translate', 2)
+            ->where('xmongo_parent', 'exists', false);
 
-        $translateBooksWithParent->chunk(1000 , function ($books) use ($translateBooksWithParent){
-            foreach($books as $book) {
+        // Process books in chunks of 1000
+        $translateBooksWithParent->chunk(1000, function ($books) {
+            foreach ($books as $book) {
+                // Get required creators for the current book
                 $requiredWriters = getCreators($book->_id);
                 $requiredWriterCount = count($requiredWriters);
+
+                // Build aggregation pipeline
                 $pipeline = [
+                    ['$match' => ['$text' => ['$search' => $book->xname]]],
                     ['$project' => makeProjectOfWriterPipeline()],
                     ['$match' => [
-                        '$or' => [
-                            ['xparent' => $book->_id],
-                            ['_id' => $book->xparent],
-                            [
-                                '$and' => [
-                                    // Match on the required number of writers
-                                    ['writerCount' => $requiredWriterCount],
-                                    // Ensure all required writers are present
-                                    ['writers.xcreatorname' => [
-                                        '$all' => $requiredWriters
-                                    ]]
-                                ]
-                            ]
+                        '$and' => [
+                            ['writerCount' => $requiredWriterCount],
+                            ['writers.xcreatorname' => ['$all' => $requiredWriters]]
                         ]
-                    ]]
+                    ]],
+                    //TODO : Start here
+                    ['$addFields' => ['score' => ['$meta' => 'textScore']]],
+                    ['$sort' => ['xpublishdate_shamsi' => 1]]
                 ];
 
-                 $relatedBooks = $translateBooksWithParent->raw(function($collection) use ($pipeline) {
-                    return $collection->aggregate($pipeline);
-                 });
+                // Use cursor to iterate over aggregation results
+                $cursor = BookIrBook2::raw(function ($collection) use ($pipeline) {
+                    return $collection->aggregate($pipeline, ['cursor' => []]);
+                });
 
-                dd($relatedBooks->toArray());
+                // Prepare data for BookDossier creation
+                $firstPartOfArray = [
+                    'xmain_name' => $book->xname,
+                    'xtotal_pages' => takeTotalPages($cursor),
+                    'xtotal_prices' => takeTotalPrices($cursor),
+                    'xwhite' => null,
+                    'xblack' => null,
+                    'xis_translate' => 2,
+                ];
+
+                $mongoData = array_merge($firstPartOfArray, takeOthersField($cursor));
+
+                // Create BookDossier entry
+                $newDossier = BookDossier::create($mongoData);
+
+                // Update related books with xmongo_parent
+                foreach ($cursor as $relatedBook) {
+                    $relatedBook->update(['xmongo_parent' => $newDossier->_id]);
+                }
             }
         });
 

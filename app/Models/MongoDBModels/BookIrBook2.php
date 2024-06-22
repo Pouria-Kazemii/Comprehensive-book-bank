@@ -47,6 +47,7 @@ class BookIrBook2 extends Model
         'xoldparent',
         'is_translate',
         'xparent',
+        'xmongo_parent',
         'xrequestmerge',
         'xrequest_manage_parent',
         'xreg_userid',

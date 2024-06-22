@@ -43,21 +43,17 @@ class ConvertBookir_bookIntoBook_dossier extends Command
      */
     public function handle()
     {
-        $client = new Client();
-        $collection = $client->datacollector->bookir_books;
-        $collection->createIndex(['xname' => 'text']);
         $this::info("Start converting book_dossier table");
-
         $startTime = microtime(true);
 //        ConvertTranslatedBookWhitPoetIntoDossierJob::dispatch();
-        $this->info('translated books with poet done');
+//        $this->info('translated books with poet done');
         ConvertTranslatedBookWhitWriterIntoDossierJob::dispatch();
         $this->info('translated books with writer done');
         //TODO : Non translate books have very complicate rules.
         //ConvertNonTranslatedBookWhitPoetIntoDossierJob::dispatch();
-        $this->info('non translated books with poet done');
+//        $this->info('non translated books with poet done');
         //ConvertNonTranslatedBookWithWriterIntoDossierJob::dispatch();
-        $this->info('non translated books with writer done');
+//        $this->info('non translated books with writer done');
 
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

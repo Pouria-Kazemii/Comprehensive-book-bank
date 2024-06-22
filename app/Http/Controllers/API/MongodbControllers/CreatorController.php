@@ -72,21 +72,29 @@ class CreatorController extends Controller
                 $creatorIds = $creators->pluck('_id')->toArray();
                 // Batch fetch all necessary counts in one go using aggregation
                 foreach ($creatorIds as $creatorId) {
-                    $book = BookIrBook2::where('partners.xcreator_id', $creatorId);
+                    $query = BookIrBook2::query();
+
+                    $matchConditions = [
+                        'partners.xcreator_id' => $creatorId
+                    ];
 
                     if ($subjectId > 0) {
-                        $book->where('subjects.xsubject_id' ,(int) $subjectId) ;
+                        $matchConditions['subjects.xsubject_id'] = (int)$subjectId;
                     }
 
                     if ($publisherId > 0) {
-                        $book->where('publisher.xpublisher_id' , $publisherId);
+                        $matchConditions['publisher.xpublisher_id'] = $publisherId;
                     }
 
                     if ($mainCreatorId > 0) {
-                        $book->where('partners.xcreator_id' , $mainCreatorId);
+                        $matchConditions['partners.xcreator_id'] = $mainCreatorId;
                     }
 
-                    $bookCounts[$creatorId] = $book->count();
+                    // Build the aggregation pipeline
+                    $query->where($matchConditions);
+
+                    // Perform aggregation to count documents
+                    $bookCounts[$creatorId] = $query->count();
                 }
                 foreach ($creators as $creator) {
                     $creatorId = $creator->_id;
