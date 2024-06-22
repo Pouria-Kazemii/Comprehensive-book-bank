@@ -660,12 +660,9 @@ class BookController extends Controller
             $books = BookIrBook2::where('_id', new ObjectId($bookId))->first();
             $creators = [];
 
-            foreach ($books as $book) {
-                $creators  = $book->partners;
-            }
-            if ($creators != null and count($creators) > 0) {
-                foreach ($creators as $creator) {
-                    $where [] = ['partners.xcreator_id' ,  $creator['xcreator_id']] ;
+            if ($books->partners != null and count($books->partners) > 0) {
+                foreach ($books->partners as $partner) {
+                    $where [] = ['partners.xcreator_id' ,  $partner['xcreator_id']] ;
                 }
             }
         }

@@ -36,18 +36,18 @@ class CreatorController extends Controller
                 $matchConditions['$text'] = ['$search' => $searchText];
             }
 
-            if (!empty($roleName)) {
-                $roleFilter = [
-                    ['$unwind' => '$partners'],
-                    ['$match' => ['partners.xrule' => $roleName]],
-                    ['$group' => ['_id' => '$partners.xcreator_id']],
-                ];
-                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
-                    return $collection->aggregate($roleFilter);
-                })->pluck('_id')->toArray();
-
-                $matchConditions['_id'] = ['$in' => $creatorsId];
-            }
+//            if (!empty($roleName)) {
+//                $roleFilter = [
+//                    ['$unwind' => '$partners'],
+//                    ['$match' => ['partners.xrule' => $roleName]],
+//                    ['$group' => ['_id' => '$partners.xcreator_id']],
+//                ];
+//                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
+//                    return $collection->aggregate($roleFilter);
+//                })->pluck('_id')->toArray();
+//
+//                $matchConditions['_id'] = ['$in' => $creatorsId];
+//            }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
@@ -107,23 +107,9 @@ class CreatorController extends Controller
             $creators = iterator_to_array($creators);
 
             if (!empty($creators)) {
-                $creatorIds = array_column($creators, '_id');
-
-                // Fetch book counts for each creator in one go using aggregation
-                $bookCounts = BookIrBook2::raw(function ($collection) use ($creatorIds) {
-                    return $collection->aggregate([
-                        ['$unwind' => '$partners'],
-                        ['$match' => ['partners.xcreator_id' => ['$in' => $creatorIds]]],
-                        ['$group' => [
-                            '_id' => '$partners.xcreator_id',
-                            'count' => ['$sum' => 1]
-                        ]]
-                    ]);
-                })->pluck('count', '_id')->toArray();
 
                 foreach ($creators as $creator) {
                     $creatorId = $creator['_id'];
-                    $bookCount = $bookCounts[$creatorId] ?? 0;
 
                     $data[] = [
                         "publisherId" => $publisherId,
@@ -132,7 +118,7 @@ class CreatorController extends Controller
                         "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::find($mainCreatorId)->xcreatorname : "",
                         "subjectId" => $subjectId,
                         "id" => $creator['_id'],
-                        "bookCount" => $bookCount,
+                        "bookCount" => BookIrBook2::where('partners.xcreator_id' , $creatorId)->count(),
                         "name" => $creator['xcreatorname'],
                     ];
                 }
