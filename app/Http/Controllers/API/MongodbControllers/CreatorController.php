@@ -58,21 +58,6 @@ class CreatorController extends Controller
                         }
                         $matchConditions['$or'] = $orConditions;
                     }
-                    if (count($where[0]) == 4) {
-                        for ($i = 0; $i < count($where); $i++) {
-                            if ($where[$i][3] == '') {
-                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
-                            } elseif ($where[$i][3] == 'AND') {
-                                $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
-                            } elseif ($where[$i][3] == 'OR') {
-                                $orConditions = [];
-                                for (; $i < count($where) && $where[$i][3] == 'OR'; $i++) {
-                                    $orConditions[] = [$where[$i][0] => [$where[$i][2] => $where[$i][1]]];
-                                }
-                                $matchConditions['$or'] = $orConditions;
-                            }
-                        }
-                    }
                 }
             }
 
@@ -166,15 +151,23 @@ class CreatorController extends Controller
     {
         $publisherId = $request["publisherId"];
 
-        $partners = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->pluck('partners');
+        // Use aggregation pipeline to get distinct creator ids
+        $pipeline = [
+            ['$match' => ['publisher.xpublisher_id' => $publisherId]],
+            ['$unwind' => '$partners'],
+            ['$group' => ['_id' => '$partners.xcreator_id']]
+        ];
+
+        $partners = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
 
         $where = [];
         foreach ($partners as $partner) {
-            foreach ($partner as $key => $value) {
-                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
-            }
+            $where[] = ['_id', new ObjectId($partner->_id)];
         }
-        return $this->lists($request,false ,false, $where, 0,  0, $publisherId);
+
+        return $this->lists($request, false, false, $where, 0, 0, $publisherId);
     }
     ///////////////////////////////////////////////Creators///////////////////////////////////////////////////
     public function findByCreator(Request $request)
@@ -231,38 +224,52 @@ class CreatorController extends Controller
         $status = 200;
         $dataMaster = null;
 
+        // Fetch the creator using indexed query
+        $creator = BookIrCreator::find(new ObjectId($creatorId));
 
-        $creator = BookIrCreator::where('_id', new ObjectId($creatorId))->first();
-        if ($creator != null && $creator->_id > 0) {
-            $creatorId = $creator->_id;
 
+        if ($creator) {
             $roles = BookIrBook2::raw(function ($collection) use ($creatorId) {
                 return $collection->aggregate([
                     ['$unwind' => '$partners'],
-                    ['$match' => ['partners.xcreator_id' => $creatorId]],
-                    ['$project' => ['_id' => 0, 'role' => '$partners.xrule']],
-                    ['$group' => ['_id' => '$role']],
+                    ['$match' => ['partners.xcreator_id' => (string) $creatorId]],
+                    ['$group' => ['_id' => '$partners.xrule']],
                     ['$sort' => ['_id' => 1]]
                 ]);
             });
-            $dataMaster =
-                [
-                    "name" => $creator->xcreatorname,
-                    "roles" =>  $roles->map(function($role) {
-                        return ['title' => $role->_id];
-                    }),
-                    $creator->iranketabinfo != null ?[
-                    'englishName' => $creator->iranketabinfo['enName'],
-                    'description' => $creator->iranketabinfo['partnerDesc'],
-                    'image' => $creator->iranketabinfo['image']
-                    ]: ''
-                ];
+
+            $roles = iterator_to_array($roles);
+
+            // Collect unique roles
+            $uniqueRoles = [];
+            foreach ($roles as $role) {
+                if (!in_array($role['_id'], $uniqueRoles)) {
+                    $uniqueRoles[] = $role['_id'];
+                }
+            }
+
+            $roleTitles = array_map(function($role) {
+                return ['title' => $role];
+            }, $uniqueRoles);
+
+            $dataMaster = [
+                "name" => $creator->xcreatorname,
+                "roles" => $roleTitles,
+            ];
+
+            if (!empty($creator->iranketabinfo)) {
+                $dataMaster = array_merge($dataMaster, [
+                    'englishName' => $creator->iranketabinfo['enName'] ?? '',
+                    'description' => $creator->iranketabinfo['partnerDesc'] ?? '',
+                    'image' => $creator->iranketabinfo['image'] ?? ''
+                ]);
+            }
         }
 
-        if ($dataMaster != null) $status = 200;
         $end = microtime(true);
         $time = $end - $start;
-        // response
+
+        // Response
         return response()->json(
             [
                 "status" => $status,
