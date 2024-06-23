@@ -169,6 +169,19 @@ class CreatorController extends Controller
         $data = [];
         $status = 200;
 
+        $pipeline2 = [
+            ['$match' => ['publisher.xpublisher_id' => $publisherId]],
+            ['$unwind' => '$partners'],
+            ['$group' => ['_id' => '$partners.xcreator_id']],
+            ['$count' => 'count']
+        ];
+
+        $countResult = BookIrBook2::raw(function ($collection) use ($pipeline2) {
+            return $collection->aggregate($pipeline2);
+        });
+
+        $totalRows = $countResult[0]->count;
+
         $pipeline = [
                 ['$match' => ['publisher.xpublisher_id' => $publisherId]],
                 ['$unwind' => '$partners'],
@@ -198,7 +211,6 @@ class CreatorController extends Controller
             });
 
             // Total number of documents
-            $totalRows = count($partners);
 
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 

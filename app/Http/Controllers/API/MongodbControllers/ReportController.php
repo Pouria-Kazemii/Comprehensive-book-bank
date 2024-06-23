@@ -77,7 +77,6 @@ class ReportController extends Controller
         }
         $totalRows = count($allUniqueDiocodes);
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-
         // response
         return response()->json
         (
