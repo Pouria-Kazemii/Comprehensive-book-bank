@@ -77,7 +77,7 @@ class CreatorController extends Controller
                         ['$skip' => $offset],
                         ['$limit' => $pageRows]
                     ];
-                }else{
+                } else {
                     $pipeline = [
                         ['$match' => (object)$matchConditions],
                         ['$addFields' => ['score' => ['$meta' => 'textScore']]],
@@ -103,7 +103,7 @@ class CreatorController extends Controller
                         "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::find($mainCreatorId)->xcreatorname : "",
                         "subjectId" => $subjectId,
                         "id" => $creator['_id'],
-                        "bookCount" => BookIrBook2::where('partners.xcreator_id' , $creatorId)->count(),
+                        "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
                         "name" => $creator['xcreatorname'],
                     ];
                 }
@@ -159,25 +159,82 @@ class CreatorController extends Controller
     ///////////////////////////////////////////////Publisher///////////////////////////////////////////////////
     public function findByPublisher(Request $request)
     {
-        $publisherId = $request["publisherId"];
+        $start = microtime(true);
+        $publisherId = $request->input('publisherId');
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xcreatorname";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = [];
+        $status = 200;
 
-        // Use aggregation pipeline to get distinct creator ids
         $pipeline = [
-            ['$match' => ['publisher.xpublisher_id' => $publisherId]],
-            ['$unwind' => '$partners'],
-            ['$group' => ['_id' => '$partners.xcreator_id']]
+                ['$match' => ['publisher.xpublisher_id' => $publisherId]],
+                ['$unwind' => '$partners'],
+                ['$group' => ['_id' => '$partners.xcreator_id']],
+                ['$skip' => $offset],
+                ['$limit' => $pageRows]
+            ];
+
+            $creatorsId = BookIrBook2::raw(function ($collection) use ($pipeline) {
+                return $collection->aggregate($pipeline);
+            })->pluck('_id')->toArray();
+
+        $matchConditions = [
+            '_id' => [
+                '$in' => array_map(function($id) {
+                    return new \MongoDB\BSON\ObjectId($id);
+                }, $creatorsId)
+            ]
         ];
 
-        $partners = BookIrBook2::raw(function($collection) use ($pipeline) {
-            return $collection->aggregate($pipeline);
-        });
+            // Fetch the sorted and paginated results based on the creator IDs
+            $partners = BookIrCreator::raw(function($collection) use ($matchConditions, $column, $sortDirection) {
+                return $collection->aggregate([
+                    ['$match' => (object)$matchConditions],
+                    ['$sort' => [$column => $sortDirection]],
+                ]);
+            });
 
-        $where = [];
-        foreach ($partners as $partner) {
-            $where[] = ['_id', new ObjectId($partner->_id)];
+            // Total number of documents
+            $totalRows = count($partners);
+
+            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+            $partners = iterator_to_array($partners);
+            $publisherName = BookIrPublisher::find($publisherId)->xpublishername;
+            foreach ($partners as $partner) {
+            $creatorId = $partner['_id'];
+
+            $data[] = [
+                "publisherId" => $publisherId,
+                "publisherName" => $publisherName,
+                "mainCreatorId" => 0,
+                "mainCreatorName" => 0,
+                "subjectId" => 0,
+                "id" => $creatorId,
+                "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
+                "name" => $partner['xcreatorname'],
+            ];
         }
+            // Process and return response
+            $end = microtime(true);
+            $elapsedTime = $end-$start;
 
-        return $this->lists($request, false, false, $where, 0, 0, $publisherId);
+            return response()->json([
+                "status" => $status,
+                "message" => "ok",
+                "data" => [
+                    "list" => $data,
+                    "currentPageNumber" => $currentPageNumber,
+                    "totalPages" => $totalPages,
+                    "pageRows" => $pageRows,
+                    "totalRows" => $totalRows
+                ],
+                'time' => $elapsedTime,
+            ], $status);
+
     }
     ///////////////////////////////////////////////Creators///////////////////////////////////////////////////
     public function findByCreator(Request $request)
@@ -250,28 +307,28 @@ class CreatorController extends Controller
 
 
         if ($creator) {
-            $roles = BookIrBook2::raw(function ($collection) use ($creatorId) {
-                return $collection->aggregate([
-                    ['$unwind' => '$partners'],
-                    ['$match' => ['partners.xcreator_id' => (string) $creatorId]],
-                    ['$group' => ['_id' => '$partners.xrule']],
-                    ['$sort' => ['_id' => 1]]
-                ]);
-            });
-
-            $roles = $roles->toArray();
-
-            $roleName = array_column($roles, '_id');
-//            dd("نویسنده" == "نويسنده");
-            $uniqueRoles = array_unique($roleName);
-
-            $roleTitles = array_map(function($role) {
-                return ['title' => $role];
-            }, $uniqueRoles);
+//            $roles = BookIrBook2::raw(function ($collection) use ($creatorId) {
+//                return $collection->aggregate([
+//                    ['$unwind' => '$partners'],
+//                    ['$match' => ['partners.xcreator_id' => (string) $creatorId]],
+//                    ['$group' => ['_id' => '$partners.xrule']],
+//                    ['$sort' => ['_id' => 1]]
+//                ]);
+//            });
+//
+//            $roles = $roles->toArray();
+//
+//            $roleName = array_column($roles, '_id');
+////            dd("نویسنده" == "نويسنده");
+//            $uniqueRoles = array_unique($roleName);
+//
+//            $roleTitles = array_map(function($role) {
+//                return ['title' => $role];
+//            }, $uniqueRoles);
 
             $dataMaster = [
                 "name" => $creator->xcreatorname,
-                "roles" => $roleTitles,
+//                "roles" => $roleTitles,
             ];
 
             if (!empty($creator->iranketabinfo)) {
