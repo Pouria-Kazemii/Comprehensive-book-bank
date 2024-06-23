@@ -719,15 +719,19 @@ class BookController extends Controller
     public function findBySubject(Request $request)
     {
         $subjectId = $request["subjectId"];
+
+        $subjectId = preg_replace("/[^0-9]/", "", $subjectId); // Remove non-numeric characters
+        $integerSubjectId = (int)$subjectId;
+
         $subjectTitle = "";
         $mainSubject = [];
 
-        $bookSubjects = BookIrBook2::where('subjects.xsubject_id', (int)$subjectId)->first();
+        $bookSubjects = BookIrBook2::where('subjects.xsubject_id', $integerSubjectId)->first();
 
             if($bookSubjects != null) {
                 $bookSubjects = $bookSubjects['subjects'];
                 foreach ($bookSubjects as $subject) {
-                    if ($subject['xsubject_id'] == (int)$subjectId) {
+                    if ($subject['xsubject_id'] == $integerSubjectId) {
                         $mainSubject = $subject;
                         break;
                     }
@@ -737,9 +741,9 @@ class BookController extends Controller
             $subjectTitle = $mainSubject['xsubject_name'];
         }
 
-        $where[] =  ['subjects.xsubject_id' , (int)$subjectId ] ;
+        $where[] =  ['subjects.xsubject_id' , $integerSubjectId ] ;
 
-        return $this->lists($request, false, ($where == []), $where, $subjectTitle);
+        return $this->lists($request, false, false, $where, $subjectTitle);
 
     }
 

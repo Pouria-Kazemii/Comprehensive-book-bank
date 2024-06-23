@@ -41,21 +41,6 @@ class PublisherController extends Controller
                             }
                             $matchConditions['$or'] = $orConditions;
                         }
-                        if (count($where[0]) == 4) {
-                            for ($i = 0; $i < count($where); $i++) {
-                                if ($where[$i][3] == '') {
-                                    $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
-                                } elseif ($where[$i][3] == 'AND') {
-                                    $matchConditions[$where[$i][0]] = [$where[$i][2] => $where[$i][1]];
-                                } elseif ($where[$i][3] == 'OR') {
-                                    $orConditions = [];
-                                    for (; $i < count($where) && $where[$i][3] == 'OR'; $i++) {
-                                        $orConditions[] = [$where[$i][0] => [$where[$i][2] => $where[$i][1]]];
-                                    }
-                                    $matchConditions['$or'] = $orConditions;
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -150,30 +135,53 @@ class PublisherController extends Controller
     public function findByCreator(Request $request)
     {
         $creatorId = $request["creatorId"];
-        $publishers = BookIrBook2::where('partners.xcreator_id', $creatorId)->pluck('publisher');
+
+        $pipeline = [
+            ['$match' => ['partners.xcreator_id' => $creatorId]], // Change 'partners' to 'publishers'
+            ['$unwind' => '$publisher'],
+            ['$group' => ['_id' => '$publisher.xpublisher_id']]
+            ];
+
+        $publishers = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
+
+        $publishers = $publishers->toArray();
+        $idArray = array_column($publishers, '_id');
+
+        $uniqueIds = array_unique($idArray);
         $where = [];
 
-        foreach ($publishers as $publisher) {
-            foreach ($publisher as $key => $value) {
-                $where[] = ['_id', $value['xpublisher_id']];
-            }
+        foreach ($uniqueIds as $uniqueId) {
+            $where[] = ['_id', new ObjectId($uniqueId)];
         }
-        return $this->lists($request, false, ($where == []), $where, $creatorId);
+
+        return $this->lists($request, false,false, $where, $creatorId);
     }
 
     ///////////////////////////////////////////////Subject///////////////////////////////////////////////////
     public function findBySubject(Request $request)
     {
         $subjectId = $request["subjectId"];
-        $publishers = BookIrBook2::where('subjects.xsubject_id', (int)$subjectId)->pluck('publisher');
-        $where = [];
 
+        $subjectId = preg_replace("/[^0-9]/", "", $subjectId); // Remove non-numeric characters
+        $integerSubjectId = (int)$subjectId;
+
+        $pipeline = [
+            ['$match' => ['subjects.xsubject_id' => $integerSubjectId]],
+            ['$unwind' => '$publisher'],
+            ['$group' => ['_id' => '$publisher.xpublisher_id']]
+        ];
+
+        $publishers = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
+
+        $where = [];
         foreach ($publishers as $publisher) {
-            foreach ($publisher as $key => $value) {
-                $where[] = ['_id', new ObjectId($value['xpublisher_id'])];
-            }
+            $where[] = ['_id', new ObjectId($publisher->_id)];
         }
-        return $this->lists($request, false, ($where == []), $where);
+        return $this->lists($request, false, false, $where);
     }
 
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////

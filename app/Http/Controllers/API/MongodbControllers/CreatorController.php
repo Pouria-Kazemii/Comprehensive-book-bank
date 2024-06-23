@@ -36,18 +36,18 @@ class CreatorController extends Controller
                 $matchConditions['$text'] = ['$search' => $searchText];
             }
 
-//            if (!empty($roleName)) {
-//                $roleFilter = [
-//                    ['$unwind' => '$partners'],
-//                    ['$match' => ['partners.xrule' => $roleName]],
-//                    ['$group' => ['_id' => '$partners.xcreator_id']],
-//                ];
-//                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
-//                    return $collection->aggregate($roleFilter);
-//                })->pluck('_id')->toArray();
-//
-//                $matchConditions['_id'] = ['$in' => $creatorsId];
-//            }
+            if (!empty($roleName)) {
+                $roleFilter = [
+                    ['$unwind' => '$partners'],
+                    ['$match' => ['partners.xrule' => $roleName]],
+                    ['$group' => ['_id' => '$partners.xcreator_id']],
+                ];
+                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
+                    return $collection->aggregate($roleFilter);
+                })->pluck('_id')->toArray();
+
+                $matchConditions['_id'] = ['$in' => $creatorsId];
+            }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
@@ -136,14 +136,24 @@ class CreatorController extends Controller
     {
         $subjectId = $request["subjectId"];
 
-        $partners = BookIrBook2::where('subjects.xsubject_id', (int)$subjectId)->pluck('partners');
+        $subjectId = preg_replace("/[^0-9]/", "", $subjectId); // Remove non-numeric characters
+        $integerSubjectId = (int)$subjectId;
+
+        $pipeline = [
+            ['$match' => ['subjects.xsubject_id' => $integerSubjectId]],
+            ['$unwind' => '$partners'],
+            ['$group' => ['_id' => '$partners.xcreator_id']]
+        ];
+
+        $partners = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
+
         $where = [];
         foreach ($partners as $partner) {
-            foreach ($partner as $key => $value) {
-                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
-            }
+            $where[] = ['_id', new ObjectId($partner->_id)];
         }
-        return $this->lists($request,false ,false, $where, $subjectId);
+        return $this->lists($request,false ,false, $where, $integerSubjectId);
     }
 
     ///////////////////////////////////////////////Publisher///////////////////////////////////////////////////
@@ -173,14 +183,25 @@ class CreatorController extends Controller
     public function findByCreator(Request $request)
     {
         $creatorId = $request["creatorId"];
-        $partners = BookIrBook2::where('partners.xcreator_id', $creatorId)->pluck('partners');
+
+        $pipeline = [
+            ['$match' => ['partners.xcreator_id' => $creatorId]],
+            ['$unwind' => '$partners'],
+            ['$group' => ['_id' => '$partners.xcreator_id']]
+        ];
+
+        $partners = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
+        $partners = $partners->toArray();
+        $idArray = array_column($partners, '_id');
+
+        $uniqueIds = array_unique($idArray);
         $where = [];
-        foreach ($partners as $partner) {
-            foreach ($partner as $key => $value) {
-                if ($value['xcreator_id'] != $creatorId)
-                $where [] = ['_id', new ObjectId($value['xcreator_id'])];
-            }
+        foreach ($uniqueIds as $uniqueId) {
+            $where[] = ['_id', new ObjectId($uniqueId)];
         }
+
         return $this->lists($request, false , false, $where, 0, $creatorId);
     }
       ///////////////////////////////////////////////Annual Activity///////////////////////////////////////////////////
@@ -238,15 +259,11 @@ class CreatorController extends Controller
                 ]);
             });
 
-            $roles = iterator_to_array($roles);
+            $roles = $roles->toArray();
 
-            // Collect unique roles
-            $uniqueRoles = [];
-            foreach ($roles as $role) {
-                if (!in_array($role['_id'], $uniqueRoles)) {
-                    $uniqueRoles[] = $role['_id'];
-                }
-            }
+            $roleName = array_column($roles, '_id');
+//            dd("نویسنده" == "نويسنده");
+            $uniqueRoles = array_unique($roleName);
 
             $roleTitles = array_map(function($role) {
                 return ['title' => $role];
