@@ -8,6 +8,7 @@ use App\Models\MongoDBModels\BookIrPublisher;
 use Collator;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\Regex;
 
 class ReportController extends Controller
 {
@@ -30,24 +31,23 @@ class ReportController extends Controller
 
     public function publisher(Request $request)
     {
+        $start  = microtime(true);
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? (int) $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? (int)$request["yearEnd"] : 0;
-        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
-        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
         $data = null;
+        $totalRows = 0;
         $status = 200;
         $allUniqueDiocodes = [];
         $books = BookIrBook2::query();
         $books->where('publisher.xpublisher_id', $publisherId);
-        if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)$yearStart);
-        if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)$yearEnd);
-        $books->select("xcirculation", "is_translate", "xdiocode");
-        $books->orderBy($column, $sortDirection);
-        $books = $books->skip($offset)->take($pageRows)->get(); // get list
+        if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", $yearStart);
+        if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", $yearEnd);
+        $books->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
+        $books = $books->get(); // get list
 
 
         if ($books != null and count($books) > 0) {
@@ -55,35 +55,58 @@ class ReportController extends Controller
                 $allUniqueDiocodes [] = $book->xdiocode;
                 $allUniqueDiocodes = array_unique($allUniqueDiocodes);
             }
+
+            $totalRows = count($allUniqueDiocodes);
+
             foreach ($allUniqueDiocodes as $uniqueDiocode) {
-                $totalCirculation = 0;
+                $totalCirculation1 = 0;
+                $bookCount1 = 0;
+                $price1 = 0;
+                $totalCirculation2 = 0;
+                $bookCount2 = 0;
+                $price2 = 0;
                 foreach ($books as $book) {
-                    if ($book->xdiocode == $uniqueDiocode) {
-                        $totalCirculation += $book->xcirculation;
-                        $translate = $book->first()->is_translate;
-                    };
+                    if ($book->xdiocode == $uniqueDiocode && $book->is_translate == 1) {
+                        $totalCirculation1 += $book->xcirculation;
+                        $price1 += $book->xtotal_price;
+                        $bookCount1++;
+                    }
+                    if ($book->xdiocode == $uniqueDiocode && $book->is_translate == 2){
+                        $totalCirculation2 += $book->xcirculation;
+                        $price2 += $book->xtotal_price;
+                        $bookCount2++;
+                    }
                 }
 
-                    $data[$uniqueDiocode] = array
-                    (
-                        "translate" => $translate,
-                        "circulation" => priceFormat($totalCirculation),//$book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
-                        "dio" => $uniqueDiocode,
-                    );
-
+                $data[$uniqueDiocode] = array
+                (
+                    "diocode" => $uniqueDiocode ,
+                    "translate_circulation" => priceFormat($totalCirculation2),
+                    "translate_book_count" => $bookCount2,
+                    'translate_total_price' => priceFormat($price2) ,
+                    "non_translate_circulation" => priceFormat($totalCirculation1),
+                    "non_translate_book_count" => $bookCount1,
+                    'non_translate_total_price' => priceFormat($price1) ,
+                    "total_circulation" => priceFormat($totalCirculation1+$totalCirculation2),
+                    "total_book_count" => $bookCount2+$bookCount1,
+                    'total_price' => priceFormat($price2 + $price1) ,
+                );
             }
-
             $data = array_values($data);
+            $data = array_slice($data, $offset, $pageRows);
         }
-        $totalRows = count($allUniqueDiocodes);
+
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         // response
         return response()->json
         (
             [
                 "status" => $status,
                 "message" => "ok",
-                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows],
+                'time' => $elapsedTime
             ],
             $status
         );
@@ -92,75 +115,98 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Publisher Dio///////////////////////////////////////////////////
     public function publisherDio(Request $request)
     {
+        $start  = microtime(true);
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $dio = (isset($request["dio"])) ? $request["dio"] : "";
-        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
-        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
-        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? (int)$request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? (int)$request["yearEnd"] : 0;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? (int)$request["perPage"] : 50;
         $data = null;
         $dioData = null;
         $status = 200;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
+        $allUniqueDiocodes = [];
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read
         $books = BookIrBook2::query();
         $books->where('publisher.xpublisher_id', $publisherId);
-        if ($dio != "") $books->where("xdiocode", "=", "$dio");
+        $books->where("xdiocode" , $dio);
         if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-        $books->orderBy($column, $sortDirection);
-        $books = $books->skip($offset)->take($pageRows)->get();
-
+        $books->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
+        $books = $books->get();
         if ($books != null and count($books) > 0) {
+            $bookCount = 0;
+            $totalPrice = 0;
+            $totalCirculation = 0;
             foreach ($books as $book) {
-                $dioData[md5($book->xdiocode)] = $book->xdiocode;
+                $bookCount++;
+                $totalPrice += $book->xtotal_price;
+                $totalCirculation += $book->xcirculation;
             }
-        }
+            $dioData[] = [
+                'main_diocode' => $dio ,
+                "book_count" => $bookCount,
+                "total_price" => priceFormat($totalPrice),
+                "total_circulation" => priceFormat($totalCirculation)
+            ];
 
-        if ($dioData != null and count($dioData) > 0) {
-            foreach ($dioData as $dio) {
-                $books = BookIrBook2::query();
-                $books->where('publisher.xpublisher_id', $publisherId);
-                if ($dio != "") $books->where("xdiocode", "=", "$dio");
-                if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
-                if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-                $books->orderBy($column, $sortDirection);
-                $totalRows = $books->count(); // get total records count
-                $books = $books->skip($offset)->take($pageRows)->get();
-                if ($books != null and count($books) > 0) {
-                    foreach ($books as $book) {
-                        $dioCode = $book->xdiocode;
+            $beforeDot = substr($dio, 0, strpos($dio, '.'));
+            $pattern = '^' . preg_quote($beforeDot, '/') . '\.';
+            $subBooks = BookIrBook2::query();
+            $subBooks->where('publisher.xpublisher_id', $publisherId);
+            $subBooks->where('xdiocode', 'regex', new Regex($pattern, ''))->get();
+            $subBooks->where('xdiocode', "!=", $dio);
+            if ($yearStart != "") $subBooks->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
+            if ($yearEnd != "") $subBooks->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
+            $subBooks->select("xcirculation", "is_translate", "xdiocode", "xtotal_price");
+            $subBooks = $subBooks->get();
 
-                        $data[$dioCode] = array
-                        (
-                            "dio" => $dioCode,
-                            "countTitle" => 1 + ((isset($data[$dioCode])) ? $data[$dioCode]["countTitle"] : 0),
-                            "circulation" => $book->xcirculation + ((isset($data[$dioCode])) ? $data[$dioCode]["circulation"] : 0),
-                            "price" => (intval($book->xcoverprice) * $book->xcirculation) + ((isset($data[$dioCode])) ? $data[$dioCode]["price"] : 0),
-                        );
-                    }
+            if ($subBooks != null and count($subBooks) > 0) {
 
-                    foreach ($data as $key => $item) {
-                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
-                        $data[$key]["price"] = priceFormat($item["price"]);
-                    }
-
-                    $data = array_values($data);
+                foreach ($subBooks as $subBook) {
+                    $allUniqueDiocodes [] = $subBook->xdiocode;
+                    $allUniqueDiocodes = array_unique($allUniqueDiocodes);
                 }
             }
-        }
-        $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
 
+            foreach ($allUniqueDiocodes as $uniqueDiocode) {
+                $totalCirculation1 = 0;
+                $price1 = 0;
+                $bookCount1 = 0;
+                foreach ($subBooks as $subBook) {
+                    if ($subBook->xdiocode == $uniqueDiocode) {
+                        $totalCirculation1 += $subBook->xcirculation;
+                        $price1 += $subBook->xtotal_price;
+                        $bookCount1++;
+                    }
+                }
+
+                $data[$uniqueDiocode] = array
+                (
+                    "diocode" => $uniqueDiocode,
+                    "book_count" => $bookCount1,
+                    'total_price' => priceFormat($price1),
+                    "total_circulation" => priceFormat($totalCirculation1),
+                );
+            }
+            $data = array_values($data);
+            $data = array_slice($data, $offset, $pageRows);
+        }
+
+        $totalRows = count($allUniqueDiocodes);
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         // response
         return response()->json
         (
             [
                 "status" => $status,
                 "message" => "ok" ,
-                "data" => ["list" => $data , "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
+                "data" => ["main_list" => $dioData ,'sub_list' => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows],
+                'time'=> $elapsedTime
             ],
             $status
         );
