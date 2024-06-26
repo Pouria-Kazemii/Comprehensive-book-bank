@@ -1148,7 +1148,7 @@ class BookController extends Controller
     public function advanceSearch(Request $request)
     {
         $where = [];
-
+        $firstText = 0 ;
         foreach ($request['search'] as $key => $item) {
             $search_item = is_array($item) ? $item : json_decode($item, true);
 
@@ -1165,14 +1165,24 @@ class BookController extends Controller
                     }
 
                     if (in_array($searchField, ['xname', 'publisher.xpublishername', 'partners.xcreatorname', 'subjects.xsubject_name'])) {
+
                         if ($comparisonOperator == 'like') {
-                            // Use regex for "like" operations on text indexed fields
-                            $condition = [
-                                $searchField => [
-                                    '$regex' => '^' . preg_quote($searchValue),
-                                    '$options' => 'i' // Case insensitive search
-                                ]
-                            ];
+                            if ($firstText == 0) {
+                                $condition = [
+                                    '$text' => [
+                                        '$search' => $searchValue,
+                                    ]
+                                ];
+                                $firstText++;
+                            }else {
+                                // Use regex for "like" operations on text indexed fields
+                                $condition = [
+                                    $searchField => [
+                                        '$regex' => '^' . preg_quote($searchValue),
+                                        '$options' => 'i' 
+                                    ]
+                                ];
+                            }
                         } else {
                             // Exact match for other operators on text indexed fields
                             $operatorMapping = [
