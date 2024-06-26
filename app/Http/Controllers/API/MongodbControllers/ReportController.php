@@ -4,7 +4,6 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BookIrPublisher;
 use Collator;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
@@ -50,7 +49,7 @@ class ReportController extends Controller
         if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", $yearEnd);
         if ($translate == 1 ) $books->where('is_translate' , 2);
         if ($authorship == 1 ) $books->where('is_translate' , 1);
-        $books->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
+        $books->select("xdiocode");
         $books = $books->get(); // get list
 
 
@@ -61,30 +60,34 @@ class ReportController extends Controller
             }
 
             $totalRows = count($allUniqueDiocodes);
+            $allUniqueDiocodes = array_slice($allUniqueDiocodes, $offset, $pageRows);
 
             foreach ($allUniqueDiocodes as $uniqueDiocode) {
                 $totalCirculation1 = 0;
                 $price1 = 0;
-                $countBook = 0 ;
-                foreach ($books as $book) {
-                    if ($book->xdiocode == $uniqueDiocode) {
-                        $totalCirculation1 += $book->xcirculation;
-                        $price1 += $book->xtotal_price;
-                        $countBook++;
-                    }
+                $diocodeBooks = BookIrBook2::query();
+                $diocodeBooks->where('xdiocode' , $uniqueDiocode);
+                $diocodeBooks->where('publisher.xpublisher_id', $publisherId);
+                if ($yearStart != "") $diocodeBooks->where("xpublishdate_shamsi", ">=", $yearStart);
+                if ($yearEnd != "") $diocodeBooks->where("xpublishdate_shamsi", "<=", $yearEnd);
+                if ($translate == 1 ) $diocodeBooks->where('is_translate' , 2);
+                if ($authorship == 1 ) $diocodeBooks->where('is_translate' , 1);
+                $diocodeBooks->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
+                $diocodeBooks = $diocodeBooks->get();
+                foreach ($diocodeBooks as $diocodeBook) {
+                    $totalCirculation1 += $diocodeBook->xcirculation;
+                    $price1 += $diocodeBook->xtotal_price;
                 }
-
                 $data[$uniqueDiocode] = array
                 (
                     "diocode" => $uniqueDiocode ,
                     "total_circulation" => priceFormat($totalCirculation1),
-                    "book_count" => $countBook,
+                    "book_count" => count($diocodeBooks),
                     'total_price' => priceFormat($price1) ,
                 );
             }
             if ($data != null && count($data) > 0) {
                 $data = array_values($data);
-                $data = array_slice($data, $offset, $pageRows);
             }
         }
 
@@ -107,8 +110,11 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Publisher Dio///////////////////////////////////////////////////
     public function publisherDio(Request $request)
     {
+        //tike talif va tarjome
         $start  = microtime(true);
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
+        $translate = (isset($request["translate"])) ? $request["translate"] : 0;
+        $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
         $dio = (isset($request["dio"])) ? $request["dio"] : "";
         $yearStart = (isset($request["yearStart"])) ? (int)$request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? (int)$request["yearEnd"] : 0;
@@ -126,14 +132,14 @@ class ReportController extends Controller
         $books->where("xdiocode" , $dio);
         if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
+        if ($translate == 1 ) $books->where('is_translate' , 2);
+        if ($authorship == 1 ) $books->where('is_translate' , 1);
         $books->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
         $books = $books->get();
         if ($books != null and count($books) > 0) {
-            $bookCount = 0;
             $totalPrice = 0;
             $totalCirculation = 0;
             foreach ($books as $book) {
-                $bookCount++;
                 $totalPrice += $book->xtotal_price;
                 $totalCirculation += $book->xcirculation;
             }
@@ -150,8 +156,11 @@ class ReportController extends Controller
             $subBooks->where('publisher.xpublisher_id', $publisherId);
             $subBooks->where('xdiocode', 'regex', new Regex($pattern, ''))->get();
             $subBooks->where('xdiocode', "!=", $dio);
+            $subBooks->where('xdiocode', $beforeDot);
             if ($yearStart != "") $subBooks->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
             if ($yearEnd != "") $subBooks->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
+            if ($translate == 1 ) $subBooks->where('is_translate' , 2);
+            if ($authorship == 1 ) $subBooks->where('is_translate' , 1);
             $subBooks->select("xcirculation", "is_translate", "xdiocode", "xtotal_price");
             $subBooks = $subBooks->get();
 
@@ -162,6 +171,7 @@ class ReportController extends Controller
                     $allUniqueDiocodes = array_unique($allUniqueDiocodes);
                 }
             }
+            $allUniqueDiocodes = array_slice($allUniqueDiocodes,$offset,$pageRows);
 
             foreach ($allUniqueDiocodes as $uniqueDiocode) {
                 $totalCirculation1 = 0;
@@ -185,7 +195,6 @@ class ReportController extends Controller
             }
             if ($data != null && count($data) > 0) {
                 $data = array_values($data);
-                $data = array_slice($data, $offset, $pageRows);
             }
         }
 
@@ -471,6 +480,7 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Subject Aggregation///////////////////////////////////////////////////
     public function subjectAggregation(Request $request)
     {
+        //sotone jame mali
         $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -631,6 +641,7 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Creator Subject///////////////////////////////////////////////////
     public function creatorSubject(Request $request)
     {
+        // public function tajmi padid avarande va mozoe
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
         $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
@@ -698,6 +709,8 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Creator Publisher///////////////////////////////////////////////////
     public function creatorPublisher(Request $request)
     {
+        //tedade ketab va jame mali
+        //hazfe sotone talif va tarjome ti view
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -793,6 +806,7 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Creator Aggregation///////////////////////////////////////////////////
     public function creatorAggregation(Request $request)
     {
+        //sotone jame mali
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -955,5 +969,18 @@ class ReportController extends Controller
             ],
             $status
         );
+    }
+
+    public function new()
+    {
+        //id nasher
+        //id padid avarande
+        //kalame subject
+        //sale shoro
+        //sale tamom
+        // talif ya tarjome ya hardo
+        //shomare chap
+        //kode dio == na like
+        //khoroji ketabha
     }
 }

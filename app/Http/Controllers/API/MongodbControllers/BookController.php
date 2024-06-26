@@ -801,6 +801,7 @@ class BookController extends Controller
                     "circulation" => $book->xcirculation,
                     "price" => priceFormat($book->xcoverprice),
                     "des" => $book->xdescription,
+                    'is_translate' => $book->is_translate
                 ];
         }
 
