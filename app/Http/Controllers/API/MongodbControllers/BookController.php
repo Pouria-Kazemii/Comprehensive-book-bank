@@ -1179,7 +1179,7 @@ class BookController extends Controller
                                 $condition = [
                                     $searchField => [
                                         '$regex' => '^' . preg_quote($searchValue),
-                                        '$options' => 'i' 
+                                        '$options' => 'i'
                                     ]
                                 ];
                             }

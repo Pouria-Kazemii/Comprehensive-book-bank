@@ -34,10 +34,8 @@ class MakingBookirCreatorsUniqueJob implements ShouldQueue
      */
     public function handle()
     {
-        foreach ($this->docs as $doc) {
-            if (!BookIrBook2::where('partners.xcreator_id', (string)$doc)->exists()) {
-                    BookIrCreator::where('_id' ,$doc)->delete();
-            }
+        if (!BookIrBook2::where('partners.xcreator_id', $this->docs->_id)->exists()) {
+            BookIrCreator::where('_id' ,new ObjectId($this->docs->_id))->delete();
         }
     }
 }

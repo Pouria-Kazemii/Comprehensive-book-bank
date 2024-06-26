@@ -41,24 +41,17 @@ class MakingBookirCreatorsUniqueCommand extends Command
     {
         $this->info("Start find and deleting repeated creators");
         $startTime = microtime(true);
-
-        $duplicatesCursor = BookIrCreator::raw(function($collection) {
-            return $collection->aggregate([
-                ['$group' => ['_id' => '$xcreatorname', 'count' => ['$sum' => 1], 'docs' => ['$push' => '$_id']]],
-                ['$match' => ['count' => ['$gt' => 1]]],
-            ]);
-        });
-        $totalRepeatedCreators = count($duplicatesCursor);
-
-        $duplicates = iterator_to_array($duplicatesCursor);
-
-        $progressBar = $this->output->createProgressBar($totalRepeatedCreators);
+        $totalCreators = BookIrCreator::count();
+        $progressBar = $this->output->createProgressBar($totalCreators);
         $progressBar->start();
 
-        foreach ($duplicates as $duplicate) {
-            $progressBar->advance();
-            MakingBookirCreatorsUniqueJob::dispatch($duplicate['docs']);
-        }
+        BookIrCreator::chunk(1000 , function ($creators) use($progressBar) {
+            foreach ($creators as $creator){
+                MakingBookirCreatorsUniqueJob::dispatch($creator);
+                $progressBar->advance();
+            }
+        });
+
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);
