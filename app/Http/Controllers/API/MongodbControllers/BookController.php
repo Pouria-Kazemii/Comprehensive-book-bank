@@ -182,6 +182,9 @@ class BookController extends Controller
         $totalRows = 0;
 
         if (!$isNull) {
+            $pipeline = [];
+
+            // Match conditions based on search criteria
             $matchConditions = [];
 
             if (!empty($searchText)) {
@@ -223,54 +226,37 @@ class BookController extends Controller
                 }
             }
 
-            if (!empty($searchText)) {
-                // Execute raw MongoDB query to sort by text search score
-                $books = BookIrBook2::raw(function ($collection) use ($matchConditions, $offset, $pageRows) {
-                    return $collection->aggregate([
-                        ['$match' => $matchConditions],
-                        ['$addFields' => ['score' => ['$meta' => 'textScore']]],
-                        ['$sort' => ['score' => -1]],
-                        ['$skip' => $offset],
-                        ['$limit' => $pageRows]
-                    ]);
-                });
-
-                // Separate count query for totalRows
-                $totalRows = BookIrBook2::raw(function ($collection) use ($matchConditions) {
-                    return $collection->countDocuments($matchConditions);
-                });
-
-                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-
-                $books = iterator_to_array($books);
-            } else {
-                $bookQuery = BookIrBook2::query();
-
-                if (!empty($matchConditions)) {
-                    foreach ($matchConditions as $field => $condition) {
-                        if ($field === '$or') {
-                            $bookQuery->where(function ($query) use ($condition) {
-                                foreach ($condition as $orCondition) {
-                                    $query->orWhere(key($orCondition), current($orCondition));
-                                }
-                            });
-                        } else {
-                            $bookQuery->where($field, $condition);
-                        }
-                    }
-                }
-
-                // Separate count query for totalRows
-                $totalRows = $bookQuery->count();
-                $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-
-                $bookQuery->orderBy($column, $sortDirection);
-                $books = $bookQuery->skip($offset)->take($pageRows)->get();
+            // Add $match stage to the pipeline
+            if (!empty($matchConditions)) {
+                $pipeline[] = ['$match' => $matchConditions];
             }
 
-            // Fetch paginated results
+            // Add $addFields and $sort stages for text score and sorting by score
+            if (!empty($searchText)) {
+                $pipeline[] = ['$addFields' => ['score' => ['$meta' => 'textScore']]];
+                $pipeline[] = ['$sort' => ['score' => ['$meta' => 'textScore']]];
+            }
 
-            if ($books != null) {
+            // Add $skip and $limit stages for pagination
+            $pipeline[] = ['$skip' => $offset];
+            $pipeline[] = ['$limit' => $pageRows];
+
+            // Execute the aggregation pipeline
+            $books = BookIrBook2::raw(function ($collection) use ($pipeline) {
+                return $collection->aggregate($pipeline);
+            });
+
+            // Separate count query for totalRows
+            $totalRows = BookIrBook2::raw(function ($collection) use ($matchConditions) {
+                return $collection->countDocuments($matchConditions);
+            });
+
+            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+            // Process aggregated results
+            $books = iterator_to_array($books);
+
+            if (!empty($books)) {
                 foreach ($books as $book) {
                     $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
 
@@ -301,13 +287,24 @@ class BookController extends Controller
                 }
             }
         }
+
         $end = microtime(true);
         $elapsedTime = $end - $start;
         $status = 200;
+
         return response()->json([
             "status" => $status,
             "message" => "ok",
-            "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows, "subjectTitle" => $subjectTitle, "publisherName" => $publisherName, "creatorName" => $creatorName],
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows,
+                "subjectTitle" => $subjectTitle,
+                "publisherName" => $publisherName,
+                "creatorName" => $creatorName
+            ],
             'time' => $elapsedTime,
         ], $status);
     }
@@ -1157,31 +1154,42 @@ class BookController extends Controller
 
             if (!empty($search_item)) {
                 $searchField = $search_item['field'] ?? '';
-                $comparisonOperators = strtolower($search_item['comparisonOperator'] ?? '');
+                $comparisonOperator = strtolower($search_item['comparisonOperator'] ?? '');
                 $searchValue = $search_item['value'] ?? '';
                 $logicalOperator = strtoupper($search_item['logicalOperator'] ?? 'AND');
 
-                if (!empty($searchField) && !empty($comparisonOperators) && !empty($searchValue)) {
+                if (!empty($searchField) && !empty($comparisonOperator) && !empty($searchValue)) {
 
                     if (in_array($searchField, ['xpublishdate_shamsi', 'xcirculation', 'xcoverprice', 'xcovernumber'])) {
                         $searchValue = (int)$searchValue;
                     }
 
-                    if ($comparisonOperators == 'like') {
-                        // Use optimized regex for "like" operations
-                        $condition = [
-                            $searchField => [
-                                '$regex' => '^' . preg_quote($searchValue),
-                                '$options' => 'i' // Case insensitive search
-                            ]
-                        ];
+                    if (in_array($searchField, ['xname', 'publisher.xpublishername', 'partners.xcreatorname', 'subjects.xsubject_name'])) {
+                        if ($comparisonOperator == 'like') {
+                            // Use regex for "like" operations on text indexed fields
+                            $condition = [
+                                $searchField => [
+                                    '$regex' => '^' . preg_quote($searchValue),
+                                    '$options' => 'i' // Case insensitive search
+                                ]
+                            ];
+                        } else {
+                            // Exact match for other operators on text indexed fields
+                            $operatorMapping = [
+                                '=' => $searchValue,
+                                '>=' => ['$gte' => $searchValue],
+                                '<=' => ['$lte' => $searchValue]
+                            ];
+                            $condition = [$searchField => $operatorMapping[$comparisonOperator]];
+                        }
                     } else {
+                        // Handle non-indexed fields with exact match only
                         $operatorMapping = [
                             '=' => $searchValue,
                             '>=' => ['$gte' => $searchValue],
                             '<=' => ['$lte' => $searchValue]
                         ];
-                        $condition = [$searchField => $operatorMapping[$comparisonOperators]];
+                        $condition = [$searchField => $operatorMapping[$comparisonOperator]];
                     }
 
                     if ($logicalOperator == 'OR') {
@@ -1198,6 +1206,7 @@ class BookController extends Controller
             $where = [];
         }
 
+        // Call the listsForAdvanceSearch method with the constructed $where clause
         return $this->listsForAdvanceSearch($request, empty($where), false, $where);
     }
 }
