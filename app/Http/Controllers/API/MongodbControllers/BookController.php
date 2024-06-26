@@ -19,18 +19,19 @@ class BookController extends Controller
     {
         return count(BookIrBook2::all());
     }
+
     public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
-        $start  = microtime(true);
-        $isbn = (isset($request["isbn"]) and  preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $start = microtime(true);
+        $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
-        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
         $data = [];
-        $totalPages = 0 ;
+        $totalPages = 0;
         $totalRows = 0;
 
         if (!$isNull) {
@@ -77,7 +78,7 @@ class BookController extends Controller
 
             if (!empty($searchText)) {
                 // Execute raw MongoDB query to sort by text search score
-                $books = BookIrBook2::raw(function($collection) use ($matchConditions, $offset, $pageRows) {
+                $books = BookIrBook2::raw(function ($collection) use ($matchConditions, $offset, $pageRows) {
                     return $collection->aggregate([
                         ['$match' => $matchConditions],
                         ['$addFields' => ['score' => ['$meta' => 'textScore']]],
@@ -88,7 +89,7 @@ class BookController extends Controller
                 });
 
                 // Separate count query for totalRows
-                $totalRows = BookIrBook2::raw(function($collection) use ($matchConditions) {
+                $totalRows = BookIrBook2::raw(function ($collection) use ($matchConditions) {
                     return $collection->countDocuments($matchConditions);
                 });
 
@@ -168,16 +169,16 @@ class BookController extends Controller
     //TODO : must implement after making book Dossier for groupBys
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
-        $start  = microtime(true);
-        $isbn = (isset($request["isbn"]) and  preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $start = microtime(true);
+        $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
-        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
         $data = [];
-        $totalPages = 0 ;
+        $totalPages = 0;
         $totalRows = 0;
 
         if (!$isNull) {
@@ -224,7 +225,7 @@ class BookController extends Controller
 
             if (!empty($searchText)) {
                 // Execute raw MongoDB query to sort by text search score
-                $books = BookIrBook2::raw(function($collection) use ($matchConditions, $offset, $pageRows) {
+                $books = BookIrBook2::raw(function ($collection) use ($matchConditions, $offset, $pageRows) {
                     return $collection->aggregate([
                         ['$match' => $matchConditions],
                         ['$addFields' => ['score' => ['$meta' => 'textScore']]],
@@ -235,7 +236,7 @@ class BookController extends Controller
                 });
 
                 // Separate count query for totalRows
-                $totalRows = BookIrBook2::raw(function($collection) use ($matchConditions) {
+                $totalRows = BookIrBook2::raw(function ($collection) use ($matchConditions) {
                     return $collection->countDocuments($matchConditions);
                 });
 
@@ -310,11 +311,10 @@ class BookController extends Controller
             'time' => $elapsedTime,
         ], $status);
     }
+
     public function listsForAdvanceSearch(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $start = microtime(true);
-        $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
-        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
@@ -327,22 +327,9 @@ class BookController extends Controller
         if (!$isNull) {
             $bookQuery = BookIrBook2::query();
 
-            if (!empty($searchText)) {
-                $bookQuery->where(['$text' => ['$search' => $searchText]]);
-            }
-
-            if (!empty($isbn)) {
-                $bookQuery->where(function ($query) use ($isbn) {
-                    $query->orWhere('xisbn2', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn3', 'LIKE', "%$isbn%")
-                        ->orWhere('xisbn1', 'LIKE', "%$isbn%");
-                });
-            }
-
             if (!$defaultWhere && !empty($where)) {
                 $bookQuery->where($where);
             }
-
             $bookQuery->orderBy($column, $sortDirection);
 
             // Get total count without fetching all records
@@ -402,12 +389,9 @@ class BookController extends Controller
                 "totalPages" => $totalPages,
                 "pageRows" => $pageRows,
                 "totalRows" => $totalRows,
-                "subjectTitle" => $subjectTitle,
-                "publisherName" => $publisherName,
-                "creatorName" => $creatorName
             ],
             'time' => $elapsedTime,
-        ], 200);
+        ]);
     }
 
 
@@ -580,7 +564,7 @@ class BookController extends Controller
         return response()->json(
             [
                 "status" => $status,
-                "message" =>"ok",
+                "message" => "ok",
                 "data" => ["list" => $data]
             ],
             $status
@@ -607,7 +591,7 @@ class BookController extends Controller
         $where = [];
 
         if ($publisherId > 0) {
-            $where[] = ['publisher.xpublisher_id' , $publisherId];
+            $where[] = ['publisher.xpublisher_id', $publisherId];
         } elseif ($bookId > 0) {
             // get publisher
             $books = BookIrBook2::where('_id', new ObjectId($bookId))->get();
@@ -617,7 +601,7 @@ class BookController extends Controller
             }
             if ($publishers != null and count($publishers) > 0) {
                 foreach ($publishers as $publisher) {
-                    $where[] = ['publisher.xpublisher_id' , $publisher['xpublisher_id'] ];
+                    $where[] = ['publisher.xpublisher_id', $publisher['xpublisher_id']];
                 }
             }
         }
@@ -646,6 +630,7 @@ class BookController extends Controller
         $where = $this->findByCreatorSelect($request);
         return $this->lists($request, false, ($where == []), $where);
     }
+
     public function findByCreatorSelect(Request $request)
     {
         $creatorId = $request["creatorId"];
@@ -653,7 +638,7 @@ class BookController extends Controller
         $where = [];
 
         if ($creatorId > 0) {
-            $where[] = ['partners.xcreator_id' , $creatorId];
+            $where[] = ['partners.xcreator_id', $creatorId];
 
         } elseif ($bookId > 0) {
             // get publisher
@@ -662,12 +647,13 @@ class BookController extends Controller
 
             if ($books->partners != null and count($books->partners) > 0) {
                 foreach ($books->partners as $partner) {
-                    $where [] = ['partners.xcreator_id' ,  $partner['xcreator_id']] ;
+                    $where [] = ['partners.xcreator_id', $partner['xcreator_id']];
                 }
             }
         }
         return $where;
     }
+
     public function exportExcelBookFindByCreator(Request $request)
     {
         $where = $this->findByCreatorSelect($request);
@@ -703,12 +689,12 @@ class BookController extends Controller
     public function findByVer(Request $request)
     {
         $bookId = $request["bookId"];
-            $book = BookIrBook2::where('_id' , new ObjectId($bookId))->first();
-            if ($book != null) {
-                //TODO : must change after implement book dossier collection
-                $where [] = [ 'xparent' , $book->xsqlid];
-            }
-        $where [] = ['_id' , $bookId];
+        $book = BookIrBook2::where('_id', new ObjectId($bookId))->first();
+        if ($book != null) {
+            //TODO : must change after implement book dossier collection
+            $where [] = ['xparent', $book->xsqlid];
+        }
+        $where [] = ['_id', $bookId];
 
         return $this->listsWithOutGroupby($request, false, ($where == []), $where);
     }
@@ -728,25 +714,24 @@ class BookController extends Controller
 
         $bookSubjects = BookIrBook2::where('subjects.xsubject_id', $integerSubjectId)->first();
 
-            if($bookSubjects != null) {
-                $bookSubjects = $bookSubjects['subjects'];
-                foreach ($bookSubjects as $subject) {
-                    if ($subject['xsubject_id'] == $integerSubjectId) {
-                        $mainSubject = $subject;
-                        break;
-                    }
+        if ($bookSubjects != null) {
+            $bookSubjects = $bookSubjects['subjects'];
+            foreach ($bookSubjects as $subject) {
+                if ($subject['xsubject_id'] == $integerSubjectId) {
+                    $mainSubject = $subject;
+                    break;
                 }
             }
-        if ($mainSubject!= null and $mainSubject['xsubject_id'] > 0) {
+        }
+        if ($mainSubject != null and $mainSubject['xsubject_id'] > 0) {
             $subjectTitle = $mainSubject['xsubject_name'];
         }
 
-        $where[] =  ['subjects.xsubject_id' , $integerSubjectId ] ;
+        $where[] = ['subjects.xsubject_id', $integerSubjectId];
 
         return $this->lists($request, false, false, $where, $subjectTitle);
 
     }
-
 
 
     ///////////////////////////////////////////////Detail///////////////////////////////////////////////////
@@ -785,7 +770,7 @@ class BookController extends Controller
             $bookCreators = $book->partners;
             if ($bookCreators != null and count($bookCreators) > 0) {
                 foreach ($bookCreators as $bookCreator) {
-                    $creatorsData[] = ["id" => $bookCreator['xcreator_id'], "name" => $bookCreator['xcreatorname'] , 'role' =>$bookCreator['xrule']];
+                    $creatorsData[] = ["id" => $bookCreator['xcreator_id'], "name" => $bookCreator['xcreatorname'], 'role' => $bookCreator['xrule']];
                 }
             }
 
@@ -814,7 +799,7 @@ class BookController extends Controller
                     "publishPlace" => $book->xpublishplace,
                     "format" => $book->xformat,
                     "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
-                    "publishDate" =>$book->xpublishdate_shamsi,
+                    "publishDate" => $book->xpublishdate_shamsi,
                     "printNumber" => $book->xprintnumber,
                     "circulation" => $book->xcirculation,
                     "price" => priceFormat($book->xcoverprice),
@@ -827,7 +812,7 @@ class BookController extends Controller
         $books = BookIrBook2::where('_id', new ObjectId($bookId))->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
-                $year =$book->xpublishdate_shamsi;
+                $year = $book->xpublishdate_shamsi;
                 $printCount = $book->xcirculation;
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
@@ -840,8 +825,8 @@ class BookController extends Controller
         //TODO : must change after implement book dossier collection
         if ($bookId != null) {
             $bookSqlId = BookIrBook2::where('_id', new ObjectId($bookId))->first();
-            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
-        }else{
+            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null;
+        } else {
             $bookSqlId = null;
         }
 
@@ -916,7 +901,7 @@ class BookController extends Controller
         $publisherPrintCountData = null;
         $status = 200;
 
-        $book = BookIrBook2::where('_id',new ObjectId($bookId))->first();
+        $book = BookIrBook2::where('_id', new ObjectId($bookId))->first();
 
         if ($book != null and $book->_id > 0) {
             $publishersData = null;
@@ -974,10 +959,10 @@ class BookController extends Controller
 
         // read books for year printCount
         //TODO : must change after implement book dossier collection
-        $books = BookIrBook2::where('_id',new ObjectId($bookId))->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
+        $books = BookIrBook2::where('_id', new ObjectId($bookId))->orwhere('xparent', $book != null ? $book->xsqlid : '')->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $value) {
-                $year =$value->xpublishdate_shamsi;
+                $year = $value->xpublishdate_shamsi;
                 $printCount = $value->xcirculation;
 
                 $yearPrintCountData[$year] = ["year" => $year, "printCount" => (isset($yearPrintCountData[$year])) ? $printCount + $yearPrintCountData[$year]["printCount"] : $printCount];
@@ -990,8 +975,8 @@ class BookController extends Controller
         //TODO : must change after implement book dossier collection
         if ($bookId != null) {
             $bookSqlId = BookIrBook2::where('_id', new ObjectId($bookId))->first();
-            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null ;
-        }else{
+            $bookSqlId != null ? $bookSqlId = $bookSqlId->xsqlid : $bookSqlId = null;
+        } else {
             $bookSqlId = null;
         }
 
@@ -1050,7 +1035,7 @@ class BookController extends Controller
         return response()->json(
             [
                 "status" => $status,
-                "message" =>"ok",
+                "message" => "ok",
                 "data" => ["master" => $dataMaster, "yearPrintCount" => $yearPrintCountData, "publisherPrintCount" => $publisherPrintCountData]
             ],
             $status
@@ -1095,15 +1080,15 @@ class BookController extends Controller
 
         $publisherId = $request["publisherId"];
         $creatorId = $request["creatorId"];
-        $creatorName = "" ;
+        $creatorName = "";
         $publisherName = '';
         $where = [];
 
         if ($publisherId != "" and $creatorId != "") {
             $publisherBooks = BookIrBook2::where('partners.xcreator_id', $creatorId)->where('publisher.xpublisher_id', $publisherId)->get();
-            if (BookIrPublisher::where('_id',new ObjectId($publisherId))->count() > 0)
+            if (BookIrPublisher::where('_id', new ObjectId($publisherId))->count() > 0)
                 $publisherName = BookIrPublisher::where('_id', new ObjectId($publisherId))->first()->xpublishername;
-            if ($creatorId != 0 and BookIrCreator::where('_id',new ObjectId( $creatorId))->count() > 0) {
+            if ($creatorId != 0 and BookIrCreator::where('_id', new ObjectId($creatorId))->count() > 0) {
                 $creatorName = BookIrCreator::where('_id', new ObjectId($creatorId))->first()->xcreatorname;
             }
         } elseif ($publisherId != "" or $creatorId != "") {
@@ -1119,11 +1104,11 @@ class BookController extends Controller
             }
         }
 
-                if ($publisherName != '' or $creatorName != '') {
-                    foreach ($publisherBooks as $publisherBook) {
-                        $where [] = ['_id', new ObjectId($publisherBook->_id)];
-                    }
-                }
+        if ($publisherName != '' or $creatorName != '') {
+            foreach ($publisherBooks as $publisherBook) {
+                $where [] = ['_id', new ObjectId($publisherBook->_id)];
+            }
+        }
 
 
         return $this->lists($request, false, ($where == []), $where, "", $publisherName, $creatorName);
@@ -1154,8 +1139,8 @@ class BookController extends Controller
             }
         }
 
-        if (BookIrCreator::where('_id', new ObjectId($creatorId))->count() > 0){
-            $creatorName = [BookIrCreator::where('_id', new ObjectId($creatorId))->pluck('xcreatorname')[0] , $teammateName];
+        if (BookIrCreator::where('_id', new ObjectId($creatorId))->count() > 0) {
+            $creatorName = [BookIrCreator::where('_id', new ObjectId($creatorId))->pluck('xcreatorname')[0], $teammateName];
         }
 
         return $this->lists($request, false, ($where == []), $where, "", "", $creatorName);
@@ -1177,35 +1162,32 @@ class BookController extends Controller
                 $logicalOperator = strtoupper($search_item['logicalOperator'] ?? 'AND');
 
                 if (!empty($searchField) && !empty($comparisonOperators) && !empty($searchValue)) {
-                    $operatorMapping = [
-                        'like' => ['$regex' => new Regex($searchValue, 'i')],
-                        '=' => $searchValue,
-                        '>=' => ['$gte' => $searchValue],
-                        '<=' => ['$lte' => $searchValue]
-                    ];
 
-                    if ($searchField == 'isbn') {
-                        $isbnCondition = [
-                            '$or' => [
-                                ['xisbn' => $operatorMapping[$comparisonOperators]],
-                                ['xisbn2' => $operatorMapping[$comparisonOperators]],
-                                ['xisbn3' => $operatorMapping[$comparisonOperators]]
+                    if (in_array($searchField, ['xpublishdate_shamsi', 'xcirculation', 'xcoverprice', 'xcovernumber'])) {
+                        $searchValue = (int)$searchValue;
+                    }
+
+                    if ($comparisonOperators == 'like') {
+                        // Use optimized regex for "like" operations
+                        $condition = [
+                            $searchField => [
+                                '$regex' => '^' . preg_quote($searchValue),
+                                '$options' => 'i' // Case insensitive search
                             ]
                         ];
-
-                        if ($logicalOperator == 'OR') {
-                            $where['$or'][] = $isbnCondition;
-                        } else {
-                            $where['$and'][] = $isbnCondition;
-                        }
                     } else {
+                        $operatorMapping = [
+                            '=' => $searchValue,
+                            '>=' => ['$gte' => $searchValue],
+                            '<=' => ['$lte' => $searchValue]
+                        ];
                         $condition = [$searchField => $operatorMapping[$comparisonOperators]];
+                    }
 
-                        if ($logicalOperator == 'OR') {
-                            $where['$or'][] = $condition;
-                        } else {
-                            $where['$and'][] = $condition;
-                        }
+                    if ($logicalOperator == 'OR') {
+                        $where['$or'][] = $condition;
+                    } else {
+                        $where['$and'][] = $condition;
                     }
                 }
             }
