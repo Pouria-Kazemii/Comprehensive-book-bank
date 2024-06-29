@@ -234,6 +234,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/v2/report/creator-publisher', [ReportController::class,'creatorPublisher']);
     Route::post('/v2/report/creator-aggregation', [ReportController::class ,'creatorAggregation']);
     Route::post('/v2/report/dio', [ReportController::class ,'dio']);
+    Route::post('/v2/report/creator-subject-aggregation' , [ReportController::class , 'creatorSubjectAggregation']);
 
     //SQL Role , Languages , Formats and Covers
     Route::post('/v1/role/search', 'API\RoleController@search');

@@ -110,7 +110,6 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Publisher Dio///////////////////////////////////////////////////
     public function publisherDio(Request $request)
     {
-        //tike talif va tarjome
         $start  = microtime(true);
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $translate = (isset($request["translate"])) ? $request["translate"] : 0;
@@ -154,9 +153,8 @@ class ReportController extends Controller
             $pattern = '^' . preg_quote($beforeDot, '/') . '\.';
             $subBooks = BookIrBook2::query();
             $subBooks->where('publisher.xpublisher_id', $publisherId);
-            $subBooks->where('xdiocode', 'regex', new Regex($pattern, ''))->get();
+            $subBooks->where('xdiocode', 'regex', new Regex($pattern, ''))->orWhere('xdiocode', $beforeDot)->get();
             $subBooks->where('xdiocode', "!=", $dio);
-            $subBooks->where('xdiocode', $beforeDot);
             if ($yearStart != "") $subBooks->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
             if ($yearEnd != "") $subBooks->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
             if ($translate == 1 ) $subBooks->where('is_translate' , 2);
@@ -223,10 +221,10 @@ class ReportController extends Controller
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
         $data = null;
         $status = 200;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ?(int) $request["perPage"] : 50;
         $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
@@ -391,7 +389,6 @@ class ReportController extends Controller
                     "totalRows" => $totalRows
                 ]
             ],
-            200
         );
     }
 
@@ -405,82 +402,100 @@ class ReportController extends Controller
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "subjects.xsubject_name";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
         $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
-        $subjectsData = null;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ?(int) $request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
 
         // read
-        $booksSubjects = BookIrBook2::query();
-        $booksSubjects->where('publisher.xpublisher_id', $publisherId);
-        $booksSubjects->where("subjects.xsubject_name", "LIKE", "%$subjectTitle%");
-        $booksSubjects->orderBy($column,$sortDirection);
-        $booksSubjects->select('subjects');
-        $booksSubjects = $booksSubjects->get(); // get list
-        if($booksSubjects != null and count($booksSubjects) > 0)
-        {
-            foreach ($booksSubjects as $bookSubjects) {
-                foreach ($bookSubjects->subjects as $bookSubject) {
-                    $subjectsData[$bookSubject['xsubject_id']] = $bookSubject['xsubject_name'];
-                }
-            }
-        }
-        if($subjectsData != null and count($subjectsData) > 0)
-        {
-            foreach ($subjectsData as $subjectId => $subjectTitle)
-            {
-                $books = BookIrBook2::query();
-                $books->where('subjects.xsubject_id' , $subjectId);
-                $books->where('publisher.xpublisher_id',$publisherId);
-                if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
-                if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-                $books->orderBy('xdiocode', 1);
-                $books = $books->skip($offset)->take($pageRows)->get(); // get list
-                if($books != null and count($books) > 0)
-                {
-                    foreach ($books as $book)
-                    {
-                        $data[$subjectId] = array
-                        (
-                            "id" => $subjectId,
-                            "title" => $subjectTitle,
-                            "countTitle" => 1 + ((isset($data[$subjectId])) ? $data[$subjectId]["countTitle"] : 0),
-                            "circulation" => $book->xcirculation + ((isset($data[$subjectId])) ? $data[$subjectId]["circulation"] : 0),
-                        );
-                    }
+        $matchConditions = [
+            ['publisher.xpublisher_id' => $publisherId]
+        ];
 
-                    foreach ($data as $key => $item)
-                    {
-                        $data[$key]["circulation"] = priceFormat($item["circulation"]);
-                    }
-
-                    $data = array_values($data);
-                }
-            }
+        if (!empty($subjectTitle)) {
+            $matchConditions[] = [
+                'subjects' => [
+                    '$elemMatch' => [
+                        'xsubject_name' => [
+                            '$regex' => $subjectTitle,
+                            '$options' => 'i' // Case insensitive search
+                        ]
+                    ]
+                ]
+            ];
         }
 
-        //
-        if($data != null) $status = 200;
+        if (!empty($yearStart)) {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
+        }
+
+        if (!empty($yearEnd)) {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$yearEnd]];
+        }
+
+        $pipeline = [
+            ['$match' => ['$and' => $matchConditions]],
+            ['$project' => [
+                'filteredSubjects' => [
+                    '$filter' => [
+                        'input' => '$subjects',
+                        'as' => 'subject',
+                        'cond' => ['$regexMatch' => ['input' => '$$subject.xsubject_name', 'regex' => $subjectTitle, 'options' => 'i']]
+                    ]
+                ],
+                'xcirculation' => 1,
+                'xpublishdate_shamsi' => 1,
+            ]],
+            ['$unwind' => '$filteredSubjects'],
+            ['$group' => [
+                '_id' => '$filteredSubjects.xsubject_id',
+                'subjectTitle' => ['$first' => '$filteredSubjects.xsubject_name'],
+                'countTitle' => ['$sum' => 1],
+                'circulation' => ['$sum' => '$xcirculation'],
+            ]],
+            ['$sort' => [$column => $sortDirection]],
+            ['$skip' => $offset],
+            ['$limit' => $pageRows]
+        ];
+
+        $result = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline);
+        });
+
+
+
+        foreach ($result as $item) {
+            $data[] = [
+                'subject' => ['id' => $item->_id, 'name' => $item->subjectTitle],
+                'countTitle' => $item->countTitle,
+                'circulation' => priceFormat($item->circulation),
+            ];
+        }
+
+        $totalRows = count($data);
+
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
         // response
-        return response()->json
-        (
+        return response()->json(
             [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $data]
+                "status" => 200,
+                "message" => "ok",
+                "data" => [
+                    "list" => $data,
+                    "currentPageNumber" => $currentPageNumber,
+                    "totalPages" => $totalPages,
+                    "pageRows" => $pageRows,
+                    "totalRows" => $totalRows
+                ]
             ],
-            $status
         );
     }
 
     ///////////////////////////////////////////////Subject Aggregation///////////////////////////////////////////////////
     public function subjectAggregation(Request $request)
     {
-        //sotone jame mali
         $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -527,23 +542,30 @@ class ReportController extends Controller
                 '_id' => '$publisher.xpublisher_id',
                 'publisherName' => ['$first' => '$publisher.xpublishername'],
                 'countTitle' => ['$sum' => 1],
-                'circulation' => ['$sum' => '$xcirculation']
+                'circulation' => ['$sum' => '$xcirculation'],
+                'totalPrice' =>['$sum' => '$xtotal_price']
             ]],
             ['$sort' => [$column => $sortDirection]],
+            ['$skip' => $offset],
+            ['$limit' => $pageRows]
         ];
 
         $result = BookIrBook2::raw(function($collection) use ($pipeline) {
             return $collection->aggregate($pipeline, ['allowDiskUse' => true]);
         });
 
-        $totalRows = count($result);
+        $totalRows = BookIrBook2::raw(function ($collection) use($matchConditions){
+            return $collection->countDocuments(['$and' => $matchConditions]);
+        });
+
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
         foreach ($result as $item) {
             $data[] = [
                 'publisher' => ['id' => $item->_id, 'name' => $item->publisherName],
                 'countTitle' => $item->countTitle,
-                'circulation' => priceFormat($item->circulation)
+                'circulation' => priceFormat($item->circulation),
+                'totalPrice' => priceFormat($item->totalPrice)
             ];
         }
 
@@ -558,7 +580,97 @@ class ReportController extends Controller
         ], $status);
     }
 
+    ///////////////////////////////////////////////Creator Subject Aggregation///////////////////////////////////////////////////
+    public function creatorSubjectAggregation(Request $request)
+    {
+        $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
+        $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
+        $translate = (isset($request['translate']) && $request['translate'] ==(1 or 0)) ? (int)$request["translate"] : 0;
+        $authorship = (isset($request['authorship']) && $request['authorship'] ==(1 or 0)) ? (int)$request["authorship"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ?(int) $request["perPage"] : 50;
+        $data = null;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $matchConditions = [];
 
+        $matchConditions [] =
+            ['partners.xcreator_id' => $creatorId];
+
+        $matchConditions []  =
+            [
+                'subjects' => [
+                    '$elemMatch' => [
+                        'xsubject_name' => [
+                            '$regex' => $subjectTitle,
+                            '$options' => 'i'
+                        ]
+                    ]
+                ]
+            ]
+        ;
+
+        if ($translate == 1) {
+            $matchConditions[] = ['is_translate' => 2];
+        } elseif ($authorship == 1) {
+            $matchConditions[] = ['is_translate' => 1];
+        }
+
+        if ($yearStart != "") {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
+        }
+
+        if ($yearEnd != "") {
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$yearEnd]];
+        }
+
+        $pipeline = [
+            ['$match' => ['$and' => $matchConditions]],
+            ['$unwind' => '$publisher'],
+            ['$group' => [
+                '_id' => '$publisher.xpublisher_id',
+                'publisherName' => ['$first' => '$publisher.xpublishername'],
+                'countTitle' => ['$sum' => 1],
+                'circulation' => ['$sum' => '$xcirculation'],
+                'totalPrice' =>['$sum' => '$xtotal_price']
+            ]],
+            ['$sort' => [$column => $sortDirection]],
+            ['$skip' => $offset],
+            ['$limit' =>  $pageRows]
+        ];
+
+        $result = BookIrBook2::raw(function($collection) use ($pipeline) {
+            return $collection->aggregate($pipeline, ['allowDiskUse' => true]);
+        });
+
+        $totalRows = BookIrBook2::raw(function ($collection) use($matchConditions){
+            return $collection->countDocuments(['$and' => $matchConditions]);
+        });
+
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+        foreach ($result as $item) {
+            $data[] = [
+                'publisher' => ['id' => $item->_id, 'name' => $item->publisherName],
+                'countTitle' => $item->countTitle,
+                'circulation' => priceFormat($item->circulation),
+                'totalPrice' => priceFormat($item->totalPrice)
+            ];
+        }
+
+        $status = 200;
+
+        return response()->json([
+            'status' => $status,
+            'message' =>  'ok' ,
+            'data' => [
+                'list' => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows
+            ]
+        ], $status);
+    }
     ///////////////////////////////////////////////Subject///////////////////////////////////////////////////
     public function subject(Request $request)
     {
@@ -569,28 +681,66 @@ class ReportController extends Controller
         $authorship = (isset($request['authorship']) && $request['authorship'] ==(1 or 0)) ? (int)$request["authorship"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
         $data = null;
         $status = 200;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? (int) $request["perPage"] : 50;
         $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
+        $matchConditions = [];
 
         // read
         if($subjectTitle != "")
         {
-            // DB::enableQueryLog();
-            $books = BookIrBook2::query();
-             $books->where("subjects.xsubject_name", "LIKE", "%$subjectTitle%");
-            // if($translate == 1) $books->where("xlang", "!=", "فارسی");
-            if($translate == 1) $books->where("is_translate", 2);
-            // if($authorship == 1) $books->where("xlang", "=", "فارسی");
-            if($authorship == 1) $books->where("is_translate", 1);
-            if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
-            if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-            $totalRows = $books->count(); // get total records count
-            $books->orderBy($column,$sortDirection);
-            $books = $books->skip($offset)->take($pageRows)->get(); // get list
+            if (!empty($subjectTitle)) {
+                $matchConditions[] = ['$text' => ['$search' => $subjectTitle]];
+            }
+
+            if (!empty($yearStart)) {
+                $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
+            }
+
+            if (!empty($yearEnd)) {
+                $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$yearEnd]];
+            }
+
+            if ($translate == 1) {
+                $matchConditions[] = ['is_translate' => 2];
+            } elseif ($authorship == 1) {
+                $matchConditions[] = ['is_translate' => 1];
+            }
+
+            $pipeline = [
+                ['$match' => ['$and' => $matchConditions]],
+                ['$project' => [
+                    'xname' => 1,
+                    'publisher' => 1 ,
+                    '_id' => 1 ,
+                    'xpublishdate_shamsi' => 1,
+                    'xcoverprice' => 1 ,
+                    'ximgeurl' => 1 ,
+                    'xcirculation' => 1,
+                    'filteredSubjects' => [
+                        '$filter' => [
+                            'input' => '$subjects',
+                            'as' => 'subject',
+                            'cond' => ['$regexMatch' => ['input' => '$$subject.xsubject_name', 'regex' => $subjectTitle, 'options' => 'i']]
+                        ]
+                    ],
+                ]],
+                ['$match' => ['filteredSubjects' => ['$ne' => []]]],
+                ['$sort' => [$column => $sortDirection]],
+                ['$skip' => $offset],
+                ['$limit' => $pageRows]
+            ];
+            $books = BookIrBook2::raw(function($collection) use ($pipeline) {
+                return $collection->aggregate($pipeline);
+            });
+
+            $totalRows = BookIrBook2::raw(function ($collection) use($matchConditions){
+               return $collection->countDocuments(['$and' => $matchConditions]);
+            });
+
             if($books != null and count($books) > 0)
             {
                 foreach ($books as $book)
@@ -620,8 +770,6 @@ class ReportController extends Controller
                 }
             }
 
-            // $query = DB::getQueryLog();
-            // return $query;
         }
 
         $totalPages = $totalRows > 0 ? (int) ceil($totalRows / $pageRows) : 0;
@@ -638,18 +786,18 @@ class ReportController extends Controller
         );
     }
 
+
     ///////////////////////////////////////////////Creator Subject///////////////////////////////////////////////////
     public function creatorSubject(Request $request)
     {
-        // public function tajmi padid avarande va mozoe
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
         $subjectTitle = (isset($request["subjectTitle"])) ? $request["subjectTitle"] : "";
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ?(int) $request["perPage"] : 50;
         $data = null;
         $status = 200;
         $offset = ($currentPageNumber - 1) * $pageRows;
@@ -709,13 +857,11 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Creator Publisher///////////////////////////////////////////////////
     public function creatorPublisher(Request $request)
     {
-        //tedade ketab va jame mali
-        //hazfe sotone talif va tarjome ti view
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ?(int) $request["perPage"] : 50;
 
         $data = null;
         $status = 200;
@@ -741,7 +887,8 @@ class ReportController extends Controller
 
             if($uniqueCreators != null and count($uniqueCreators) > 0)
                 $totalCirculation = 0;
-                $isTranslate = 0;
+                $totalPrice = 0;
+                $bookCount = 0;
             foreach ($uniqueCreators as $uniqueCreator) {
                 foreach ($books as $book){
                     $partners = $book->partners;
@@ -751,11 +898,13 @@ class ReportController extends Controller
                                 continue;
                             }if($partner['xcreator_id'] == $uniqueCreator['xcreator_id'] and $partner['xrule'] == $uniqueCreator['xrule']) {
                                     $totalCirculation += $book['xcirculation'];
-                                    $isTranslate = $book['is_translate'];
+                                    $totalPrice += $book['xtotal_price'];
+                                    $bookCount++;
                             }
                         }elseif($partner['xcreator_id'] == $uniqueCreator['xcreator_id'] and $partner['xrule'] == $uniqueCreator['xrule']) {
                                 $totalCirculation += $book['xcirculation'];
-                                $isTranslate = $book['is_translate'];
+                                $totalPrice += $book['xtotal_price'];
+                                $bookCount++;
                         }
                     }
 
@@ -763,12 +912,13 @@ class ReportController extends Controller
                 (
                     "creator" => ["id" => $uniqueCreator['xcreator_id'], "name" => $uniqueCreator['xcreatorname']],
                     "role" => $uniqueCreator['xrule'],
-                    // "translate" => $creatorRole->xlang == "فارسی" ? 0 : 1,
-                    "translate" => $isTranslate == 2 ? 1 : 0, // if translate return 1
-                    "circulation" => priceFormat($totalCirculation)
+                    'bookCount' => $bookCount,
+                    "circulation" => priceFormat($totalCirculation),
+                    'totalPrice' => priceFormat($totalPrice)
                 );
                 $totalCirculation = 0 ;
-                $isTranslate = 0;
+                $totalPrice = 0 ;
+                $bookCount=0;
             }
 
             $seen = [];
@@ -806,7 +956,6 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Creator Aggregation///////////////////////////////////////////////////
     public function creatorAggregation(Request $request)
     {
-        //sotone jame mali
         $creatorId = (isset($request["creatorId"])) ? $request["creatorId"] : 0;
         $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
@@ -852,18 +1001,20 @@ class ReportController extends Controller
                 $books->where('publisher.xpublisher_id' , $publisherId);
                 if($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)$yearStart);
                 if($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)$yearEnd);
-                $books->select('xcirculation');
+                $books->select('xcirculation' , 'xtotal_price');
                 $books = $books->get(); // get list
                 if($books != null and count($books) > 0)
                 {
                     $totalCirculation = 0;
+                    $totalPrice = 0;
                     foreach ($books as $book)
                     {
                         $data[$creatorId] = array
                         (
                             "publisher" => ["id" => $publisherId, "name" => $publisherName],
                             "countTitle" => count($books),
-                            "circulation" => priceFormat($totalCirculation += $book->xcirculation)
+                            "circulation" => priceFormat($totalCirculation += $book->xcirculation),
+                            "totalPrice" => priceFormat($totalPrice += $book->xtotal_price)
                         );
                     }
 
@@ -897,8 +1048,8 @@ class ReportController extends Controller
         $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? $request["perPage"] : 50;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ?(int) $request["page"] : 0;
+        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ?(int) $request["perPage"] : 50;
         $data = null;
         $status = 200;
         $totalRows = 0;
