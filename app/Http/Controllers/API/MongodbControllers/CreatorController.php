@@ -36,18 +36,18 @@ class CreatorController extends Controller
                 $matchConditions['$text'] = ['$search' => $searchText];
             }
 
-            if (!empty($roleName)) {
-                $roleFilter = [
-                    ['$unwind' => '$partners'],
-                    ['$match' => ['partners.xrule' => $roleName]],
-                    ['$group' => ['_id' => '$partners.xcreator_id']],
-                ];
-                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
-                    return $collection->aggregate($roleFilter);
-                })->pluck('_id')->toArray();
-
-                $matchConditions['_id'] = ['$in' => $creatorsId];
-            }
+//            if (!empty($roleName)) {
+//                $roleFilter = [
+//                    ['$unwind' => '$partners'],
+//                    ['$match' => ['partners.xrule' => $roleName]],
+//                    ['$group' => ['_id' => '$partners.xcreator_id']],
+//                ];
+//                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
+//                    return $collection->aggregate($roleFilter);
+//                })->pluck('_id')->toArray();
+//
+//                $matchConditions['_id'] = ['$in' => $creatorsId];
+//            }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
@@ -161,7 +161,7 @@ class CreatorController extends Controller
     {
         $start = microtime(true);
         $publisherId = $request->input('publisherId');
-        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xcreatorname";
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "partners.xcreatorname";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
@@ -169,55 +169,29 @@ class CreatorController extends Controller
         $data = [];
         $status = 200;
 
-        $pipeline2 = [
-            ['$match' => ['publisher.xpublisher_id' => $publisherId]],
-            ['$unwind' => '$partners'],
-            ['$group' => ['_id' => '$partners.xcreator_id']],
-            ['$count' => 'count']
-        ];
-
-        $countResult = BookIrBook2::raw(function ($collection) use ($pipeline2) {
-            return $collection->aggregate($pipeline2);
-        });
-
-        $totalRows = $countResult[0]->count;
 
         $pipeline = [
-                ['$match' => ['publisher.xpublisher_id' => $publisherId]],
-                ['$unwind' => '$partners'],
-                ['$group' => ['_id' => '$partners.xcreator_id']],
-                ['$skip' => $offset],
-                ['$limit' => $pageRows]
-            ];
-
-            $creatorsId = BookIrBook2::raw(function ($collection) use ($pipeline) {
-                return $collection->aggregate($pipeline);
-            })->pluck('_id')->toArray();
-
-        $matchConditions = [
-            '_id' => [
-                '$in' => array_map(function($id) {
-                    return new \MongoDB\BSON\ObjectId($id);
-                }, $creatorsId)
-            ]
+            ['$match' => ['publisher.xpublisher_id' => $publisherId]],
+            ['$unwind' => '$partners'],
+            ['$group' => [
+                '_id' => '$partners.xcreator_id',
+                'xcreatorname' => ['$first' => '$partners.xcreatorname'],
+                'countTitle' => ['$sum' => 1]
+            ]],
+            ['$sort' => [$column => $sortDirection]],
+            ['$skip' => $offset],
+            ['$limit' => $pageRows]
         ];
 
-            // Fetch the sorted and paginated results based on the creator IDs
-            $partners = BookIrCreator::raw(function($collection) use ($matchConditions, $column, $sortDirection) {
-                return $collection->aggregate([
-                    ['$match' => (object)$matchConditions],
-                    ['$sort' => [$column => $sortDirection]],
-                ]);
+            $partners = BookIrBook2::raw(function ($collection) use ($pipeline) {
+                return $collection->aggregate($pipeline);
             });
 
-            // Total number of documents
-
+            $totalRows = count($partners);
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
-            $partners = iterator_to_array($partners);
             $publisherName = BookIrPublisher::find($publisherId)->xpublishername;
             foreach ($partners as $partner) {
-            $creatorId = $partner['_id'];
 
             $data[] = [
                 "publisherId" => $publisherId,
@@ -225,9 +199,9 @@ class CreatorController extends Controller
                 "mainCreatorId" => 0,
                 "mainCreatorName" => 0,
                 "subjectId" => 0,
-                "id" => $creatorId,
-                "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
-                "name" => $partner['xcreatorname'],
+                "id" => $partner->_id,
+                "bookCount" => $partner->countTitle,
+                "name" => $partner->xcreatorname,
             ];
         }
             // Process and return response
