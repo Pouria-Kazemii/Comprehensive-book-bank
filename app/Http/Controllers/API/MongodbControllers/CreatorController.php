@@ -178,21 +178,32 @@ class CreatorController extends Controller
                 'xcreatorname' => ['$first' => '$partners.xcreatorname'],
                 'countTitle' => ['$sum' => 1]
             ]],
-            ['$sort' => [$column => $sortDirection]],
-            ['$skip' => $offset],
-            ['$limit' => $pageRows]
+            ['$facet' => [
+                'creators' => [
+                    ['$sort' => [$column => $sortDirection]],
+                    ['$skip' => $offset],
+                    ['$limit' => $pageRows]
+                ],
+                'totalGroups' => [
+                    ['$group' => [
+                        '_id' => null,
+                        'count' => ['$sum' => 1]
+                    ]]
+                ]
+            ]]
         ];
 
             $partners = BookIrBook2::raw(function ($collection) use ($pipeline) {
                 return $collection->aggregate($pipeline);
             });
 
-            $totalRows = count($partners);
+            $totalRows = $partners[0]->totalGroups[0]->count;
+
             $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
             $publisherName = BookIrPublisher::find($publisherId)->xpublishername;
-            foreach ($partners as $partner) {
 
+            foreach ($partners[0]->creators as $partner) {
             $data[] = [
                 "publisherId" => $publisherId,
                 "publisherName" => $publisherName,

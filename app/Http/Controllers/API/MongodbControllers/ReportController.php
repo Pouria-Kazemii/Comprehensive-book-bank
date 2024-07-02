@@ -9,21 +9,6 @@ use MongoDB\BSON\ObjectId;
 
 class ReportController extends Controller
 {
-    ///////////////////////////////////////////////Unique Creators///////////////////////////////////////////////////
-    function getUniqueCreators($data) {
-        $uniqueCreators = [];
-
-        foreach ($data as $group) {
-            foreach ($group as $creator) {
-                $key = $creator['xcreator_id'] . '-' . $creator['xrule'];
-                if (!isset($uniqueCreators[$key])) {
-                    $uniqueCreators[$key] = $creator;
-                }
-            }
-        }
-
-        return array_values($uniqueCreators); // Reset array keys to get a flat array
-    }
     ///////////////////////////////////////////////Publishers///////////////////////////////////////////////////
 
     public function publisher(Request $request)
@@ -70,16 +55,27 @@ class ReportController extends Controller
                     'total_circulation' => ['$sum' => '$xcirculation'],
                     'total_price' => ['$sum' => '$xtotal_price']
                 ]],
-                ['$sort' => [$column => $sortDirection]],
-                ['$skip' => $offset],
-                ['$limit' => $pageRows]
+                ['$facet' => [
+                    'books' => [
+                        ['$sort' => [$column => $sortDirection]],
+                        ['$skip' => $offset],
+                        ['$limit' => $pageRows]
+                    ],
+                    'totalGroups' => [
+                        ['$group' => [
+                            '_id' => null,
+                            'count' => ['$sum' => 1]
+                        ]]
+                    ]
+                ]]
             ]);
         });
 
-        $totalRows =count($diocodeBooks) ;
+        $totalRows =$diocodeBooks[0]->totalGroups[0]->count;
+
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
-        foreach ($diocodeBooks as $diocodeBook) {
+        foreach ($diocodeBooks[0]->books as $diocodeBook) {
             $data [] = [
                 "diocode" => $diocodeBook->xdiocode,
                 "total_circulation" => priceFormat($diocodeBook->total_circulation),
@@ -106,9 +102,9 @@ class ReportController extends Controller
     ///////////////////////////////////////////////Publisher Dio///////////////////////////////////////////////////
     public function publisherDio(Request $request)
     {
-        $start  = microtime(true);
+        $start = microtime(true);
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xdiocode";
-        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] ==(1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
         $translate = (isset($request["translate"])) ? $request["translate"] : 0;
         $authorship = (isset($request["authorship"])) ? $request["authorship"] : 0;
@@ -120,18 +116,19 @@ class ReportController extends Controller
         $data = null;
         $dioData = null;
         $status = 200;
-        $allUniqueDiocodes = [];
+        $totalPages = 0;
+        $totalRows = 0;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
         // read
         $books = BookIrBook2::query();
         $books->where('publisher.xpublisher_id', $publisherId);
-        $books->where("xdiocode" , $dio);
+        $books->where("xdiocode", $dio);
         if ($yearStart != "") $books->where("xpublishdate_shamsi", ">=", (int)"$yearStart");
         if ($yearEnd != "") $books->where("xpublishdate_shamsi", "<=", (int)"$yearEnd");
-        if ($translate == 1 ) $books->where('is_translate' , 2);
-        if ($authorship == 1 ) $books->where('is_translate' , 1);
-        $books->select("xcirculation", "is_translate", "xdiocode" , "xtotal_price");
+        if ($translate == 1) $books->where('is_translate', 2);
+        if ($authorship == 1) $books->where('is_translate', 1);
+        $books->select("xcirculation", "is_translate", "xdiocode", "xtotal_price");
         $books = $books->get();
         if ($books != null and count($books) > 0) {
             $totalPrice = 0;
@@ -146,58 +143,70 @@ class ReportController extends Controller
                 "total_price" => priceFormat($totalPrice),
                 "total_circulation" => priceFormat($totalCirculation)
             ];
+        }
 
-            $beforeDot = substr($dio, 0, strpos($dio, '.')) != '' ? substr($dio, 0, strpos($dio, '.')) : $dio;
+        $beforeDot = substr($dio, 0, strpos($dio, '.')) != '' ? substr($dio, 0, strpos($dio, '.')) : $dio;
 
-            $pipeline[] = ['publisher.xpublisher_id' => $publisherId ];
-            $pipeline[] = ['xdiocode' => ['$regex' => '^' . preg_quote($beforeDot, '/')]];
+        $pipeline[] = ['publisher.xpublisher_id' => $publisherId];
+        $pipeline[] = ['xdiocode' => ['$regex' => '^' . preg_quote($beforeDot, '/')]];
 
-            $pipeline[] = ['xdiocode' => ['$ne' => $dio]];
+        $pipeline[] = ['xdiocode' => ['$ne' => $dio]];
 
-            if ($authorship != 0){
-                $pipeline[] = ['is_translate' => 1];
-            }
+        if ($authorship != 0) {
+            $pipeline[] = ['is_translate' => 1];
+        }
 
-            if ($translate != 0){
-                $pipeline[] = ['is_translate' => 2] ;
-            }
+        if ($translate != 0) {
+            $pipeline[] = ['is_translate' => 2];
+        }
 
-            if ($yearStart != 0){
-                $pipeline[] = ['xpublishdate_shamsi' => ['$gte' => $yearStart]];
-            }
+        if ($yearStart != 0) {
+            $pipeline[] = ['xpublishdate_shamsi' => ['$gte' => $yearStart]];
+        }
 
-            if($yearEnd != 0){
-                $pipeline[] = ['xpublishdate_shamsi' => ['$lte' => $yearEnd]];
-            }
+        if ($yearEnd != 0) {
+            $pipeline[] = ['xpublishdate_shamsi' => ['$lte' => $yearEnd]];
+        }
 
-            $subBooks = BookIrBook2::raw(function ($collection) use ($pipeline,$column,$sortDirection,$offset,$pageRows) {
-                return $collection->aggregate([
-                    ['$match' => ['$and' => $pipeline]] ,
-                    ['$group' => [
-                        '_id' => '$xdiocode',
-                        'xdiocode' => ['$first' => '$xdiocode'],
-                        'titleCount' => ['$sum' => 1],
-                        'total_circulation' => ['$sum' => '$xcirculation'],
-                        'total_price' => ['$sum' => '$xtotal_price']
-                    ]],
-                    ['$sort' => [$column => $sortDirection]],
-                    ['$skip' => $offset],
-                    ['$limit' => $pageRows]
-                ]);
-            });
+        $subBooks = BookIrBook2::raw(function ($collection) use ($pipeline, $column, $sortDirection, $offset, $pageRows) {
+            return $collection->aggregate([
+                ['$match' => ['$and' => $pipeline]],
+                ['$group' => [
+                    '_id' => '$xdiocode',
+                    'xdiocode' => ['$first' => '$xdiocode'],
+                    'titleCount' => ['$sum' => 1],
+                    'total_circulation' => ['$sum' => '$xcirculation'],
+                    'total_price' => ['$sum' => '$xtotal_price']
+                ]],
+                ['$facet' => [
+                    'books' => [
+                        ['$sort' => [$column => $sortDirection]],
+                        ['$skip' => $offset],
+                        ['$limit' => $pageRows]
+                    ],
+                    'totalGroups' => [
+                        ['$group' => [
+                            '_id' => null,
+                            'count' => ['$sum' => 1]
+                        ]]
+                    ]
+                ]]
+            ]);
+        });
 
-            $totalRows =count($subBooks) ;
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+        $totalRows = $subBooks[0]->totalGroups[0]->count ?? 0;
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
-            foreach ($subBooks as $subBook){
+        foreach ($subBooks[0]->books as $subBook) {
             $data [] = [
-                'xdiocode' => $subBook->xdiocode,
+                'diocode' => $subBook->xdiocode,
                 'book_count' => $subBook->titleCount,
-                'total_peice' => priceFormat($subBook->total_price),
+                'total_price' => priceFormat($subBook->total_price),
                 'total_circulation' => priceFormat($subBook->total_circulation)
             ];
-            }
         }
+
+
         $end = microtime(true);
         $elapsedTime = $end - $start;
         // response
@@ -205,9 +214,9 @@ class ReportController extends Controller
         (
             [
                 "status" => $status,
-                "message" => "ok" ,
-                "data" => ["main_list" => $dioData ,'sub_list' => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows],
-                'time'=> $elapsedTime
+                "message" => "ok",
+                "data" => ["main_list" => $dioData, 'sub_list' => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows],
+                'time' => $elapsedTime
             ],
             $status
         );
@@ -843,8 +852,8 @@ class ReportController extends Controller
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "totalCountRule";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
         $publisherId = (isset($request["publisherId"])) ? $request["publisherId"] : 0;
-        $yearStart = (isset($request["yearStart"])) ? $request["yearStart"] : 0;
-        $yearEnd = (isset($request["yearEnd"])) ? $request["yearEnd"] : 0;
+        $yearStart = (isset($request["yearStart"])) ? (int)$request["yearStart"] : 0;
+        $yearEnd = (isset($request["yearEnd"])) ? (int)$request["yearEnd"] : 0;
         $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 0;
         $pageRows = (isset($request["perPage"])) && !empty($request["perPage"]) ? (int)$request["perPage"] : 50;
         $data = [];
@@ -889,28 +898,34 @@ class ReportController extends Controller
                     // Sum up counts across all xrules for each creator
                     'totalCountRule' => ['$sum' => '$countXrule'],
                     'totalCountCirculation' => ['$sum' => '$countCirculation'],
-                    'totalCountPrice' => ['$sum' => '$countPrice']
+                    'totalCountPrice' => ['$sum' => '$countPrice'],
+                    'totalRow' => ['$sum' => 1]
                 ]],
-                // Sort by totalCountRule in descending order
-                ['$sort' => [$column => $sortDirection]],
-
-                // Project the results with the necessary fields
-                ['$project' => [
-                    '_id' => 0, // Exclude the default _id field
-                    'xcreator_id' => '$_id',
-                    'creatorName' => 1,
-                    'xrules' => 1,
-                    'totalCountRule' => 1,
-                    'totalCountCirculation' => 1,
-                    'totalCountPrice' => 1
-                ]],
-                // Optional: Add $skip and $limit stages for pagination
-                ['$skip' => $offset],
-                ['$limit' => $pageRows]
+                ['$facet' => [
+                    'paginatedResults' => [
+                        ['$sort' => [$column => $sortDirection]],
+                        ['$skip' => $offset],
+                        ['$limit' => $pageRows],
+                        ['$project' => [
+                            '_id' => 0, // Exclude the default _id field
+                            'xcreator_id' => '$_id',
+                            'creatorName' => 1,
+                            'xrules' => 1,
+                            'totalCountRule' => 1,
+                            'totalCountCirculation' => 1,
+                            'totalCountPrice' => 1
+                        ]]
+                    ],
+                    'totalUniqueRules' => [
+                        ['$group' => [
+                            '_id' => null,
+                            'totalUniqueRulesCount' => ['$sum' => '$totalRow']
+                        ]]
+                    ]
+                ]]
             ]);
         });
-
-        foreach ($creators as $creator)
+        foreach ($creators[0]->paginatedResults as $creator)
             foreach ($creator->xrules as $xrule) {
                 $data [] = [
                     'creator' => ['id' => $creator->xcreator_id, 'name' => $creator->creatorName],
@@ -920,8 +935,7 @@ class ReportController extends Controller
                     'totalPrice' => priceFormat($xrule->countPrice)
                 ];
             }
-
-        $totalRows = count($data);
+        $totalRows = $creators[0]['totalUniqueRules'][0]['totalUniqueRulesCount'] ;
         $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
 
         // response

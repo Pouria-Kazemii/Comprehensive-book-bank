@@ -19,7 +19,7 @@ class BookController extends Controller
     public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
             $start = microtime(true);
-            $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $isbn = (isset($request["isbn"]) and !empty($request["isbn"])) ?  str_replace("-", "", $request["isbn"]) : "";
             $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
             $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
             $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
@@ -32,7 +32,6 @@ class BookController extends Controller
 
             if (!$isNull) {
                 $pipeline = [];
-
                 // Match conditions based on search criteria
                 $matchConditions = [];
 
@@ -41,10 +40,11 @@ class BookController extends Controller
                 }
 
                 if ($isbn != "") {
+                    $isbn = trim($request['isbn'] , '"');
                     $matchConditions['$or'] = [
-                        ['xisbn2' => new \MongoDB\BSON\Regex($isbn, 'i')],
-                        ['xisbn3' => new \MongoDB\BSON\Regex($isbn, 'i')],
-                        ['xisbn1' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                        ['xisbn2' =>['$regex' => '^' . preg_quote($isbn, '/')]],
+                        ['xisbn3' =>['$regex' => '^' . preg_quote($isbn, '/')]],
+                        ['xisbn' =>['$regex' => '^' . preg_quote($isbn, '/')]],
                     ];
                 }
 
@@ -163,7 +163,7 @@ class BookController extends Controller
     public function lists(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
         $start = microtime(true);
-        $isbn = (isset($request["isbn"]) and preg_match('/\p{L}/u', $request["isbn"])) ? str_replace("-", "", $request["isbn"]) : "";
+        $isbn = (isset($request["isbn"]) and !empty($request["isbn"])) ?  str_replace("-", "", $request["isbn"]) : "";
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
         $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
@@ -185,10 +185,11 @@ class BookController extends Controller
             }
 
             if ($isbn != "") {
+                $isbn = trim($request['isbn'] , '"');
                 $matchConditions['$or'] = [
-                    ['xisbn2' => new \MongoDB\BSON\Regex($isbn, 'i')],
-                    ['xisbn3' => new \MongoDB\BSON\Regex($isbn, 'i')],
-                    ['xisbn1' => new \MongoDB\BSON\Regex($isbn, 'i')],
+                    ['xisbn2' =>['$regex' => '^' . preg_quote($isbn, '/')]],
+                    ['xisbn3' =>['$regex' => '^' . preg_quote($isbn, '/')]],
+                    ['xisbn' =>['$regex' => '^' . preg_quote($isbn, '/')]],
                 ];
             }
 
@@ -1150,7 +1151,7 @@ class BookController extends Controller
         foreach ($request->input('search') as $key => $condition) {
             $field = $condition['field'];
             $comparisonOperator = $condition['comparisonOperator'];
-            $logicalOperation = strtolower($condition['logicalOperation']);
+            $logicalOperation = strtolower($condition['logicalOperator']);
             $value = $condition['value'];
 
             // Prepare condition based on comparison operator and field
