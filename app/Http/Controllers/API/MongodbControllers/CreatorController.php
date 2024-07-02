@@ -95,17 +95,18 @@ class CreatorController extends Controller
 
                 foreach ($creators as $creator) {
                     $creatorId = $creator['_id'];
-
-                    $data[] = [
-                        "publisherId" => $publisherId,
-                        "publisherName" => $publisherId > 0 ? BookIrPublisher::find($publisherId)->xpublishername : "",
-                        "mainCreatorId" => $mainCreatorId,
-                        "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::find($mainCreatorId)->xcreatorname : "",
-                        "subjectId" => $subjectId,
-                        "id" => $creator['_id'],
-                        "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
-                        "name" => $creator['xcreatorname'],
-                    ];
+                    if (BookIrBook2::where('partners.xcreator_id', $creatorId)->exists()) {
+                        $data[] = [
+                            "publisherId" => $publisherId,
+                            "publisherName" => $publisherId > 0 ? BookIrPublisher::find($publisherId)->xpublishername : "",
+                            "mainCreatorId" => $mainCreatorId,
+                            "mainCreatorName" => $mainCreatorId > 0 ? BookIrCreator::find($mainCreatorId)->xcreatorname : "",
+                            "subjectId" => $subjectId,
+                            "id" => $creator['_id'],
+                            "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
+                            "name" => $creator['xcreatorname'],
+                        ];
+                    }
                 }
             }
         }

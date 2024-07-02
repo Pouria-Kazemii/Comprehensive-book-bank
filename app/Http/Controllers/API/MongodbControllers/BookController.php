@@ -19,7 +19,7 @@ class BookController extends Controller
     public function listsWithOutGroupby(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
     {
             $start = microtime(true);
-        $isbn = (isset($request["isbn"]) and !empty($request["isbn"])) ?  str_replace("-", "", $request["isbn"]) : "";
+            $isbn = (isset($request["isbn"]) and !empty($request["isbn"])) ?  str_replace("-", "", $request["isbn"]) : "";
             $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
             $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
             $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
@@ -1144,8 +1144,6 @@ class BookController extends Controller
     public function advanceSearch(Request $request)
     {
         $where = [];
-        $detail =[];
-        $keyNumber = 0;
         $currentLogicalOperation = null; // Default logical operation
 
         foreach ($request->input('search') as $key => $condition) {
@@ -1230,7 +1228,11 @@ class BookController extends Controller
                     break;
             }
 
-            if ($key == 0){
+            if ($key == 0  and $logicalOperation == ""){
+            $where['$and'] [] =  $conditionArray;
+            }
+
+            if ($key == 0 and $logicalOperation != ''){
                 $where['$'.$logicalOperation][] = $conditionArray;
                 $currentLogicalOperation = $logicalOperation;
             }
@@ -1247,8 +1249,6 @@ class BookController extends Controller
 
             }
         }
-//        var_dump($where);
-//        die();
         // Call the listsForAdvanceSearch method with the constructed $where clause
         return $this->listsForAdvanceSearch($request, empty($where), false, $where);
     }
