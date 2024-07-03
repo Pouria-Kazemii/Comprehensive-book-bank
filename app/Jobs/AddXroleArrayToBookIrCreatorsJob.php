@@ -2,6 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Models\BookirPartnerrule;
+use App\Models\BookirRules;
+use App\Models\BookirSubject;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use Illuminate\Bus\Queueable;
@@ -34,28 +37,27 @@ class AddXroleArrayToBookIrCreatorsJob implements ShouldQueue
      */
     public function handle()
     {
-        $result = [];
-        $pipeline = [
-            ['$unwind' => '$partners'],
-            ['$match' => ['partners.xcreator_id' => $this->creator->_id]],
-            ['$group' => [
-                '_id' => '$partners.xcreator_id',
-                'roles' => ['$addToSet' => '$partners.xrule']
-            ]]
-        ];
+        $xrules = [];
+        if (!$this->creator->offsetExists('xrules')) {
+            $roleIds = BookirPartnerrule::where('xcreatorid' , $this->creator->xsqlid)
+                ->select('xroleid')
+                ->distinct('xroleid')
+                ->get()
+                ->toArray();
 
-        $rules = BookIrBook2::raw(function ($collection)  use($pipeline){
-            return $collection->aggregate($pipeline);
-        });
+            $roles = BookirRules::whereIn('xid',$roleIds)->select('xrole')->get();
 
-        foreach ($rules[0]->roles as $rule) {
-            $result [] = trim($rule);
+            $results = array_values($roles->toArray());
+
+            foreach ($results as $result){
+                foreach ($result as $rule){
+                    $xrules[] = $rule;
+                }
+            }
+
+            BookIrCreator::find(new ObjectId($this->creator->_id))->update([
+                'xrules' => $xrules
+            ]);
         }
-
-        $result = array_values(array_unique($result));
-
-        BookIrCreator::find(new ObjectId($this->creator->_id))->update([
-            'xrules' => $result
-        ]);
     }
 }

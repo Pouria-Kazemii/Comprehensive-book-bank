@@ -1151,6 +1151,7 @@ class BookController extends Controller
     public function advanceSearch(Request $request)
     {
         $textIndex = false;
+        $firstIndex = true;
         $where = [];
         $currentLogicalOperation = null; // Default logical operation
 
@@ -1168,8 +1169,25 @@ class BookController extends Controller
                 case 'like':
                     switch ($field) {
                         case 'xname':
+                            if ($firstIndex){
                             $conditionArray = ['$text' => ['$search' => $value]];
                             $textIndex = true;
+                            $firstIndex = false;
+                            }else{
+                            $books = BookIrBook2::raw(function ($collection) use($value){
+                                return $collection->aggregate([
+                                    ['$match' => ['$text' =>['$search' => $value]]],
+                                    ['$project' => ['_id' => 1]]
+                                ]);
+                            });
+                            $bookIds = [];
+                            if ($books != null){
+                                foreach ($books as $book){
+                                    $bookIds[] = new ObjectId($book->_id);
+                                }
+                            }
+                            $conditionArray = ['_id' => ['$in' => $bookIds]];
+                            }
                             break;
                         case 'partners.xcreatorname':
                             $creators = BookIrCreator::raw(function ($collection) use ($value) {

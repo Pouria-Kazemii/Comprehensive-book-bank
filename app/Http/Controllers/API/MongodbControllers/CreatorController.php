@@ -36,18 +36,9 @@ class CreatorController extends Controller
                 $matchConditions['$text'] = ['$search' => $searchText];
             }
 
-//            if (!empty($roleName)) {
-//                $roleFilter = [
-//                    ['$unwind' => '$partners'],
-//                    ['$match' => ['partners.xrule' => $roleName]],
-//                    ['$group' => ['_id' => '$partners.xcreator_id']],
-//                ];
-//                $creatorsId = BookIrBook2::raw(function ($collection) use ($roleFilter) {
-//                    return $collection->aggregate($roleFilter);
-//                })->pluck('_id')->toArray();
-//
-//                $matchConditions['_id'] = ['$in' => $creatorsId];
-//            }
+            if (!empty($roleName)){
+                $matchConditions['$and'][] = ['xrules' => $roleName];
+            }
 
             if (!$defaultWhere) {
                 if (count($where) > 0) {
@@ -305,28 +296,9 @@ class CreatorController extends Controller
 
 
         if ($creator) {
-//            $roles = BookIrBook2::raw(function ($collection) use ($creatorId) {
-//                return $collection->aggregate([
-//                    ['$unwind' => '$partners'],
-//                    ['$match' => ['partners.xcreator_id' => (string) $creatorId]],
-//                    ['$group' => ['_id' => '$partners.xrule']],
-//                    ['$sort' => ['_id' => 1]]
-//                ]);
-//            });
-//
-//            $roles = $roles->toArray();
-//
-//            $roleName = array_column($roles, '_id');
-////            dd("نویسنده" == "نويسنده");
-//            $uniqueRoles = array_unique($roleName);
-//
-//            $roleTitles = array_map(function($role) {
-//                return ['title' => $role];
-//            }, $uniqueRoles);
-
             $dataMaster = [
                 "name" => $creator->xcreatorname,
-//                "roles" => $roleTitles,
+                "roles" => $creator->xrules,
             ];
 
             if (!empty($creator->iranketabinfo)) {
