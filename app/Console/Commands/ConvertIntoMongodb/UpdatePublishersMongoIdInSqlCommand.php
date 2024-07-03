@@ -39,6 +39,7 @@ class UpdatePublishersMongoIdInSqlCommand extends Command
      */
     public function handle()
     {
+        //DONE!!!!
         $this->info("Start update mongo_id in bookir_publishers SQL table");
         $startTime = microtime(true);
         $totalBooks = BookIrPublisher::count();

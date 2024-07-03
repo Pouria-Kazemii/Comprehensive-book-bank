@@ -43,6 +43,7 @@ class ConvertCreatorsCommand extends Command
 
     public function handle()
     {
+        //DONE!!!!
         \App\Models\MongoDBModels\BookIrCreator::truncate();
         $this->info('All Mongo data Deleted');
         $this->info("Start converting bookir_creators table");

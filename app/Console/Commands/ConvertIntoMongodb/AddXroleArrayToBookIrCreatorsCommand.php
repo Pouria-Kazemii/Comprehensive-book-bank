@@ -2,25 +2,25 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
-use App\Jobs\ConvertBookirBookJob;
-use App\Models\BookirBook;
+use App\Jobs\AddXroleArrayToBookIrCreatorsJob;
+use App\Models\MongoDBModels\BookIrCreator;
 use Illuminate\Console\Command;
 
-class ConvertBookIr_bookCommand1 extends Command
+class AddXroleArrayToBookIrCreatorsCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'convert:bookirbook1';
+    protected $signature = 'update:bookir_creators:role';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Convert bookirbook table into mongodb';
+    protected $description = 'add a array of roles for every creator';
 
     /**
      * Create a new command instance.
@@ -39,20 +39,17 @@ class ConvertBookIr_bookCommand1 extends Command
      */
     public function handle()
     {
-        //DONE!!!!
-        \App\Models\MongoDBModels\BookIrBook2::truncate();
-        $this->info('All Mongo data Deleted');
-        $this::info("Start converting bookir_books table part1");
-        $totalBooks = BookirBook::where('xid' , '<=' , 500000)->count();
+        $this->info("Start adding roles array to creators");
+        $totalBooks = BookIrCreator::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
         $progressBar->start();
         $startTime = microtime(true);
-        BookirBook::where('xid' , '<=' , 500000)->chunk(1000, function ($books) use($progressBar) {
-            foreach ($books as $book) {
-                ConvertBookirBookJob::dispatch($book);
-                $progressBar->advance();
-            }
-        });
+       BookIrCreator::chunk(500 , function ($creators) use($progressBar) {
+           foreach ($creators as $creator) {
+                AddXroleArrayToBookIrCreatorsJob::dispatch($creator);
+               $progressBar->advance();
+           }
+       });
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

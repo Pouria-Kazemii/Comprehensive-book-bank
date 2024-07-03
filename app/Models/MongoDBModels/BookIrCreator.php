@@ -19,7 +19,8 @@ class BookIrCreator extends Model
         'ximageurl' ,
         'xwhite' ,
         'xblack',
-        'iranketabinfo'
+        'iranketabinfo',
+        'xrules'
     ];
 
     public $timestamps = false ;

@@ -303,7 +303,7 @@ class BookController extends Controller
         ], $status);
     }
 
-    public function listsForAdvanceSearch(Request $request, $defaultWhere = true, $isNull = false, $where = [], $subjectTitle = "", $publisherName = "", $creatorName = "")
+    public function listsForAdvanceSearch(Request $request, $where = [] , $textIndex = false)
     {
         $start = microtime(true);
         $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
@@ -312,16 +312,23 @@ class BookController extends Controller
         $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
         $data = [];
-        $totalPages = 0;
-        $totalRows = 0;
 
-        if (!$isNull) {
+            if ($textIndex) {
                 $pipeline = [
-                ['$match' =>  $where] ,
-                ['$sort' => [$column => $sortDirection]],
-                ['$skip' => $offset],
-                ['$limit' => $pageRows]
-            ];
+                    ['$match' => $where],
+                    ['$addFields' => ['score' => ['$meta' => 'textScore']]],
+                    ['$sort' => ['score' => ['$meta' => 'textScore']]],
+                    ['$skip' => $offset],
+                    ['$limit' => $pageRows]
+                ];
+            }else{
+                $pipeline = [
+                    ['$match' => $where],
+                    ['$sort' => [$column => $sortDirection]],
+                    ['$skip' => $offset],
+                    ['$limit' => $pageRows]
+                ];
+            }
 
         $books = BookIrBook2::raw(function ($collection) use ($pipeline){
             return $collection->aggregate($pipeline);
@@ -367,7 +374,7 @@ class BookController extends Controller
                     ];
                 }
             }
-        }
+
 
         $end = microtime(true);
         $elapsedTime = $end - $start;
@@ -1143,6 +1150,7 @@ class BookController extends Controller
     ///////////////////////////////////////////////AdvanceSearch///////////////////////////////////////////////////
     public function advanceSearch(Request $request)
     {
+        $textIndex = false;
         $where = [];
         $currentLogicalOperation = null; // Default logical operation
 
@@ -1152,12 +1160,16 @@ class BookController extends Controller
             $logicalOperation = strtolower($condition['logicalOperator']);
             $value = $condition['value'];
 
+            if ($field == 'xpublishdate_shamsi' or $field == 'xcovernumber' or $field == 'xcirculation' or $field == 'xcoverprice'){
+                $value = (int)$value;
+            }
             // Prepare condition based on comparison operator and field
             switch ($comparisonOperator) {
                 case 'like':
                     switch ($field) {
                         case 'xname':
                             $conditionArray = ['$text' => ['$search' => $value]];
+                            $textIndex = true;
                             break;
                         case 'partners.xcreatorname':
                             $creators = BookIrCreator::raw(function ($collection) use ($value) {
@@ -1250,7 +1262,7 @@ class BookController extends Controller
             }
         }
         // Call the listsForAdvanceSearch method with the constructed $where clause
-        return $this->listsForAdvanceSearch($request, empty($where), false, $where);
+        return $this->listsForAdvanceSearch($request, $where , $textIndex);
     }
 
 }

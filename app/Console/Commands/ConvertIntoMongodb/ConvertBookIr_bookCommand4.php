@@ -39,6 +39,7 @@ class ConvertBookIr_bookCommand4 extends Command
      */
     public function handle()
     {
+        //DONE!!!!
         $this::info("Start converting bookir_books table part3");
         $totalBooks = BookirBook::where('xid' , '>' , 1500000)->count();
         $progressBar = $this->output->createProgressBar($totalBooks);

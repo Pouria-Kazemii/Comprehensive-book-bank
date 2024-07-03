@@ -39,6 +39,7 @@ class MakingBookirCreatorsUniqueCommand extends Command
      */
     public function handle()
     {
+        //DONE!!!!
         $this->info("Start find and deleting repeated creators");
         $startTime = microtime(true);
         $totalCreators = BookIrCreator::count();

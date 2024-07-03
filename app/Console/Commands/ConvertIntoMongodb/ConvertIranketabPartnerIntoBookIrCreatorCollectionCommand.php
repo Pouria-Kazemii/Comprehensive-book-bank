@@ -41,6 +41,7 @@ class ConvertIranketabPartnerIntoBookIrCreatorCollectionCommand extends Command
      */
     public function handle()
     {
+        //DONE!!!!
         $this->info("Start adding iranketab-partner table to bookir_creators table");
         $totalBooks = BookIranKetabPartner::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
