@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
+use App\Jobs\ConvertBookirSubjectsTableIntoMongoDBJob;
+use App\Models\BookirSubject;
 use Illuminate\Console\Command;
 
 class ConvertBookIrSubjectIntoMongoDBCommand extends Command
@@ -18,7 +20,7 @@ class ConvertBookIrSubjectIntoMongoDBCommand extends Command
      *
      * @var string
      */
-    protected $description = 'convert bi_book_subjects table into bookir_subjects collection';
+    protected $description = 'convert bookir_subjects table into bookir_subjects collection';
 
     /**
      * Create a new command instance.
@@ -37,6 +39,22 @@ class ConvertBookIrSubjectIntoMongoDBCommand extends Command
      */
     public function handle()
     {
-        return 0;
+        $this->info("Start converting bookir_subjects table");
+        $totalSubjects = BookirSubject::count();
+        $progressBar = $this->output->createProgressBar($totalSubjects);
+        $progressBar->start();
+        $startTime = microtime(true);
+        BookirSubject::chunk(1000, function ($subjects) use($progressBar) {
+            foreach ($subjects as $subject) {
+                ConvertBookirSubjectsTableIntoMongoDBJob::dispatch($subject);
+                $progressBar->advance();
+            }
+        });
+        $progressBar->finish();
+        $this->line('');
+        $endTime = microtime(true);
+        $duration = $endTime - $startTime;
+        $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return true;
     }
 }

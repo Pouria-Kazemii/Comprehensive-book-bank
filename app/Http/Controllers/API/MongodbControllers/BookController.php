@@ -4,10 +4,10 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ExcelController;
-use App\Models\BookirSubject;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
+use App\Models\MongoDBModels\BookIrSubject;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
@@ -1221,7 +1221,23 @@ class BookController extends Controller
                             }
                             $conditionArray = ['publisher.xpublisher_id' => ['$in' => $publisherIds]];
                             break;
-                        case 'subjects.xsubject_name' or 'xdiocode':
+                        case 'subjects.xsubject_name';
+                            $subjects = BookIrSubject::raw(function ($collection) use ($value) {
+                                return $collection->aggregate([
+                                    ['$match' => ['$text' => ['$search' => $value]]],
+                                    ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                                    ['$sort' => ['score' => ['$meta' => 'textScore']]],
+                                ]);
+                            });
+                            $subjectIds = [];
+                            if ($subjects != null) {
+                                foreach ($subjects as $subject) {
+                                    $subjectIds[] = (string)$subject->_id;
+                                }
+                            }
+                            $conditionArray = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
+                            break;
+                        case 'xdiocode':
                             $conditionArray = [$field => ['$regex' => new Regex($value, 'i')]];
                             break;
                         case 'isbn';

@@ -16,7 +16,6 @@ class BookIrSubject extends Model
     protected $fillable = [
         'xsubject_name',
         '_id',
-        'xsqlid'
     ];
 
     public $timestamps = false;

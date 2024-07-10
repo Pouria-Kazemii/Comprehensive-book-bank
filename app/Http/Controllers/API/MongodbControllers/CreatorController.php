@@ -229,26 +229,76 @@ class CreatorController extends Controller
     public function findByCreator(Request $request)
     {
         $creatorId = $request["creatorId"];
+        $start = microtime(true);
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "partners.xcreatorname";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = [];
+        $status = 200;
 
         $pipeline = [
             ['$match' => ['partners.xcreator_id' => $creatorId]],
             ['$unwind' => '$partners'],
-            ['$group' => ['_id' => '$partners.xcreator_id']]
+            ['$match' => ['partners.xcreator_id' => ['$ne' => $creatorId]]],
+            ['$group' => [
+                '_id' => '$partners.xcreator_id',
+                'xcreatorname' => ['$first' => '$partners.xcreatorname'],
+                'countTitle' => ['$sum' => 1]
+            ]],
+            ['$facet' => [
+                'creators' => [
+                    ['$sort' => [$column => $sortDirection]],
+                    ['$skip' => $offset],
+                    ['$limit' => $pageRows]
+                ],
+                'totalGroups' => [
+                    ['$group' => [
+                        '_id' => null,
+                        'count' => ['$sum' => 1]
+                    ]]
+                ]
+            ]]
         ];
 
-        $partners = BookIrBook2::raw(function($collection) use ($pipeline) {
+        $partners = BookIrBook2::raw(function ($collection) use ($pipeline) {
             return $collection->aggregate($pipeline);
         });
-        $partners = $partners->toArray();
-        $idArray = array_column($partners, '_id');
 
-        $uniqueIds = array_unique($idArray);
-        $where = [];
-        foreach ($uniqueIds as $uniqueId) {
-            $where[] = ['_id', new ObjectId($uniqueId)];
+        $totalRows = $partners[0]->totalGroups[0]->count;
+
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
+
+        foreach ($partners[0]->creators as $partner) {
+            $data[] = [
+                "publisherId" => 0,
+                "publisherName" => 0,
+                "mainCreatorId" => $creatorId,
+                "mainCreatorName" => BookIrCreator::find($creatorId)->xcreatorname,
+                "subjectId" => 0,
+                "id" => $partner->_id,
+                "bookCount" => $partner->countTitle,
+                "name" => $partner->xcreatorname,
+            ];
         }
+        // Process and return response
+        $end = microtime(true);
+        $elapsedTime = $end-$start;
 
-        return $this->lists($request, false , false, $where, 0, $creatorId);
+        return response()->json([
+            "status" => $status,
+            "message" => "ok",
+            "data" => [
+                "list" => $data,
+                "currentPageNumber" => $currentPageNumber,
+                "totalPages" => $totalPages,
+                "pageRows" => $pageRows,
+                "totalRows" => $totalRows
+            ],
+            'time' => $elapsedTime,
+        ], $status);
     }
       ///////////////////////////////////////////////Annual Activity///////////////////////////////////////////////////
     public function annualActivity(Request $request)

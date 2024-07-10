@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
+use App\Models\MongoDBModels\BookIrSubject;
 use Collator;
 use Illuminate\Http\Request;
 
@@ -13,199 +14,160 @@ class SubjectController extends Controller
     public function find(Request $request)
     {
         $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
-        $column = (isset($request["column"]) && !empty($request["column"])) ? $request["column"] : "xsubject_name";
-        $sortDirection = (isset($request["sortDirection"]) && !empty($request["sortDirection"])) ? (int)$request["sortDirection"] : 1;
-        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? $request["page"] : 0;
-        $data = null;
-        $status = 404;
-        $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? $request["perPage"] : 50;
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = null;
 
-        $books = BookIrBook2::all();
+        $pipeline = [];
+        // Match conditions based on search criteria
+        $matchConditions = [];
 
-        $uniqueSubjects = [];
-        foreach ($books as $book) {
-            $subjects = collect($book->subjects);
-            $subjectPairs = $subjects->map(function ($subject) {
-                return [
-                    'xsubject_name' => $subject['xsubject_name'],
-                    'xsubject_id' => $subject['xsubject_id'],
-                ];
-            });
-
-            // Add unique subject pairs to uniqueSubjects collection
-            foreach ($subjectPairs as $pair) {
-                if (!in_array($pair, $uniqueSubjects)) {
-                    $uniqueSubjects[] = $pair;
-                }
-            }
-        }
-        $collator = new Collator('fa_IR');
-        if ($searchText != "") {
-            $uniqueSubjects = array_filter($uniqueSubjects, function ($uniqueSubjects) use ($searchText) {
-                return strpos($uniqueSubjects['xsubject_name'], $searchText) !== false;
-            });
+        if (!empty($searchText)) {
+            $matchConditions['$text'] = ['$search' => $searchText];
         }
 
-
-        if ($sortDirection == 1) {
-            usort($uniqueSubjects, function ($a, $b) use ($collator) {
-                return -$collator->compare($a['xsubject_name'], $b['xsubject_name']);
-            });
-
-            $totalRows = count($uniqueSubjects);
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-            $uniqueSubjects = array_slice($uniqueSubjects, $offset, $pageRows);
-
-
-            usort($uniqueSubjects, function ($a, $b) use ($collator) {
-                return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
-            });
+        if (!empty($matchConditions)) {
+            $pipeline[] = ['$match' => $matchConditions];
         }
 
-
-        if ($sortDirection == -1) {
-            usort($uniqueSubjects, function ($a, $b) use ($collator) {
-                return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
-            });
-
-            $totalRows = count($uniqueSubjects);
-            $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
-            $uniqueSubjects = array_slice($uniqueSubjects, $offset, $pageRows);
-
-
-            usort($uniqueSubjects, function ($a, $b) use ($collator) {
-                return -$collator->compare($a['xsubject_name'], $b['xsubject_name']);
-            });
+        if (!empty($searchText)) {
+            $pipeline[] = ['$addFields' => ['score' => ['$meta' => 'textScore']]];
+            $pipeline[] = ['$sort' => ['score' => ['$meta' => 'textScore']]];
+        }else {
+            $pipeline[] = ['$sort' => [$column => $sortDirection]];
         }
+        $pipeline[] = ['$skip' => $offset];
+        $pipeline[] = ['$limit' => $pageRows];
 
 
-        if ($uniqueSubjects != null and count($uniqueSubjects) > 0) {
-            foreach ($uniqueSubjects as $uniqueSubject) {
-                $data[] =
-                    [
-                        "id" => $uniqueSubject['xsubject_id'],
-                        "name" => $uniqueSubject['xsubject_name'],
-                    ];
-            }
-            $status = 200;
-        }
-        // response
+
+        $data = BookIrSubject::raw(function ($collection) use($pipeline){
+            return $collection->aggregate($pipeline);
+        });
+
+        $totalRows = BookIrSubject::raw(function($collection) use($matchConditions){
+            return $collection->countDocuments($matchConditions);
+        });
+
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
         return response()->json
         (
             [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
+                "status" => 200,
+                "message" => "ok" ,
                 "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
-            $status
         );
     }
 
     ///////////////////////////////////////////////Search///////////////////////////////////////////////////
     public function search(Request $request)
     {
-        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
-        $status = 404;
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = null;
 
-        $books = BookIrBook2::all();
-        $uniqueSubjects = [];
+        $pipeline = [];
+        // Match conditions based on search criteria
+        $matchConditions = [];
 
-        foreach ($books as $book) {
-            $subjects = collect($book->subjects);
-            $subjectPairs = $subjects->map(function ($subject) {
-                return [
-                    'xsubject_name' => $subject['xsubject_name'],
-                    'xsubject_id' => $subject['xsubject_id'],
-                ];
-            });
-
-            // Add unique subject pairs to uniqueSubjects collection
-            foreach ($subjectPairs as $pair) {
-                if (!in_array($pair, $uniqueSubjects)) {
-                    $uniqueSubjects[] = $pair;
-                }
-            }
+        if (!empty($searchText)) {
+            $matchConditions['$text'] = ['$search' => $searchText];
         }
 
-        $collator = new Collator('fa_IR');
-        if ($searchWord != "") {
-            $uniqueSubjects = array_filter($uniqueSubjects, function ($uniqueSubjects) use ($searchWord) {
-                return strpos($uniqueSubjects['xsubject_name'], $searchWord) !== false;
-            });
+        if (!empty($matchConditions)) {
+            $pipeline[] = ['$match' => $matchConditions];
         }
 
+        if (!empty($searchText)) {
+            $pipeline[] = ['$addFields' => ['score' => ['$meta' => 'textScore']]];
+            $pipeline[] = ['$sort' => ['score' => ['$meta' => 'textScore']]];
+        }else {
+            $pipeline[] = ['$sort' => [$column => $sortDirection]];
+        }
+        $pipeline[] = ['$skip' => $offset];
+        $pipeline[] = ['$limit' => $pageRows];
 
-        usort($uniqueSubjects, function ($a, $b) use ($collator) {
-                return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
+
+
+        $data = BookIrSubject::raw(function ($collection) use($pipeline){
+            return $collection->aggregate($pipeline);
         });
 
-        if($uniqueSubjects != null and count($uniqueSubjects) > 0)
-        {
-            $status = 200;
-        }
+        $totalRows = BookIrSubject::raw(function($collection) use($matchConditions){
+            return $collection->countDocuments($matchConditions);
+        });
 
-        // response
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
         return response()->json
         (
             [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $uniqueSubjects]
+                "status" => 200,
+                "message" => "ok" ,
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
-            $status
         );
     }
     ///////////////////////////////////////////////SearchForSelectComponent///////////////////////////////////////////////////
     public function searchForSelectComponent(Request $request)
     {
-        $searchWord = (isset($request["searchWord"])) ? $request["searchWord"] : "";
-        $status = 404;
+        $searchText = (isset($request["searchText"]) && !empty($request["searchText"])) ? $request["searchText"] : "";
+        $column = (isset($request["column"]) && preg_match('/\p{L}/u', $request["column"])) ? $request["column"] : "xpublishdate_shamsi";
+        $sortDirection = (isset($request["sortDirection"]) && $request['sortDirection'] == (1 or -1)) ? (int)$request["sortDirection"] : 1;
+        $currentPageNumber = (isset($request["page"]) && !empty($request["page"])) ? (int)$request["page"] : 1;
+        $pageRows = (isset($request["perPage"]) && !empty($request["perPage"])) ? (int)$request["perPage"] : 50;
+        $offset = ($currentPageNumber - 1) * $pageRows;
+        $data = null;
 
-        $books = BookIrBook2::all();
-        $uniqueSubjects = [];
+        $pipeline = [];
+        // Match conditions based on search criteria
+        $matchConditions = [];
 
-        foreach ($books as $book) {
-            $subjects = collect($book->subjects);
-            $subjectPairs = $subjects->map(function ($subject) {
-                return [
-                    'xsubject_name' => $subject['xsubject_name'],
-                    'xsubject_id' => $subject['xsubject_id'],
-                ];
-            });
-
-            // Add unique subject pairs to uniqueSubjects collection
-            foreach ($subjectPairs as $pair) {
-                if (!in_array($pair, $uniqueSubjects)) {
-                    $uniqueSubjects[] = $pair;
-                }
-            }
+        if (!empty($searchText)) {
+            $matchConditions['$text'] = ['$search' => $searchText];
         }
 
-        $collator = new Collator('fa_IR');
-        if ($searchWord != "") {
-            $uniqueSubjects = array_filter($uniqueSubjects, function ($uniqueSubjects) use ($searchWord) {
-                return strpos($uniqueSubjects['xsubject_name'], $searchWord) !== false;
-            });
+        if (!empty($matchConditions)) {
+            $pipeline[] = ['$match' => $matchConditions];
         }
 
-        usort($uniqueSubjects, function ($a, $b) use ($collator) {
-            return $collator->compare($a['xsubject_name'], $b['xsubject_name']);
+        if (!empty($searchText)) {
+            $pipeline[] = ['$addFields' => ['score' => ['$meta' => 'textScore']]];
+            $pipeline[] = ['$sort' => ['score' => ['$meta' => 'textScore']]];
+        }else {
+            $pipeline[] = ['$sort' => [$column => $sortDirection]];
+        }
+        $pipeline[] = ['$skip' => $offset];
+        $pipeline[] = ['$limit' => $pageRows];
+
+
+
+        $data = BookIrSubject::raw(function ($collection) use($pipeline){
+            return $collection->aggregate($pipeline);
         });
 
-        if ($uniqueSubjects != null and count($uniqueSubjects) > 0) {
-            $status = 200;
-        }
+        $totalRows = BookIrSubject::raw(function($collection) use($matchConditions){
+            return $collection->countDocuments($matchConditions);
+        });
 
-        // response
+        $totalPages = $totalRows > 0 ? (int)ceil($totalRows / $pageRows) : 0;
+
         return response()->json
         (
             [
-                "status" => $status,
-                "message" => $status == 200 ? "ok" : "not found",
-                "data" => ["list" => $uniqueSubjects]
+                "status" => 200,
+                "message" => "ok" ,
+                "data" => ["list" => $data, "currentPageNumber" => $currentPageNumber, "totalPages" => $totalPages, "pageRows" => $pageRows, "totalRows" => $totalRows]
             ],
-            $status
         );
     }
 }

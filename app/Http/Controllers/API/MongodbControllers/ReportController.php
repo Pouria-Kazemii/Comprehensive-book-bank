@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
+use App\Models\MongoDBModels\BookIrSubject;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
 
@@ -324,18 +325,22 @@ class ReportController extends Controller
             ['publisher.xpublisher_id' => $publisherId]
         ];
 
-        if (!empty($subjectTitle)) {
-            $matchConditions[] = [
-                'subjects' => [
-                    '$elemMatch' => [
-                        'xsubject_name' => [
-                            '$regex' => $subjectTitle,
-                            '$options' => 'i' // Case insensitive search
-                        ]
-                    ]
-                ]
-            ];
+
+        $subjects = BookIrSubject::raw(function ($collection) use ($subjectTitle) {
+            return $collection->aggregate([
+                ['$match' => ['$text' => ['$search' => $subjectTitle]]],
+                ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                ['$sort' => ['score' => ['$meta' => 'textScore']]],
+            ]);
+        });
+        $subjectIds = [];
+        if ($subjects != null) {
+            foreach ($subjects as $subject) {
+                $subjectIds[] = (string)$subject->_id;
+            }
         }
+        $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
+
 
         if (!empty($yearStart)) {
             $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
@@ -422,18 +427,21 @@ class ReportController extends Controller
             ['publisher.xpublisher_id' => $publisherId]
         ];
 
-        if (!empty($subjectTitle)) {
-            $matchConditions[] = [
-                'subjects' => [
-                    '$elemMatch' => [
-                        'xsubject_name' => [
-                            '$regex' => $subjectTitle,
-                            '$options' => 'i' // Case insensitive search
-                        ]
-                    ]
-                ]
-            ];
+        $subjects = BookIrSubject::raw(function ($collection) use ($subjectTitle) {
+            return $collection->aggregate([
+                ['$match' => ['$text' => ['$search' => $subjectTitle]]],
+                ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                ['$sort' => ['score' => ['$meta' => 'textScore']]],
+            ]);
+        });
+
+        $subjectIds = [];
+        if ($subjects != null) {
+            foreach ($subjects as $subject) {
+                $subjectIds[] = (string)$subject->_id;
+            }
         }
+        $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
 
         if (!empty($yearStart)) {
             $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$yearStart]];
@@ -527,18 +535,21 @@ class ReportController extends Controller
         $pageRows = (isset($request["perPage"])) && !empty($request["perPage"])  ? (int)$request["perPage"] : 50;
         $offset = ($currentPageNumber - 1) * $pageRows;
 
-        $matchConditions = [
-            [
-                'subjects' => [
-                    '$elemMatch' => [
-                        'xsubject_name' => [
-                            '$regex' => $subjectTitle,
-                            '$options' => 'i'
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $subjects = BookIrSubject::raw(function ($collection) use ($subjectTitle) {
+            return $collection->aggregate([
+                ['$match' => ['$text' => ['$search' => $subjectTitle]]],
+                ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                ['$sort' => ['score' => ['$meta' => 'textScore']]],
+            ]);
+        });
+
+        $subjectIds = [];
+        if ($subjects != null) {
+            foreach ($subjects as $subject) {
+                $subjectIds[] = (string)$subject->_id;
+            }
+        }
+        $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
 
         if ($translate == 1) {
             $matchConditions[] = ['is_translate' => 2];
@@ -627,18 +638,21 @@ class ReportController extends Controller
         $matchConditions [] =
             ['partners.xcreator_id' => $creatorId];
 
-        $matchConditions []  =
-            [
-                'subjects' => [
-                    '$elemMatch' => [
-                        'xsubject_name' => [
-                            '$regex' => $subjectTitle,
-                            '$options' => 'i'
-                        ]
-                    ]
-                ]
-            ]
-        ;
+        $subjects = BookIrSubject::raw(function ($collection) use ($subjectTitle) {
+            return $collection->aggregate([
+                ['$match' => ['$text' => ['$search' => $subjectTitle]]],
+                ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                ['$sort' => ['score' => ['$meta' => 'textScore']]],
+            ]);
+        });
+
+        $subjectIds = [];
+        if ($subjects != null) {
+            foreach ($subjects as $subject) {
+                $subjectIds[] = (string)$subject->_id;
+            }
+        }
+        $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
 
         if ($translate == 1) {
             $matchConditions[] = ['is_translate' => 2];
@@ -724,18 +738,21 @@ class ReportController extends Controller
         $offset = ($currentPageNumber - 1) * $pageRows;
         $matchConditions = [];
         // read
-        if($subjectTitle != "") {
-            $matchConditions[] = [
-                'subjects' => [
-                    '$elemMatch' => [
-                        'xsubject_name' => [
-                            '$regex' => $subjectTitle,
-                            '$options' => 'i'
-                        ]
-                    ]
-                ]
-            ];
+        $subjects = BookIrSubject::raw(function ($collection) use ($subjectTitle) {
+            return $collection->aggregate([
+                ['$match' => ['$text' => ['$search' => $subjectTitle]]],
+                ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
+                ['$sort' => ['score' => ['$meta' => 'textScore']]],
+            ]);
+        });
+
+        $subjectIds = [];
+        if ($subjects != null) {
+            foreach ($subjects as $subject) {
+                $subjectIds[] = (string)$subject->_id;
+            }
         }
+        $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
             if (!empty($yearStart)) {
                 $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => $yearStart]];
             }

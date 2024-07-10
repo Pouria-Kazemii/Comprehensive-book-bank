@@ -5,6 +5,7 @@ use App\Http\Controllers\API\MongodbControllers\BookController;
 use App\Http\Controllers\API\MongodbControllers\CreatorController;
 use App\Http\Controllers\API\MongodbControllers\PublisherController;
 use App\Http\Controllers\API\MongodbControllers\ReportController;
+use App\Http\Controllers\API\MongodbControllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -68,7 +69,7 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/web/v2/book/detail', [BookController::class,'detail']);
 });
 
-//Route::group(['middleware' => ['jwt.verify']], function () {
+Route::group(['middleware' => ['jwt.verify']], function () {
 
     //SQL User
     Route::post('/v1/user/find', 'API\UserController@find');
@@ -174,10 +175,9 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/v1/subject/searchForSelectComponent', 'API\SubjectController@searchForSelectComponent');
 
     //MongoDB Subjects
-    //TODO : using SQL until make collection for subject
-    Route::post('/v2/subject/find', 'API\SubjectController@find');
-    Route::post('/v2/subject/search', 'API\SubjectController@search');
-    Route::post('/v2/subject/searchForSelectComponent', 'API\SubjectController@searchForSelectComponent');
+    Route::post('/v2/subject/find', [SubjectController::class , 'find']);
+    Route::post('/v2/subject/search', [SubjectController::class , 'search']);
+    Route::post('/v2/subject/searchForSelectComponent', [SubjectController::class , 'searchForSelectComponent']);
 
     //SQL Publisher
     Route::post('/v1/publisher/search', 'API\PublisherController@search');
@@ -253,4 +253,4 @@ Route::group(['middleware' => ['ChToken']], function () {
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
-//});
+});

@@ -41,6 +41,7 @@ class MakeCreatorsNameCleanCommand extends Command
      */
     public function handle()
     {
+        //DONE!?!?
         //first part
         $this->info("Start cleaning creators name in bookir_books collection");
         $totalBooks = BookIrBook2::count();

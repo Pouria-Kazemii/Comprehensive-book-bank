@@ -39,6 +39,7 @@ class AddXroleArrayToBookIrCreatorsCommand extends Command
      */
     public function handle()
     {
+        //DONE!?!?
         $this->info("Start adding roles array to creators");
         $totalBooks = BookIrCreator::count();
         $progressBar = $this->output->createProgressBar($totalBooks);
