@@ -13,9 +13,9 @@ class AddTextIndexToBookirSubjectsCollation extends Migration
      */
     public function up()
     {
-//        Schema::connection('mongodb')->table('bookir_subject', function (Blueprint $collection) {
-//            $collection->index(['xsubject_name' => 'text'] , 'subject_text_index');
-//        });
+        Schema::connection('mongodb')->table('bookir_subject', function (Blueprint $collection) {
+            $collection->index(['xsubject_name' => 'text'] , 'subject_text_index');
+        });
     }
 
     /**
@@ -25,8 +25,8 @@ class AddTextIndexToBookirSubjectsCollation extends Migration
      */
     public function down()
     {
-//        Schema::connection('mongodb')->table('bookir_subject', function (Blueprint $collection) {
-//            $collection->dropIndex('subject_text_index');
-//        });
+        Schema::connection('mongodb')->table('bookir_subject', function (Blueprint $collection) {
+            $collection->dropIndex('subject_text_index');
+        });
     }
 }
