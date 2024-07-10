@@ -336,7 +336,7 @@ class ReportController extends Controller
         $subjectIds = [];
         if ($subjects != null) {
             foreach ($subjects as $subject) {
-                $subjectIds[] = (string)$subject->_id;
+                $subjectIds[] = $subject->_id;
             }
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
@@ -438,7 +438,7 @@ class ReportController extends Controller
         $subjectIds = [];
         if ($subjects != null) {
             foreach ($subjects as $subject) {
-                $subjectIds[] = (string)$subject->_id;
+                $subjectIds[] = $subject->_id;
             }
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
@@ -546,7 +546,7 @@ class ReportController extends Controller
         $subjectIds = [];
         if ($subjects != null) {
             foreach ($subjects as $subject) {
-                $subjectIds[] = (string)$subject->_id;
+                $subjectIds[] = $subject->_id;
             }
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
@@ -649,7 +649,7 @@ class ReportController extends Controller
         $subjectIds = [];
         if ($subjects != null) {
             foreach ($subjects as $subject) {
-                $subjectIds[] = (string)$subject->_id;
+                $subjectIds[] = $subject->_id;
             }
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
@@ -749,7 +749,7 @@ class ReportController extends Controller
         $subjectIds = [];
         if ($subjects != null) {
             foreach ($subjects as $subject) {
-                $subjectIds[] = (string)$subject->_id;
+                $subjectIds[] = $subject->_id;
             }
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
