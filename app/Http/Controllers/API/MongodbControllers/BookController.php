@@ -1200,7 +1200,7 @@ class BookController extends Controller
                             $creatorIds = [];
                             if ($creators != null) {
                                 foreach ($creators as $creator) {
-                                    $creatorIds[] = $creator->_id;
+                                    $creatorIds[] = (string)$creator->_id;
                                 }
                             }
                             $conditionArray = ['partners.xcreator_id' => ['$in' => $creatorIds]];
@@ -1232,7 +1232,7 @@ class BookController extends Controller
                             $subjectIds = [];
                             if ($subjects != null) {
                                 foreach ($subjects as $subject) {
-                                    $subjectIds[] = (string)$subject->_id;
+                                    $subjectIds[] = $subject->_id;
                                 }
                             }
                             $conditionArray = ['subjects.xsubject_id' => ['$in' => $subjectIds]];

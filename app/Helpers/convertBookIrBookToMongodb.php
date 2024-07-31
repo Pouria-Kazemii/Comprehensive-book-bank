@@ -23,7 +23,7 @@ if (!function_exists('convertCreators')) {
                 if (count($creator) > 0 and !in_array($creator[0]->xcreatorname , $processedCreatorByName)) {
                     $output [] = [
                         'xcreator_id' => $creator[0]->_id,
-                        'xcreatorname' => $creator[0]->xcreatorname,
+                        'xcreatorname' => trim($creator[0]->xcreatorname),
                         'xwhite' => $creator[0]->xwhite,
                         'xblack' => $creator[0]->xblack,
                         'xrule' => BookirRules::where('xid', '=', $book->xroleid)->pluck('xrole')[0]
