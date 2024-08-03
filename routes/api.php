@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\MongodbControllers\BookCheckController;
 use App\Http\Controllers\API\MongodbControllers\BookController;
+use App\Http\Controllers\API\MongodbControllers\ChartController;
 use App\Http\Controllers\API\MongodbControllers\CreatorController;
 use App\Http\Controllers\API\MongodbControllers\PublisherController;
 use App\Http\Controllers\API\MongodbControllers\ReportController;
@@ -235,7 +236,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v2/report/creator-aggregation', [ReportController::class ,'creatorAggregation']);
     Route::post('/v2/report/dio', [ReportController::class ,'dio']);
     Route::post('/v2/report/creator-subject-aggregation' , [ReportController::class , 'creatorSubjectAggregation']);
-
     //SQL Role , Languages , Formats and Covers
     Route::post('/v1/role/search', 'API\RoleController@search');
     Route::post('/v1/bookLanguage/list/', 'API\BookLanguageController@list');
@@ -248,8 +248,10 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('/v2/bookFormat/list/', 'API\BookFormatController@list');
     Route::get('/v2/bookCover/list/', 'API\BookCoverController@list');
 
+    //MongoDB Charts
+    Route::post('/v2/charts' , [ChartController::class , 'index']);
 
-    //TODO must implement later
+    // TODO must implement later
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 

@@ -73,7 +73,17 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('get:RecheckNotfoundBooks 1')->dailyAt('05:00');
         // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-        $schedule->command('match:mongodb')->dailyAt('07:00');
+        $schedule->command('match:mongodb_subjects')
+            ->dailyAt('07:00')
+            ->then(function () use ($schedule) {
+                $schedule->command('match_mongodb:creators')->runInBackground()
+                    ->then(function () use ($schedule) {
+                        $schedule->command('match:mongodb_publishers')->runInBackground()
+                            ->then(function () use ($schedule) {
+                                $schedule->command('match:mongodb_books');
+                            });
+                    });
+            });
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo
