@@ -249,10 +249,12 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('/v2/bookCover/list/', 'API\BookCoverController@list');
 
     //MongoDB Charts
-    Route::post('/v2/charts' , [ChartController::class , 'index']);
+
 
     // TODO must implement later
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
 });
+Route::post('/v2/charts' , [ChartController::class , 'index']);
+Route::post('/v1/charts' , [ChartController::class , 'noCache']);

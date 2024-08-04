@@ -32,6 +32,7 @@
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
         "derekmd/laravel-dusk-firefox": "^1.6",
         "facade/ignition": "^2.3.6",
         "fzaninotto/faker": "^1.9.1",

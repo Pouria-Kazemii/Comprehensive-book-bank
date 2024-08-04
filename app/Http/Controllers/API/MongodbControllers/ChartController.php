@@ -4,15 +4,19 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
+use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Morilog\Jalali\Jalalian;
 
 class ChartController extends Controller
 {
     public function index(Request $request)
     {
+        Debugbar::startMeasure('controller_start', 'Controller method start');
+
         $firstDate = ( isset($request['firstDate']) and !empty($request['firstDate']) ) ? intval($request->input('firstDate')): 1385 ;
         $lastDate = ( isset($request['lastDate']) and !empty($request['lastDate']) ) ? intval($request->input('lastDate')): 1403 ;
         $dateForCreators_totalPrice = ( isset($request['dfc_price']) and !empty($request['dfc_price']) ) ? intval($request->input('dfc_price')): 1403 ;
@@ -20,123 +24,157 @@ class ChartController extends Controller
         $dateForPublishers_totalPrice = ( isset($request['dfp_price']) and !empty($request['dfp_price']) ) ? intval($request->input('dfp_price')): 1403 ;
         $dateForPublishers_totalCirculation = ( isset($request['dfp_circulation']) and !empty($request['dfp_circulation']) ) ? intval($request->input('dfp_circulation')): 1403 ;
 
-        $firstDateCache = Cache::get('first_date');
-        $lastDateCache = Cache::get('last_date');
-        $tenPastDayCache = Cache::get('ten_past_day');
-        $dfc_price_year  = Cache::get('dfc_price_year');
-        $dfc_circulation_year = Cache::get('dfc_circulation_year');
-        $dfp_price_year = Cache::get('dfp_price_year');
-        $dfp_circulation_year = Cache::get('dfp_circulation_year');
+        $cacheTTL = 600; // Cache for 10 minutes
 
-        if ($dfp_circulation_year != $dateForPublishers_totalCirculation){
-            Cache::forget('dfp_circulation');
-            Cache::forget('dfp_circulation_year');
-            $dfp_circulation = $this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation , 'total_page');
-            Cache::put('dfp_circulation',$dfp_circulation,60);
-            Cache::put('dfp_circulation_year',$dateForPublishers_totalCirculation,60);
-        }elseif (!$dfp_circulation_year){
-            $dfp_circulation = $this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation , 'total_page');
-            Cache::put('dfp_circulation',$dfp_circulation,60);
-            Cache::put('dfp_circulation_year',$dateForPublishers_totalCirculation,60);
-        }
+        // Cache keys
+        $cacheKeys = [
+            'dfp_circulation' => "dfp_circulation_{$dateForPublishers_totalCirculation}",
+            'dfp_price' => "dfp_price_{$dateForPublishers_totalPrice}",
+            'dfc_circulation' => "dfc_circulation_{$dateForCreators_totalCirculation}",
+            'dfc_price' => "dfc_price_{$dateForCreators_totalPrice}",
+            'ten_past_day' => 'ten_past_day',
+            'date_range' => "date_range_{$firstDate}_{$lastDate}",
+        ];
 
-        if ($dfp_price_year != $dateForPublishers_totalPrice){
-            Cache::forget('dfp_price');
-            Cache::forget('dfp_price_year');
-            $dfp_price = $this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice , 'total_price');
-            Cache::put('dfp_price' , $dfp_price ,60);
-            Cache::put('dfp_price_year', $dateForPublishers_totalPrice , 60);
-        }elseif (!$dfp_price_year){
-            $dfp_price = $this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice , 'total_price');
-            Cache::put('dfp_price' , $dfp_price ,60);
-            Cache::put('dfp_price_year', $dateForPublishers_totalPrice , 60);
-        }
+        // Fetch or compute cache values
+        $dfp_circulation = Cache::remember($cacheKeys['dfp_circulation'], $cacheTTL, function() use ($dateForPublishers_totalCirculation) {
+            return $this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation, 'total_page');
+        });
 
-        if ($dfc_circulation_year != $dateForCreators_totalCirculation ){
-            Cache::forget('dfc_circulation');
-            Cache::forget('dfc_circulation_year');
-            $dfc_circulation = $this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation , 'total_page');
-            Cache::put('dfc_circulation' , $dfc_circulation,60);
-            Cache::put('dfc_circulation_year' , $dateForCreators_totalCirculation , 60);
-        }elseif (!$dfc_circulation_year){
-            $dfc_circulation = $this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation , 'total_page');
-            Cache::put('dfc_circulation' , $dfc_circulation,60);
-            Cache::put('dfc_circulation_year' , $dateForCreators_totalCirculation , 60);
-        }
+        $dfp_price = Cache::remember($cacheKeys['dfp_price'], $cacheTTL, function() use ($dateForPublishers_totalPrice) {
+            return $this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice, 'total_price');
+        });
 
-        if ($dfc_price_year != $dateForCreators_totalPrice){
-            Cache::forget('dfc_price');
-            Cache::forget('dfc_price_year');
-            $dfc_price = $this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice,'total_price');
-            Cache::put('dfc_price' , $dfc_price,60);
-            Cache::put('dfc_price_year' , $dateForCreators_totalPrice , 60);
-        }elseif(!$dfc_price_year){
-            $dfc_price = $this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice,'total_price');
-            Cache::put('dfc_price' , $dfc_price,60);
-            Cache::put('dfc_price_year' , $dateForCreators_totalPrice , 60);
-        }
+        $dfc_circulation = Cache::remember($cacheKeys['dfc_circulation'], $cacheTTL, function() use ($dateForCreators_totalCirculation) {
+            return $this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation, 'total_page');
+        });
 
-        if (!$tenPastDayCache) {
+        $dfc_price = Cache::remember($cacheKeys['dfc_price'], $cacheTTL, function() use ($dateForCreators_totalPrice) {
+            return $this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice, 'total_price');
+        });
+
+        $tenPastDay = Cache::remember($cacheKeys['ten_past_day'], $cacheTTL, function() {
             $solarHijriDate = [];
             $tenPastDay = DB::select(
-                    DB::raw("
+                DB::raw("
                 SELECT DATE(FROM_UNIXTIME(xregdate)) AS ForDate, COUNT(*) AS BookCount
                 FROM bookir_book
                 WHERE 1
                 GROUP BY DATE(FROM_UNIXTIME(xregdate))
                 ORDER BY ForDate DESC
                 LIMIT 0, 10
-                ")
+            ")
             );
-            foreach ($tenPastDay as $day){
-                $solarHijriDate [] = [
-                    'ForDate' => Jalalian::fromFormat('Y-m-d',$day->ForDate)->format('m-d'),
+            foreach ($tenPastDay as $day) {
+                $solarHijriDate[] = [
+                    'ForDate' => Jalalian::fromFormat('Y-m-d', $day->ForDate)->format('m-d'),
                     'BookCount' => $day->BookCount
                 ];
             }
-            Cache::put('ten_past_day', $solarHijriDate, 60);
-        }
+            return $solarHijriDate;
+        });
 
-        if ($firstDateCache != $firstDate or $lastDateCache != $lastDate){
-            Cache::forget('date_range');
-            Cache::forget('first_date');
-            Cache::forget('last_date');
-            $dateRange = $this->getBooksCountByYear($firstDate,$lastDate);
-            Cache::put('date_range',$dateRange ,60);
-            Cache::put('first_date',$firstDate,60);
-            Cache::put('last_date',$lastDate,60);
-        }elseif(!$firstDateCache or !$lastDateCache){
-            $dateRange = $this->getBooksCountByYear($firstDate,$lastDate);
-            Cache::put('date_range',$dateRange ,60);
-            Cache::put('first_date',$firstDate,60);
-            Cache::put('last_date',$lastDate,60);
-        }
+        $dateRange = Cache::remember($cacheKeys['date_range'], $cacheTTL, function() use ($firstDate, $lastDate) {
+            return $this->getBooksCountByYear($firstDate, $lastDate);
+        });
+
+
+        Debugbar::stopMeasure('controller_start');
+        Debugbar::addMessage('Controller method completed', 'info');
+
+        $debugData = Debugbar::getData();
+
+        Log::info('Debug Data:', $debugData);
+
 
         return response([
             'msg' => 'success',
-            'data' =>[
-                'data for ten past date' => Cache::get('ten_past_day') ,
-
-                'first date for rangeData' => Cache::get('first_date'),
-                'last date for rangeData' => Cache::get('last_date'),
-                'data for this 2 range of year' => Cache::get('date_range'),
-
-                'year for creators_total price' => Cache::get('dfc_price_year') ,
-                'data for creators_total price' => Cache::get('dfc_price') ,
-
-                'year for creators_total circulation' => Cache::get('dfc_circulation_year'),
-                'data for creators_total circulation' => Cache::get('dfc_circulation'),
-
-                'year for publishers_total price' => Cache::get('dfp_price_year'),
-                'data for publishers_total price' => Cache::get('dfp_price'),
-
-                'year for publishers_total circulation' => Cache::get('dfp_circulation_year'),
-                'date for publishers_total circulation' => Cache::get('dfp_circulation')
+            'debug' => $debugData,
+            'data' => [
+                'data for ten past date' => $tenPastDay,
+                'first date for rangeData' => $firstDate,
+                'last date for rangeData' => $lastDate,
+                'data for this 2 range of year' => $dateRange,
+                'year for creators_total price' => $dateForCreators_totalPrice,
+                'data for creators_total price' => $dfc_price,
+                'year for creators_total circulation' => $dateForCreators_totalCirculation,
+                'data for creators_total circulation' => $dfc_circulation,
+                'year for publishers_total price' => $dateForPublishers_totalPrice,
+                'data for publishers_total price' => $dfp_price,
+                'year for publishers_total circulation' => $dateForPublishers_totalCirculation,
+                'date for publishers_total circulation' => $dfp_circulation
             ],
             'status' => 200
-        ],200);
+        ], 200);
     }
 
+    public function noCache(Request $request)
+    {
+        Debugbar::startMeasure('controller_start', 'Controller method start');
+
+        $data = [];
+        $firstDate = (isset($request['firstDate']) and !empty($request['firstDate'])) ? intval($request->input('firstDate')) : 1385;
+        $lastDate = (isset($request['lastDate']) and !empty($request['lastDate'])) ? intval($request->input('lastDate')) : 1403;
+        $dateForCreators_totalPrice = (isset($request['dfc_price']) and !empty($request['dfc_price'])) ? intval($request->input('dfc_price')) : 1403;
+        $dateForCreators_totalCirculation = (isset($request['dfc_circulation']) and !empty($request['dfc_circulation'])) ? intval($request->input('dfc_circulation')) : 1403;
+        $dateForPublishers_totalPrice = (isset($request['dfp_price']) and !empty($request['dfp_price'])) ? intval($request->input('dfp_price')) : 1403;
+        $dateForPublishers_totalCirculation = (isset($request['dfp_circulation']) and !empty($request['dfp_circulation'])) ? intval($request->input('dfp_circulation')) : 1403;
+        $array = [];
+        if (!Cache::get('ten_past_day')) {
+            $tenPastDay = DB::select(
+                DB::raw("
+                SELECT DATE(FROM_UNIXTIME(xregdate)) AS ForDate, COUNT(*) AS BookCount
+                FROM bookir_book
+                WHERE 1
+                GROUP BY DATE(FROM_UNIXTIME(xregdate))
+                ORDER BY ForDate DESC
+                LIMIT 0, 10
+            ")
+            );
+            foreach ($tenPastDay as $day) {
+                $array = [
+                    'ForDate' => Jalalian::fromFormat('Y-m-d', $day->ForDate)->format('m-d'),
+                    'BookCount' => $day->BookCount
+                ];
+            }
+            Cache::put('ten_past_day', $array, 300);
+        }
+
+        foreach ($this->getBooksCountByYear($firstDate, $lastDate) as $book) {
+            $data [] = $book;
+        };
+
+        foreach ($this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation, 'total_page') as $book) {
+            $data [] = $book;
+        };
+        foreach ($this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice, 'total_price') as $book) {
+            $data [] = $book;
+        }
+
+        foreach ($this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation, 'total_page') as $book) {
+            $data [] = $book;
+        }
+
+        foreach ($this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice, 'total_price') as $book) {
+            $data [] = $book;
+        }
+
+
+        Debugbar::stopMeasure('controller_start');
+        Debugbar::addMessage('Controller method completed', 'info');
+
+        $debugData = Debugbar::getData();
+
+        Log::info('Debug Data:', $debugData);
+
+
+        return response([
+            'msg' => 'success',
+            'debug' => $debugData,
+            'data' => [$data,Cache::get('ten_past_day')],
+            'status' => 200
+        ], 200);
+    }
     private function getBooksCountByYear($startYear, $endYear)
     {
         return BookIrBook2 ::raw(function ($collection) use($startYear , $endYear) {
