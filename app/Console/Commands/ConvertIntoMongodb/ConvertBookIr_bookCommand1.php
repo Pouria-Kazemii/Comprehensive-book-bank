@@ -40,7 +40,6 @@ class ConvertBookIr_bookCommand1 extends Command
     public function handle()
     {
         //DONE!!!!
-        \App\Models\MongoDBModels\BookIrBook2::truncate();
         $this->info('All Mongo data Deleted');
         $this::info("Start converting bookir_books table part1");
         $totalBooks = BookirBook::where('xid' , '<=' , 500000)->count();

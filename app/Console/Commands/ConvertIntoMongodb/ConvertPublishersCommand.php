@@ -39,7 +39,6 @@ class ConvertPublishersCommand extends Command
         public function handle()
         {
             //DONE!!!!
-            \App\Models\MongoDBModels\BookIrPublisher::truncate();
             $this->info('All Mongo data Deleted');
             $this->info("Start converting bookir_publishers table");
             $startTime = microtime(true);

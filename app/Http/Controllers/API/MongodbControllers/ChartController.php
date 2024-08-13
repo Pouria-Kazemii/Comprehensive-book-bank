@@ -120,7 +120,8 @@ class ChartController extends Controller
         $dateForPublishers_totalPrice = (isset($request['dfp_price']) and !empty($request['dfp_price'])) ? intval($request->input('dfp_price')) : 1403;
         $dateForPublishers_totalCirculation = (isset($request['dfp_circulation']) and !empty($request['dfp_circulation'])) ? intval($request->input('dfp_circulation')) : 1403;
         $array = [];
-        if (!Cache::get('ten_past_day')) {
+
+
             $tenPastDay = DB::select(
                 DB::raw("
                 SELECT DATE(FROM_UNIXTIME(xregdate)) AS ForDate, COUNT(*) AS BookCount
@@ -133,12 +134,13 @@ class ChartController extends Controller
             );
             foreach ($tenPastDay as $day) {
                 $array = [
-                    'ForDate' => Jalalian::fromFormat('Y-m-d', $day->ForDate)->format('m-d'),
+                    'ForDate' => Jalalian::forge(strtotime($day->ForDate)),
                     'BookCount' => $day->BookCount
                 ];
             }
+            dd($array);
             Cache::put('ten_past_day', $array, 300);
-        }
+
 
         foreach ($this->getBooksCountByYear($firstDate, $lastDate) as $book) {
             $data [] = $book;
@@ -170,7 +172,7 @@ class ChartController extends Controller
 
         return response([
             'msg' => 'success',
-            'debug' => $debugData,
+//            'debug' => $debugData,
             'data' => [$data,Cache::get('ten_past_day')],
             'status' => 200
         ], 200);

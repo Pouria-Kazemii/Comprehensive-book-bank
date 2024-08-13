@@ -5,6 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Morilog\Jalali\Jalalian;
 
 class Kernel extends ConsoleKernel
 {
@@ -50,10 +51,13 @@ class Kernel extends ConsoleKernel
 
         commands\ConvertIntoMongodb\ConvertBookIr_bookCommand1::class,
         commands\ConvertIntoMongodb\ConvertCreatorsCommand::class,
-        commands\ConvertIntoMongodb\ConvertPublishersCommand::class
+        commands\ConvertIntoMongodb\ConvertPublishersCommand::class,
 
-
-
+        Commands\ConvertIntoMongodb\CalculateInsertedBooks::class,
+        Commands\ConvertIntoMongodb\MatchingMongoBookWithSQLCommand::class,
+        Commands\ConvertIntoMongodb\MatchingMongoCreatorsWithSQLCommand::class,
+        Commands\ConvertIntoMongodb\MatchingMongoPublisherWithSQLCommand::class,
+        Commands\ConvertIntoMongodb\MatchingMongoSubjectsWithSQLCommand::class
 
     ];
 
@@ -76,13 +80,42 @@ class Kernel extends ConsoleKernel
         $schedule->command('match:mongodb_subjects')
             ->dailyAt('07:00')
             ->then(function () use ($schedule) {
-                $schedule->command('match_mongodb:creators')->runInBackground()
+                logCommandResult('match:mongodb_subjects', true);
+
+                $schedule->command('match_mongodb:creators')
                     ->then(function () use ($schedule) {
-                        $schedule->command('match:mongodb_publishers')->runInBackground()
+                        logCommandResult('match_mongodb:creators', true);
+
+                        $schedule->command('match:mongodb_publishers')
                             ->then(function () use ($schedule) {
-                                $schedule->command('match:mongodb_books');
+                                logCommandResult('match:mongodb_publishers', true);
+
+                                $schedule->command('match:mongodb_books')
+                                    ->then(function () use($schedule) {
+                                        logCommandResult('match:mongodb_books', true);
+
+                                        $schedule->command("insert:daily_books_count ".getDateNow())
+                                            ->then(function () {
+                                                logCommandResult('insert:daily_books_count'.getDateNow(), true);
+                                            })
+                                            ->onFailure(function () {
+                                                logCommandResult('insert:daily_books_count'.getDateNow(), false);
+                                            });
+                                    })
+                                    ->onFailure(function () {
+                                        logCommandResult('match:mongodb_books', false);
+                                    });
+                            })
+                            ->onFailure(function () {
+                                logCommandResult('match:mongodb_publishers', false);
                             });
+                    })
+                    ->onFailure(function () {
+                        logCommandResult('match_mongodb:creators', false);
                     });
+            })
+            ->onFailure(function () {
+                logCommandResult('match:mongodb_subjects', false);
             });
 
         /////////////////////////////////////////////////////////////////////////////////////////////////

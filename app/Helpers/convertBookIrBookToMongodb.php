@@ -8,6 +8,7 @@ use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
+use App\Models\MongoDBModels\CheckDailyConvert;
 
 if (!function_exists('convertCreators')) {
     function convertCreators($xbookid)
@@ -127,4 +128,14 @@ if (!function_exists('convertAgeGroup')) {
         return $output ;
     }
 
+}
+if (!function_exists('logCommandResult')){
+    function logCommandResult($commandName, $success)
+    {
+        CheckDailyConvert::create([
+            'command' => $commandName,
+            'status' => $success ? 'success' : 'failure',
+            'executed_at' => now(),
+        ]);
+    }
 }
