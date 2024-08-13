@@ -17,6 +17,7 @@ class BookIrDaily extends Model
         'day' ,
         'month' ,
         'year' ,
-        'count'
+        'count',
+        'date'
     ];
 }
