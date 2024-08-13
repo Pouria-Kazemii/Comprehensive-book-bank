@@ -63,13 +63,15 @@ class FixBookPartnersJob implements ShouldQueue
                         'xrule' => $role
                     ];
                 } else {
-                    if(!in_array($role,$partnerMongoInfo->xrules)){
-                        $newXrules = $partnerMongoInfo->xrules;
-                        $newXrules [] = $role;
-                        $partnerMongoInfo->update([
-                            'xrules' => $newXrules
-                        ]);
-                    };
+                    if ($partnerMongoInfo->xrules != null) {
+                        if (!in_array($role, $partnerMongoInfo->xrules)) {
+                            $newXrules = $partnerMongoInfo->xrules;
+                            $newXrules [] = $role;
+                            $partnerMongoInfo->update([
+                                'xrules' => $newXrules
+                            ]);
+                        }
+                    }
                     $data [] = [
                         'xcreator_id' => $partnerMongoInfo->_id,
                         'xcreatorname' => $partnerMongoInfo->xcreatorname,
