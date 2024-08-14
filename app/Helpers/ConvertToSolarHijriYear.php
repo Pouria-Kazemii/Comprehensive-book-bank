@@ -15,3 +15,10 @@ if (!function_exists('getDateNow')){
         return Jalalian::now()->format('Y-m-d');
     }
 }
+
+if (!function_exists('getYearNow')){
+    function getYearNow ()
+    {
+        return Jalalian::now()->getYear();
+    }
+}

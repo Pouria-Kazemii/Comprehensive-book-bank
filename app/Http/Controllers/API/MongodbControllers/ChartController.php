@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
+use App\Models\MongoDBModels\BookIrDaily;
 use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,167 +16,123 @@ class ChartController extends Controller
 {
     public function index(Request $request)
     {
-        Debugbar::startMeasure('controller_start', 'Controller method start');
-
-        $firstDate = ( isset($request['firstDate']) and !empty($request['firstDate']) ) ? intval($request->input('firstDate')): 1385 ;
-        $lastDate = ( isset($request['lastDate']) and !empty($request['lastDate']) ) ? intval($request->input('lastDate')): 1403 ;
-        $dateForCreators_totalPrice = ( isset($request['dfc_price']) and !empty($request['dfc_price']) ) ? intval($request->input('dfc_price')): 1403 ;
-        $dateForCreators_totalCirculation = ( isset($request['dfc_circulation']) and !empty($request['dfc_circulation']) ) ? intval($request->input('dfc_circulation')): 1403  ;
-        $dateForPublishers_totalPrice = ( isset($request['dfp_price']) and !empty($request['dfp_price']) ) ? intval($request->input('dfp_price')): 1403 ;
-        $dateForPublishers_totalCirculation = ( isset($request['dfp_circulation']) and !empty($request['dfp_circulation']) ) ? intval($request->input('dfp_circulation')): 1403 ;
-
-        $cacheTTL = 600; // Cache for 10 minutes
-
-        // Cache keys
-        $cacheKeys = [
-            'dfp_circulation' => "dfp_circulation_{$dateForPublishers_totalCirculation}",
-            'dfp_price' => "dfp_price_{$dateForPublishers_totalPrice}",
-            'dfc_circulation' => "dfc_circulation_{$dateForCreators_totalCirculation}",
-            'dfc_price' => "dfc_price_{$dateForCreators_totalPrice}",
-            'ten_past_day' => 'ten_past_day',
-            'date_range' => "date_range_{$firstDate}_{$lastDate}",
-        ];
+        $start = microtime(true);
+        $year = getYearNow();
+        $firstDateForCount = ( isset($request['firstDateForCount']) and !empty($request['firstDateForCount']) ) ? intval($request->input('firstDateForCount')): $year-10;
+        $lastDateForCount = ( isset($request['lastDateForCount']) and !empty($request['lastDateForCount']) ) ? intval($request->input('lastDateForCount')): $year ;
+        $firstDateForPrice = ( isset($request['firstDateForPrice']) and !empty($request['firstDateForPrice']) ) ? intval($request->input('firstDateForPrice')): $year-10;
+        $lastDateForPrice = ( isset($request['lastDateForPrice']) and !empty($request['lastDateForPrice']) ) ? intval($request->input('lastDateForPrice')): $year ;
+        $firstDateForCirculation = ( isset($request['firstDateForCirculation']) and !empty($request['firstDateForCirculation']) ) ? intval($request->input('firstDateForCirculation')): $year-10;
+        $lastDateForCirculation = ( isset($request['lastDateForCirculation']) and !empty($request['lastDateForCirculation']) ) ? intval($request->input('lastDateForCirculation')): $year ;
+        $firstDateForAverage = ( isset($request['firstDateForAverage']) and !empty($request['firstDateForAverage']) ) ? intval($request->input('firstDateForAverage')): $year-10 ;
+        $lastDateForAverage = ( isset($request['lastDateForAverage']) and !empty($request['lastDateForAverage']) ) ? intval($request->input('lastDateForAverage')): $year ;
+        $dateForCreators_totalPrice = ( isset($request['dfc_price']) and !empty($request['dfc_price']) ) ? intval($request->input('dfc_price')): $year ;
+        $dateForCreators_totalCirculation = ( isset($request['dfc_circulation']) and !empty($request['dfc_circulation']) ) ? intval($request->input('dfc_circulation')): $year  ;
+        $dateForPublishers_totalPrice = ( isset($request['dfp_price']) and !empty($request['dfp_price']) ) ? intval($request->input('dfp_price')): $year ;
+        $dateForPublishers_totalCirculation = ( isset($request['dfp_circulation']) and !empty($request['dfp_circulation']) ) ? intval($request->input('dfp_circulation')): $year ;
 
         // Fetch or compute cache values
-        $dfp_circulation = Cache::remember($cacheKeys['dfp_circulation'], $cacheTTL, function() use ($dateForPublishers_totalCirculation) {
-            return $this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation, 'total_page');
-        });
+        $dfp_circulation = $this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation, 'total_page');
 
-        $dfp_price = Cache::remember($cacheKeys['dfp_price'], $cacheTTL, function() use ($dateForPublishers_totalPrice) {
-            return $this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice, 'total_price');
-        });
+        $dfp_price   = $this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice, 'total_price');
 
-        $dfc_circulation = Cache::remember($cacheKeys['dfc_circulation'], $cacheTTL, function() use ($dateForCreators_totalCirculation) {
-            return $this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation, 'total_page');
-        });
+        $dfc_circulation = $this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation, 'total_page');
 
-        $dfc_price = Cache::remember($cacheKeys['dfc_price'], $cacheTTL, function() use ($dateForCreators_totalPrice) {
-            return $this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice, 'total_price');
-        });
+        $dfc_price = $this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice, 'total_price');
 
-        $tenPastDay = Cache::remember($cacheKeys['ten_past_day'], $cacheTTL, function() {
-            $solarHijriDate = [];
-            $tenPastDay = DB::select(
-                DB::raw("
-                SELECT DATE(FROM_UNIXTIME(xregdate)) AS ForDate, COUNT(*) AS BookCount
-                FROM bookir_book
-                WHERE 1
-                GROUP BY DATE(FROM_UNIXTIME(xregdate))
-                ORDER BY ForDate DESC
-                LIMIT 0, 10
-            ")
-            );
-            foreach ($tenPastDay as $day) {
-                $solarHijriDate[] = [
-                    'ForDate' => Jalalian::fromFormat('Y-m-d', $day->ForDate)->format('m-d'),
-                    'BookCount' => $day->BookCount
-                ];
-            }
-            return $solarHijriDate;
-        });
+        $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
+        $dateRangeCount = $this->getBooksCountByYear($firstDateForCount, $lastDateForCount);
+        $dateRangePrice = $this->getBooksPriceByYear($firstDateForPrice , $lastDateForPrice);
+        $dateRangeCirculation = $this->getBooksCirculationByYear($firstDateForCirculation , $lastDateForCirculation);
+        $dateRangeAverage = $this->getAverageBookPrice($firstDateForAverage,$lastDateForAverage);
 
-        $dateRange = Cache::remember($cacheKeys['date_range'], $cacheTTL, function() use ($firstDate, $lastDate) {
-            return $this->getBooksCountByYear($firstDate, $lastDate);
-        });
-
-
-        Debugbar::stopMeasure('controller_start');
-        Debugbar::addMessage('Controller method completed', 'info');
-
-        $debugData = Debugbar::getData();
-
-        Log::info('Debug Data:', $debugData);
-
-
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
-            'debug' => $debugData,
             'data' => [
-                'data for ten past date' => $tenPastDay,
-                'first date for rangeData' => $firstDate,
-                'last date for rangeData' => $lastDate,
-                'data for this 2 range of year' => $dateRange,
-                'year for creators_total price' => $dateForCreators_totalPrice,
-                'data for creators_total price' => $dfc_price,
-                'year for creators_total circulation' => $dateForCreators_totalCirculation,
-                'data for creators_total circulation' => $dfc_circulation,
-                'year for publishers_total price' => $dateForPublishers_totalPrice,
-                'data for publishers_total price' => $dfp_price,
-                'year for publishers_total circulation' => $dateForPublishers_totalCirculation,
-                'date for publishers_total circulation' => $dfp_circulation
+                'data_for_ten_past_new_books' => $dataForTenPastDayBookInserted,
+                'start_year_for_average_books' => $firstDateForAverage,
+                'end_year_for_average_books' => $lastDateForAverage,
+                'data_for_average_books' => $dateRangeAverage,
+                'start_year_for_count_books' => $firstDateForCount,
+                'end_year_for_count_books' => $lastDateForCount,
+                'data_for_count_books' => $dateRangeCount,
+                'start_year_for_price_books' => $firstDateForPrice,
+                'end_year_for_price_books' => $lastDateForPrice,
+                'data_for_price_books' => $dateRangePrice,
+                'start_year_for_circulation_books' => $firstDateForCirculation,
+                'end_year_for_circulation_books' => $lastDateForCirculation,
+                'data_for_circulation_books' => $dateRangeCirculation,
+                'year_for_creators_total_price' => $dateForCreators_totalPrice,
+                'data-for_creators_total_price' => $dfc_price,
+                'year_for_creators_total_circulation' => $dateForCreators_totalCirculation,
+                'data_for_creators_total_circulation' => $dfc_circulation,
+                'year_for_publishers_total_price' => $dateForPublishers_totalPrice,
+                'data_for_publishers_total_price' => $dfp_price,
+                'year_for_publishers_total_circulation' => $dateForPublishers_totalCirculation,
+                'date_for_publishers_total_circulation' => $dfp_circulation
             ],
-            'status' => 200
+            'status' => 200 ,
+            'time' => $elapsedTime,
         ], 200);
     }
-
-    public function noCache(Request $request)
+    private function getBooksPriceByYear($startYear , $endYear)
     {
-        Debugbar::startMeasure('controller_start', 'Controller method start');
-
-        $data = [];
-        $firstDate = (isset($request['firstDate']) and !empty($request['firstDate'])) ? intval($request->input('firstDate')) : 1385;
-        $lastDate = (isset($request['lastDate']) and !empty($request['lastDate'])) ? intval($request->input('lastDate')) : 1403;
-        $dateForCreators_totalPrice = (isset($request['dfc_price']) and !empty($request['dfc_price'])) ? intval($request->input('dfc_price')) : 1403;
-        $dateForCreators_totalCirculation = (isset($request['dfc_circulation']) and !empty($request['dfc_circulation'])) ? intval($request->input('dfc_circulation')) : 1403;
-        $dateForPublishers_totalPrice = (isset($request['dfp_price']) and !empty($request['dfp_price'])) ? intval($request->input('dfp_price')) : 1403;
-        $dateForPublishers_totalCirculation = (isset($request['dfp_circulation']) and !empty($request['dfp_circulation'])) ? intval($request->input('dfp_circulation')) : 1403;
-        $array = [];
-
-
-            $tenPastDay = DB::select(
-                DB::raw("
-                SELECT DATE(FROM_UNIXTIME(xregdate)) AS ForDate, COUNT(*) AS BookCount
-                FROM bookir_book
-                WHERE 1
-                GROUP BY DATE(FROM_UNIXTIME(xregdate))
-                ORDER BY ForDate DESC
-                LIMIT 0, 10
-            ")
-            );
-            foreach ($tenPastDay as $day) {
-                $array = [
-                    'ForDate' => Jalalian::forge(strtotime($day->ForDate)),
-                    'BookCount' => $day->BookCount
-                ];
-            }
-            dd($array);
-            Cache::put('ten_past_day', $array, 300);
-
-
-        foreach ($this->getBooksCountByYear($firstDate, $lastDate) as $book) {
-            $data [] = $book;
-        };
-
-        foreach ($this->getTopCreatorsAccordingToValue($dateForCreators_totalCirculation, 'total_page') as $book) {
-            $data [] = $book;
-        };
-        foreach ($this->getTopCreatorsAccordingToValue($dateForCreators_totalPrice, 'total_price') as $book) {
-            $data [] = $book;
-        }
-
-        foreach ($this->getTopPublishersAccordingToValue($dateForPublishers_totalCirculation, 'total_page') as $book) {
-            $data [] = $book;
-        }
-
-        foreach ($this->getTopPublishersAccordingToValue($dateForPublishers_totalPrice, 'total_price') as $book) {
-            $data [] = $book;
-        }
-
-
-        Debugbar::stopMeasure('controller_start');
-        Debugbar::addMessage('Controller method completed', 'info');
-
-        $debugData = Debugbar::getData();
-
-        Log::info('Debug Data:', $debugData);
-
-
-        return response([
-            'msg' => 'success',
-//            'debug' => $debugData,
-            'data' => [$data,Cache::get('ten_past_day')],
-            'status' => 200
-        ], 200);
+        return BookIrBook2 ::raw(function ($collection) use($startYear , $endYear) {
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'xpublishdate_shamsi' => [
+                            '$gte' => (int)$startYear,
+                            '$lte' => (int)$endYear
+                        ]
+                        ,
+                        'xtotal_price' => [
+                            '$ne' => 0 // Ensure xcoverprice is not equal to 0
+                        ]
+                    ]
+                ]
+                ,
+                [
+                    '$group' => [
+                        '_id' => '$xpublishdate_shamsi',
+                        'total_price' => ['$sum' => '$xtotal_price'],
+                    ]
+                ],
+                [
+                    '$sort' => ['_id' => 1] // Sort by year
+                ]
+            ]);
+        });
+    }
+    private function getBooksCirculationByYear($startYear , $endYear)
+    {
+        return BookIrBook2 ::raw(function ($collection) use($startYear , $endYear) {
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'xpublishdate_shamsi' => [
+                            '$gte' => (int)$startYear,
+                            '$lte' => (int)$endYear
+                        ]
+                        ,
+                        'xtotal_page' => [
+                            '$ne' => 0 // Ensure xcoverprice is not equal to 0
+                        ]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$xpublishdate_shamsi',
+                        'total_circulation' => ['$sum' => '$xtotal_page']
+                    ]
+                ],
+                [
+                    '$sort' => ['_id' => 1] // Sort by year
+                ]
+            ]);
+        });
     }
     private function getBooksCountByYear($startYear, $endYear)
     {
@@ -193,12 +150,10 @@ class ChartController extends Controller
                         '$group' => [
                             '_id' => '$xpublishdate_shamsi',
                             'count' => ['$sum' => 1],
-                            'total_price' => ['$sum' => '$xtotal_price'],
-                            'total_circulation' => ['$sum' => '$xtotal_page']
                         ]
                     ],
                     [
-                        '$sort' => ['total_price' => 1] // Sort by year
+                        '$sort' => ['_id' => 1] // Sort by year
                     ]
                 ]);
             });
@@ -211,6 +166,10 @@ class ChartController extends Controller
                 [
                     '$match' => [
                         'xpublishdate_shamsi' => $year
+                        ,
+                        'xcoverprice' => [
+                            '$ne' => 0 // Ensure xcoverprice is not equal to 0
+                        ]
                     ]
                 ],
                 [
@@ -242,6 +201,10 @@ class ChartController extends Controller
                 [
                     '$match' => [
                         'xpublishdate_shamsi' => $year
+                        ,
+                        'xcoverprice' => [
+                            '$ne' => 0 // Ensure xcoverprice is not equal to 0
+                        ]
                     ]
                 ],
                 [
@@ -264,5 +227,60 @@ class ChartController extends Controller
                 ]
             ]);
         });
+    }
+
+    private function getAverageBookPrice($startYear ,$endYear)
+    {
+        $response = [];
+        $data = BookIrBook2::raw(function ($collection) use($startYear , $endYear){
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'xpublishdate_shamsi' => [
+                            '$gte' => (int)$startYear,
+                            '$lte' => (int)$endYear
+                        ]
+                        ,
+                        'xcoverprice' => [
+                            '$ne' => 0 // Ensure xcoverprice is not equal to 0
+                        ]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$xpublishdate_shamsi',
+                        'count' => ['$sum' => 1],
+                        'price' => ['$sum' => '$xcoverprice'],
+                    ]
+                ],
+                [
+                    '$sort' => ['_id' => 1] // Sort by year
+                ]
+            ]);
+        });
+
+        foreach ($data as $value){
+            $response [] = [
+                '_id' => $value['_id'] ,
+                'average' => priceFormat(round($value['price']/$value['count']))
+            ];
+        }
+
+        return $response;
+    }
+
+    private function getLastTenDayBooks()
+    {
+        $response = [];
+        $data = BookIrDaily::orderBy('_id' , -1)->take(10)->get();
+        foreach ($data as $value){
+            $response [] = [
+                'day' => $value->day,
+                'month' => $value->month,
+                'year' => $value->year,
+                'count' => $value->count
+            ];
+        }
+        return $response;
     }
 }
