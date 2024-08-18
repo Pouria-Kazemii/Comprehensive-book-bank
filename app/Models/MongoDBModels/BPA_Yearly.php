@@ -16,5 +16,7 @@ class BPA_Yearly extends Model
     protected $fillable =[
         'year',
         'average',
+        'price',
+        'count'
     ];
 }
