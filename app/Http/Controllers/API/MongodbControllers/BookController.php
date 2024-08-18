@@ -1302,7 +1302,7 @@ class BookController extends Controller
 
     public function getTotal(int $year , int $limit)
     {
-        $data = BookIrBook2::raw(function ($collection) use($year , $limit) {
+        return BookIrBook2::raw(function ($collection) use($year , $limit) {
             return $collection->aggregate([
                 [
                     '$match' => [
