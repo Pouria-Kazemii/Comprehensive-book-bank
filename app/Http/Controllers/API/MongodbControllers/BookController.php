@@ -1299,5 +1299,35 @@ class BookController extends Controller
         return $this->listsForAdvanceSearch($request, $where , $textIndex);
     }
 
+
+    public function getTotal(int $year , int $limit)
+    {
+        $data = BookIrBook2::raw(function ($collection) use($year , $limit) {
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'xpublishdate_shamsi' => $year,
+                        //      ,
+                        //        'xcoverprice' => [
+                        //              '$ne' => 0
+                        //            ]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$xsqlid',
+                        'count' => ['$sum' => 1],
+                        'name' => '$xname',
+                    ]
+                ],
+                [
+                    '$sort' => ['_id' => 1] // Sort by year
+                ],
+                [
+                    '$limit' => $limit
+                ]
+            ]);
+        });
+    }
 }
 
