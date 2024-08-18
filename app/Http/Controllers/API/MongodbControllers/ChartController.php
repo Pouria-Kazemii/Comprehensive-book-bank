@@ -37,47 +37,61 @@ class ChartController extends Controller
         $dataForRangePrice = [];
         $dataForRangeCirculation = [];
         $dataForRangeAverage = [];
+        $dataForCreatorPrice = [];
+        $dataForCreatorCirculation = [];
+        $dataForPublisherPrice = [];
+        $dataForPublisherCirculation = [];
 
         // Fetch or compute cache values
+        $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
+
         $dfp_circulation =TCP_Yearly::where('year', $dateForPublishers_totalCirculation)->first();
+        foreach ($dfp_circulation->publishers as $item){
+            $dataForPublisherCirculation['label'][] = $item['publisher_name'];
+            $dataForPublisherCirculation['value'][] = $item['total_page'];
+        }
 
         $dfp_price   = TPP_Yearly::where('year' , $dateForPublishers_totalPrice)->first();
+        foreach ($dfp_price->publishers as $item){
+            $dataForPublisherPrice ['label'] [] = $item['publisher_name'];
+            $dataForPublisherPrice['value'] [] = $item['total_price'];
+        }
 
         $dfc_circulation = TCC_Yearly::where('year' , $dateForCreators_totalCirculation)->first();
+        foreach ($dfc_circulation->creators as $item){
+            $dataForCreatorCirculation['label'][] = $item['creator_name'];
+            $dataForCreatorCirculation['value'][] = $item['total_page'];
+        }
 
         $dfc_price = TPC_Yearly::where('year' , $dateForCreators_totalPrice)->first();
+        foreach ($dfc_price->creators  as $item){
+            $dataForCreatorPrice['label'] [] = $item['creator_name'];
+            $dataForCreatorPrice['value'] [] = $item['total_price'];
+        }
 
-        $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
+
 
         $dateRangeCount = BTC_Yearly::where('year', '<=' , $lastDateForCount)->where('year','>=' , $firstDateForCount)->get();
         foreach ($dateRangeCount as $item) {
-            $dataForRangeCount [] =[
-                'year' => $item->year,
-                'count' => $item->count
-            ];
+            $dataForRangeCount ['label'] [] = $item->year;
+            $dataForRangeCount ['value'] [] = $item->count;
         }
         $dateRangePrice = BTP_Yearly::where('year' , '<=' , $lastDateForPrice)->where('year', '>=' ,$firstDateForPrice)->get();
         foreach ($dateRangePrice as $item){
-            $dataForRangePrice [] =[
-                'year' => $item->year,
-                'price' => $item->price
-            ];
+            $dataForRangePrice ['label'] [] =$item->year;
+            $dataForRangePrice ['value'] [] =$item->price;
         }
 
         $dateRangeCirculation = BTCi_Yearly::where('year' , '<=' , $lastDateForCirculation)->where('year' , '>=' ,$firstDateForCirculation)->get();
         foreach ($dateRangeCirculation as $item){
-            $dataForRangeCirculation [] =[
-                'year' => $item->year,
-                'circulation' => $item->circulation
-            ];
+            $dataForRangeCirculation ['label'] [] = $item->year;
+            $dataForRangeCirculation ['value'] [] = $item->circulation;
         }
 
         $dateRangeAverage = BPA_Yearly::where('year','<=' , $lastDateForAverage)->where('year' , '>=' , $firstDateForAverage)->get();
         foreach ($dateRangeAverage as $item){
-            $dataForRangeAverage [] =[
-                'year' => $item->year,
-                'average' => $item->average
-            ];
+            $dataForRangeAverage ['label'] [] =$item->year;
+            $dataForRangeAverage ['value'] [] =$item->average;
         }
 
         $end = microtime(true);
@@ -87,33 +101,21 @@ class ChartController extends Controller
             'data' => [
                 'data_for_ten_past_new_books' => $dataForTenPastDayBookInserted,
 
-                'start_year_for_average_books_price' => $firstDateForAverage,
-                'end_year_for_average_books_price' => $lastDateForAverage,
                 'data_for_average_books_price' => $dataForRangeAverage,
 
-                'start_year_for_count_books' => $firstDateForCount,
-                'end_year_for_count_books' => $lastDateForCount,
                 'data_for_count_books' => $dataForRangeCount,
 
-                'start_year_for_price_books' => $firstDateForPrice,
-                'end_year_for_price_books' => $lastDateForPrice,
                 'data_for_price_books' => $dataForRangePrice,
 
-                'start_year_for_circulation_books' => $firstDateForCirculation,
-                'end_year_for_circulation_books' => $lastDateForCirculation,
                 'data_for_circulation_books' => $dataForRangeCirculation,
 
-                'year_for_creators_total_price' => $dateForCreators_totalPrice,
-                'data-for_creators_total_price' => $dfc_price->creators,
+                'data-for_creators_total_price' => $dataForCreatorPrice,
 
-                'year_for_creators_total_circulation' => $dateForCreators_totalCirculation,
-                'data_for_creators_total_circulation' => $dfc_circulation->creators,
+                'data_for_creators_total_circulation' => $dataForCreatorCirculation,
 
-                'year_for_publishers_total_price' => $dateForPublishers_totalPrice,
-                'data_for_publishers_total_price' => $dfp_price->publishers,
+                'data_for_publishers_total_price' => $dataForPublisherPrice,
 
-                'year_for_publishers_total_circulation' => $dateForPublishers_totalCirculation,
-                'date_for_publishers_total_circulation' => $dfp_circulation->publishers
+                'date_for_publishers_total_circulation' => $dataForPublisherCirculation
             ],
             'status' => 200 ,
             'time' => $elapsedTime,
@@ -126,12 +128,8 @@ class ChartController extends Controller
         $response = [];
         $data = BookIrDaily::orderBy('_id' , -1)->take(10)->get();
         foreach ($data as $value){
-            $response [] = [
-                'day' => $value->day,
-                'month' => $value->month,
-                'year' => $value->year,
-                'count' => $value->count
-            ];
+            $response ['label'][] = $value->date;
+            $response ['value'][] = $value->count;
         }
         return $response;
     }

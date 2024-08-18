@@ -128,6 +128,14 @@ class Kernel extends ConsoleKernel
                 logCommandResult('match:mongodb_subjects', false);
             });
 
+        $schedule->command('chart:book_price_average_yearly 1360')->dailyAt('11:00');
+        $schedule->command('chart:book_total_circulation_yearly 1360')->dailyAt('11:05');
+        $schedule->command('chart:book_total_count_yearly 1360')->dailyAt('11:10');
+        $schedule->command('chart:book_total_price_yearly 1360')->dailyAt('11:15');
+        $schedule->command('chart:top_circulation_creators_yearly 1360')->dailyAt('11:20');
+        $schedule->command('chart:top_circulation_publishers_yearly 1360')->dailyAt('11:25');
+        $schedule->command('chart:top_price_creators_yearly 1360')->dailyAt('11:30');
+        $schedule->command('chart:top_price_publishers_yearly 1360')->dailyAt('11:35');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo
         $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');
