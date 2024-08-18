@@ -52,10 +52,10 @@ class MakingBookPriceAverageEveryYearCommand extends Command
                         'xpublishdate_shamsi' => [
                             '$gte' => $date,
                         ]
-                        ,
-                        'xcoverprice' => [
-                            '$ne' => 0
-                        ]
+                  //      ,
+                //        'xcoverprice' => [
+              //              '$ne' => 0
+            //            ]
                     ]
                 ],
                 [
