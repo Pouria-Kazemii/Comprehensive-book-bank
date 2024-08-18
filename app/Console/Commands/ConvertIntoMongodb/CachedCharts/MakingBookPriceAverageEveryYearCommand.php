@@ -74,7 +74,7 @@ class MakingBookPriceAverageEveryYearCommand extends Command
         foreach ($data as $value) {
             BPA_Yearly::where('year', $value['_id'])->updateOrCreate([
                 'year' => $value['_id'],
-                'average' => priceFormat(round($value['price'] / $value['count']))
+                'average' => round($value['price'] / $value['count'])
             ]);
             $progressBar->advance();
         }

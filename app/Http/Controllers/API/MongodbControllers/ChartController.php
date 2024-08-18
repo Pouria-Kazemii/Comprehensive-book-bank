@@ -109,7 +109,7 @@ class ChartController extends Controller
 
                 'data_for_circulation_books' => $dataForRangeCirculation,
 
-                'data-for_creators_total_price' => $dataForCreatorPrice,
+                'data_for_creators_total_price' => $dataForCreatorPrice,
 
                 'data_for_creators_total_circulation' => $dataForCreatorCirculation,
 

@@ -11,7 +11,7 @@ class MakingTopPricePublishersEveryYearCommand extends Command
     /**
      * The name and signature of the console command.
      *
-     * @var stringa
+     * @var string
      */
     protected $signature = 'chart:top_price_publishers_yearly {year}';
 

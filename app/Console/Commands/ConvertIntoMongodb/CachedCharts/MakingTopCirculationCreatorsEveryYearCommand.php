@@ -66,7 +66,7 @@ class MakingTopCirculationCreatorsEveryYearCommand extends Command
                                 'id' => '$partners.xcreator_id',
                                 'name' => '$partners.xcreatorname'
                             ],
-                            'total_page' => ['$sum' => '$xtotal_page']
+                            'total_page' => ['$sum' => '$xcirculation']
                         ]
                     ],
                     [

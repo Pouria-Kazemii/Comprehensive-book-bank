@@ -66,7 +66,7 @@ class MakingTopCirculationPublishersEveryYearCommand extends Command
                                 'id' => '$publisher.xpublisher_id',
                                 'name' => '$publisher.xpublishername'
                             ],
-                            'total_page' => ['$sum' => '$xtotal_page']
+                            'total_page' => ['$sum' => '$xcirculation']
                         ]
                     ],
                     [
