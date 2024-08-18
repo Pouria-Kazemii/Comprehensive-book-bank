@@ -57,7 +57,17 @@ class Kernel extends ConsoleKernel
         Commands\ConvertIntoMongodb\MatchingMongoBookWithSQLCommand::class,
         Commands\ConvertIntoMongodb\MatchingMongoCreatorsWithSQLCommand::class,
         Commands\ConvertIntoMongodb\MatchingMongoPublisherWithSQLCommand::class,
-        Commands\ConvertIntoMongodb\MatchingMongoSubjectsWithSQLCommand::class
+        Commands\ConvertIntoMongodb\MatchingMongoSubjectsWithSQLCommand::class,
+
+        Commands\ConvertIntoMongodb\CachedCharts\MakingTopPricePublishersEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingTopPriceCreatorsEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingTopCirculationCreatorsEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingTopCirculationPublishersEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPriceEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCountEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookPriceAverageEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCirculationEveryYearCommand::class,
+
 
     ];
 
