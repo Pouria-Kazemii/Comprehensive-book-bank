@@ -67,6 +67,7 @@ class Kernel extends ConsoleKernel
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCountEveryYearCommand::class,
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookPriceAverageEveryYearCommand::class,
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCirculationEveryYearCommand::class,
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPagesEveryYearCommand::class
 
 
     ];
@@ -136,6 +137,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('chart:top_circulation_publishers_yearly 1360')->dailyAt('11:25');
         $schedule->command('chart:top_price_creators_yearly 1360')->dailyAt('11:30');
         $schedule->command('chart:top_price_publishers_yearly 1360')->dailyAt('11:35');
+        $schedule->command('chart:book_total_pages_yearly 1360')->dailyAt('11:40');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo
         $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');

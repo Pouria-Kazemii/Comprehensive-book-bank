@@ -8,6 +8,7 @@ use App\Models\MongoDBModels\BPA_Yearly;
 use App\Models\MongoDBModels\BTC_Yearly;
 use App\Models\MongoDBModels\BTCi_Yearly;
 use App\Models\MongoDBModels\BTP_Yearly;
+use App\Models\MongoDBModels\BTPa_Yearly;
 use App\Models\MongoDBModels\TCC_Yearly;
 use App\Models\MongoDBModels\TCP_Yearly;
 use App\Models\MongoDBModels\TPC_Yearly;
@@ -20,6 +21,8 @@ class ChartController extends Controller
     {
         $start = microtime(true);
         $year = getYearNow();
+        $firstDateForPage =( isset($request['firstDateForPage']) and !empty($request['firstDateForPage']) ) ? intval($request->input('firstDateForPage')): $year-10;
+        $lastDateForPage = ( isset($request['lastDateForPage']) and !empty($request['lastDateForPage']) ) ? intval($request->input('lastDateForPage')): $year ;
         $firstDateForCount = ( isset($request['firstDateForCount']) and !empty($request['firstDateForCount']) ) ? intval($request->input('firstDateForCount')): $year-10;
         $lastDateForCount = ( isset($request['lastDateForCount']) and !empty($request['lastDateForCount']) ) ? intval($request->input('lastDateForCount')): $year ;
         $firstDateForPrice = ( isset($request['firstDateForPrice']) and !empty($request['firstDateForPrice']) ) ? intval($request->input('firstDateForPrice')): $year-10;
@@ -41,6 +44,7 @@ class ChartController extends Controller
         $dataForCreatorCirculation = [];
         $dataForPublisherPrice = [];
         $dataForPublisherCirculation = [];
+        $dataForRangePage = [];
 
         // Fetch or compute cache values
         $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
@@ -69,13 +73,18 @@ class ChartController extends Controller
             $dataForCreatorPrice['value'] [] = $item['total_price'];
         }
 
-
+        $dataRangePage = BTPa_Yearly::where('year', '<=' , $lastDateForPage)->where('year','>=' , $firstDateForPage)->get();
+        foreach ($dataRangePage as $item) {
+            $dataForRangePage ['label'] [] = $item->year;
+            $dataForRangePage ['value'] [] = $item->total_pages;
+        }
 
         $dateRangeCount = BTC_Yearly::where('year', '<=' , $lastDateForCount)->where('year','>=' , $firstDateForCount)->get();
         foreach ($dateRangeCount as $item) {
             $dataForRangeCount ['label'] [] = $item->year;
             $dataForRangeCount ['value'] [] = $item->count;
         }
+
         $dateRangePrice = BTP_Yearly::where('year' , '<=' , $lastDateForPrice)->where('year', '>=' ,$firstDateForPrice)->get();
         foreach ($dateRangePrice as $item){
             $dataForRangePrice ['label'] [] =$item->year;
@@ -106,6 +115,8 @@ class ChartController extends Controller
                 'data_for_count_books' => $dataForRangeCount,
 
                 'data_for_price_books' => $dataForRangePrice,
+
+                'data_for_page_books' => $dataForRangePage,
 
                 'data_for_circulation_books' => $dataForRangeCirculation,
 

@@ -4,23 +4,24 @@ namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts;
 
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BTCi_Yearly;
+use App\Models\MongoDBModels\BTPa_Yearly;
 use Illuminate\Console\Command;
 
-class MakingBookTotalCirculationEveryYearCommand extends Command
+class MakingBookTotalPagesEveryYearCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'chart:book_total_circulation_yearly {year}';
+    protected $signature = 'chart:book_total_pages_yearly {year}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'cached data for take total circulation for every year';
+    protected $description = 'cached data for take total pages for every year';
 
     /**
      * Create a new command instance.
@@ -40,7 +41,7 @@ class MakingBookTotalCirculationEveryYearCommand extends Command
     public function handle()
     {
         $date = (int)$this->argument('year');
-        $this->info("Start cache book total circulation yearly");
+        $this->info("Start cache book total pages yearly");
         $totalRows = getYearNow() - $date + 1 ;
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
@@ -52,7 +53,7 @@ class MakingBookTotalCirculationEveryYearCommand extends Command
                         'xpublishdate_shamsi' => [
                             '$gte' => $date,
                         ]
-                        , 'xcirculation' => [
+                        , 'xtotal_page' => [
                             '$ne' => 0
                         ]
                     ]
@@ -60,7 +61,7 @@ class MakingBookTotalCirculationEveryYearCommand extends Command
                 [
                     '$group' => [
                         '_id' => '$xpublishdate_shamsi',
-                        'total_page' => ['$sum' => '$xcirculation'],
+                        'total_page' => ['$sum' => '$xtotal_page'],
                     ]
                 ],
                 [
@@ -70,9 +71,9 @@ class MakingBookTotalCirculationEveryYearCommand extends Command
         });
 
         foreach ($data as $value) {
-            BTCi_Yearly::where('year', $value['_id'])->updateOrCreate([
+            BTPa_Yearly::where('year', $value['_id'])->updateOrCreate([
                 'year' => $value['_id'],
-                'circulation' =>$value['total_page']
+                'total_pages' =>$value['total_page']
             ]);
             $progressBar->advance();
         }
