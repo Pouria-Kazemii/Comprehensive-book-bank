@@ -85,10 +85,12 @@ class MakingTopPricePublishersEveryYearCommand extends Command
                     'total_price' => $value->total_price
                 ];
             }
-            TPP_Yearly::where('year', $i)->updateOrCreate([
-                'year' => $i,
+            TPP_Yearly::updateOrCreate(
+                ['year' => $i],
+                [
                 'publishers' => $publishers,
-            ]);
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

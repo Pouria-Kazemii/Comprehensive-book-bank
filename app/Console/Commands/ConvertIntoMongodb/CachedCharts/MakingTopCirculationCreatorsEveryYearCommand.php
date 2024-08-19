@@ -85,10 +85,12 @@ class MakingTopCirculationCreatorsEveryYearCommand extends Command
                     'total_page' => $value->total_page
                 ];
             }
-            TCC_Yearly::where('year', $i)->updateOrCreate([
-                'year' => $i,
-                'creators' => $creators,
-            ]);
+            TCC_Yearly::updateOrCreate(
+                ['year' => $i],
+                [
+                    'creators' => $creators,
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

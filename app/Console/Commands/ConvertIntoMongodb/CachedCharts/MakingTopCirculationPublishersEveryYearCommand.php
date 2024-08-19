@@ -85,10 +85,12 @@ class MakingTopCirculationPublishersEveryYearCommand extends Command
                     'total_page' => $value->total_page
                 ];
             }
-            TCP_Yearly::where('year', $i)->updateOrCreate([
-                'year' => $i,
+            TCP_Yearly::updateOrCreate(
+                ['year' => $i],
+                [
                 'publishers' => $publishers,
-            ]);
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

@@ -71,10 +71,12 @@ class MakingBookTotalPagesEveryYearCommand extends Command
         });
 
         foreach ($data as $value) {
-            BTPa_Yearly::where('year', $value['_id'])->updateOrCreate([
-                'year' => $value['_id'],
-                'total_pages' =>$value['total_page']
-            ]);
+            BTPa_Yearly::updateOrCreate(
+                ['year' => $value['_id']],
+                [
+                    'total_pages' =>$value['total_page']
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

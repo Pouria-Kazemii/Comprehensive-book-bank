@@ -68,10 +68,12 @@ class MakingBookTotalCountEveryYearCommand extends Command
         });
 
         foreach ($data as $value) {
-            BTC_Yearly::where('year', $value['_id'])->updateOrCreate([
-                'year' => $value['_id'],
-                'count' =>$value['count']
-            ]);
+            BTC_Yearly::updateOrCreate(
+                ['year' => $value['_id']],
+                [
+                    'count' =>$value['count']
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

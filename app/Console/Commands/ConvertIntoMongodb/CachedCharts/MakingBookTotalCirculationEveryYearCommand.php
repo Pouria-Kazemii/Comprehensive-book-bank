@@ -70,10 +70,12 @@ class MakingBookTotalCirculationEveryYearCommand extends Command
         });
 
         foreach ($data as $value) {
-            BTCi_Yearly::where('year', $value['_id'])->updateOrCreate([
-                'year' => $value['_id'],
-                'circulation' =>$value['total_page']
-            ]);
+            BTCi_Yearly::updateOrCreate(
+                ['year' => $value['_id']],
+                [
+                    'circulation' =>$value['total_page']
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

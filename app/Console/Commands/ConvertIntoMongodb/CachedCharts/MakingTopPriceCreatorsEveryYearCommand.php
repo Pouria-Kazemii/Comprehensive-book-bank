@@ -85,10 +85,12 @@ class MakingTopPriceCreatorsEveryYearCommand extends Command
                     'total_price' => $value->total_price
                 ];
             }
-            TPC_Yearly::where('year', $i)->updateOrCreate([
-                'year' => $i,
-                'creators' => $creators,
-            ]);
+            TPC_Yearly::updateOrCreate(
+                ['year' => $i],
+                [
+                    'creators' => $creators,
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();

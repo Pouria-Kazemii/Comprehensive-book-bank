@@ -70,10 +70,12 @@ class MakingBookTotalPriceEveryYearCommand extends Command
         });
 
         foreach ($data as $value) {
-            BTP_Yearly::where('year', $value['_id'])->updateOrCreate([
-                'year' => $value['_id'],
-                'price' => $value['total_price']
-            ]);
+            BTP_Yearly::updateOrCreate(
+                ['year' => $value['_id']],
+                [
+                    'price' => $value['total_price']
+                ]
+            );
             $progressBar->advance();
         }
         $progressBar->finish();
