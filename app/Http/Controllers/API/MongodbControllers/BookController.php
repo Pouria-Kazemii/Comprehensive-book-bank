@@ -1300,24 +1300,26 @@ class BookController extends Controller
     }
 
 
-    public function getTotal(int $year , int $limit)
+    public function getTotal(int $year ,int $skip, int $limit)
     {
-        return BookIrBook2::raw(function ($collection) use($year , $limit) {
+        return BookIrBook2::raw(function ($collection) use($year , $limit , $skip) {
             return $collection->aggregate([
                 [
                     '$match' => [
                         'xpublishdate_shamsi' => $year,
-                        //      ,
-                        //        'xcoverprice' => [
-                        //              '$ne' => 0
-                        //            ]
                     ]
                 ],
                 [
                     '$group' => [
                         '_id' => '$xsqlid',
                         'count' => ['$sum' => 1],
-                        'name' => '$xname',
+                        'name' => ['$first' => '$xname'],
+                    ]
+                ],
+                [
+                    // Step 2: Filter groups where count > 1
+                    '$match' => [
+                        'count' => ['$gt' => 1]
                     ]
                 ],
                 [
@@ -1325,6 +1327,9 @@ class BookController extends Controller
                 ],
                 [
                     '$limit' => $limit
+                ],
+                [
+                    '$skip' => $skip
                 ]
             ]);
         });
