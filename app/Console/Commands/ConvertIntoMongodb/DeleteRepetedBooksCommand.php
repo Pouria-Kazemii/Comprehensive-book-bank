@@ -45,6 +45,13 @@ class DeleteRepetedBooksCommand extends Command
         $books = BookIrBook2::raw(function ($collection) use ($skip){
             return $collection->aggregate([
                 [
+                  '$match'=> [
+                      'xpublishdate_shamsi' => [
+                          '$gte' => 1400
+                      ]
+                  ]
+                ],
+                [
                     '$group' => [
                         '_id' => '$xsqlid',
                         'count' => ['$sum' => 1],
