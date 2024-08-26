@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrDaily;
 use App\Models\MongoDBModels\BPA_Yearly;
 use App\Models\MongoDBModels\BTC_Yearly;
 use App\Models\MongoDBModels\BTCi_Yearly;
 use App\Models\MongoDBModels\BTP_Yearly;
 use App\Models\MongoDBModels\BTPa_Yearly;
+use App\Models\MongoDBModels\PublisherTotalCount;
 use App\Models\MongoDBModels\TCC_Yearly;
 use App\Models\MongoDBModels\TCP_Yearly;
 use App\Models\MongoDBModels\TPC_Yearly;
@@ -131,6 +133,20 @@ class ChartController extends Controller
             'status' => 200 ,
             'time' => $elapsedTime,
         ], 200);
+    }
+
+    public function publisher(string $publisherId)
+    {
+        $total_count = PublisherTotalCount::where('publisher_id' , $publisherId)->first()->count;
+
+
+        return response([
+            'msg' => 'success',
+            'data' => [
+                'total_count' => $total_count
+            ],
+            'status' => 200
+        ],200);
     }
 
 
