@@ -10,7 +10,7 @@ use App\Models\MongoDBModels\BTC_Yearly;
 use App\Models\MongoDBModels\BTCi_Yearly;
 use App\Models\MongoDBModels\BTP_Yearly;
 use App\Models\MongoDBModels\BTPa_Yearly;
-use App\Models\MongoDBModels\PublisherTotalCount;
+use App\Models\MongoDBModels\PublisherCacheData;
 use App\Models\MongoDBModels\TCC_Yearly;
 use App\Models\MongoDBModels\TCP_Yearly;
 use App\Models\MongoDBModels\TPC_Yearly;
@@ -135,15 +135,91 @@ class ChartController extends Controller
         ], 200);
     }
 
-    public function publisher(string $publisherId)
+    public function publisher(Request $request , string $publisherId)
     {
-        $total_count = PublisherTotalCount::where('publisher_id' , $publisherId)->first()->count;
+        $start = microtime(true);
+        $year = getYearNow();
+        $startYearForPrice = ( isset($request['startYearForPrice']) and !empty($request['startYearForPrice']) ) ? intval($request->input('startYearForPrice')): $year-10;
+        $endYearForPrice = ( isset($request['endYearForPrice']) and !empty($request['endYearForPrice']) ) ? intval($request->input('endYearForPrice')): $year;
+        $startYearForCirculation = ( isset($request['startYearForCirculation']) and !empty($request['startYearForCirculation']) ) ? intval($request->input('startYearForCirculation')): $year-10;
+        $endYearForCirculation = ( isset($request['endYearForCirculation']) and !empty($request['endYearForCirculation']) ) ? intval($request->input('endYearForCirculation')): $year;
+        $startYearForAverage = ( isset($request['startYearForAverage']) and !empty($request['startYearForAverage']) ) ? intval($request->input('startYearForAverage')): $year-10;
+        $endYearForAverage = ( isset($request['endYearForAverage']) and !empty($request['endYearForAverage']) ) ? intval($request->input('endYearForAverage')): $year;
+        $startYearForPages = ( isset($request['startYearForPages']) and !empty($request['startYearForPages']) ) ? intval($request->input('startYearForPages')): $year-10;
+        $endYearForPages = ( isset($request['endYearForPages']) and !empty($request['endYearForPages']) ) ? intval($request->input('endYearForPages')): $year;
+        $startYearForCount = ( isset($request['startYearForCount']) and !empty($request['startYearForCount']) ) ? intval($request->input('startYearForCount')): $year-10;
+        $endYearForCount = ( isset($request['endYearForCount']) and !empty($request['endYearForCount']) ) ? intval($request->input('endYearForCount')): $year;
 
+        $dataPrice = [];
+        $dataCirculation = [];
+        $dataCount = [];
+        $dataAverage = [] ;
+        $dataPages = [];
+
+
+        $allTime = PublisherCacheData::raw(function ($collection) use($publisherId){
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'publisher_id' => $publisherId
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$publisher_id' ,
+                        'total_circulation' => ['$sum' => '$total_circulation'],
+                        'total_price' => ['$sum' => '$total_price'],
+                        'total_pages' => ['$sum' => '$total_pages'],
+                        'count' => ['$sum' => '$count'],
+                        'average' => ['$sum' => '$average']
+                    ]
+                ],
+            ]);
+        });
+
+        $dataTotalPrice = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForPrice)->where('year', '>=' ,$startYearForPrice)->get();
+        foreach ($dataTotalPrice as $item){
+            $dataPrice ['label'] [] = $item->year;
+            $dataPrice ['value'] [] = $item->total_price;
+        }
+
+        $dataTotalAverage = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForAverage)->where('year', '>=' ,$startYearForAverage)->get();
+        foreach ($dataTotalAverage as $item){
+            $dataAverage ['label'] [] = $item->year;
+            $dataAverage ['value'] [] = $item->average;
+        }
+
+        $dataTotalCount = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForCount)->where('year', '>=' ,$startYearForCount)->get();
+        foreach ($dataTotalCount as $item){
+            $dataCount ['label'] [] = $item->year;
+            $dataCount ['value'] [] = $item->count;
+        }
+
+        $dataTotalCirculation = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForCirculation)->where('year', '>=' ,$startYearForCirculation)->get();
+        foreach ($dataTotalCirculation as $item){
+            $dataCirculation['label'] []= $item->year;
+            $dataCirculation['value'] [] = $item->total_circulation;
+        }
+
+        $dataTotalPages = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForPages)->where('year', '>=' ,$startYearForPages)->get();
+        foreach ($dataTotalPages as $item){
+            $dataPages ['label'] [] = $item->year;
+            $dataPages ['value'] [] = $item->total_pages;
+        }
 
         return response([
             'msg' => 'success',
             'data' => [
-                'total_count' => $total_count
+                'total_pages-all_times' => $allTime[0]['total_pages'],
+                'total_circulation_all_times' => $allTime[0]['total_circulation'],
+                'total_price_all_times' => $allTime[0]['total_price'],
+                'total_count_books_all_times' => $allTime[0]['count'],
+                'average_price_all_times' => $allTime[0]['average'],
+                'data_total_pages_range' => $dataPages ,
+                'data_total_circulation_range' => $dataCirculation,
+                'data_total_price_range' => $dataPrice,
+                'data_total_count_books_range' => $dataCount,
+                'data_average_price_range' => $dataAverage
             ],
             'status' => 200
         ],200);
