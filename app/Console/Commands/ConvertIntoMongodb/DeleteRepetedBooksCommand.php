@@ -13,7 +13,7 @@ class DeleteRepetedBooksCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'delete:repeated_books';
+    protected $signature = 'delete:repeated_books {skip}';
 
     /**
      * The console command description.
@@ -41,7 +41,8 @@ class DeleteRepetedBooksCommand extends Command
     {
         $start = microtime('true');
         $this->info('start to delete repeated books');
-        $books = BookIrBook2::raw(function ($collection)  {
+        $skip = $this->argument('skip');
+        $books = BookIrBook2::raw(function ($collection) use ($skip){
             return $collection->aggregate([
                 [
                     '$group' => [
@@ -53,17 +54,19 @@ class DeleteRepetedBooksCommand extends Command
                     ]
                 ],
                 [
-                    // Step 2: Filter groups where count > 1
                     '$match' => [
                         'count' => ['$gt' => 1]
                     ]
                 ],
                 [
-                    '$sort' => ['_id' => 1] // Sort by year
+                    '$skip' => $skip
                 ],
+                [
+                    '$limit' => 1000
+                ]
             ]);
         });
-       $totalRows = count($books);
+        $totalRows = count($books);
         $progressBar = $this->output->createProgressBar($totalRows);
         $progressBar->start();
         foreach ($books as $book){
