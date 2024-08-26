@@ -41,7 +41,7 @@ class DeleteRepetedBooksCommand extends Command
     {
         $start = microtime('true');
         $this->info('start to delete repeated books');
-        $skip = $this->argument('skip');
+        $skip = (int)$this->argument('skip');
         $books = BookIrBook2::raw(function ($collection) use ($skip){
             return $collection->aggregate([
                 [
