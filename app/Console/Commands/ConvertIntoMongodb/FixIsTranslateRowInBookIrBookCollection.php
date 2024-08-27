@@ -47,7 +47,7 @@ class FixIsTranslateRowInBookIrBookCollection extends Command
            foreach ($books as $book){
                $is_translate = 1;
 
-               if ($book->partner == []){
+               if ($book->partners == []){
                    $is_translate = 3;
                }
 
