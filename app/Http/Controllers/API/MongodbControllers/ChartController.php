@@ -210,6 +210,11 @@ class ChartController extends Controller
         ],200);
     }
 
+    public function creator(Request $request , string $creatorId)
+    {
+
+    }
+
 
     private function getLastTenDayBooks()
     {

@@ -250,7 +250,8 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     //MongoDB Charts
     Route::post('/v2/charts' , [ChartController::class , 'index']);
-    Route::post('/v2/publisher/charts/{publisherId}' , [ChartController::class , 'publisher']);
+    Route::post('/v2/charts/publisher/{publisherId}' , [ChartController::class , 'publisher']);
+    Route::post('/v2/charts/creator/{creatorId}' ,[ChartController::class , 'creator']);
 
     // TODO must implement later
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');

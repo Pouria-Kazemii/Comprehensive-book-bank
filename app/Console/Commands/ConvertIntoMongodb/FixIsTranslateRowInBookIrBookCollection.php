@@ -43,31 +43,30 @@ class FixIsTranslateRowInBookIrBookCollection extends Command
         $total = BookIrBook2::count();
         $progressBar = $this->output->createProgressBar($total);
         $progressBar->start();
-        BookIrBook2::chunk(1000 , function ($books) use($progressBar){
-           foreach ($books as $book){
-               $is_translate = 1;
+        BookIrBook2::chunk(1000, function ($books) use ($progressBar) {
+            foreach ($books as $book) {
+                $is_translate = 1;
 
-               if ($book->partners == []){
-                   $is_translate = 3;
-               }
+                if (count($book->partners) == 0) {
+                    $is_translate = 3;
+                }
 
-               foreach ($book->partners as $partner){
-                   if ($partner['xrule'] == 'مترجم'
-                       or $partner['xrule'] == 'ترجمه مقدمه'
-                       or $partner['xrule'] == 'ترجمه به شعر'
-                       or $partner['xrule'] == 'ترجمه انگليسي'
-                       or $partner['xrule'] == 'ترجمه انگلیسی')
-                   {
-                       $is_translate = 2;
-                   }
+                foreach ($book->partners as $partner) {
+                    if ($partner['xrule'] == 'مترجم'
+                        or $partner['xrule'] == 'ترجمه مقدمه'
+                        or $partner['xrule'] == 'ترجمه به شعر'
+                        or $partner['xrule'] == 'ترجمه انگليسي'
+                        or $partner['xrule'] == 'ترجمه انگلیسی') {
+                        $is_translate = 2;
+                    }
 
-                   $book->update([
-                       'is_translate' => $is_translate
-                   ]);
-
-               }
-               $progressBar->advance();
-           }
+                }
+                
+                $book->update([
+                    'is_translate' => $is_translate
+                ]);
+                $progressBar->advance();
+            }
         });
         $progressBar->finish();
         $this->line('');
