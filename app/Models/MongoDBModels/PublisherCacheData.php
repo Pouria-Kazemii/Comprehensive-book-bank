@@ -16,9 +16,14 @@ class PublisherCacheData extends Model
         'publisher_id' ,
         'year',
         'total_circulation',
+        'first_cover_total_circulation',
         'total_price',
+        'first_cover_total_price',
         'average',
+        'first_cover_average',
         'total_pages',
+        'first_cover_total_pages',
         'count',
+        'first_cover_count'
     ];
 }

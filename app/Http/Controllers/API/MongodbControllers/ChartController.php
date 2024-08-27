@@ -157,25 +157,7 @@ class ChartController extends Controller
         $dataPages = [];
 
 
-        $allTime = PublisherCacheData::raw(function ($collection) use($publisherId){
-            return $collection->aggregate([
-                [
-                    '$match' => [
-                        'publisher_id' => $publisherId
-                    ]
-                ],
-                [
-                    '$group' => [
-                        '_id' => '$publisher_id' ,
-                        'total_circulation' => ['$sum' => '$total_circulation'],
-                        'total_price' => ['$sum' => '$total_price'],
-                        'total_pages' => ['$sum' => '$total_pages'],
-                        'count' => ['$sum' => '$count'],
-                        'average' => ['$sum' => '$average']
-                    ]
-                ],
-            ]);
-        });
+        $allTime = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , 0)->first();
 
         $dataTotalPrice = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYearForPrice)->where('year', '>=' ,$startYearForPrice)->get();
         foreach ($dataTotalPrice as $item){
@@ -212,11 +194,11 @@ class ChartController extends Controller
         return response([
             'msg' => 'success',
             'data' => [
-                'total_pages-all_times' => $allTime[0]['total_pages'],
-                'total_circulation_all_times' => $allTime[0]['total_circulation'],
-                'total_price_all_times' => $allTime[0]['total_price'],
-                'total_count_books_all_times' => $allTime[0]['count'],
-                'average_price_all_times' => $allTime[0]['average'],
+                'total_pages-all_times' => $allTime->total_pages,
+                'total_circulation_all_times' => $allTime->total_circulation,
+                'total_price_all_times' => $allTime->total_price,
+                'total_count_books_all_times' => $allTime->count,
+                'average_price_all_times' => $allTime->average,
                 'data_total_pages_range' => $dataPages ,
                 'data_total_circulation_range' => $dataCirculation,
                 'data_total_price_range' => $dataPrice,
