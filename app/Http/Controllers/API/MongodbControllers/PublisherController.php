@@ -344,16 +344,22 @@ class PublisherController extends Controller
             $totalBooks = count($books);
             $data["authorship"] = 0;
             $data["translate"] = 0;
+            $data['unknown'] = 0;
 
             foreach ($books as $book) {
-                $type = $book->is_translate == "1" ? "authorship" : "translate";
-                $data[$type] += 1;
+                if ($book->is_translate == 1){
+                    $data['authorship'] += 1;
+                }elseif($book->is_translate == 2){
+                    $data['translate'] += 1;
+                }elseif($book->is_translate == 3){
+                    $data['unknown'] += 1;
+                }
             }
 
             $dataTmp = null;
             $dataTmp["تالیف"] = ($data["authorship"] > 0) ? round(($data["authorship"] / $totalBooks) * 100, 2) : 0;
             $dataTmp["ترجمه"] = ($data["translate"] > 0) ? round(($data["translate"] / $totalBooks) * 100, 2) : 0;
-
+            $dataTmp["نامشخص"] = ($data["unknown"] > 0) ? round(($data["unknown"] / $totalBooks) * 100, 2) : 0;
             //
             $data = ["label" => array_keys($dataTmp), "value" => array_values($dataTmp)];
         }

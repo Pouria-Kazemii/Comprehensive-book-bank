@@ -46,6 +46,11 @@ class FixIsTranslateRowInBookIrBookCollection extends Command
         BookIrBook2::chunk(1000 , function ($books) use($progressBar){
            foreach ($books as $book){
                $is_translate = 1;
+
+               if ($book->partner == []){
+                   $is_translate = 3;
+               }
+
                foreach ($book->partners as $partner){
                    if ($partner['xrule'] == 'مترجم'
                        or $partner['xrule'] == 'ترجمه مقدمه'
