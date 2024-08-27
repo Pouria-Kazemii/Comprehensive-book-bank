@@ -7,21 +7,21 @@ use App\Models\MongoDBModels\BookIrPublisher;
 use App\Models\MongoDBModels\PublisherCacheData;
 use Illuminate\Console\Command;
 
-class MakingPublishersCachedDataCommand extends Command
+class MakingPublishersCachedDataSecondCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'chart:publishers {year}';
+    protected $signature = 'chart:publishers_average {year}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'cached all data except average for every publisher per year';
+    protected $description = 'cached average data for every publisher per year';
 
     /**
      * Create a new command instance.
@@ -40,7 +40,7 @@ class MakingPublishersCachedDataCommand extends Command
      */
     public function handle()
     {
-        $this->info("Start cache every publishers book count");
+        $this->info("Start cache average price data every publishers book count");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
         $currentYear = getYearNow();
@@ -55,15 +55,15 @@ class MakingPublishersCachedDataCommand extends Command
                             'publisher' => [
                                 '$ne' => [],
                             ],
-                                'xpublishdate_shamsi' => $year
+                            'xcoverprice' => [
+                                '$ne' => 0
+                            ],
+                            'xpublishdate_shamsi' => $year
                         ]
                     ],
                     [
                         '$group' => [
                             '_id' => '$publisher.xpublisher_id',
-                            'total_circulation' => ['$sum' => '$xcirculation'],
-                            'total_pages' => ['$sum' => '$xtotal_page'],
-                            'total_price' => ['$sum' => '$xtotal_price'],
                             'total_book' => ['$sum' => 1],
                             'price' => ['$sum' => '$xcoverprice'],
                         ]
@@ -77,10 +77,6 @@ class MakingPublishersCachedDataCommand extends Command
                     ['publisher_id' => $book['_id'][0] , 'year' => $year]
                     ,
                     [
-                        'count' => $book['total_book'],
-                        'total_circulation' => $book['total_circulation'],
-                        'total_pages' => $book['total_pages'],
-                        'total_price' => $book['total_price'],
                         'average' => round($book['price']/$book['total_book'])
                     ]
                 );

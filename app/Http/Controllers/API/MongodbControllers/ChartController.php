@@ -207,6 +207,8 @@ class ChartController extends Controller
             $dataPages ['value'] [] = $item->total_pages;
         }
 
+        $end = microtime(true);
+        $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
             'data' => [
@@ -221,7 +223,8 @@ class ChartController extends Controller
                 'data_total_count_books_range' => $dataCount,
                 'data_average_price_range' => $dataAverage
             ],
-            'status' => 200
+            'status' => 200 ,
+            'time' => $elapsedTime
         ],200);
     }
 
