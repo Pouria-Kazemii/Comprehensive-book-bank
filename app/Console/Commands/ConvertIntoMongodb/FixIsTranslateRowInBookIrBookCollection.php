@@ -48,7 +48,11 @@ class FixIsTranslateRowInBookIrBookCollection extends Command
                 $is_translate = 1;
 
                 if (count($book->partners) == 0) {
-                    $is_translate = 3;
+                    if (count($book->languages) == 1 and $book->languages[0]['name'] == 'فارسی'){
+                        $is_translate = 1;
+                    }else {
+                        $is_translate = 3;
+                    }
                 }
 
                 foreach ($book->partners as $partner) {
@@ -61,7 +65,7 @@ class FixIsTranslateRowInBookIrBookCollection extends Command
                     }
 
                 }
-                
+
                 $book->update([
                     'is_translate' => $is_translate
                 ]);
