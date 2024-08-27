@@ -65,7 +65,6 @@ class MakingPublishersCachedDataCommand extends Command
                             'total_pages' => ['$sum' => '$xtotal_page'],
                             'total_price' => ['$sum' => '$xtotal_price'],
                             'total_book' => ['$sum' => 1],
-                            'price' => ['$sum' => '$xcoverprice'],
                         ]
                     ]
                 ]);
@@ -81,7 +80,6 @@ class MakingPublishersCachedDataCommand extends Command
                         'total_circulation' => $book['total_circulation'],
                         'total_pages' => $book['total_pages'],
                         'total_price' => $book['total_price'],
-                        'average' => round($book['price']/$book['total_book'])
                     ]
                 );
             }
