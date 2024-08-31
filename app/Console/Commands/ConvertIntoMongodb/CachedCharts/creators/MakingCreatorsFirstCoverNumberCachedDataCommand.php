@@ -14,7 +14,7 @@ class MakingCreatorsFirstCoverNumberCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creators_firstcovernumber {year}';
+    protected $signature = 'chart:creators_firstprintnumber {year}';
 
     /**
      * The console command description.
@@ -55,7 +55,7 @@ class MakingCreatorsFirstCoverNumberCachedDataCommand extends Command
                             'partners' => [
                                 '$ne' => [],
                             ],
-                            'xcovernumber' => 1 ,
+                            'xprintnumber' => 1 ,
                             'xpublishdate_shamsi' => $year
                         ]
                     ],

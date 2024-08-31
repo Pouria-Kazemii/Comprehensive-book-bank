@@ -14,7 +14,7 @@ class MakingPublishersFirstCoverNumberCachedDataSecondCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publishers_firstcovernumber_average {year}';
+    protected $signature = 'chart:publishers_firstprintnumber_average {year}';
 
     /**
      * The console command description.
@@ -55,7 +55,7 @@ class MakingPublishersFirstCoverNumberCachedDataSecondCommand extends Command
                             'publisher' => [
                                 '$ne' => [],
                             ],
-                            'xcovernumber' => 1 ,
+                            'xprintnumber' => 1 ,
                             'xcoverprice' => [
                                 '$ne' => 0
                             ],

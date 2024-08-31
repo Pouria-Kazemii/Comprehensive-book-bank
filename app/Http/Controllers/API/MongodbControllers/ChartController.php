@@ -146,18 +146,18 @@ class ChartController extends Controller
         $dataPrice = [];
         $dataCirculation = [];
         $dataCount = [];
-        $dataAverage = [] ;
+        $dataAverage = [];
         $dataPages = [];
         $sumPriceRange = 0;
         $sumAverageRange = 0;
-        $sumCountRange =0;
+        $sumCountRange = 0;
         $sumCirculationRange = 0;
-        $sumPagesRange =0;
-        $countForAverage =0;
+        $sumPagesRange = 0;
+        $countForAverage = 0;
 
-        $allTime = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , 0)->first();
+        $allTime = PublisherCacheData::where('publisher_id', $publisherId)->where('year', 0)->first();
 
-        $dataTotalPrice = PublisherCacheData::where('publisher_id' , $publisherId)->where('year' , '<=' , $endYear)->where('year', '>=' ,$startYear)->get();
+        $dataTotalPrice = PublisherCacheData::where('publisher_id', $publisherId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->get();
         foreach ($dataTotalPrice as $item) {
             $dataPrice ['label'] [] = $item->year;
             $dataPrice ['value'] [] = [$item->total_price, $item->first_cover_toal_price];
@@ -165,12 +165,13 @@ class ChartController extends Controller
                 $sumPriceRange += $item->total_price;
             }
 
-
-            $dataAverage ['label'] [] = $item->year;
-            $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
-            if ($item->average != null) {
-                $sumAverageRange += $item->average;
-                $countForAverage++;
+            if ($item->total_price != 0) {
+                $dataAverage ['label'] [] = $item->year;
+                $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
+                if ($item->average != null) {
+                    $sumAverageRange += $item->average;
+                    $countForAverage++;
+                }
             }
 
 
@@ -197,56 +198,121 @@ class ChartController extends Controller
         if ($sumAverageRange != 0) {
             $sumAverageRange = $sumAverageRange / $countForAverage;
         }
+        $box = [
+            [
+                'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
+                'title_en' => 'total_pages-all_times',
+                'value' => $allTime->total_pages,
+            ],
+            [
+                'title_fa' => 'مجموع تیراژ از ابتدا تا کنون',
+                'title_en' => 'total_circulation_all_times',
+                'value' => $allTime->total_circulation,
+            ],
+            [
+                'title_fa' => 'جمع مالی از ابتدا تا کنون',
+                'title_en' => 'total_price_all_times',
+                'value' => $allTime->total_price,
+            ] ,
+            [
+                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
+                'title_en' => 'total_count_books_all_times',
+                'value' => $allTime->count,
+
+            ],
+            [
+                'title_fa' => 'میانگین قیمت از ابتدا تا کنون',
+                'title_en' => 'average_price_all_times',
+                'value' =>$allTime->total_price != 0 ? $allTime->average : 0,
+
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_pages_range',
+                'value' => $sumPagesRange,
+            ],
+            [
+                'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_circulation_range',
+                'value' => $sumCirculationRange,
+
+            ],
+            [
+                'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_price_range',
+                'value' => $sumPriceRange,
+
+            ],
+            [
+                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
+                'title_en' => 'sum_count_range',
+                'value' => $sumCountRange,
+            ],
+            [
+                'title_fa' => "میانگین قیمت از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_average_range',
+                'value' => $sumPriceRange !=0 ? $sumAverageRange :0,
+            ]
+        ];
+
+        $charts = [
+            [
+                'title_fa' => 'نمودار مجموع صفحات',
+                'data_total_pages_range' => $dataPages,
+            ],
+            [
+                'title_fa' =>'نمودار مجموع تیراژ',
+                'data_total_circulation_range' => $dataCirculation
+            ],
+            [
+                'title_fa'=> 'نمودار جمع مالی' ,
+                'data_total_price_range' => $dataPrice
+            ],
+            [
+                'title_fa'=> 'نمودار تعداد کتاب',
+                'data_total_count_books_range' => $dataCount,
+            ],
+            [
+                'title_fa'=> 'نمودار میانگین قیمت',
+                'data_average_price_range' => $dataAverage
+            ]
+        ];
         $end = microtime(true);
         $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
             'data' => [
-                'total_pages-all_times' => $allTime->total_pages,
-                'total_circulation_all_times' => $allTime->total_circulation,
-                'total_price_all_times' => $allTime->total_price,
-                'total_count_books_all_times' => $allTime->count,
-                'average_price_all_times' => $allTime->average,
-
-                'sum_total_pages_range' => $sumPagesRange,
-                'sum_total_circulation_range' => $sumCirculationRange,
-                'sum_total_price_range' => $sumPriceRange,
-                'sum_count_range' => $sumCountRange,
-                'sum_average_range' => $sumAverageRange,
-
-                'data_total_pages_range' => $dataPages ,
-                'data_total_circulation_range' => $dataCirculation,
-                'data_total_price_range' => $dataPrice,
-                'data_total_count_books_range' => $dataCount,
-                'data_average_price_range' => $dataAverage
-            ],
-            'status' => 200 ,
+                'box' => $box ,
+                'charts' => $charts
+            ]
+            ,
+            'status' => 200,
             'time' => $elapsedTime
-        ],200);
+        ], 200);
     }
 
     public function creator(Request $request , string $creatorId)
     {
         $start = microtime(true);
         $year = getYearNow();
-        $startYear = ( isset($request['startYear']) and !empty($request['startYear']) ) ? intval($request->input('startYear')): $year-10;
-        $endYear = ( isset($request['endYear']) and !empty($request['endYear']) ) ? intval($request->input('endYear')): $year;
+        $startYear = (isset($request['startYear']) and !empty($request['startYear'])) ? intval($request->input('startYear')) : $year - 10;
+        $endYear = (isset($request['endYear']) and !empty($request['endYear'])) ? intval($request->input('endYear')) : $year;
 
         $dataPrice = [];
         $dataCirculation = [];
         $dataCount = [];
-        $dataAverage = [] ;
+        $dataAverage = [];
         $dataPages = [];
         $sumPriceRange = 0;
         $sumAverageRange = 0;
-        $sumCountRange =0;
+        $sumCountRange = 0;
         $sumCirculationRange = 0;
-        $sumPagesRange =0;
-        $countForAverage =0;
+        $sumPagesRange = 0;
+        $countForAverage = 0;
 
-        $allTime = CreatorCacheData::where('creator_id' , $creatorId)->where('year' , 0)->first();
+        $allTime = CreatorCacheData::where('creator_id', $creatorId)->where('year', 0)->first();
 
-        $dataTotalPrice = CreatorCacheData::where('creator_id' , $creatorId)->where('year' , '<=' , $endYear)->where('year', '>=' ,$startYear)->get();
+        $dataTotalPrice = CreatorCacheData::where('creator_id', $creatorId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->get();
         foreach ($dataTotalPrice as $item) {
             $dataPrice ['label'] [] = $item->year;
             $dataPrice ['value'] [] = [$item->total_price, $item->first_cover_toal_price];
@@ -254,12 +320,13 @@ class ChartController extends Controller
                 $sumPriceRange += $item->total_price;
             }
 
-
-            $dataAverage ['label'] [] = $item->year;
-            $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
-            if ($item->average != null) {
-                $sumAverageRange += $item->average;
-                $countForAverage++;
+            if ($item->total_price != 0) {
+                $dataAverage ['label'] [] = $item->year;
+                $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
+                if ($item->average != null) {
+                    $sumAverageRange += $item->average;
+                    $countForAverage++;
+                }
             }
 
 
@@ -286,32 +353,97 @@ class ChartController extends Controller
         if ($sumAverageRange != 0) {
             $sumAverageRange = $sumAverageRange / $countForAverage;
         }
+        $box = [
+            [
+                'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
+                'title_en' => 'total_pages-all_times',
+                'value' => $allTime->total_pages,
+            ],
+            [
+                'title_fa' => 'مجموع تیراژ از ابتدا تا کنون',
+                'title_en' => 'total_circulation_all_times',
+                'value' => $allTime->total_circulation,
+            ],
+            [
+                'title_fa' => 'جمع مالی از ابتدا تا کنون',
+                'title_en' => 'total_price_all_times',
+                'value' => $allTime->total_price,
+            ] ,
+            [
+                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
+                'title_en' => 'total_count_books_all_times',
+                'value' => $allTime->count,
+
+            ],
+            [
+                'title_fa' => 'میانگین قیمت از ابتدا تا کنون',
+                'title_en' => 'average_price_all_times',
+                'value' =>$allTime->total_price != 0 ? $allTime->average : 0,
+
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_pages_range',
+                'value' => $sumPagesRange,
+            ],
+            [
+                'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_circulation_range',
+                'value' => $sumCirculationRange,
+
+            ],
+            [
+                'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_price_range',
+                'value' => $sumPriceRange,
+
+            ],
+            [
+                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
+                'title_en' => 'sum_count_range',
+                'value' => $sumCountRange,
+            ],
+            [
+                'title_fa' => "میانگین قیمت از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_average_range',
+                'value' => $sumPriceRange !=0 ? $sumAverageRange :0,
+            ]
+        ];
+
+        $charts = [
+            [
+                'title_fa' => 'نمودار مجموع صفحات',
+                'data_total_pages_range' => $dataPages,
+            ],
+            [
+                'title_fa' =>'نمودار مجموع تیراژ',
+                'data_total_circulation_range' => $dataCirculation
+            ],
+            [
+                'title_fa'=> 'نمودار جمع مالی' ,
+                'data_total_price_range' => $dataPrice
+            ],
+            [
+                'title_fa'=> 'نمودار تعداد کتاب',
+                'data_total_count_books_range' => $dataCount,
+            ],
+            [
+                'title_fa'=> 'نمودار میانگین قیمت',
+                'data_average_price_range' => $dataAverage
+            ]
+        ];
         $end = microtime(true);
         $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
             'data' => [
-                'total_pages-all_times' => $allTime->total_pages,
-                'total_circulation_all_times' => $allTime->total_circulation,
-                'total_price_all_times' => $allTime->total_price,
-                'total_count_books_all_times' => $allTime->count,
-                'average_price_all_times' => $allTime->average,
-
-                'sum_total_pages_range' => $sumPagesRange,
-                'sum_total_circulation_range' => $sumCirculationRange,
-                'sum_total_price_range' => $sumPriceRange,
-                'sum_count_range' => $sumCountRange,
-                'sum_average_range' => $sumAverageRange,
-
-                'data_total_pages_range' => $dataPages ,
-                'data_total_circulation_range' => $dataCirculation,
-                'data_total_price_range' => $dataPrice,
-                'data_total_count_books_range' => $dataCount,
-                'data_average_price_range' => $dataAverage
-            ],
-            'status' => 200 ,
+                'box' => $box ,
+                'charts' => $charts
+            ]
+            ,
+            'status' => 200,
             'time' => $elapsedTime
-        ],200);
+        ], 200);
     }
 
 
