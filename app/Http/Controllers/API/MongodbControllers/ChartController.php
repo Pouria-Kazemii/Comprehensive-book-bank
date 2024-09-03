@@ -24,112 +24,229 @@ class ChartController extends Controller
     {
         $start = microtime(true);
         $year = getYearNow();
-        $firstDateForPage =( isset($request['firstDateForPage']) and !empty($request['firstDateForPage']) ) ? intval($request->input('firstDateForPage')): $year-10;
-        $lastDateForPage = ( isset($request['lastDateForPage']) and !empty($request['lastDateForPage']) ) ? intval($request->input('lastDateForPage')): $year ;
-        $firstDateForCount = ( isset($request['firstDateForCount']) and !empty($request['firstDateForCount']) ) ? intval($request->input('firstDateForCount')): $year-10;
-        $lastDateForCount = ( isset($request['lastDateForCount']) and !empty($request['lastDateForCount']) ) ? intval($request->input('lastDateForCount')): $year ;
-        $firstDateForPrice = ( isset($request['firstDateForPrice']) and !empty($request['firstDateForPrice']) ) ? intval($request->input('firstDateForPrice')): $year-10;
-        $lastDateForPrice = ( isset($request['lastDateForPrice']) and !empty($request['lastDateForPrice']) ) ? intval($request->input('lastDateForPrice')): $year ;
-        $firstDateForCirculation = ( isset($request['firstDateForCirculation']) and !empty($request['firstDateForCirculation']) ) ? intval($request->input('firstDateForCirculation')): $year-10;
-        $lastDateForCirculation = ( isset($request['lastDateForCirculation']) and !empty($request['lastDateForCirculation']) ) ? intval($request->input('lastDateForCirculation')): $year ;
-        $firstDateForAverage = ( isset($request['firstDateForAverage']) and !empty($request['firstDateForAverage']) ) ? intval($request->input('firstDateForAverage')): $year-10 ;
-        $lastDateForAverage = ( isset($request['lastDateForAverage']) and !empty($request['lastDateForAverage']) ) ? intval($request->input('lastDateForAverage')): $year ;
-        $dateForCreators_totalPrice = ( isset($request['dfc_price']) and !empty($request['dfc_price']) ) ? intval($request->input('dfc_price')): $year ;
-        $dateForCreators_totalCirculation = ( isset($request['dfc_circulation']) and !empty($request['dfc_circulation']) ) ? intval($request->input('dfc_circulation')): $year  ;
-        $dateForPublishers_totalPrice = ( isset($request['dfp_price']) and !empty($request['dfp_price']) ) ? intval($request->input('dfp_price')): $year ;
-        $dateForPublishers_totalCirculation = ( isset($request['dfp_circulation']) and !empty($request['dfp_circulation']) ) ? intval($request->input('dfp_circulation')): $year ;
-
+        $startYear = ( isset($request['startYear']) and !empty($request['startYear']) ) ? intval($request->input('startYear')): $year-10;
+        $endYear = ( isset($request['endYear']) and !empty($request['endYear']) ) ? intval($request->input('endYear')): $year;
+        $topYear = ( isset($request['topYear']) and !empty($request['topYear']) ) ? intval($request->input('topYear')): $year-10;
         $dataForRangeCount = [];
         $dataForRangePrice = [];
         $dataForRangeCirculation = [];
         $dataForRangeAverage = [];
+        $dataForRangePage = [];
+        $sumCountRange = 0;
+        $sumPriceRange = 0;
+        $sumPageRange = 0;
+        $sumCirculationRange = 0;
+        $sumAverageRange = 0;
+        $countForAverage = 0 ;
         $dataForCreatorPrice = [];
         $dataForCreatorCirculation = [];
         $dataForPublisherPrice = [];
         $dataForPublisherCirculation = [];
-        $dataForRangePage = [];
+        $allTimesAverage = 0;
+        $allTimesPrice = 0 ;
+        $allTimesCount = 0 ;
+        $allTimesCirculation = 0;
+        $allTimesPage = 0;
+
+        $allTimesAverageData = BPA_Yearly::all();
+        foreach ($allTimesAverageData as $item){
+            $allTimesAverage += (int)$item->average;
+        }
+        $allTimesPage = BTPa_Yearly::sum('total_pages');
+        $allTimesPrice = BTP_Yearly::sum('price');
+        $allTimesCount = BTC_Yearly::sum('count');
+        $allTimesCirculation = BTCi_Yearly::sum('circulation');
 
         // Fetch or compute cache values
         $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
 
-        $dfp_circulation =TCP_Yearly::where('year', $dateForPublishers_totalCirculation)->first();
+        $dfp_circulation =TCP_Yearly::where('year', $topYear)->first();
         foreach ($dfp_circulation->publishers as $item){
             $dataForPublisherCirculation['label'][] = $item['publisher_name'];
             $dataForPublisherCirculation['value'][] = $item['total_page'];
         }
 
-        $dfp_price   = TPP_Yearly::where('year' , $dateForPublishers_totalPrice)->first();
+        $dfp_price   = TPP_Yearly::where('year' , $topYear)->first();
         foreach ($dfp_price->publishers as $item){
             $dataForPublisherPrice ['label'] [] = $item['publisher_name'];
             $dataForPublisherPrice['value'] [] = $item['total_price'];
         }
 
-        $dfc_circulation = TCC_Yearly::where('year' , $dateForCreators_totalCirculation)->first();
+        $dfc_circulation = TCC_Yearly::where('year' , $topYear)->first();
         foreach ($dfc_circulation->creators as $item){
             $dataForCreatorCirculation['label'][] = $item['creator_name'];
             $dataForCreatorCirculation['value'][] = $item['total_page'];
         }
 
-        $dfc_price = TPC_Yearly::where('year' , $dateForCreators_totalPrice)->first();
+        $dfc_price = TPC_Yearly::where('year' , $topYear)->first();
         foreach ($dfc_price->creators  as $item){
             $dataForCreatorPrice['label'] [] = $item['creator_name'];
             $dataForCreatorPrice['value'] [] = $item['total_price'];
         }
 
-        $dataRangePage = BTPa_Yearly::where('year', '<=' , $lastDateForPage)->where('year','>=' , $firstDateForPage)->get();
+        $dataRangePage = BTPa_Yearly::where('year', '<=' , $endYear)->where('year','>=' , $startYear)->get();
         foreach ($dataRangePage as $item) {
             $dataForRangePage ['label'] [] = $item->year;
             $dataForRangePage ['value'] [] = $item->total_pages;
+            if ($item->total_pages != null){
+                $sumPageRange += $item->total_pages;
+            }
         }
 
-        $dateRangeCount = BTC_Yearly::where('year', '<=' , $lastDateForCount)->where('year','>=' , $firstDateForCount)->get();
+        $dateRangeCount = BTC_Yearly::where('year', '<=' , $endYear)->where('year','>=' , $startYear)->get();
         foreach ($dateRangeCount as $item) {
             $dataForRangeCount ['label'] [] = $item->year;
             $dataForRangeCount ['value'] [] = $item->count;
+            if ($item->count != null){
+                $sumCountRange += $item->count;
+            }
         }
 
-        $dateRangePrice = BTP_Yearly::where('year' , '<=' , $lastDateForPrice)->where('year', '>=' ,$firstDateForPrice)->get();
+        $dateRangePrice = BTP_Yearly::where('year' , '<=' , $endYear)->where('year', '>=' ,$startYear)->get();
         foreach ($dateRangePrice as $item){
             $dataForRangePrice ['label'] [] =$item->year;
             $dataForRangePrice ['value'] [] =$item->price;
+                if($item->price != null){
+                    $sumPriceRange += $item->price;
+                }
         }
 
-        $dateRangeCirculation = BTCi_Yearly::where('year' , '<=' , $lastDateForCirculation)->where('year' , '>=' ,$firstDateForCirculation)->get();
+        $dateRangeCirculation = BTCi_Yearly::where('year' , '<=' , $endYear)->where('year' , '>=' ,$startYear)->get();
         foreach ($dateRangeCirculation as $item){
             $dataForRangeCirculation ['label'] [] = $item->year;
             $dataForRangeCirculation ['value'] [] = $item->circulation;
+            if ($item->circulation != null){
+                $sumCirculationRange += $item->circulation;
+            }
         }
 
-        $dateRangeAverage = BPA_Yearly::where('year','<=' , $lastDateForAverage)->where('year' , '>=' , $firstDateForAverage)->get();
+        $dateRangeAverage = BPA_Yearly::where('year','<=' , $endYear)->where('year' , '>=' , $startYear)->get();
         foreach ($dateRangeAverage as $item){
             $dataForRangeAverage ['label'] [] =$item->year;
             $dataForRangeAverage ['value'] [] =$item->average;
+            if ($item->average != null){
+                $sumAverageRange += (int)$item->average;
+                $countForAverage++;
+            }
         }
 
+        if ($sumAverageRange != 0) {
+            $sumAverageRange = $sumAverageRange / $countForAverage;
+        }
+        $box = [
+            [
+                'title_fa' => "مجموع تعداد کتاب ها از ابتدا تا کنون",
+                'title_en' => 'all_times_count',
+                'data' => $allTimesCount
+            ],
+            [
+                'title_fa' => "مجموع تیراژ از ابتدا تا کنون",
+                'title_en' => 'all_times_circulation',
+                'data' => $allTimesCirculation
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
+                'title_en' => 'all_times_page',
+                'data' => $allTimesPage
+            ],
+            [
+                'title_fa' => "جمع مالی کتاب ها از ابتدا تا کنون",
+                'title_en' => 'all_times_price',
+                'data' => $allTimesPrice
+            ],
+            [
+                'title_fa' => "میانگین قیمت کتاب از ابتدا تا کنون",
+                'title_en' => 'all_times_average',
+                'data' => $allTimesAverage
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_pages',
+                'data' => $sumPageRange
+            ],
+            [
+                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_count_range',
+                'data' => $sumCountRange
+            ],
+            [
+                'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_circulation',
+                'data' => $sumCirculationRange
+            ],
+            [
+                'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_price',
+                'data' => $sumPriceRange
+            ],
+            [
+                'title_fa' => "میانگین قیمت کتاب از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_average',
+                'data' => $sumAverageRange
+            ],
+        ];
+        $charts = [
+            [
+                'title_fa' => 'نمودار تعداد کتاب های 10 روز اخیر بانک جامع',
+                'title_en' => 'data_for_ten_past_new_books',
+                'data' => $dataForTenPastDayBookInserted
+            ],
+            [
+                'title_fa' => 'نمودار میانگین قیمت',
+                'title_en' => 'data_for_average_books_price',
+                'data' => $dataForRangeAverage
+            ],
+            [
+                'title_fa' => 'نمودار مجموع تعداد کتاب',
+                'title_en' => 'data_for_count_books',
+                'data' => $dataForRangeCount
+            ],
+            [
+                'title_fa' => 'نمودار جمع مالی',
+                'title_en' => 'data_for_price_books',
+                'data' => $dataForRangePrice
+            ],
+            [
+                'title_fa' => 'نمودار مجموع صفحات چاپ شده',
+                'title_en' => 'data_for_page_books',
+                'data' => $dataForRangePage
+            ],
+            [
+                'title_fa' => 'نمودار مجموع تیراژ',
+                'title_en' => 'data_for_circulation_books',
+                'data' => $dataForRangeCirculation
+            ],
+        ];
+        $top=[
+            [
+                'title_fa' => 'نمودار پدیدآورندگان برتر بر حسب جمع مالی',
+                'title_en' => 'data_for_creators_total_price',
+                'data' => $dataForCreatorPrice
+            ],
+            [
+                'title_fa' => 'نمودار پدیدآورندگان برتر بر حسب مجموع تیراژ',
+                'title_en' => 'data_for_creators_total_circulation',
+                'data' => $dataForCreatorCirculation
+            ],
+            [
+                'title_fa' => 'نمودار انتشارات برتر بر حسب جمع مالی',
+                'title_en' => 'data_for_publishers_total_price',
+                'data' => $dataForPublisherPrice
+            ],
+            [
+                'title_fa' => 'نمودار انتشارات برتر بر حسب مجموع تیراژ',
+                'title_en' => 'date_for_publishers_total_circulation',
+                'data' => $dataForPublisherCirculation
+            ],
+        ];
         $end = microtime(true);
         $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
-            'data' => [
-                'data_for_ten_past_new_books' => $dataForTenPastDayBookInserted,
-
-                'data_for_average_books_price' => $dataForRangeAverage,
-
-                'data_for_count_books' => $dataForRangeCount,
-
-                'data_for_price_books' => $dataForRangePrice,
-
-                'data_for_page_books' => $dataForRangePage,
-
-                'data_for_circulation_books' => $dataForRangeCirculation,
-
-                'data_for_creators_total_price' => $dataForCreatorPrice,
-
-                'data_for_creators_total_circulation' => $dataForCreatorCirculation,
-
-                'data_for_publishers_total_price' => $dataForPublisherPrice,
-
-                'date_for_publishers_total_circulation' => $dataForPublisherCirculation
+            'data' =>[
+                'box' => $box,
+                'charts' => $charts,
+                'top' => $top
             ],
             'status' => 200 ,
             'time' => $elapsedTime,
@@ -160,14 +277,16 @@ class ChartController extends Controller
         $dataTotalPrice = PublisherCacheData::where('publisher_id', $publisherId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->get();
         foreach ($dataTotalPrice as $item) {
             $dataPrice ['label'] [] = $item->year;
-            $dataPrice ['value'] [] = [$item->total_price, $item->first_cover_toal_price];
+            $dataPrice ['value'] [0][] = $item->total_price;
+            $dataPrice ['value'] [1][] = $item->first_cover_total_price;
             if ($item->total_price != null) {
                 $sumPriceRange += $item->total_price;
             }
 
             if ($item->total_price != 0) {
                 $dataAverage ['label'] [] = $item->year;
-                $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
+                $dataAverage ['value'] [0][] = $item->average;
+                $dataAverage ['value'] [1][] = $item->first_cover_average;
                 if ($item->average != null) {
                     $sumAverageRange += $item->average;
                     $countForAverage++;
@@ -176,21 +295,24 @@ class ChartController extends Controller
 
 
             $dataCount ['label'] [] = $item->year;
-            $dataCount ['value'] [] = [$item->count, $item->first_cover_count];
+            $dataCount ['value'] [0][] = $item->count;
+            $dataCount ['value'] [1][] = $item->first_cover_count;
             if ($item->count != null) {
                 $sumCountRange += $item->count;
             }
 
 
             $dataCirculation['label'] [] = $item->year;
-            $dataCirculation['value'] [] = [$item->total_circulation, $item->first_cover_total_circulation];
+            $dataCirculation['value'] [0][]  = $item->total_circulation;
+            $dataCirculation['value'] [1][] = $item->first_cover_total_circulation;
             if ($item->total_circulation != null) {
                 $sumCirculationRange += $item->total_circulation;
             }
 
 
             $dataPages ['label'] [] = $item->year;
-            $dataPages ['value'] [] = [$item->total_pages, $item->first_cover_total_pages];
+            $dataPages ['value'] [0][] = $item->total_pages;
+            $dataPages ['value'] [1][] = $item->first_cover_total_pages;
             if ($item->total_pages != null) {
                 $sumPagesRange = +$item->total_pages;
             }
@@ -257,24 +379,34 @@ class ChartController extends Controller
 
         $charts = [
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa' => 'نمودار مجموع صفحات',
-                'data_total_pages_range' => $dataPages,
+                'title_en' => 'data_total_pages_range',
+                'data' => $dataPages,
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa' =>'نمودار مجموع تیراژ',
-                'data_total_circulation_range' => $dataCirculation
+                'title_en' => 'data_total_circulation_range',
+                'data' => $dataCirculation
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار جمع مالی' ,
-                'data_total_price_range' => $dataPrice
+                'title_en' => 'data_total_price_range',
+                'data' => $dataPrice
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار تعداد کتاب',
-                'data_total_count_books_range' => $dataCount,
+                'title_en' => 'data_total_count_books_range',
+                'data' => $dataCount,
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار میانگین قیمت',
-                'data_average_price_range' => $dataAverage
+                'title_en' => 'data_average_price_range',
+                'data' => $dataAverage
             ]
         ];
         $end = microtime(true);
@@ -315,14 +447,16 @@ class ChartController extends Controller
         $dataTotalPrice = CreatorCacheData::where('creator_id', $creatorId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->get();
         foreach ($dataTotalPrice as $item) {
             $dataPrice ['label'] [] = $item->year;
-            $dataPrice ['value'] [] = [$item->total_price, $item->first_cover_toal_price];
+            $dataPrice ['value'] [0][] = $item->total_price;
+            $dataPrice ['value'] [1][] = $item->first_cover_total_price ;
             if ($item->total_price != null) {
                 $sumPriceRange += $item->total_price;
             }
 
             if ($item->total_price != 0) {
                 $dataAverage ['label'] [] = $item->year;
-                $dataAverage ['value'] [] = [$item->average, $item->first_cover_average];
+                $dataAverage ['value'] [0][] = $item->average;
+                $dataAverage ['value'] [1][] = $item->first_cover_average;
                 if ($item->average != null) {
                     $sumAverageRange += $item->average;
                     $countForAverage++;
@@ -331,21 +465,24 @@ class ChartController extends Controller
 
 
             $dataCount ['label'] [] = $item->year;
-            $dataCount ['value'] [] = [$item->count, $item->first_cover_count];
+            $dataCount ['value'] [0][] = $item->count;
+            $dataCount ['value'] [1][] = $item->first_cover_count;
             if ($item->count != null) {
                 $sumCountRange += $item->count;
             }
 
 
             $dataCirculation['label'] [] = $item->year;
-            $dataCirculation['value'] [] = [$item->total_circulation, $item->first_cover_total_circulation];
+            $dataCirculation['value'] [0][] = $item->total_circulation;
+            $dataCirculation['value'] [1][] = $item->first_cover_total_circulation;
             if ($item->total_circulation != null) {
                 $sumCirculationRange += $item->total_circulation;
             }
 
 
             $dataPages ['label'] [] = $item->year;
-            $dataPages ['value'] [] = [$item->total_pages, $item->first_cover_total_pages];
+            $dataPages ['value'] [0][] = $item->total_pages;
+            $dataPages ['value'] [1][] = $item->first_cover_total_pages;
             if ($item->total_pages != null) {
                 $sumPagesRange = +$item->total_pages;
             }
@@ -412,24 +549,34 @@ class ChartController extends Controller
 
         $charts = [
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa' => 'نمودار مجموع صفحات',
-                'data_total_pages_range' => $dataPages,
+                'title_en' => 'data_total_pages_range',
+                'data' => $dataPages,
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa' =>'نمودار مجموع تیراژ',
-                'data_total_circulation_range' => $dataCirculation
+                'title_en' => 'data_total_circulation_range',
+                'data' => $dataCirculation
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار جمع مالی' ,
-                'data_total_price_range' => $dataPrice
+                'title_en' => 'data_total_price_range',
+                'data' => $dataPrice
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار تعداد کتاب',
-                'data_total_count_books_range' => $dataCount,
+                'title_en' => 'data_total_count_books_range',
+                'data' => $dataCount,
             ],
             [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 'title_fa'=> 'نمودار میانگین قیمت',
-                'data_average_price_range' => $dataAverage
+                'title_en' => 'data_average_price_range',
+                'data' => $dataAverage
             ]
         ];
         $end = microtime(true);
