@@ -52,10 +52,10 @@ class ChartController extends Controller
         foreach ($allTimesAverageData as $item){
             $allTimesAverage += (int)$item->average;
         }
-        $allTimesPage = BTPa_Yearly::sum('total_pages');
-        $allTimesPrice = BTP_Yearly::sum('price');
-        $allTimesCount = BTC_Yearly::sum('count');
-        $allTimesCirculation = BTCi_Yearly::sum('circulation');
+        $allTimesPage += BTPa_Yearly::sum('total_pages');
+        $allTimesPrice += BTP_Yearly::sum('price');
+        $allTimesCount += BTC_Yearly::sum('count');
+        $allTimesCirculation += BTCi_Yearly::sum('circulation');
 
         // Fetch or compute cache values
         $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
