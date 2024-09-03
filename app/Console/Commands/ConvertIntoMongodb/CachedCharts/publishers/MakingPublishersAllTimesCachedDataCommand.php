@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
+use App\Jobs\CachedData\PublisherAllTimesCachedDataJob;
 use App\Models\MongoDBModels\BookIrPublisher;
 use App\Models\MongoDBModels\PublisherCacheData;
 use Illuminate\Console\Command;
@@ -44,40 +45,12 @@ class MakingPublishersAllTimesCachedDataCommand extends Command
         $rows = BookIrPublisher::count();
         $progressBar = $this->output->createProgressBar($rows);
         $progressBar->start();
-        $data = PublisherCacheData::raw(function ($collection) use($progressBar){
-            return $collection->aggregate([
-                [
-                  '$match' => [
-                      'year' => [
-                          '$ne' => 0
-                      ]
-                  ]
-                ],
-                [
-                    '$group' => [
-                        '_id' => '$publisher_id',
-                        'total_circulation' => ['$sum' => '$total_circulation'],
-                        'total_price' => ['$sum' => '$total_price'],
-                        'total_pages' => ['$sum' => '$total_pages'],
-                        'count' => ['$sum' => '$count'],
-                    ]
-                ]
-            ]);
+        BookIrPublisher::chunk(1000,function ($publishers)use($progressBar){
+            foreach ($publishers as $publisher){
+                PublisherAllTimesCachedDataJob::dispatch($publisher);
+                $progressBar->advance();
+            }
         });
-
-        foreach ($data as $item){
-            $progressBar->advance();
-            PublisherCacheData::updateOrCreate(
-                ['publisher_id' => $item['_id'] ,'year' => 0 ]
-                ,
-                [
-                    'count' => $item['count'],
-                    'total_circulation' => $item['total_circulation'],
-                    'total_pages' => $item['total_pages'],
-                    'total_price' => $item['total_price'],
-                ]
-            );
-        }
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

@@ -2,9 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
-use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BookIrPublisher;
-use App\Models\MongoDBModels\PublisherCacheData;
+use App\Jobs\CachedData\PublisherFirstCoverNumberCachedDataJob;
 use Illuminate\Console\Command;
 
 class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
@@ -14,7 +12,7 @@ class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publishers_firstprintnumber {year}';
+    protected $signature = 'chart:publishers_firstprintnumber {year} {--A}';
 
     /**
      * The console command description.
@@ -43,48 +41,21 @@ class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
         $this->info("Start cache every publishers book count");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
-        $currentYear = getYearNow();
-        $progressBar = $this->output->createProgressBar(BookIrPublisher::count()*($currentYear-$year));
-        $progressBar->start();
-        while($year <= $currentYear) {
-
-            $books = BookIrBook2::raw(function ($collection) use($year) {
-                return $collection->aggregate([
-                    [
-                        '$match' => [
-                            'publisher' => [
-                                '$ne' => [],
-                            ],
-                            'xprintnumber' => 1 ,
-                            'xpublishdate_shamsi' => $year
-                        ]
-                    ],
-                    [
-                        '$group' => [
-                            '_id' => '$publisher.xpublisher_id',
-                            'total_circulation' => ['$sum' => '$xcirculation'],
-                            'total_pages' => ['$sum' => '$xtotal_page'],
-                            'total_price' => ['$sum' => '$xtotal_price'],
-                            'total_book' => ['$sum' => 1],
-                        ]
-                    ]
-                ]);
-            });
-
-            foreach ($books as $book) {
+        $option = $this->option('A');
+        if ($option) {
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
+            $progressBar->start();
+            while ($year <= $currentYear) {
+                PublisherFirstCoverNumberCachedDataJob::dispatch($year);
                 $progressBar->advance();
-                PublisherCacheData::updateOrCreate(
-                    ['publisher_id' => $book['_id'][0] , 'year' => $year]
-                    ,
-                    [
-                        'first_cover_count' => $book['total_book'],
-                        'first_cover_total_circulation' => $book['total_circulation'],
-                        'first_cover_total_pages' => $book['total_pages'],
-                        'first_cover_total_price' => $book['total_price'],
-                    ]
-                );
+                $year++;
             }
-            $year++;
+        } else {
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            PublisherFirstCoverNumberCachedDataJob::dispatch($year);
+            $progressBar->advance();
         }
         $progressBar->finish();
         $this->line('');

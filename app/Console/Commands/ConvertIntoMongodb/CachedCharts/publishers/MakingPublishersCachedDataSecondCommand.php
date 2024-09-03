@@ -2,9 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
-use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BookIrPublisher;
-use App\Models\MongoDBModels\PublisherCacheData;
+use App\Jobs\CachedData\PublisherCachedDataSecondJob;
 use Illuminate\Console\Command;
 
 class MakingPublishersCachedDataSecondCommand extends Command
@@ -14,7 +12,7 @@ class MakingPublishersCachedDataSecondCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publishers_average {year}';
+    protected $signature = 'chart:publishers_average {year} {--A}';
 
     /**
      * The console command description.
@@ -43,45 +41,21 @@ class MakingPublishersCachedDataSecondCommand extends Command
         $this->info("Start cache average price data every publishers book count");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
-        $currentYear = getYearNow();
-        $progressBar = $this->output->createProgressBar(BookIrPublisher::count()*($currentYear-$year));
-        $progressBar->start();
-        while($year <= $currentYear) {
-
-            $books = BookIrBook2::raw(function ($collection) use($year) {
-                return $collection->aggregate([
-                    [
-                        '$match' => [
-                            'publisher' => [
-                                '$ne' => [],
-                            ],
-                            'xcoverprice' => [
-                                '$ne' => 0
-                            ],
-                            'xpublishdate_shamsi' => $year
-                        ]
-                    ],
-                    [
-                        '$group' => [
-                            '_id' => '$publisher.xpublisher_id',
-                            'total_book' => ['$sum' => 1],
-                            'price' => ['$sum' => '$xcoverprice'],
-                        ]
-                    ]
-                ]);
-            });
-
-            foreach ($books as $book) {
+        $option = $this->option('A');
+        if ($option) {
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
+            $progressBar->start();
+            while ($year <= $currentYear) {
+                PublisherCachedDataSecondJob::dispatch($year);
                 $progressBar->advance();
-                PublisherCacheData::updateOrCreate(
-                    ['publisher_id' => $book['_id'][0] , 'year' => $year]
-                    ,
-                    [
-                        'average' => round($book['price']/$book['total_book'])
-                    ]
-                );
+                $year++;
             }
-            $year++;
+        } else {
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            PublisherCachedDataSecondJob::dispatch($year);
+            $progressBar->advance();
         }
         $progressBar->finish();
         $this->line('');
