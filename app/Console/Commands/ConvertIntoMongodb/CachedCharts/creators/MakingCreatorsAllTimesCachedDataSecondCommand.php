@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\creators;
 
+use App\Jobs\CachedData\CreatorsAllTimesCachedDataSecondJob;
 use App\Models\MongoDBModels\BookIrCreator;
-use App\Models\MongoDBModels\CreatorCacheData;
 use Illuminate\Console\Command;
 
 class MakingCreatorsAllTimesCachedDataSecondCommand extends Command
@@ -44,38 +44,12 @@ class MakingCreatorsAllTimesCachedDataSecondCommand extends Command
         $rows = BookIrCreator::count();
         $progressBar = $this->output->createProgressBar($rows);
         $progressBar->start();
-        $data = CreatorCacheData::raw(function ($collection) use($progressBar){
-            return $collection->aggregate([
-                [
-                    '$match' => [
-                        'average' => [
-                            '$ne' => 0
-                        ],
-                        'year' => [
-                            '$ne' => 0
-                        ]
-                    ]
-                ],
-                [
-                    '$group' => [
-                        '_id' => '$creator_id',
-                        'price' => ['$sum' => '$average'],
-                        'count' => ['$sum' => 1],
-                    ]
-                ]
-            ]);
+        BookIrCreator::chunk(1000,function ($creators) use($progressBar){
+            foreach ($creators as $creator){
+                CreatorsAllTimesCachedDataSecondJob::dispatch($creator);
+                $progressBar->advance();
+            }
         });
-
-        foreach ($data as $item){
-            $progressBar->advance();
-            CreatorCacheData::updateOrCreate(
-                ['creator_id' => $item['_id'] ,'year' => 0 ]
-                ,
-                [
-                    'average' => round($item['price']/$item['count'])
-                ]
-            );
-        }
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

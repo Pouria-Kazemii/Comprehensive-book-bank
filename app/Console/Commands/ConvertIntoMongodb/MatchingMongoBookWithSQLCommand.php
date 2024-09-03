@@ -5,6 +5,7 @@ namespace App\Console\Commands\ConvertIntoMongodb;
 use App\Jobs\AddNewSubjectsJob;
 use App\Jobs\AddNewXruleJob;
 use App\Jobs\ConvertBookirBookJob;
+use App\Jobs\FixIsTranslateJob;
 use App\Jobs\UpdateBookIrBooksMongoIdInSqlJob;
 use App\Models\BookirBook;
 use App\Models\BookirSubject;
@@ -57,6 +58,7 @@ class MatchingMongoBookWithSQLCommand extends Command
                 $mongoBook = BookIrBook2::where('xsqlid', $book->xid)->first();
                 AddNewXruleJob::dispatch($mongoBook);
                 UpdateBookIrBooksMongoIdInSqlJob::dispatch($mongoBook);
+                FixIsTranslateJob::dispatch($mongoBook);
                 $progressBar1->advance();
                 $lastProcessedId = $book->xid;
             }

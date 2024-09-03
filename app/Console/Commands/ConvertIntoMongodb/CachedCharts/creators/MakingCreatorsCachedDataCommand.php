@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\creators;
 
+use App\Jobs\CachedData\CreatorsCachedDataJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\CreatorCacheData;
@@ -14,7 +15,7 @@ class MakingCreatorsCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creators {year}';
+    protected $signature = 'chart:creators {year} {--A}';
 
     /**
      * The console command description.
@@ -43,51 +44,23 @@ class MakingCreatorsCachedDataCommand extends Command
         $this->info("Start cache every creator data");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
-        $currentYear = getYearNow();
-        $progressBar = $this->output->createProgressBar(BookIrCreator::count()*($currentYear-$year));
-        $progressBar->start();
-        while($year <= $currentYear) {
-
-            $books = BookIrBook2::raw(function ($collection) use($year) {
-                return $collection->aggregate([
-                    [
-                        '$match' => [
-                            'partners' => [
-                                '$ne' => [],
-                            ],
-                            'xpublishdate_shamsi' => $year
-                        ]
-                    ],
-                    [
-                        '$unwind' => '$partners'
-                    ],
-                    [
-                        '$group' => [
-                            '_id' => '$partners.xcreator_id',
-                            'total_circulation' => ['$sum' => '$xcirculation'],
-                            'total_pages' => ['$sum' => '$xtotal_page'],
-                            'total_price' => ['$sum' => '$xtotal_price'],
-                            'total_book' => ['$sum' => 1],
-                        ]
-                    ]
-                ]);
-            });
-
-            foreach ($books as $book) {
+        $option = $this->option('A');
+        if ($option){
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear-$year);
+            $progressBar->start();
+            while($year <= $currentYear) {
+                CreatorsCachedDataJob::dispatch($year);
                 $progressBar->advance();
-                CreatorCacheData::updateOrCreate(
-                    ['creator_id' => $book['_id'] , 'year' => $year]
-                    ,
-                    [
-                        'count' => $book['total_book'],
-                        'total_circulation' => $book['total_circulation'],
-                        'total_pages' => $book['total_pages'],
-                        'total_price' => $book['total_price'],
-                    ]
-                );
+                $year++;
             }
-            $year++;
+        }else{
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            CreatorsCachedDataJob::dispatch($year);
+            $progressBar->advance();
         }
+
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

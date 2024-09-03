@@ -63,7 +63,8 @@ class Kernel extends ConsoleKernel
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCountEveryYearCommand::class,
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookPriceAverageEveryYearCommand::class,
         Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCirculationEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPagesEveryYearCommand::class
+        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPagesEveryYearCommand::class ,
+
 
 
     ];
