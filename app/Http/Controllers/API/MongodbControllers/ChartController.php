@@ -137,52 +137,52 @@ class ChartController extends Controller
             [
                 'title_fa' => "مجموع تعداد کتاب ها از ابتدا تا کنون",
                 'title_en' => 'all_times_count',
-                'data' => $allTimesCount
+                'value' => $allTimesCount
             ],
             [
                 'title_fa' => "مجموع تیراژ از ابتدا تا کنون",
                 'title_en' => 'all_times_circulation',
-                'data' => $allTimesCirculation
+                'value' => $allTimesCirculation
             ],
             [
                 'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
                 'title_en' => 'all_times_page',
-                'data' => $allTimesPage
+                'value' => $allTimesPage
             ],
             [
                 'title_fa' => "جمع مالی کتاب ها از ابتدا تا کنون",
                 'title_en' => 'all_times_price',
-                'data' => $allTimesPrice
+                'value' => $allTimesPrice
             ],
             [
                 'title_fa' => "میانگین قیمت کتاب از ابتدا تا کنون",
                 'title_en' => 'all_times_average',
-                'data' => $allTimesAverage
+                'value' => $allTimesAverage
             ],
             [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages',
-                'data' => $sumPageRange
+                'value' => $sumPageRange
             ],
             [
                 'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_count_range',
-                'data' => $sumCountRange
+                'value' => $sumCountRange
             ],
             [
                 'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_circulation',
-                'data' => $sumCirculationRange
+                'value' => $sumCirculationRange
             ],
             [
                 'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_price',
-                'data' => $sumPriceRange
+                'value' => $sumPriceRange
             ],
             [
                 'title_fa' => "میانگین قیمت کتاب از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_average',
-                'data' => $sumAverageRange
+                'value' => $sumAverageRange
             ],
         ];
         $charts = [
@@ -243,7 +243,7 @@ class ChartController extends Controller
         $elapsedTime = $end - $start;
         return response([
             'msg' => 'success',
-            'data' =>[
+            'data' => [
                 'box' => $box,
                 'charts' => $charts,
                 'top' => $top

@@ -139,3 +139,40 @@ if (!function_exists('logCommandResult')){
         ]);
     }
 }
+
+if (!function_exists('takeBookParagraph')){
+    function takeBookParagraph($format , $totalPages)
+    {
+        $paragraph = 0;
+        switch ($format){
+            case ('وزیری' or 'رقعی' or 'بیاضی' or 'رقعی پالتویی' or 'جعبه ای');
+                $paragraph += round($totalPages / 16000 , 1);
+                break;
+            case ('جیبی' or 'ربعی' or 'جیبی پالتویی');
+                $paragraph += round($totalPages / 32000 , 1);
+                break;
+            case ('پالتویی');
+                $paragraph += round($totalPages / 24000 , 1);
+                break;
+            case ('خشتی');
+                $paragraph += round($totalPages / 12000 , 1);
+                break;
+            case ('رحلی' or 'رحلی کوچک' or 'بغلی');
+                $paragraph += round($totalPages / 8000 , 1);
+                break;
+            case ('جانمازی' or '1/2 جیبی');
+                $paragraph += round($totalPages / 64000 , 1);
+                break;
+            case ('سلطانی');
+                $paragraph += round($totalPages / 4000 , 1);
+                break;
+            case ('آلبومی');
+                $paragraph += round($totalPages / 6000 ,1);
+                break;
+            case ('1/4 جیبی');
+                $paragraph += round($totalPages / 128000 , 1);
+                break;
+        }
+        return $paragraph;
+    }
+}
