@@ -134,3 +134,12 @@ if (!function_exists('enNumberKeepOnly')) {
         return trim(preg_replace("/[^0-9]/", "",$numallStr));
     }
 }
+
+if (!function_exists('convertToPersianNumbers')) {
+    function convertToPersianNumbers($number) {
+        $englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+        return str_replace($englishNumbers, $persianNumbers, $number);
+    }
+}

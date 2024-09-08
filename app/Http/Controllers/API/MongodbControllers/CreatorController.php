@@ -308,7 +308,9 @@ class CreatorController extends Controller
         $status = 200;
         $yearPrintCountData = null;
         // read books for year printCount by title
-        $books = BookIrBook2::where('partners.xcreator_id' ,$creatorId)->get();
+        $books = BookIrBook2::where('partners.xcreator_id' ,$creatorId)
+            ->orderBy('xpublishdate_shamsi' , 1)
+            ->get();
         if ($books != null and count($books) > 0) {
             foreach ($books as $book) {
                 $year = $book->xpublishdate_shamsi;
