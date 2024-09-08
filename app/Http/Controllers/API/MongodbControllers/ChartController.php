@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrDaily;
 use App\Models\MongoDBModels\BPA_Yearly;
+use App\Models\MongoDBModels\BTB_Yearly;
 use App\Models\MongoDBModels\BTC_Yearly;
 use App\Models\MongoDBModels\BTCi_Yearly;
 use App\Models\MongoDBModels\BTP_Yearly;
@@ -32,10 +33,12 @@ class ChartController extends Controller
         $dataForRangeCirculation = [];
         $dataForRangeAverage = [];
         $dataForRangePage = [];
+        $dataForRangeParagraph = [];
         $sumCountRange = 0;
         $sumPriceRange = 0;
         $sumPageRange = 0;
         $sumCirculationRange = 0;
+        $sumParagraphRange = 0;
         $sumAverageRange = 0;
         $countForAverage = 0 ;
         $dataForCreatorPrice = [];
@@ -47,6 +50,7 @@ class ChartController extends Controller
         $allTimesCount = 0 ;
         $allTimesCirculation = 0;
         $allTimesPage = 0;
+        $allTimesParagraph = 0;
 
         $allTimesAverageData = BPA_Yearly::all();
         foreach ($allTimesAverageData as $item){
@@ -56,9 +60,10 @@ class ChartController extends Controller
         $allTimesPrice += BTP_Yearly::sum('price');
         $allTimesCount += BTC_Yearly::sum('count');
         $allTimesCirculation += BTCi_Yearly::sum('circulation');
+        $allTimesParagraph += BTB_Yearly::sum('paragraph');
 
         // Fetch or compute cache values
-        $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
+//        $dataForTenPastDayBookInserted = $this->getLastTenDayBooks();
 
         $dfp_circulation =TCP_Yearly::where('year', $topYear)->first();
         foreach ($dfp_circulation->publishers as $item){
@@ -84,6 +89,14 @@ class ChartController extends Controller
             $dataForCreatorPrice['value'] [] = $item['total_price'];
         }
 
+        $dataRangeParagraph = BTB_Yearly::where('year', '<=' , $endYear)->where('year','>=' , $startYear)->get();
+        foreach ($dataRangeParagraph as $item){
+            $dataForRangeParagraph['label'] [] = $item->year;
+            $dataForRangeParagraph['value'] [] = $item->paragraph;
+            if ($item->paragraph != null){
+                $sumParagraphRange += $item->paragraph;
+            }
+        }
         $dataRangePage = BTPa_Yearly::where('year', '<=' , $endYear)->where('year','>=' , $startYear)->get();
         foreach ($dataRangePage as $item) {
             $dataForRangePage ['label'] [] = $item->year;
@@ -160,9 +173,19 @@ class ChartController extends Controller
                 'value' => $allTimesAverage
             ],
             [
+                'title_fa' => "مجموع بند کاغذ استفاده شده از ابتدا تا کنون",
+                'title_en' => 'all_times_paragraph',
+                'value' => $allTimesParagraph
+            ],
+            [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages',
                 'value' => $sumPageRange
+            ],
+            [
+                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_paragraph-range' ,
+                'value' => $sumParagraphRange
             ],
             [
                 'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
@@ -186,15 +209,20 @@ class ChartController extends Controller
             ],
         ];
         $charts = [
-            [
-                'title_fa' => 'نمودار تعداد کتاب های 10 روز اخیر بانک جامع',
-                'title_en' => 'data_for_ten_past_new_books',
-                'data' => $dataForTenPastDayBookInserted
-            ],
+//            [
+//                'title_fa' => 'نمودار تعداد کتاب های 10 روز اخیر بانک جامع',
+//                'title_en' => 'data_for_ten_past_new_books',
+//                'data' => $dataForTenPastDayBookInserted
+//            ],
             [
                 'title_fa' => 'نمودار میانگین قیمت',
                 'title_en' => 'data_for_average_books_price',
                 'data' => $dataForRangeAverage
+            ],
+            [
+                'title_fa' => ' نمودار بند کاغذ استفاده شده',
+                'title_en' => 'data_for_paragraph_of_books',
+                'data' => $dataForRangeParagraph
             ],
             [
                 'title_fa' => 'نمودار مجموع تعداد کتاب',
@@ -265,10 +293,12 @@ class ChartController extends Controller
         $dataCount = [];
         $dataAverage = [];
         $dataPages = [];
+        $dataParagraph = [];
         $sumPriceRange = 0;
         $sumAverageRange = 0;
         $sumCountRange = 0;
         $sumCirculationRange = 0;
+        $sumParagraph = 0 ;
         $sumPagesRange = 0;
         $countForAverage = 0;
 
@@ -301,6 +331,11 @@ class ChartController extends Controller
                 $sumCountRange += $item->count;
             }
 
+            $dataParagraph['label'] [] = $item->year;
+            $dataParagraph['value'][0][] = $item->paragraph;
+            if ($item->paragraph != null){
+                $sumParagraph += $item->total_circulation;
+            }
 
             $dataCirculation['label'] [] = $item->year;
             $dataCirculation['value'] [0][]  = $item->total_circulation;
@@ -349,6 +384,11 @@ class ChartController extends Controller
 
             ],
             [
+                'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
+                'title_en' => 'total_paragraph_all_time',
+                'value' => $allTime->paragraph
+            ],
+            [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages_range',
                 'value' => $sumPagesRange,
@@ -374,6 +414,11 @@ class ChartController extends Controller
                 'title_fa' => "میانگین قیمت از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_average_range',
                 'value' => $sumPriceRange !=0 ? $sumAverageRange :0,
+            ],
+            [
+                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_paragraph' ,
+                'value' => $sumParagraph != 0 ?$sumParagraph : 0
             ]
         ];
 
@@ -407,6 +452,12 @@ class ChartController extends Controller
                 'title_fa'=> 'نمودار میانگین قیمت',
                 'title_en' => 'data_average_price_range',
                 'data' => $dataAverage
+            ],
+            [
+                'stackLabels' => ['مقادیرکلی'],
+                'title_fa' => 'نمودار بند کاغذ استفاده شده',
+                'title_en' => 'data_paragraph_range',
+                'data' => $dataParagraph
             ]
         ];
         $end = microtime(true);
@@ -435,11 +486,13 @@ class ChartController extends Controller
         $dataCount = [];
         $dataAverage = [];
         $dataPages = [];
+        $dataParagraph = [];
         $sumPriceRange = 0;
         $sumAverageRange = 0;
         $sumCountRange = 0;
         $sumCirculationRange = 0;
         $sumPagesRange = 0;
+        $sumParagraphRange = 0;
         $countForAverage = 0;
 
         $allTime = CreatorCacheData::where('creator_id', $creatorId)->where('year', 0)->first();
@@ -471,6 +524,11 @@ class ChartController extends Controller
                 $sumCountRange += $item->count;
             }
 
+            $dataParagraph['label'] [] = $item->year;
+            $dataParagraph['value'][0][] = $item->paragraph;
+            if ($item->paragraph != null){
+                $sumParagraphRange+=$item->paragraph;
+            }
 
             $dataCirculation['label'] [] = $item->year;
             $dataCirculation['value'] [0][] = $item->total_circulation;
@@ -519,6 +577,11 @@ class ChartController extends Controller
 
             ],
             [
+                'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
+                'title_en' => 'total_paragraph_all_time',
+                'value' => $allTime->paragraph
+            ],
+            [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages_range',
                 'value' => $sumPagesRange,
@@ -544,6 +607,11 @@ class ChartController extends Controller
                 'title_fa' => "میانگین قیمت از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_average_range',
                 'value' => $sumPriceRange !=0 ? $sumAverageRange :0,
+            ],
+            [
+                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_paragraph' ,
+                'value' => $sumParagraphRange != 0 ?$sumParagraphRange : 0
             ]
         ];
 
@@ -577,6 +645,12 @@ class ChartController extends Controller
                 'title_fa'=> 'نمودار میانگین قیمت',
                 'title_en' => 'data_average_price_range',
                 'data' => $dataAverage
+            ],
+            [
+                'stackLabels' => ['مقادیرکلی'],
+                'title_fa' => 'نمودار بند کاغذ استفاده شده',
+                'title_en' => 'data_paragraph_range',
+                'data' => $dataParagraph
             ]
         ];
         $end = microtime(true);
