@@ -67,15 +67,17 @@ class CreatorsParagraphJob implements ShouldQueue
         });
 
         foreach ($books as $book) {
-            $column = ParsiToEnglishFormat::where('fa_title' , $book->_id->format)->first()->en_title;
-            $paragraph = takeBookParagraph($book->_id->format , $book['total_page']);
-            CreatorCacheData::updateOrCreate(
-                ['creator_id' => $book->_id->partner_id  , 'year' => $this->year]
-                ,
-                [
-                   $column => $paragraph
-                ]
-            );
+            if (ParsiToEnglishFormat::where('fa_title', $book->_id->format)->exists()) {
+                $column = ParsiToEnglishFormat::where('fa_title', $book->_id->format)->first()->en_title;
+                $paragraph = takeBookParagraph($book->_id->format, $book['total_page']);
+                CreatorCacheData::updateOrCreate(
+                    ['creator_id' => $book->_id->partner_id, 'year' => $this->year]
+                    ,
+                    [
+                        $column => $paragraph
+                    ]
+                );
+            }
         }
     }
 }

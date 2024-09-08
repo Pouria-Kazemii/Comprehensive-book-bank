@@ -52,17 +52,20 @@ class BooksTotalParagraphJob implements ShouldQueue
         });
 
         $total_paragraph = 0;
+
         foreach ($books as $book) {
-            $column = ParsiToEnglishFormat::where('fa_title' , $book->_id)->first()->en_title;
-            $paragraph = takeBookParagraph($book['_id'] , $book['total_pages']);
-            $total_paragraph += $paragraph;
-            BTB_Yearly::updateOrCreate(
-                ['year' => $this->year]
-                ,
-                [
-                    $column =>  $paragraph ,
-                ]
-            );
+            if (ParsiToEnglishFormat::where('fa_title', $book->_id)->exists()) {
+                $column = ParsiToEnglishFormat::where('fa_title', $book->_id)->first()->en_title;
+                $paragraph = takeBookParagraph($book['_id'], $book['total_pages']);
+                $total_paragraph += $paragraph;
+                BTB_Yearly::updateOrCreate(
+                    ['year' => $this->year]
+                    ,
+                    [
+                        $column => $paragraph,
+                    ]
+                );
+            }
         }
 
         BTB_Yearly::updateOrCreate(
