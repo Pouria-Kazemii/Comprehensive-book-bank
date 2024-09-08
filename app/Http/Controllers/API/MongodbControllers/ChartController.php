@@ -132,6 +132,10 @@ class ChartController extends Controller
             $dataForRangeAverage ['value'] [] =round($item->average);
         }
 
+        $startYear = convertToPersianNumbersPure($startYear);
+        $endYear = convertToPersianNumbersPure($endYear);
+        $topYear = convertToPersianNumbersPure($topYear);
+
         $firstBox = [
             [
                 'title_fa' => "مجموع تعداد کتاب ها از ابتدا تا کنون",
@@ -347,6 +351,8 @@ class ChartController extends Controller
                 $sumPagesRange = +$item->total_pages;
             }
         }
+        $startYear = convertToPersianNumbersPure($startYear);
+        $endYear = convertToPersianNumbersPure($endYear);
 
         $firstBox = [
             [
@@ -382,7 +388,6 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers(round($allTime->paragraph))
             ]
         ];
-
         $secondBox = [
             [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
@@ -547,6 +552,9 @@ class ChartController extends Controller
                 $sumPagesRange = +$item->total_pages;
             }
         }
+
+        $startYear = convertToPersianNumbersPure($startYear);
+        $endYear = convertToPersianNumbersPure($endYear);
 
         $firstBox = [
             [

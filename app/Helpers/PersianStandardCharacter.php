@@ -137,6 +137,20 @@ if (!function_exists('enNumberKeepOnly')) {
 
 if (!function_exists('convertToPersianNumbers')) {
     function convertToPersianNumbers($number) {
+        // Format the number with commas after every 3 digits
+        $formattedNumber = number_format($number);
+
+        // Arrays to convert English numbers to Persian
+        $englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+
+        // Replace English numbers with Persian numbers
+        return str_replace($englishNumbers, $persianNumbers, $formattedNumber);
+    }
+}
+
+if (!function_exists('convertToPersianNumbersPure')){
+    function convertToPersianNumbersPure($number){
         $englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         $persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 
