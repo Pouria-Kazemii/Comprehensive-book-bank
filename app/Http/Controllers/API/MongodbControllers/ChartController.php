@@ -154,12 +154,12 @@ class ChartController extends Controller
             ],
 
             [
-                'title_fa' => "مجموع بند کاغذ استفاده شده از ابتدا تا کنون",
+                'title_fa' => "مجموع بند کاغذ مصرفی از ابتدا تا کنون",
                 'title_en' => 'all_times_paragraph',
                 'value' => convertToPersianNumbers(round($allTimesParagraph))
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب تن - کاغذ ۷۰ گرمی)",
+                'title_fa' => "مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => 'all_times_ton',
                 'value' => convertToPersianNumbers(round($allTimesTon))
             ],
@@ -187,12 +187,12 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumPageRange)
             ],
             [
-                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph-range' ,
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب تن - کاغذ ۷۰ گرمی)",
+                'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => "sum_ton_range",
                 'value' => convertToPersianNumbers(round($sumTonRange))
             ],
@@ -214,12 +214,12 @@ class ChartController extends Controller
                 'data' => $dataForRangeAverage
             ],
             [
-                'title_fa' => " نمودار بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'data_for_paragraph_of_books',
                 'data' => $dataForRangeParagraph
             ],
             [
-                'title_fa' => "نمودار وزن کاغذ استفاده شده از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
+                'title_fa' => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_for_ton_of_books',
                 'data' => $dataForRangeTon
             ],
@@ -377,13 +377,13 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
+                'title_fa' => 'مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
                 'value' => convertToPersianNumbers(round($allTime->paragraph *25))
 
             ],
             [
-                'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
+                'title_fa' => 'مجموع بند کاغذ مصرفی از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
                 'value' => convertToPersianNumbers(round($allTime->paragraph))
             ]
@@ -412,12 +412,12 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
+                'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
             ],
             [
-                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
             ]
@@ -450,19 +450,19 @@ class ChartController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> 'نمودار میانگین قیمت',
+                'title_fa'=> "نمودار میانگین قیمت  از سال $startYear تا سال $endYear",
                 'title_en' => 'data_average_price_range',
                 'data' => $dataAverage
             ],
             [
                 'stackLabels' => ['مقادیرکلی'],
-                'title_fa' => "نمودار بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => "نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'data_paragraph_range',
                 'data' => $dataParagraph
             ],
             [
                 'stackLabels' =>['مقادیر کلی'],
-                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
+                'title_fa'=> "نمودار مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
             ],
@@ -579,13 +579,13 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
+                'title_fa' => 'مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
                 'value' => convertToPersianNumbers(round($allTime->paragraph *25))
 
             ],
             [
-                'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
+                'title_fa' => 'مجموع بند کاغذ مصرفی از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
                 'value' => convertToPersianNumbers(round($allTime->paragraph))
             ]
@@ -615,12 +615,12 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
+                'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
             ],
             [
-                'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
             ]
@@ -653,19 +653,19 @@ class ChartController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> 'نمودار میانگین قیمت',
+                'title_fa'=> "نمودار میانگین قیمت از سال $startYear تا سال $endYear",
                 'title_en' => 'data_average_price_range',
                 'data' => $dataAverage
             ],
             [
                 'stackLabels' => ['مقادیرکلی'],
-                'title_fa' => "نمودار بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
+                'title_fa' => "نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'data_paragraph_range',
                 'data' => $dataParagraph
             ],
             [
                 'stackLabels' =>['مقادیر کلی'],
-                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
+                'title_fa'=> "نمودار مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
             ],
