@@ -92,7 +92,7 @@ class ChartController extends Controller
         $dataRangeParagraph = BTB_Yearly::where('year', '<=' , $endYear)->where('year','>=' , $startYear)->get();
         foreach ($dataRangeParagraph as $item){
             $dataForRangeParagraph['label'] [] = $item->year;
-            $dataForRangeParagraph['value'] [] = $item->paragraph;
+            $dataForRangeParagraph['value'] [] = round($item->paragraph);
             if ($item->paragraph != null){
                 $sumParagraphRange += $item->paragraph;
             }
@@ -136,7 +136,7 @@ class ChartController extends Controller
         $dateRangeAverage = BPA_Yearly::where('year','<=' , $endYear)->where('year' , '>=' , $startYear)->get();
         foreach ($dateRangeAverage as $item){
             $dataForRangeAverage ['label'] [] =$item->year;
-            $dataForRangeAverage ['value'] [] =$item->average;
+            $dataForRangeAverage ['value'] [] =round($item->average);
             if ($item->average != null){
                 $sumAverageRange += (int)$item->average;
                 $countForAverage++;
@@ -144,9 +144,10 @@ class ChartController extends Controller
         }
 
         if ($sumAverageRange != 0) {
-            $sumAverageRange = $sumAverageRange / $countForAverage;
+            $sumAverageRange = round($sumAverageRange / $countForAverage);
         }
-        $box = [
+
+        $firstBox = [
             [
                 'title_fa' => "مجموع تعداد کتاب ها از ابتدا تا کنون",
                 'title_en' => 'all_times_count',
@@ -170,13 +171,16 @@ class ChartController extends Controller
             [
                 'title_fa' => "میانگین قیمت کتاب از ابتدا تا کنون",
                 'title_en' => 'all_times_average',
-                'value' => $allTimesAverage
+                'value' => round($allTimesAverage)
             ],
             [
                 'title_fa' => "مجموع بند کاغذ استفاده شده از ابتدا تا کنون",
                 'title_en' => 'all_times_paragraph',
-                'value' => $allTimesParagraph
+                'value' => round($allTimesParagraph)
             ],
+        ];
+
+        $secondBox = [
             [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages',
@@ -185,7 +189,7 @@ class ChartController extends Controller
             [
                 'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph-range' ,
-                'value' => $sumParagraphRange
+                'value' => round($sumParagraphRange)
             ],
             [
                 'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
@@ -205,7 +209,7 @@ class ChartController extends Controller
             [
                 'title_fa' => "میانگین قیمت کتاب از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_average',
-                'value' => $sumAverageRange
+                'value' => round($sumAverageRange)
             ],
         ];
         $charts = [
@@ -272,7 +276,8 @@ class ChartController extends Controller
         return response([
             'msg' => 'success',
             'data' => [
-                'box' => $box,
+                'top_box' => $firstBox,
+                'bottom_box' => $secondBox,
                 'charts' => $charts,
                 'top' => $top
             ],
@@ -298,7 +303,7 @@ class ChartController extends Controller
         $sumAverageRange = 0;
         $sumCountRange = 0;
         $sumCirculationRange = 0;
-        $sumParagraph = 0 ;
+        $sumParagraphRange = 0 ;
         $sumPagesRange = 0;
         $countForAverage = 0;
 
@@ -315,8 +320,8 @@ class ChartController extends Controller
 
             if ($item->total_price != 0) {
                 $dataAverage ['label'] [] = $item->year;
-                $dataAverage ['value'] [0][] = $item->average;
-                $dataAverage ['value'] [1][] = $item->first_cover_average;
+                $dataAverage ['value'] [0][] = round($item->average);
+                $dataAverage ['value'] [1][] =round( $item->first_cover_average);
                 if ($item->average != null) {
                     $sumAverageRange += $item->average;
                     $countForAverage++;
@@ -332,9 +337,9 @@ class ChartController extends Controller
             }
 
             $dataParagraph['label'] [] = $item->year;
-            $dataParagraph['value'][0][] = $item->paragraph;
+            $dataParagraph['value'][0][] = round($item->paragraph);
             if ($item->paragraph != null){
-                $sumParagraph += $item->total_circulation;
+                $sumParagraphRange += $item->paragraph;
             }
 
             $dataCirculation['label'] [] = $item->year;
@@ -353,9 +358,10 @@ class ChartController extends Controller
             }
         }
         if ($sumAverageRange != 0) {
-            $sumAverageRange = $sumAverageRange / $countForAverage;
+            $sumAverageRange = round($sumAverageRange / $countForAverage);
         }
-        $box = [
+
+        $firstBox = [
             [
                 'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
                 'title_en' => 'total_pages-all_times',
@@ -386,8 +392,11 @@ class ChartController extends Controller
             [
                 'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
-                'value' => $allTime->paragraph
-            ],
+                'value' => round($allTime->paragraph)
+            ]
+        ];
+
+        $secondBox = [
             [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages_range',
@@ -418,7 +427,7 @@ class ChartController extends Controller
             [
                 'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
-                'value' => $sumParagraph != 0 ?$sumParagraph : 0
+                'value' => round($sumParagraphRange)
             ]
         ];
 
@@ -465,7 +474,8 @@ class ChartController extends Controller
         return response([
             'msg' => 'success',
             'data' => [
-                'box' => $box ,
+                'top_box' => $firstBox ,
+                'bottom_box' => $secondBox,
                 'charts' => $charts
             ]
             ,
@@ -508,8 +518,8 @@ class ChartController extends Controller
 
             if ($item->total_price != 0) {
                 $dataAverage ['label'] [] = $item->year;
-                $dataAverage ['value'] [0][] = $item->average;
-                $dataAverage ['value'] [1][] = $item->first_cover_average;
+                $dataAverage ['value'] [0][] = round($item->average);
+                $dataAverage ['value'] [1][] = round($item->first_cover_average);
                 if ($item->average != null) {
                     $sumAverageRange += $item->average;
                     $countForAverage++;
@@ -525,7 +535,7 @@ class ChartController extends Controller
             }
 
             $dataParagraph['label'] [] = $item->year;
-            $dataParagraph['value'][0][] = $item->paragraph;
+            $dataParagraph['value'][0][] = round($item->paragraph);
             if ($item->paragraph != null){
                 $sumParagraphRange+=$item->paragraph;
             }
@@ -546,9 +556,10 @@ class ChartController extends Controller
             }
         }
         if ($sumAverageRange != 0) {
-            $sumAverageRange = $sumAverageRange / $countForAverage;
+            $sumAverageRange = round($sumAverageRange / $countForAverage);
         }
-        $box = [
+
+        $firstBox = [
             [
                 'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
                 'title_en' => 'total_pages-all_times',
@@ -579,8 +590,11 @@ class ChartController extends Controller
             [
                 'title_fa' => 'مجموع بند کاغذ استفاده شده از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
-                'value' => $allTime->paragraph
-            ],
+                'value' => round($allTime->paragraph)
+            ]
+        ];
+
+        $secondBox = [
             [
                 'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_total_pages_range',
@@ -611,7 +625,7 @@ class ChartController extends Controller
             [
                 'title_fa' => "مجموع بند کاغذ استفاده شده از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
-                'value' => $sumParagraphRange != 0 ?$sumParagraphRange : 0
+                'value' => round($sumParagraphRange)
             ]
         ];
 
@@ -658,7 +672,8 @@ class ChartController extends Controller
         return response([
             'msg' => 'success',
             'data' => [
-                'box' => $box ,
+                'top_box' => $firstBox ,
+                'bottom_box' => $secondBox,
                 'charts' => $charts
             ]
             ,
