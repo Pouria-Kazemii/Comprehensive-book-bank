@@ -159,7 +159,7 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers(round($allTimesParagraph))
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب تن - کاغذ 70 گرمی)",
+                'title_fa' => "مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => 'all_times_ton',
                 'value' => convertToPersianNumbers(round($allTimesTon))
             ],
@@ -192,7 +192,7 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب تن - کاغذ 70 گرمی)",
+                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => "sum_ton_range",
                 'value' => convertToPersianNumbers(round($sumTonRange))
             ],
@@ -219,7 +219,7 @@ class ChartController extends Controller
                 'data' => $dataForRangeParagraph
             ],
             [
-                'title_fa' => "نمودار وزن کاغذ استفاده شده از سال $startYear تا سال $endYear(بر حسب تن - کاغذ 70 گرمی)",
+                'title_fa' => "نمودار وزن کاغذ استفاده شده از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_for_ton_of_books',
                 'data' => $dataForRangeTon
             ],
@@ -377,7 +377,7 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ 70 گرمی)',
+                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
                 'value' => convertToPersianNumbers(round($allTime->paragraph *25))
 
@@ -412,7 +412,7 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ 70 گرمی)",
+                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
             ],
@@ -462,7 +462,7 @@ class ChartController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی'],
-                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ 70 گرمی)",
+                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
             ],
@@ -579,7 +579,7 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ 70 گرمی)',
+                'title_fa' => 'مجموع وزن کاغذ استفاده شده از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
                 'value' => convertToPersianNumbers(round($allTime->paragraph *25))
 
@@ -615,7 +615,7 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ 70 گرمی)",
+                'title_fa' => "مجموع وزن کاغذ استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
             ],
@@ -665,7 +665,7 @@ class ChartController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی'],
-                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ 70 گرمی)",
+                'title_fa'=> "نمودار مجموع وزن صفحات استفاده شده از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
             ],
