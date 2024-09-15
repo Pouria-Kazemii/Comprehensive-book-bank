@@ -48,7 +48,7 @@ class ConvertBookirBookJob implements ShouldQueue
             'xname' => $this->bookir_book->xname,
             'xdoctype' => $this->bookir_book->xdoctype,
             'xpagecount' => $this->bookir_book->xpagecount,
-            'xformat' => $this->bookir_book->xformat,
+            'xformat' => trim($this->bookir_book->xformat),
             'xcover' => $this->bookir_book->xcover,
             'xprintnumber' => $this->bookir_book->xprintnumber,
             'xcirculation' => $this->bookir_book->xcirculation,

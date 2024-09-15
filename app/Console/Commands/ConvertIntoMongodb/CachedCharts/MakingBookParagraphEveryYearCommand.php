@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts;
 
-use App\Jobs\CachedData\BooksTotalParagraphJob;
-use App\Models\MongoDBModels\BookIrBook2;
+use App\Jobs\HomePageCachedData\BooksTotalParagraphJob;
 use Illuminate\Console\Command;
 
 class MakingBookParagraphEveryYearCommand extends Command

@@ -3,7 +3,9 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\creators;
 
 use App\Jobs\CachedData\CreatorsParagraphJob;
-use App\Jobs\CachedData\CreatorTotalParagraphJob;
+use App\Jobs\CachedData\CreatorsParagraphWithIdJob;
+use App\Jobs\CachedData\CreatorsTotalParagraphWithIdJob;
+use App\Jobs\CachedData\CreatorsTotalParagraphJob;
 use Illuminate\Console\Command;
 
 class MakingCreatorsParagraphCommand extends Command
@@ -13,7 +15,7 @@ class MakingCreatorsParagraphCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creators_paragraph {year} {--A}';
+    protected $signature = 'chart:creators_paragraph {year} {id?} {--A}';
 
     /**
      * The console command description.
@@ -42,26 +44,36 @@ class MakingCreatorsParagraphCommand extends Command
         $this->info("Start cache paragraph data for creators yearly");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
+        $id = $this->argument('id');
         $option = $this->option('A');
-        if ($option){
-            $currentYear = getYearNow();
-            $progressBar = $this->output->createProgressBar($currentYear-$year);
-            $progressBar->start();
-            while($year <= $currentYear) {
-                CreatorsParagraphJob::dispatch($year);
-                CreatorTotalParagraphJob::dispatch($year);
-                $progressBar->advance();
-                $year++;
-            }
-        }else{
+        if (!$option){
             $progressBar = $this->output->createProgressBar(1);
             $progressBar->start();
-            CreatorTotalParagraphJob::dispatch($year);
-            CreatorsParagraphJob::dispatch($year);
-            $progressBar->advance();
+            if ($id != null){
+                CreatorsParagraphWithIdJob::dispatch($year , $id);
+                CreatorsTotalParagraphWithIdJob::dispatch($year, $id);
+            } else {
+                CreatorsParagraphJob::dispatch($year);
+                CreatorsTotalParagraphJob::dispatch($year);
+            }
+            $progressBar->finish();
+        } else {
+            if ($id == null) {
+                $currentYear = getYearNow();
+                $progressBar = $this->output->createProgressBar($currentYear - $year);
+                $progressBar->start();
+                while ($year <= $currentYear) {
+                    CreatorsParagraphJob::dispatch($year);
+                    CreatorsTotalParagraphJob::dispatch($year);
+                    $progressBar->advance();
+                    $year++;
+                }
+                $progressBar->finish();
+            }else{
+                $this->info('can not use --A when entered id');
+            }
         }
 
-        $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

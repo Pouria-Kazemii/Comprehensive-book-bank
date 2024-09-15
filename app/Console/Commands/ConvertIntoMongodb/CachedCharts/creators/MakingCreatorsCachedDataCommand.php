@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\creators;
 
 use App\Jobs\CachedData\CreatorsCachedDataJob;
+use App\Jobs\CachedData\CreatorsCachedDataWithIdJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\CreatorCacheData;
@@ -15,8 +16,7 @@ class MakingCreatorsCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creators {year} {--A}';
-
+    protected $signature = 'chart:creators {year} {id?} {--A}';
     /**
      * The console command description.
      *
@@ -44,24 +44,33 @@ class MakingCreatorsCachedDataCommand extends Command
         $this->info("Start cache every creator data");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
+        $id = $this->argument('id');
         $option = $this->option('A');
-        if ($option){
-            $currentYear = getYearNow();
-            $progressBar = $this->output->createProgressBar($currentYear-$year);
-            $progressBar->start();
-            while($year <= $currentYear) {
-                CreatorsCachedDataJob::dispatch($year);
-                $progressBar->advance();
-                $year++;
-            }
-        }else{
+        if (!$option){
             $progressBar = $this->output->createProgressBar(1);
             $progressBar->start();
-            CreatorsCachedDataJob::dispatch($year);
-            $progressBar->advance();
+            if ($id != null){
+                CreatorsCachedDataWithIdJob::dispatch($year , $id);
+            } else {
+                CreatorsCachedDataJob::dispatch($year);
+            }
+            $progressBar->finish();
+        } else {
+            if ($id == null) {
+                $currentYear = getYearNow();
+                $progressBar = $this->output->createProgressBar($currentYear - $year);
+                $progressBar->start();
+                while ($year <= $currentYear) {
+                    CreatorsCachedDataJob::dispatch($year);
+                    $progressBar->advance();
+                    $year++;
+                }
+                $progressBar->finish();
+            }else{
+                $this->info('can not use --A when entered id');
+            }
         }
 
-        $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

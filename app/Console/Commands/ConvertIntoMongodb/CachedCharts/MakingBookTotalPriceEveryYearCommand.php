@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts;
 
-use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BTP_Yearly;
+use App\Jobs\HomePageCachedData\BookTotalPriceJob;
 use Illuminate\Console\Command;
 
 class MakingBookTotalPriceEveryYearCommand extends Command
@@ -13,7 +12,7 @@ class MakingBookTotalPriceEveryYearCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:book_total_price_yearly {year}';
+    protected $signature = 'chart:book_total_price_yearly {year} {--A}';
 
     /**
      * The console command description.
@@ -35,49 +34,30 @@ class MakingBookTotalPriceEveryYearCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return Bool
      */
     public function handle()
     {
-        $date = (int)$this->argument('year');
         $this->info("Start cache book total price yearly");
-        $totalRows = getYearNow() - $date + 1;
-        $progressBar = $this->output->createProgressBar($totalRows);
-        $progressBar->start();
-        $startTime = microtime(true);
-        $data = BookIrBook2::raw(function ($collection) use ($date) {
-            return $collection->aggregate([
-                [
-                    '$match' => [
-                        'xpublishdate_shamsi' => [
-                            '$gte' => $date,
-                        ]
-                        , 'xtotal_price' => [
-                            '$ne' => 0
-                        ]
-                    ]
-                ],
-                [
-                    '$group' => [
-                        '_id' => '$xpublishdate_shamsi',
-                        'total_price' => ['$sum' => '$xtotal_price'],
-                    ]
-                ],
-                [
-                    '$sort' => ['_id' => 1] // Sort by year
-                ]
-            ]);
-        });
-
-        foreach ($data as $value) {
-            BTP_Yearly::updateOrCreate(
-                ['year' => $value['_id']],
-                [
-                    'price' => $value['total_price']
-                ]
-            );
+        $startTime = microtime('true');
+        $year = (int)$this->argument('year');
+        $option = $this->option('A');
+        if ($option){
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear-$year);
+            $progressBar->start();
+            while($year <= $currentYear) {
+                BookTotalPriceJob::dispatch($year);
+                $progressBar->advance();
+                $year++;
+            }
+        }else{
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            BookTotalPriceJob::dispatch($year);
             $progressBar->advance();
         }
+
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

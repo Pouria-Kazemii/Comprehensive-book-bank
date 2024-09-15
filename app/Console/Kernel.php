@@ -49,22 +49,13 @@ class Kernel extends ConsoleKernel
 
         commands\CorrectInfo\RecheckNotfoundBooks::class,
 
-        commands\ConvertIntoMongodb\ConvertBookIr_bookCommand1::class,
-        commands\ConvertIntoMongodb\ConvertCreatorsCommand::class,
-        commands\ConvertIntoMongodb\ConvertPublishersCommand::class,
-
         Commands\ConvertIntoMongodb\ChainOfMatchMongodbCommand::class,
+        Commands\ConvertIntoMongodb\ChainOfCachedDataCommand::class,
 
-        Commands\ConvertIntoMongodb\CachedCharts\MakingTopPricePublishersEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingTopPriceCreatorsEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingTopCirculationCreatorsEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingTopCirculationPublishersEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPriceEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCountEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookPriceAverageEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalCirculationEveryYearCommand::class,
-        Commands\ConvertIntoMongodb\CachedCharts\MakingBookTotalPagesEveryYearCommand::class ,
+        Commands\ConvertIntoMongodb\GetPublishDateOfNewBooksCommand::class,
+        Commands\ConvertIntoMongodb\GetPublishersIdAndCreatorsIdOfNewBook::class,
 
+        Commands\ConvertIntoMongodb\CachedCharts\creators\MakingCreatorsAllTimesCachedDataCommand::class
 
 
     ];
@@ -85,18 +76,11 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('get:RecheckNotfoundBooks 1')->dailyAt('05:00');
         // $schedule->command('get:RecheckNotfoundBooks 1')->everyMinute()->timezone('Asia/Tehran')->between('02:00', '6:00');
-
+        $date = getDateNow();
+        $schedule->command('get:book_publishdate')->dailyAt('06:30');
+        $schedule->command('get:book_publishers_and_creators')->dailyAt('06:45');
         $schedule->command('match:mongodb_chain')->dailyAt('07:00');
-
-        $schedule->command('chart:book_price_average_yearly 1340')->dailyAt('11:00');
-        $schedule->command('chart:book_total_circulation_yearly 1340')->dailyAt('11:05');
-        $schedule->command('chart:book_total_count_yearly 1340')->dailyAt('11:10');
-        $schedule->command('chart:book_total_price_yearly 1340')->dailyAt('11:15');
-        $schedule->command('chart:top_circulation_creators_yearly 1340')->dailyAt('11:20');
-        $schedule->command('chart:top_circulation_publishers_yearly 1340')->dailyAt('11:25');
-        $schedule->command('chart:top_price_creators_yearly 1340')->dailyAt('11:30');
-        $schedule->command('chart:top_price_publishers_yearly 1340')->dailyAt('11:35');
-        $schedule->command('chart:book_total_pages_yearly 1340')->dailyAt('11:40');
+        $schedule->command("chart:all_cache_data $date")->dailyAt('11:00');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo
         $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');

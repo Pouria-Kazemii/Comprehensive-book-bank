@@ -13,7 +13,7 @@ class MakingCreatorsAllParagraphCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creator_alltime_paragraph';
+    protected $signature = 'chart:creator_alltime_paragraph {id?} {--S} ';
 
     /**
      * The console command description.
@@ -41,16 +41,22 @@ class MakingCreatorsAllParagraphCommand extends Command
     {
         $start = microtime(true);
         $this->info('start cache paragraph data for for creators all times');
-        $row = BookIrCreator::count();
-        $progressBar = $this->output->createProgressBar($row);
-        $progressBar->start();
-        BookIrCreator::chunk(1000, function ($creators)use($progressBar){
-            foreach ($creators as $creator){
-                CreatorsAllTimesCachedParagraphDataJob::dispatch($creator);
-                $progressBar->advance();
-            }
-        });
-        $progressBar->finish();
+        $option = $this->option('S');
+        if ($option){
+            $id  = $this->argument('id');
+            CreatorsAllTimesCachedParagraphDataJob::dispatch($id);
+        } else {
+            $row = BookIrCreator::count();
+            $progressBar = $this->output->createProgressBar($row);
+            $progressBar->start();
+            BookIrCreator::chunk(1000, function ($creators) use ($progressBar) {
+                foreach ($creators as $creator) {
+                    CreatorsAllTimesCachedParagraphDataJob::dispatch($creator->_id);
+                    $progressBar->advance();
+                }
+            });
+            $progressBar->finish();
+        }
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $start;

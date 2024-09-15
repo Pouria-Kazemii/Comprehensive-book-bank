@@ -13,7 +13,7 @@ class MakingCreatorsAllTimesCachedDataSecondCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creator_alltime_average';
+    protected $signature = 'chart:creator_alltime_average {id?} {--S}';
 
     /**
      * The console command description.
@@ -41,16 +41,22 @@ class MakingCreatorsAllTimesCachedDataSecondCommand extends Command
     {
         $start = microtime('true');
         $this->info('start cache average data for creators all times');
-        $rows = BookIrCreator::count();
-        $progressBar = $this->output->createProgressBar($rows);
-        $progressBar->start();
-        BookIrCreator::chunk(1000,function ($creators) use($progressBar){
-            foreach ($creators as $creator){
-                CreatorsAllTimesCachedDataSecondJob::dispatch($creator);
-                $progressBar->advance();
-            }
-        });
-        $progressBar->finish();
+        $option = $this->option('S');
+        if ($option) {
+            $id = $this->argument('id');
+            CreatorsAllTimesCachedDataSecondJob::dispatch($id);
+        } else {
+            $rows = BookIrCreator::count();
+            $progressBar = $this->output->createProgressBar($rows);
+            $progressBar->start();
+            BookIrCreator::chunk(1000, function ($creators) use ($progressBar) {
+                foreach ($creators as $creator) {
+                    CreatorsAllTimesCachedDataSecondJob::dispatch($creator->_id);
+                    $progressBar->advance();
+                }
+            });
+            $progressBar->finish();
+        }
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $start;

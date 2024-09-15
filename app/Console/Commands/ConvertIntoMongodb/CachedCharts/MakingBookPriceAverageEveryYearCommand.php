@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts;
 
-use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BPA_Yearly;
+use App\Jobs\HomePageCachedData\BookAveragePriceYearlyJob;
 use Illuminate\Console\Command;
 
 class MakingBookPriceAverageEveryYearCommand extends Command
@@ -13,7 +12,7 @@ class MakingBookPriceAverageEveryYearCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:book_price_average_yearly {year}';
+    protected $signature = 'chart:book_price_average_yearly {year} {--A}';
 
     /**
      * The console command description.
@@ -35,49 +34,30 @@ class MakingBookPriceAverageEveryYearCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return Bool
      */
     public function handle()
     {
-        $date = (int)$this->argument('year');
         $this->info("Start cache book price average yearly");
-        $totalRows = getYearNow() - $date + 1 ;
-        $progressBar = $this->output->createProgressBar($totalRows);
-        $progressBar->start();
+        $year = (int)$this->argument('year');
+        $option = $this->option('A');
         $startTime = microtime(true);
-        $data = BookIrBook2::raw(function ($collection) use($date) {
-            return $collection->aggregate([
-                [
-                    '$match' => [
-                        'xpublishdate_shamsi' => [
-                            '$gte' => $date,
-                        ]
-                    ]
-                ],
-                [
-                    '$group' => [
-                        '_id' => '$xpublishdate_shamsi',
-                        'count' => ['$sum' => 1],
-                        'price' => ['$sum' => '$xcoverprice'],
-                    ]
-                ],
-                [
-                    '$sort' => ['_id' => 1] // Sort by year
-                ]
-            ]);
-        });
-
-        foreach ($data as $value) {
-            BPA_Yearly::updateOrCreate(
-                ['year' =>$value['_id']],
-                [
-                    'price' => $value['price'],
-                    'count' => $value['count'],
-                    'average' => round($value['price'] / $value['count'])
-                ]
-            );
+        if ($option){
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear-$year);
+            $progressBar->start($year);
+            while($year <= $currentYear) {
+                BookAveragePriceYearlyJob::dispatch($year);
+                $progressBar->advance();
+                $year++;
+            }
+        }else{
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start($year);
+            BookAveragePriceYearlyJob::dispatch($year);
             $progressBar->advance();
         }
+
         $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);

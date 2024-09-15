@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\CachedData;
+namespace App\Jobs\HomePageCachedData;
 
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BTB_Yearly;

@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
 use App\Jobs\CachedData\PublisherFirstCoverNumberCachedDataJob;
+use App\Jobs\CachedData\PublisherFirstCoverNumberCachedDataWithIdJob;
 use Illuminate\Console\Command;
 
 class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
@@ -12,7 +13,7 @@ class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publishers_firstprintnumber {year} {--A}';
+    protected $signature = 'chart:publishers_firstprintnumber {year} {id?} {--A}';
 
     /**
      * The console command description.
@@ -41,23 +42,33 @@ class MakingPublishersFirstCoverNumberCachedDataCommand extends Command
         $this->info("Start cache every publishers book count");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
+        $id = $this->argument('id');
         $option = $this->option('A');
-        if ($option) {
-            $currentYear = getYearNow();
-            $progressBar = $this->output->createProgressBar($currentYear - $year);
-            $progressBar->start();
-            while ($year <= $currentYear) {
-                PublisherFirstCoverNumberCachedDataJob::dispatch($year);
-                $progressBar->advance();
-                $year++;
-            }
-        } else {
+        if (!$option){
             $progressBar = $this->output->createProgressBar(1);
             $progressBar->start();
-            PublisherFirstCoverNumberCachedDataJob::dispatch($year);
-            $progressBar->advance();
+            if ($id != null){
+                PublisherFirstCoverNumberCachedDataWithIdJob::dispatch($year , $id);
+            } else {
+                PublisherFirstCoverNumberCachedDataJob::dispatch($year);
+            }
+            $progressBar->finish();
+        } else {
+            if ($id == null) {
+                $currentYear = getYearNow();
+                $progressBar = $this->output->createProgressBar($currentYear - $year);
+                $progressBar->start();
+                while ($year <= $currentYear) {
+                    PublisherFirstCoverNumberCachedDataJob::dispatch($year);
+                    $progressBar->advance();
+                    $year++;
+                }
+                $progressBar->finish();
+            }else{
+                $this->info('can not use --A when entered id');
+            }
         }
-        $progressBar->finish();
+
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

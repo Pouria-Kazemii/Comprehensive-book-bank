@@ -13,7 +13,7 @@ class MakingPublishersAllTimesCachedDataSecondCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publisher_alltime_average';
+    protected $signature = 'chart:publisher_alltime_average {id?} {--S}';
 
     /**
      * The console command description.
@@ -41,16 +41,22 @@ class MakingPublishersAllTimesCachedDataSecondCommand extends Command
     {
         $start = microtime('true');
         $this->info('start cache all data except average for publisher all times');
-        $rows = BookIrPublisher::count();
-        $progressBar = $this->output->createProgressBar($rows);
-        $progressBar->start();
-        BookIrPublisher::chunk(1000,function ($publishers) use($progressBar){
-            foreach ($publishers as $publisher){
-                PublisherAllTimesCachedDataSecondJob::dispatch($publisher);
-                $progressBar->advance();
-            }
-        });
-        $progressBar->finish();
+        $option = $this->option('S');
+        if ($option){
+            $id  = $this->argument('id');
+            PublisherAllTimesCachedDataSecondjob::dispatch($id);
+        } else {
+            $row = BookIrPublisher::count();
+            $progressBar = $this->output->createProgressBar($row);
+            $progressBar->start();
+            BookIrPublisher::chunk(1000, function ($publishers) use ($progressBar) {
+                foreach ($publishers as $publisher) {
+                    PublisherAllTimesCachedDataSecondjob::dispatch($publisher->_id);
+                    $progressBar->advance();
+                }
+            });
+            $progressBar->finish();
+        }
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $start;

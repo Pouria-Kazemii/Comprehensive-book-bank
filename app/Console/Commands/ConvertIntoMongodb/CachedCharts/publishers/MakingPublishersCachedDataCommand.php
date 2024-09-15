@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
 use App\Jobs\CachedData\PublisherCachedDataJob;
+use App\Jobs\CachedData\PublisherCachedDataWithIdJob;
 use Illuminate\Console\Command;
 
 class MakingPublishersCachedDataCommand extends Command
@@ -12,7 +13,7 @@ class MakingPublishersCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publishers {year} {--A}';
+    protected $signature = 'chart:publishers {year} {id?} {--A}';
 
     /**
      * The console command description.
@@ -41,24 +42,33 @@ class MakingPublishersCachedDataCommand extends Command
         $this->info("Start cache every publishers book count");
         $startTime = microtime('true');
         $year = (int)$this->argument('year');
+        $id = $this->argument('id');
         $option = $this->option('A');
-        if ($option) {
-            $currentYear = getYearNow();
-            $progressBar = $this->output->createProgressBar($currentYear - $year);
-            $progressBar->start();
-            while ($year <= $currentYear) {
-                PublisherCachedDataJob::dispatch($year);
-                $progressBar->advance();
-                $year++;
-            }
-        } else {
+        if (!$option){
             $progressBar = $this->output->createProgressBar(1);
             $progressBar->start();
-            PublisherCachedDataJob::dispatch($year);
-            $progressBar->advance();
+            if ($id != null){
+                PublisherCachedDataWithIdJob::dispatch($year , $id);
+            } else {
+                PublisherCachedDataJob::dispatch($year);
+            }
+            $progressBar->finish();
+        } else {
+            if ($id == null) {
+                $currentYear = getYearNow();
+                $progressBar = $this->output->createProgressBar($currentYear - $year);
+                $progressBar->start();
+                while ($year <= $currentYear) {
+                    PublisherCachedDataJob::dispatch($year);
+                    $progressBar->advance();
+                    $year++;
+                }
+                $progressBar->finish();
+            }else{
+                $this->info('can not use --A when entered id');
+            }
         }
 
-        $progressBar->finish();
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $startTime;

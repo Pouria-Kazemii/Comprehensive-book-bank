@@ -4,7 +4,6 @@ namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\creators;
 
 use App\Jobs\CachedData\CreatorsAllTimesCachedDataJob;
 use App\Models\MongoDBModels\BookIrCreator;
-use App\Models\MongoDBModels\CreatorCacheData;
 use Illuminate\Console\Command;
 
 class MakingCreatorsAllTimesCachedDataCommand extends Command
@@ -14,7 +13,7 @@ class MakingCreatorsAllTimesCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:creator_alltime';
+    protected $signature = 'chart:creator_alltime {id?} {--S}';
 
     /**
      * The console command description.
@@ -42,16 +41,22 @@ class MakingCreatorsAllTimesCachedDataCommand extends Command
     {
         $start = microtime('true');
         $this->info('start cache all data except average for publisher all times');
-        $rows = BookIrCreator::count();
-        $progressBar = $this->output->createProgressBar($rows);
-        $progressBar->start();
-       BookIrCreator::chunk(1000,function ($creators)use($progressBar){
-           foreach ($creators  as $creator){
-               CreatorsAllTimesCachedDataJob::dispatch($creator);
-               $progressBar->advance();
-           }
-       });
-        $progressBar->finish();
+        $option = $this->option('S');
+        if ($option) {
+            $id = $this->argument('id');
+            CreatorsAllTimesCachedDataJob::dispatch($id);
+        } else {
+            $rows = BookIrCreator::count();
+            $progressBar = $this->output->createProgressBar($rows);
+            $progressBar->start();
+            BookIrCreator::chunk(1000, function ($creators) use ($progressBar) {
+                foreach ($creators as $creator) {
+                    CreatorsAllTimesCachedDataJob::dispatch($creator->_id);
+                    $progressBar->advance();
+                }
+            });
+            $progressBar->finish();
+        }
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $start;

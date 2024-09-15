@@ -10,18 +10,18 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class PublishersAllTimesCachedParagraphDataJob implements ShouldQueue
+class PublisherAllTimesCachedParagraphDataJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    private $publisher;
+    private $publisherId;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($publisher)
+    public function __construct($publisherId)
     {
-        $this->publisher = $publisher;
+        $this->publisherId = $publisherId;
     }
 
     /**
@@ -38,7 +38,7 @@ class PublishersAllTimesCachedParagraphDataJob implements ShouldQueue
                         'year' =>[
                             '$ne' => 0
                         ],
-                        'publisher_id'=> $this->publisher->_id
+                        'publisher_id'=> $this->publisherId
                     ]
                 ],
                 [

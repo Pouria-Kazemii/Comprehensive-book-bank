@@ -13,15 +13,15 @@ use Illuminate\Queue\SerializesModels;
 class CreatorsAllTimesCachedParagraphDataJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    private $creator;
+    private $creatorId;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($creator)
+    public function __construct($creatorId)
     {
-        $this->creator = $creator;
+        $this->creatorId = $creatorId;
     }
 
     /**
@@ -38,7 +38,7 @@ class CreatorsAllTimesCachedParagraphDataJob implements ShouldQueue
                         'year' =>[
                             '$ne' => 0
                         ],
-                        'creator_id' => $this->creator->_id
+                        'creator_id' => $this->creatorId
                     ]
                 ],
                 [

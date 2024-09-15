@@ -33,7 +33,7 @@ class ChainOfMatchMongodbCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return Bool
      */
     public function handle()
     {

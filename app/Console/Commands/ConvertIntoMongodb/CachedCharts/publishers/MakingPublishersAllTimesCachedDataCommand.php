@@ -4,7 +4,6 @@ namespace App\Console\Commands\ConvertIntoMongodb\CachedCharts\publishers;
 
 use App\Jobs\CachedData\PublisherAllTimesCachedDataJob;
 use App\Models\MongoDBModels\BookIrPublisher;
-use App\Models\MongoDBModels\PublisherCacheData;
 use Illuminate\Console\Command;
 
 class MakingPublishersAllTimesCachedDataCommand extends Command
@@ -14,7 +13,7 @@ class MakingPublishersAllTimesCachedDataCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'chart:publisher_alltime';
+    protected $signature = 'chart:publisher_alltime {id?} {--S}';
 
     /**
      * The console command description.
@@ -42,16 +41,22 @@ class MakingPublishersAllTimesCachedDataCommand extends Command
     {
         $start = microtime('true');
         $this->info('start cache all data except average for publisher all times');
-        $rows = BookIrPublisher::count();
-        $progressBar = $this->output->createProgressBar($rows);
-        $progressBar->start();
-        BookIrPublisher::chunk(1000,function ($publishers)use($progressBar){
-            foreach ($publishers as $publisher){
-                PublisherAllTimesCachedDataJob::dispatch($publisher);
-                $progressBar->advance();
-            }
-        });
-        $progressBar->finish();
+        $option = $this->option('S');
+        if ($option){
+            $id  = $this->argument('id');
+            PublisherAllTimesCachedDatajob::dispatch($id);
+        } else {
+            $row = BookIrPublisher::count();
+            $progressBar = $this->output->createProgressBar($row);
+            $progressBar->start();
+            BookIrPublisher::chunk(1000, function ($publishers) use ($progressBar) {
+                foreach ($publishers as $publisher) {
+                    PublisherAllTimesCachedDatajob::dispatch($publisher->_id);
+                    $progressBar->advance();
+                }
+            });
+            $progressBar->finish();
+        }
         $this->line('');
         $endTime = microtime(true);
         $duration = $endTime - $start;
