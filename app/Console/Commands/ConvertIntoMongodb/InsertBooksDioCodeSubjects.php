@@ -50,19 +50,22 @@ class InsertBooksDioCodeSubjects extends Command
             $progressBar->start();
             BookIrBook2::chunk(1000, function ($books) use ($progressBar) {
                 foreach ($books as $book) {
-                    if ($book->age_group == null){
-                        InsertDioCodeSubjectsJob::dispatch($book);
-                        $progressBar->advance();
-                    } else {
-                        InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
-                        $progressBar->advance();
+                    $condition = $this->getBookCategory($book);
+                        if (!$condition) {
+                            InsertDioCodeSubjectsJob::dispatch($book);
+                            $progressBar->advance();
+
+                        } else {
+                            InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
+                            $progressBar->advance();
+                        }
                     }
-                }
             });
             $progressBar->finish();
         } else {
             $book = BookIrBook2::where('_id', new ObjectId($id))->first();
-            if ($book->age_group == null) {
+            $condition = $this->getBookCategory($book);
+            if (!$condition) {
                 InsertDioCodeSubjectsJob::dispatch($book);
             } else {
                 InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
@@ -73,5 +76,18 @@ class InsertBooksDioCodeSubjects extends Command
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
         return true;
+    }
+
+    private function getBookCategory($book)
+    {
+        $result = false;
+        if ($book->age_group != null) {
+            foreach ($book->age_group as $value) {
+                if ($value['xa'] == 1 or $value['xb'] == 1 or$value['xg'] == 1 or$value['xd'] == 1 or$value['xh'] == 1){
+                    $result = true;
+                }
+            }
+        }
+        return $result;
     }
 }
