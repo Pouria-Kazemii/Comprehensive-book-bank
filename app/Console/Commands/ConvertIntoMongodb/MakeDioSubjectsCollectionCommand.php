@@ -151,7 +151,7 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'839','end'=>'839.999'],
             ['start'=>'843','end'=>'843.999'],
             ['start'=>'849','end'=>'849.999'],
-            ['start'=>'853','end'=>'853.853'],
+            ['start'=>'853','end'=>'853.999'],
             ['start'=>'859','end'=>'859.999'],
             ['start'=>'863','end'=>'863.999'],
             ['start'=>'869','end'=>'869.999'],
@@ -226,6 +226,11 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(10108,"پژوهش و نقد ادبی","public",101,0,2,[
             ['start'=>'8fa9','end'=>'8fa9.0999'],
+            ['start'=>'8fa0','end'=>'8fa1.04999'],
+            ['start'=>'8fa1.06','end'=>'8fa1.0999'],
+            ['start'=>'8fa1.7','end'=>'8fa1.999'],
+            ['start'=>'8fa4','end'=>'8fa4.999'],
+            ['start'=>'8fa8','end'=>'8fa8.999'],
             ['start'=>'800','end'=>'807.9999'],
             ['start'=>'808.0668','end'=>'808.1999'],
             ['start'=>'808.3','end'=>'808.3999'],
@@ -240,7 +245,7 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'828','end'=>'828.999'],
             ['start'=>'830','end'=>'830.999'],
             ['start'=>'834','end'=>'834.999'],
-            ['start'=>'834','end'=>'834.999'],
+            ['start'=>'838','end'=>'838.999'],
             ['start'=>'840','end'=>'840.999'],
             ['start'=>'844','end'=>'844.999'],
             ['start'=>'848','end'=>'848.999'],
@@ -378,6 +383,9 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'340','end'=>'349.999'],
             ['start'=>'364','end'=>'365.999'],
         ],false);
+        $this->addToDioSubjects(10410,"اقتصاد","public",104,0,2,[
+            ['start'=>'330','end'=>'339.999'],
+        ],true);
         $this->addToDioSubjects(10405,"مدیریت","public",104,0,2,[
             ['start'=>'174','end'=>'174.1999'],
             ['start'=>'174.4','end'=>'174.8999'],

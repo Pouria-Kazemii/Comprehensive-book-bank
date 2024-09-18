@@ -15,7 +15,7 @@ class InsertBooksDioCodeSubjects extends Command
      *
      * @var string
      */
-    protected $signature = 'add:dio_subject {id?}';
+    protected $signature = 'add:dio_subject {id?} {--F} ';
 
     /**
      * The console command description.
@@ -45,7 +45,8 @@ class InsertBooksDioCodeSubjects extends Command
         $this->info("Start feel diocode subject column");
         $startTime = microtime('true');
         $id = $this->argument('id');
-        if ($id == null) {
+        $option = $this->option('F');
+        if ($id == null and !$option) {
             $progressBar = $this->output->createProgressBar(BookIrBook2::count());
             $progressBar->start();
             BookIrBook2::chunk(1000, function ($books) use ($progressBar) {
@@ -62,6 +63,21 @@ class InsertBooksDioCodeSubjects extends Command
                     }
             });
             $progressBar->finish();
+        } elseif ($option){
+            $progressBar = $this->output->createProgressBar(BookIrBook2::where('diocode_subject' , '=', [])->count());
+            $progressBar->start();
+            $books = BookIrBook2::where('diocode_subject' , [])->get();
+            foreach ($books as $book){
+                $condition = $this->getBookCategory($book);
+                if (!$condition) {
+                    InsertDioCodeSubjectsJob::dispatch($book);
+                    $progressBar->advance();
+
+                } else {
+                    InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
+                    $progressBar->advance();
+                }
+            }
         } else {
             $book = BookIrBook2::where('_id', new ObjectId($id))->first();
             $condition = $this->getBookCategory($book);

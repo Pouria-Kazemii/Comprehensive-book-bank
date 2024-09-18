@@ -82,7 +82,6 @@ class InsertDioCodeSubjectsJob implements ShouldQueue
                         $condition--;
                     }
                 }
-
             }
         }
         $this->book->update([
