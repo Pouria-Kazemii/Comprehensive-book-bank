@@ -25,6 +25,25 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class TestController extends Controller
 {
+
+    public function dio()
+    {
+         return BookIrBook2::raw(function ($collection){
+            return $collection->aggregate([
+                [
+                    '$match' => [
+                        'diocode_subject' => []
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$xdiocode',
+                        'count' => ['$sum' => 1]
+                    ]
+                ]
+            ]);
+        });
+    }
     public function test_majma_api()
     {
         $timeout = 120;
