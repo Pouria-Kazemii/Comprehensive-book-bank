@@ -56,6 +56,7 @@ class InsertDioCodeSubjectsJob implements ShouldQueue
                     ]
                 ]);
             });
+            $total = 0;
             if (count($dioSubjects) > 1) {
                 foreach ($dioSubjects as $dioSubject) {
                     if (!$dioSubject->except) {
@@ -68,6 +69,8 @@ class InsertDioCodeSubjectsJob implements ShouldQueue
                             $parentId = $newSubject->parent_id;
                             $condition--;
                         }
+                    } else {
+                        $total++;
                     }
                 }
             } else {
@@ -80,6 +83,29 @@ class InsertDioCodeSubjectsJob implements ShouldQueue
                         $arrayOfSubjects [] = [$newSubject->id_by_law => $newSubject->title];
                         $parentId = $newSubject->parent_id;
                         $condition--;
+                    }
+                }
+            }
+
+            if ($total == count($dioSubjects)) {
+                foreach ($dioSubjects as $dioSubject) {
+                    $count = count($dioSubject->except_range);
+                    $except = 0;
+                    foreach ($dioSubject->except_range as $value){
+                        if ($this->book->xdiocode < $value['start'] || $this->book->xdiocode > $value['end']){
+                            $except++;
+                        }
+                    }
+                    if ($except == $count){
+                        $arrayOfSubjects [] = [$dioSubject->id_by_law => $dioSubject->title];
+                        $condition = $dioSubject->level;
+                        $parentId = $dioSubject->parent_id;
+                        while ($condition != 0) {
+                            $newSubject = DioSubject::where('id_by_law', $parentId)->first();
+                            $arrayOfSubjects [] = [$newSubject->id_by_law => $newSubject->title];
+                            $parentId = $newSubject->parent_id;
+                            $condition--;
+                        }
                     }
                 }
             }

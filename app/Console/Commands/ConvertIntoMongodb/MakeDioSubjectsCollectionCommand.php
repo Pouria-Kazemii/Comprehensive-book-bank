@@ -86,7 +86,10 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(303,"هنر","child",3,0,1,[
             ['start'=>'700','end'=>'799.999']
 
-        ],true);
+        ],true , [
+            ['start' => '741.5' , 'end' => '741.5999'],
+            ['start' => '793' , 'end' => '799.999']
+        ]);
         $this->addToDioSubjects(304,"معارف دینی","child",3,0,1,[
             ['start'=>'200','end'=>'299.999']
         ],false);
@@ -95,7 +98,16 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'170','end'=>'179.999'],
             ['start'=>'300','end'=>'399.999'],
             ['start'=>'640','end'=>'659.999']
-        ],true);
+        ],true,[
+            ['start' => '153' , 'end' => '153.999'],
+            ['start' => '320' , 'end' => '329.999'],
+            ['start' => '333' , 'end' => '333.999'],
+            ['start' => '338' , 'end' => '339.999'],
+            ['start' => '360' , 'end' => '369.999'],
+            ['start' => '370' , 'end' => '372.999'],
+            ['start' => '380' , 'end' => '389.999'],
+            ['start' => '398' , 'end' => '398.999']
+        ]);
         $this->addToDioSubjects(306,"آموزشی","child",3,0,1,[
             ['start'=>'153','end'=>'153.8999'],
             ['start'=>'370','end'=>'372.999'],
@@ -276,7 +288,9 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'808','end'=>'808.0666999'],
             ['start'=>'808.4','end'=>'808.4999'],
             ['start'=>'808.6','end'=>'808.6999'],
-        ],true);
+        ],true ,[
+            ['start' => '808.0667' , 'end' => '808.0667999'],
+        ]);
         $this->addToDioSubjects(10111,"کلمات قصار و داستان کوتاه","public",101,0,2,[
             ['start'=>'808.8','end'=>'808.80999'],
             ['start'=>'808.83','end'=>'808.83999'],
@@ -300,7 +314,10 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(10205,"تاریخ جهان","public",102,0,2,[
             ['start'=>'900','end'=>'909.999'],
             ['start'=>'930','end'=>'999.999'],
-        ],true);
+        ],true,[
+            ['start' => '955' , 'end' => '955.999'],
+            ['start' => '956.9' , 'end' => '956.999']
+        ]);
         $this->addToDioSubjects(10206,"تاریخ محلی","public",102,0,2,[
             ['start'=>'955.1','end'=>'955.999'],
         ],false);
@@ -320,7 +337,9 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'155.3','end'=>'155.3999'],
             ['start'=>'155.6','end'=>'155.999'],
             ['start'=>'158.3','end'=>'158.3999'],
-        ],true);
+        ],true,[
+            ['start' => '155.04' , 'end' => '155.04999']
+        ]);
         $this->addToDioSubjects(10302,"اختلالات","public",103,0,2,[
             ['start'=>'152.44','end'=>'152.5999'],
             ['start'=>'159','end'=>'159.999'],
@@ -351,7 +370,10 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'395','end'=>'395.999'],
             ['start'=>'640','end'=>'640.999'],
             ['start'=>'646.76','end'=>'646.76999'],
-        ],true);
+        ],true,[
+            ['start' => '133.42' , 'end' => '133.43999'],
+            ['start' => '158.3' , 'end' => '158.3999']
+        ]);
         $this->addToDioSubjects(10306,"تربیت","public",103,0,2,[
             ['start'=>'152.4','end'=>'152.40999'],
             ['start'=>'155.04','end'=>'155.04999'],
@@ -368,7 +390,9 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'355','end'=>'359.999'],
             ['start'=>'366','end'=>'367.999'],
             ['start'=>'303.3','end'=>'303.999'],
-        ],true);
+        ],true ,[
+            ['start' => '320.8' , 'end' => '320.8999']
+        ]);
         $this->addToDioSubjects(10402,"جامعه شناسی","public",104,0,2,[
             ['start'=>'174.9','end'=>'174.999'],
             ['start'=>'176','end'=>'176.999'],
@@ -377,7 +401,15 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'320.8','end'=>'320.8999'],
             ['start'=>'360','end'=>'363.999'],
             ['start'=>'955.0044','end'=>'955.0044999'],
-        ],true);
+        ],true,[
+            ['start' => '302.2' , 'end' => '302.2999'],
+            ['start' => '302.35' , 'end' => '302.36'],
+            ['start' => '303' , 'end' => '303.999'],
+            ['start' => '305.231' , 'end' => '305.23999'],
+            ['start' => '306.7' , 'end' => '306.8999'],
+            ['start' => '362' , 'end' => '362.1999'],
+            ['start' => '362.2' , 'end' => '362.999']
+        ]);
         $this->addToDioSubjects(10403,"حقوق","public",104,0,2,[
             ['start'=>'174.3','end'=>'174.3999'],
             ['start'=>'340','end'=>'349.999'],
@@ -385,29 +417,42 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(10410,"اقتصاد","public",104,0,2,[
             ['start'=>'330','end'=>'339.999'],
-        ],true);
+        ],true,[
+            ['start' => '332.024' , 'end' => '332.02999']
+        ]);
         $this->addToDioSubjects(10405,"مدیریت","public",104,0,2,[
             ['start'=>'174','end'=>'174.1999'],
             ['start'=>'174.4','end'=>'174.8999'],
             ['start'=>'302.35','end'=>'302.36'],
             ['start'=>'350','end'=>'354.999'],
             ['start'=>'368','end'=>'369.999'],
-            ['start'=>'382','end'=>'383.999'],
             ['start'=>'650.2','end'=>'659.999'],
-        ],true);
+        ],true,[
+            ['start' => '657' , 'end' => '657.999']
+        ]);
         $this->addToDioSubjects(10406,"بازرگانی و حمل‌ونقل","public",104,0,2,[
             ['start'=>'380','end'=>'389.999'],
-        ],true);
+        ],true,[
+            ['start' => '384' , 'end' => '384.999']
+        ]);
         $this->addToDioSubjects(10407,"رسانه و ارتباطات","public",104,0,2,[
             ['start'=>'070','end'=>'079.999'],
             ['start'=>'302.2','end'=>'302.2999'],
             ['start'=>'303','end'=>'303.2999'],
             ['start'=>'384','end'=>'384.999'],
-        ],true);
+        ],true,[
+            ['start' => '302' , 'end' => '302'],
+            ['start' => '302.5' , 'end' => '302.5999'],
+            ['start' => '302.35' , 'end' => '302.36']
+        ]);
         $this->addToDioSubjects(10408,"مردم‌شناسی","public",104,0,2,[
             ['start'=>'390','end'=>'394.999'],
             ['start'=>'398','end'=>'399.999'],
-        ],true);
+        ],true,[
+            ['start' => '398.2' , 'end' => '398.24999'],
+            ['start' => '368.6' , 'end' => '398.6999'],
+            ['start' => '398.9' , 'end' => '398.999']
+        ]);
         $this->addToDioSubjects(10409,"آموزش و پرورش","public",104,0,2,[
             ['start'=>'370','end'=>'379.999'],
             ['start'=>'507','end'=>'507.999'],
@@ -438,13 +483,17 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(10601,"کلام اسلامی","public",106,0,2,[
             ['start'=>'297.4','end'=>'297.47999'],
             ['start'=>'297.49','end'=>'297.4999'],
-        ],true);
+        ],true,[
+            ['start' => '297.46' , 'end' => '297.462999']
+        ]);
         $this->addToDioSubjects(10602,"اندیشه اسلامی","public",106,0,2,[
             ['start'=>'297','end'=>'297.0999'],
         ],false);
         $this->addToDioSubjects(10603,"اخلاق","public",106,0,2,[
             ['start'=>'297.6','end'=>'297.6999'],
-        ],false);
+        ],true,[
+            ['start' => '297.64' , 'end' => '297.64999']
+        ]);
         $this->addToDioSubjects(10604,"عرفان","public",106,0,2,[
             ['start'=>'297.8','end'=>'297.8999'],
         ],false);
@@ -474,7 +523,11 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'133.42','end'=>'133.43999'],
             ['start'=>'200','end'=>'296.999'],
             ['start'=>'298','end'=>'299.999'],
-        ],true);
+        ],true,[
+            ['start' => '248' , 'end' => '248.999'],
+            ['start' => '291.44' , 'end' => '291.44999'],
+            ['start' => '291.13' , 'end' => '291.13999']
+        ]);
         $this->addToDioSubjects(10613,"سیره اهل بیت علیهم السلام","public",106,0,2,[
             ['start'=>'297.46','end'=>'297.462999'],
             ['start'=>'297.93','end'=>'297.93999'],
@@ -484,10 +537,29 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(10614,"صحابه و بزرگان اسلام","public",106,0,2,[
             ['start'=>'297.94','end'=>'297.94999'],
             ['start'=>'297.97','end'=>'297.999'],
-        ],true);
+        ],true,[
+            ['start' => '297.973' , 'end' => '297.974999'],
+        ]);
         $this->addToDioSubjects(10701,"آموزشی","public",107,0,2,[
             ['start'=>'420','end'=>'499.999'],
-        ],true);
+        ],true,[
+            ['start' => '423' , 'end' => '423.999'],
+            ['start' => '433' , 'end' => '433.999'],
+            ['start' => '443' , 'end' => '443.999'],
+            ['start' => '453' , 'end' => '453.999'],
+            ['start' => '463' , 'end' => '463.999'],
+            ['start' => '473' , 'end' => '473.999'],
+            ['start' => '483' , 'end' => '483.999'],
+            ['start' => '493' , 'end' => '493.999'],
+            ['start' => '425' , 'end' => '425.999'],
+            ['start' => '435' , 'end' => '435.999'],
+            ['start' => '445' , 'end' => '445.999'],
+            ['start' => '455' , 'end' => '455.999'],
+            ['start' => '465' , 'end' => '465.999'],
+            ['start' => '475' , 'end' => '475.999'],
+            ['start' => '485' , 'end' => '485.999'],
+            ['start' => '495' , 'end' => '495.999'],
+        ]);
         $this->addToDioSubjects(10702,"دستور زبان","public",107,0,2,[
             ['start'=>'425','end'=>'425.999'],
             ['start'=>'435','end'=>'435.999'],
@@ -540,7 +612,9 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(11207,"نقاشی","public",112,0,2,[
             ['start'=>'750','end'=>'759.999'],
             ['start'=>'740','end'=>'749.999'],
-        ],true);
+        ],true,[
+            ['start' => '745.619' , 'end' => '745.619']
+        ]);
         $this->addToDioSubjects(11208,"معماری و طراحی شهری","public",112,0,2,[
             ['start'=>'710','end'=>'729.999'],
         ],false);
@@ -613,23 +687,42 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'8fa0','end'=>'8fa9.999'],
             ['start'=>'398','end'=>'398.999'],
             ['start'=>'800','end'=>'899.999'],
-        ],true);
+        ],true , [
+            ['start' => '8fa1' , 'end' => '8fa1.999'],
+            ['start' => '811' , 'end' => '811.999'],
+            ['start' => '821' , 'end' => '821.999'],
+            ['start' => '831' , 'end' => '831.999'],
+            ['start' => '841' , 'end' => '841.999'],
+            ['start' => '851' , 'end' => '851.999'],
+            ['start' => '861' , 'end' => '861.999'],
+            ['start' => '871' , 'end' => '871.999'],
+            ['start' => '881' , 'end' => '881.999']
+        ]);
         $this->addToDioSubjects(31002,"داستان و رمان خارجی","child",310,0,2,[
             ['start'=>'398','end'=>'398.999'],
             ['start'=>'800','end'=>'899.999'],
-        ],true);
+        ],true,[
+            ['start' => '811' , 'end' => '811.999'],
+            ['start' => '821' , 'end' => '821.999'],
+            ['start' => '831' , 'end' => '831.999'],
+            ['start' => '841' , 'end' => '841.999'],
+            ['start' => '851' , 'end' => '851.999'],
+            ['start' => '861' , 'end' => '861.999'],
+            ['start' => '871' , 'end' => '871.999'],
+            ['start' => '881' , 'end' => '881.999']
+        ]);
         $this->addToDioSubjects(31003,"داستان‌های تصویری","child",310,0,2,[
             ['start'=>'741.5','end'=>'741.5999'],
         ],false);
         $this->addToDioSubjects(30201,"تاریخ جهان","child",302,0,2,[
             ['start'=>'900','end'=>'999.999'],
-        ],false);
+        ],true,[
+            ['start'=>'955','end'=>'955.999']
+        ]);
         $this->addToDioSubjects(30202,"تاریخ ایران","child",302,0,2,[
             ['start'=>'955','end'=>'955.999'],
         ],false);
 
-
-        //        ['start'=>'','end'=>'']
         //______________________________________lvl 3______________________________________//
         $this->addToDioSubjects(1010601,"دفاع مقدس","public",10106,0,3,[
             ['start'=>'955.0843','end'=>'955.084399'],
@@ -681,7 +774,10 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(2020102,"داروشناسی و درمان","edu",20201,0,3,[
             ['start'=>'615','end'=>'616.999'],
-        ],true);
+        ],true,[
+            ['start' => '616.85' , 'end' => '616.860'],
+            ['start' => '616.89' , 'end' => '616.8999']
+        ]);
         $this->addToDioSubjects(2020103,"بهداشت","edu",20201,0,3,[
             ['start'=>'613','end'=>'614.999'],
         ],false);
@@ -690,12 +786,14 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(2020105,"زنان و مامایی","edu",20201,0,3,[
         ['start'=>'618','end'=>'619.999'],
-    ],true);
+        ],true,[
+            ['start' => '618.928' , 'end' => '618.92999'],
+        ]);
 
         return true;
     }
 
-    private function addToDioSubjects($id , $title , $dioType,$parentId,$hasChild,$level,$range,$except)
+    private function addToDioSubjects($id , $title , $dioType,$parentId,$hasChild,$level,$range,$except,$exceptRange=null)
     {
         DioSubject::create([
             'id_by_law' => $id,
@@ -705,7 +803,8 @@ class MakeDioSubjectsCollectionCommand extends Command
             'has_child' => $hasChild,
             'level' => $level,
             'range' => $range,
-            'except' => $except
+            'except' => $except,
+            'except_range' => $exceptRange
         ]);
     }
 }

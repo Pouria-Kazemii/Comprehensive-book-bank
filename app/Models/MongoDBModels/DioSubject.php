@@ -20,6 +20,7 @@ class DioSubject extends Model
         'has_child',
         'level',
         'range',
-        'except'
+        'except',
+        'except_range'
     ];
 }
