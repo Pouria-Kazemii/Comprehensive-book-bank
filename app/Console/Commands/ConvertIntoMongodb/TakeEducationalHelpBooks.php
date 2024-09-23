@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
+use App\Jobs\UpdateEducationalHelpBooksJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Console\Command;
 
@@ -12,7 +13,7 @@ class TakeEducationalHelpBooks extends Command
      *
      * @var string
      */
-    protected $signature = 'take:educational_help_books';
+    protected $signature = 'take:educational_help_books {id?}';
 
     /**
      * The console command description.
@@ -34,10 +35,41 @@ class TakeEducationalHelpBooks extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return Bool
      */
     public function handle()
     {
-        $books = BookIrBook2::raw();
+        //TODO : NEW
+        $this->info('start to find educational books and update them inside bookir_book collection');
+        $startTime = microtime('true');
+        $id = $this->argument('id');
+        if ($id == null) {
+            $books = BookIrBook2::raw(function ($collection){
+                return $collection->aggregate([
+                    [
+                        '$unwind'=>'$subjects'
+                    ]
+                    ,
+                    [
+                        '$match' => [
+                            'subjects.xsubject_id' => 260442
+                        ]
+                    ]
+                ]);
+            });
+            $progressBar = $this->output->createProgressBar(count($books));
+            $progressBar->start();
+            foreach ($books as $book){
+                UpdateEducationalHelpBooksJob::dispatch($book);
+                $progressBar->advance();
+            }
+            $this->line('');
+            $endTime = microtime(true);
+            $duration = $endTime - $startTime;
+            $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        } else {
+            // TODO : ITS FOR SCHEDULE
+        }
+        return true;
     }
 }
