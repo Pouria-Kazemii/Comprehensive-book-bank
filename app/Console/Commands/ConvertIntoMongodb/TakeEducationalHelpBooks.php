@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
+use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Console\Command;
 
 class TakeEducationalHelpBooks extends Command
@@ -11,14 +12,14 @@ class TakeEducationalHelpBooks extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'take:educational_help_books';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'take and slice books with subject of educational help ';
 
     /**
      * Create a new command instance.
@@ -37,6 +38,6 @@ class TakeEducationalHelpBooks extends Command
      */
     public function handle()
     {
-        return 0;
+        $books = BookIrBook2::raw();
     }
 }
