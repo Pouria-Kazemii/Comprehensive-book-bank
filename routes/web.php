@@ -66,6 +66,7 @@ Route::get('exportExcelContradictions30book/{status}', [ExcelController::class, 
 Route::get('exportExcelContradictionsShahreKetabOnline/{status}', [ExcelController::class, 'exportExcelContradictionsShahreKetabOnline']);
 Route::get('test_maja_api', [TestController::class, 'test_majma_api']);
 Route::get('test_get_books_majma/{from_date}/{to_date}/{from}/{result_count}', [TestController::class, 'test_get_books_majma']);
+Route::get('test_get_books_majma_second/{from_date}/{to_date}/{from}/{result_count}', [TestController::class, 'test_get_books_majma_second']);
 Route::get('test_get_book_id_majma/{book_id}', [TestController::class, 'test_get_book_id_majma']);
 Route::get('test_get_publishers_majma/{from}/{result_count}', [TestController::class, 'test_get_publishers_majma']);
 Route::get('test_get_publisher_id_majma/{publisher_id}', [TestController::class, 'test_get_publisher_id_majma']);
