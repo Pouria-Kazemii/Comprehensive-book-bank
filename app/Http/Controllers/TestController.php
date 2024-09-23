@@ -39,7 +39,8 @@ class TestController extends Controller
                 [
                     '$group' => [
                         '_id' => '$xdiocode',
-                        'count' => ['$sum' => 1]
+                        'count' => ['$sum' => 1],
+                        'books_ids' => ['$push' => '$_id']
                     ]
                 ]
             ]);
