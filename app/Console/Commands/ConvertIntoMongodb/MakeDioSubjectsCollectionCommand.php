@@ -71,7 +71,7 @@ class MakeDioSubjectsCollectionCommand extends Command
         $this->addToDioSubjects(201,"علوم پایه","edu",2,1,1,null,false);
 
 
-        $this->addToDioSubjects(301,"شعر","child",3,1,1,[
+        $this->addToDioSubjects(301,"شعر","child",3,0,1,[
             ['start'=>'8fa1','end'=>'8fa1.999'],
             ['start'=>'811','end'=>'811.999'],
             ['start'=>'821','end'=>'821.999'],
@@ -172,7 +172,7 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'883','end'=>'883.999'],
             ['start'=>'889','end'=>'889.999'],
             ['start'=>'891','end'=>'891.6999'],
-            ['start'=>'891.73','end'=>'891.999'],
+            ['start'=>'891.73','end'=>'891.999999'],
             ['start'=>'892','end'=>'892.6999'],
             ['start'=>'892.73','end'=>'892.999'],
             ['start'=>'893','end'=>'893.999'],
@@ -238,7 +238,7 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(10108,"پژوهش و نقد ادبی","public",101,0,2,[
             ['start'=>'8fa9','end'=>'8fa9.0999'],
-            ['start'=>'8fa0','end'=>'8fa1.04999'],
+            ['start'=>'8fa','end'=>'8fa1.04999'],
             ['start'=>'8fa1.06','end'=>'8fa1.0999'],
             ['start'=>'8fa1.7','end'=>'8fa1.999'],
             ['start'=>'8fa4','end'=>'8fa4.999'],
@@ -536,7 +536,7 @@ class MakeDioSubjectsCollectionCommand extends Command
         ],false);
         $this->addToDioSubjects(10614,"صحابه و بزرگان اسلام","public",106,0,2,[
             ['start'=>'297.94','end'=>'297.94999'],
-            ['start'=>'297.97','end'=>'297.999'],
+            ['start'=>'297.97','end'=>'297.99999'],
         ],true,[
             ['start' => '297.973' , 'end' => '297.974999'],
         ]);
@@ -622,7 +622,7 @@ class MakeDioSubjectsCollectionCommand extends Command
             ['start'=>'730','end'=>'739.999'],
         ],false);
         $this->addToDioSubjects(11210,"عکاسی","public",112,0,2,[
-            ['start'=>'770','end'=>'779.999'],
+            ['start'=>'770','end'=>'779.9999'],
         ],false);
 
 
@@ -684,7 +684,7 @@ class MakeDioSubjectsCollectionCommand extends Command
 
 
         $this->addToDioSubjects(31001,"داستان و رمان فارسی","child",310,0,2,[
-            ['start'=>'8fa0','end'=>'8fa9.999'],
+            ['start'=>'8fa','end'=>'8fa9.999'],
             ['start'=>'398','end'=>'398.999'],
             ['start'=>'800','end'=>'899.999'],
         ],true , [
