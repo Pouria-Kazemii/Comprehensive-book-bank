@@ -7,6 +7,7 @@ use App\Jobs\AddNewXruleJob;
 use App\Jobs\ConvertBookirBookJob;
 use App\Jobs\FixIsTranslateJob;
 use App\Jobs\UpdateBookIrBooksMongoIdInSqlJob;
+use App\Jobs\UpdateEducationalHelpBooksJob;
 use App\Models\BookirBook;
 use App\Models\BookirSubject;
 use App\Models\MongoDBModels\BookIrBook2;
@@ -58,6 +59,7 @@ class MatchingMongoBookWithSQLCommand extends Command
                 $mongoBook = BookIrBook2::where('xsqlid', $book->xid)->first();
                 AddNewXruleJob::dispatch($mongoBook);
                 UpdateBookIrBooksMongoIdInSqlJob::dispatch($mongoBook);
+                UpdateEducationalHelpBooksJob::dispatch($mongoBook);
                 FixIsTranslateJob::dispatch($mongoBook);
                 $progressBar1->advance();
                 $lastProcessedId = $book->xid;

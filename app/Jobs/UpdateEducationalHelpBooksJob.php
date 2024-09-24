@@ -30,12 +30,18 @@ class UpdateEducationalHelpBooksJob implements ShouldQueue
      */
     public function handle()
     {
-        $this->book->update([
-            'diocode_subject' =>[
-                [
-                    4 => "کمک آموزشی"
-                ]
-            ]
-        ]);
+        if ($this->book->subjects != null) {
+            foreach ($this->book->subjects as $subject) {
+                if ($subject['xsubject_id'] == 260442) {
+                    $this->book->update([
+                        'diocode_subject' => [
+                            [
+                                4 => "کمک آموزشی"
+                            ]
+                        ]
+                    ]);
+                }
+            }
+        }
     }
 }

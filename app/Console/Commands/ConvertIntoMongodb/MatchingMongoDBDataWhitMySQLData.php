@@ -103,7 +103,7 @@ class MatchingMongoDBDataWhitMySQLData extends Command
 
         $progressBar3->finish();
         $this->line('');
-        //------------------------------------------ Books ------------------------------------------//
+        //------------------------------------------ books ------------------------------------------//
 
         $this->info('adding books and update mongo_id');
         $books = BookirBook::where('mongo_id', null)->where('xpageurl2', '!=' , null);

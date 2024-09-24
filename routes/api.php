@@ -91,7 +91,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 
 
-    //SQL Books
+    //SQL books
     Route::post('/v1/book/save', 'API\BookController@store');
     Route::post('/v1/book/update/{id}', 'API\BookController@update');
     Route::post('/v1/book/find', 'API\BookController@find');
@@ -120,7 +120,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/book/find-best-selling-by-publisher', 'API\BookController@findBestSellingBypublisher');//not exist
 
 
-    //MongoDB Books
+    //MongoDB books
     Route::post('/v2/book/find' , [BookController::class , 'find']);
     Route::post('/v2/book/find-isbn', [BookController::class ,'findIsbn']);
     Route::post('/v2/book/find/publisher', [BookController::class , 'findByPublisher']);
