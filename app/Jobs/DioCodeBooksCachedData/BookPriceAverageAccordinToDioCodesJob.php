@@ -59,11 +59,11 @@ class BookPriceAverageAccordinToDioCodesJob implements ShouldQueue
                     ]
                 ]);
             });
-
+            if ( count($data) == 1)
             BookDioCachedData::updateOrCreate(
                 ['year' => $data[0]['_id'], 'dio_subject_title' => $subject, 'dio_subject_id' => $key]
                 ,
-                count($data) == 1 ? ['average' => round($data[0]['price'] / $data[0]['count'])] : ['average' => 0]
+                ['average' => round($data[0]['price'] / $data[0]['count'])]
             );
         }
     }
