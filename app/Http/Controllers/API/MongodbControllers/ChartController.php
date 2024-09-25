@@ -348,7 +348,7 @@ class ChartController extends Controller
             $dataPages ['value'] [0][] = $item->total_pages;
             $dataPages ['value'] [1][] = $item->first_cover_total_pages;
             if ($item->total_pages != null) {
-                $sumPagesRange = +$item->total_pages;
+                $sumPagesRange +=$item->total_pages;
             }
         }
         $startYear = convertToPersianNumbersPure($startYear);

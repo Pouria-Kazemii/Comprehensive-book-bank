@@ -4,6 +4,7 @@ use App\Http\Controllers\API\MongodbControllers\BookCheckController;
 use App\Http\Controllers\API\MongodbControllers\BookController;
 use App\Http\Controllers\API\MongodbControllers\ChartController;
 use App\Http\Controllers\API\MongodbControllers\CreatorController;
+use App\Http\Controllers\API\MongodbControllers\DioChartsController;
 use App\Http\Controllers\API\MongodbControllers\PublisherController;
 use App\Http\Controllers\API\MongodbControllers\ReportController;
 use App\Http\Controllers\API\MongodbControllers\SubjectController;
@@ -253,10 +254,14 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v2/charts/publisher/{publisherId}' , [ChartController::class , 'publisher']);
     Route::post('/v2/charts/creator/{creatorId}' ,[ChartController::class , 'creator']);
 
+    //MongoDB DioCodesSubject Chart
+    Route::post('/v2/dio_charts/all' , [DioChartsController::class , 'all']);
+
     // TODO must implement later
     Route::post('/v1/import/importErshadBooks/', 'API\ImportController@importErshadBooks');
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
 });
+Route::post('/v2/dio_charts' , [DioChartsController::class , 'index']);
 
 
