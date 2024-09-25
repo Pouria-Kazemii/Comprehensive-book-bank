@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedDioCharts\books;
 
 use App\Jobs\DioCodeBooksCachedData\BookTotalCountAccordinToDioCodesJob;
+use App\Jobs\DioCodeBooksCachedData\FirstPrintNumberTotalCountBooksAccordingToDioCodesJob;
 use Illuminate\Console\Command;
 
 class MakingBookTotalCountAccordingToDioCodeYearlyCommand extends Command
@@ -12,7 +13,7 @@ class MakingBookTotalCountAccordingToDioCodeYearlyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dio_chart:book_total_count_yearly {year} {--A}';
+    protected $signature = 'dio_chart:book_total_count_yearly {year} {--A} {--F}';
 
     /**
      * The console command description.
@@ -38,21 +39,37 @@ class MakingBookTotalCountAccordingToDioCodeYearlyCommand extends Command
      */
     public function handle()
     {
-        $this->info('start to caching books total count according to dio code subjects yearly');
         $year = (int)$this->argument('year');
+        $first = $this->option('F');
         $option = $this->option('A');
         $start = microtime(true);
-        if ($option){
+        if ($option and !$first) {
+            $this->info('start to caching books total count according to dio code subjects yearly');
             $currentYear = getYearNow();
-            $progressBar = $this->output->createProgressBar($currentYear-$year);
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
             $progressBar->start();
-            while($year <= $currentYear){
+            while ($year <= $currentYear) {
                 BookTotalCountAccordinToDioCodesJob::dispatch($year);
                 $progressBar->advance();
                 $year++;
             }
             $progressBar->finish();
+        } elseif ($option and $first) {
+            $this->info('start to caching books first cover number total count according to dio code subjects yearly');
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
+            $progressBar->start();
+            while ($year <= $currentYear) {
+                FirstPrintNumberTotalCountBooksAccordingToDioCodesJob::dispatch($year);
+                $progressBar->advance();
+                $year++;
+            }
+            $progressBar->finish();
+        } elseif (!$option and $first) {
+            $this->info('start to caching books first cover number total count according to dio code subjects at year ' . $year);
+            FirstPrintNumberTotalCountBooksAccordingToDioCodesJob::dispatch($year);
         } else {
+            $this->info('start to caching books total count according to dio code subjects at year ' . $year);
             BookTotalCountAccordinToDioCodesJob::dispatch($year);
         }
         $this->line('');

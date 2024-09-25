@@ -12,7 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class BookPriceAverageAccordinToDioCodesJob implements ShouldQueue
+class FirstPrintNumberTotalPagesBooksAccordingToDioCodesJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     private $year;
@@ -40,6 +40,10 @@ class BookPriceAverageAccordinToDioCodesJob implements ShouldQueue
                     [
                         '$match' => [
                             'xpublishdate_shamsi' => $this->year,
+                            'xtotal_pages' => [
+                                '$ne' => 0
+                            ],
+                            'xprintnumber' => 1,
                             'diocode_subject' => [
                                 '$elemMatch' => [
                                     $key => $subject
@@ -50,8 +54,7 @@ class BookPriceAverageAccordinToDioCodesJob implements ShouldQueue
                     [
                         '$group' => [
                             '_id' => '$xpublishdate_shamsi',
-                            'count' => ['$sum' => 1],
-                            'price' => ['$sum' => '$xcoverprice'],
+                            'total_pages' => ['$sum' => '$xtotal_page'],
                         ]
                     ],
                     [
@@ -59,11 +62,11 @@ class BookPriceAverageAccordinToDioCodesJob implements ShouldQueue
                     ]
                 ]);
             });
-
+            if (count($data) == 1)
             BookDioCachedData::updateOrCreate(
                 ['year' => $data[0]['_id'], 'dio_subject_title' => $subject, 'dio_subject_id' => $key]
                 ,
-                count($data) == 1 ? ['average' => round($data[0]['price'] / $data[0]['count'])] : ['average' => 0]
+                ['first_cover_total_pages' => $data[0]['total_pages']]
             );
         }
     }

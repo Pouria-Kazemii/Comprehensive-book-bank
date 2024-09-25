@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedDioCharts\books;
 
 use App\Jobs\DioCodeBooksCachedData\BookTotalPriceAccordinToDioCodesJob;
+use App\Jobs\DioCodeBooksCachedData\FirstPrintNumberTotalPriceBooksAccordingToDioCodesJob;
 use Illuminate\Console\Command;
 
 class MakingBookTotalPriceAccordingToDioCodeYearlyCommand extends Command
@@ -12,7 +13,7 @@ class MakingBookTotalPriceAccordingToDioCodeYearlyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dio_chart:book_total_price_yearly {year} {--A}';
+    protected $signature = 'dio_chart:book_total_price_yearly {year} {--A} {--F}';
 
     /**
      * The console command description.
@@ -38,11 +39,12 @@ class MakingBookTotalPriceAccordingToDioCodeYearlyCommand extends Command
      */
     public function handle()
     {
-        $this->info('start to caching books total price according to dio code subjects yearly');
         $year = (int)$this->argument('year');
         $option = $this->option('A');
+        $first = $this->option('F');
         $start = microtime(true);
-        if ($option) {
+        if ($option and !$first) {
+            $this->info('start to caching books total price according to dio code subjects yearly');
             $currentYear = getYearNow();
             $progressBar = $this->output->createProgressBar($currentYear - $year);
             $progressBar->start();
@@ -52,7 +54,22 @@ class MakingBookTotalPriceAccordingToDioCodeYearlyCommand extends Command
                 $year++;
             }
             $progressBar->finish();
+        } elseif ($option and $first) {
+            $this->info('start to caching books first cover number total price according to dio code subjects yearly');
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
+            $progressBar->start();
+            while ($year <= $currentYear) {
+                FirstPrintNumberTotalPriceBooksAccordingToDioCodesJob::dispatch($year);
+                $progressBar->advance();
+                $year++;
+            }
+            $progressBar->finish();
+        } elseif (!$option and $first) {
+            $this->info('start to caching books first cover number total price according to dio code subjects at year ' . $year);
+            FirstPrintNumberTotalPriceBooksAccordingToDioCodesJob::dispatch($year);
         } else {
+            $this->info('start to caching books total price according to dio code subjects at year ' . $year);
             BookTotalPriceAccordinToDioCodesJob::dispatch($year);
         }
         $this->line('');

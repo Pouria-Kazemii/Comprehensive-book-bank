@@ -13,7 +13,7 @@ class MakingBookParagraphAccordingToDioCodeYearlyCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'dio_charts:book_total_paragraph_yearly {year} {--A} {--F}';
+    protected $signature = 'dio_chart:book_total_paragraph_yearly {year} {--A} {--F}';
 
     /**
      * The console command description.
