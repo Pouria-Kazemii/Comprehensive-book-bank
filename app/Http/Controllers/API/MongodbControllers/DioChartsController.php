@@ -14,7 +14,7 @@ class DioChartsController extends Controller
     {
         $start = microtime('true');
         $year = getYearNow();
-        $id = (int)$request->input('id');
+        (int)$request->input('id') == null ? $id = 0 : $id = (int)$request->input('id');
         $startYear = (isset($request['startYear']) and !empty($request['startYear'])) ? intval($request->input('startYear')) : $year - 10;
         $endYear = (isset($request['endYear']) and !empty($request['endYear'])) ? intval($request->input('endYear')) : $year;
         $topYear = (isset($request['topYear']) and !empty($request['topYear'])) ? intval($request->input('topYear')) : $year;
@@ -48,23 +48,68 @@ class DioChartsController extends Controller
         $paragraphBottomDonate = [];
         $tonBottomDonate = [];
 
+        if ($id != 0) {
+            $topBoxData = BookDioCachedData::where('year', 0)->where('dio_subject_id', $id)->first();
+            $topBoxTotalPrice = $topBoxData->total_price;
+            $topBoxTotalCirculation = $topBoxData->total_circulation;
+            $topBoxTotalPages = $topBoxData->total_pages;
+            $topBoxTotalCount = $topBoxData->count;
+            $topBoxParagraph = $topBoxData->paragraph;
+            $topBoxTon = $topBoxData->paragraph * 25 / 1000;
+        } else {
+            $topBoxData = BookDioCachedData::where('year', 0);
+            $topBoxTotalPrice = $topBoxData->sum('total_price');
+            $topBoxTotalCirculation = $topBoxData->sum('total_circulation');
+            $topBoxTotalPages = $topBoxData->sum('total_pages');
+            $topBoxTotalCount = $topBoxData->sum('count');
+            $topBoxParagraph = $topBoxData->sum('paragraph');
+            $topBoxTon = $topBoxParagraph * 20 / 1000;
+        }
 
-        $topBoxData = BookDioCachedData::where('year', 0)->where('dio_subject_id', $id)->first();
-
-        $bottomBoxAndChartData =BookDioCachedData::where('dio_subject_id' , $id)
-            ->where('year', '<=' , $endYear)
-            ->where('year','>=' , $startYear)
-            ->get();
+        if ($id != 0) {
+            $bottomBoxAndChartData = BookDioCachedData::where('dio_subject_id', $id)
+                ->where('year', '<=', $endYear)
+                ->where('year', '>=', $startYear)
+                ->get();
+        } else {
+            $bottomBoxAndChartData = BookDioCachedData::raw(function ($collection) use ($startYear, $endYear) {
+                return $collection->aggregate([
+                    [
+                        '$match' => [
+                            'year' => [
+                                '$lte' => $endYear,
+                                '$gte' => $startYear
+                            ]
+                        ]
+                    ],
+                    [
+                        '$group' => [
+                            '_id' => '$year',
+                            'total_pages' => ['$sum' => '$total_pages'],
+                            'first_cover_total_pages' => ['$sum' => '$first_cover_total_pages'],
+                            'total_price' => ['$sum' => '$total_price'],
+                            'first_cover_total_price' => ['$sum' => '$first_cover_total_price'],
+                            'total_circulation' => ['$sum' => '$total_circulation'],
+                            'first_cover_total_circulation' => ['$sum' => '$first_cover_total_circulation'],
+                            'count' => ['$sum' => '$count'],
+                            'first_cover_count' => ['$sum' => '$first_cover_count'],
+                            'paragraph' => ['$sum' => '$paragraph'],
+                            'first_cover_paragraph' => ['$sum' => '$first_cover_paragraph'],
+                            'average' => ['$sum' => '$average'],
+                            'first_cover_average' => ['$sum' => '$first_cover_average']
+                        ]
+                    ]
+                ]);
+            });
+        }
 
         $donateIds = DioSubject::where('parent_id' , $id)->pluck('id_by_law');
-
-
         foreach ($donateIds as $donateId){
             $topDonateValue = BookDioCachedData::where('year',0)->where('dio_subject_id',$donateId)->first();
             $totalCirculationTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->total_circulation];
             $totalPriceTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->total_price];
             $totalCountTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->count];
-            $totalPageTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->total_page];
+            $totalPageTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->total_pages];
             $tonTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->paragraph * 25 / 100];
             $paragraphTopDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $topDonateValue->paragraph];
 
@@ -75,86 +120,90 @@ class DioChartsController extends Controller
             $totalCirculationBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('total_circulation')];
             $totalPriceBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('total_price')];
             $totalCountBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('count')];
-            $totalPageBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('total_page')];
+            $totalPageBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('total_pages')];
             $tonBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('paragraph') * 25 / 100];
             $paragraphBottomDonate [] = ["kind" => $topDonateValue->dio_subject_title , "share" => $botDonateValue->sum('paragraph')];
         }
 
         foreach ($bottomBoxAndChartData as $item){
-            $totalPageChart[] = $item->year;
-            $totalPageChart [0] [] = $item->total_pages ?? 0;
-            $totalPageChart [1] [] = $item->first_cover_total_pages ?? 0;
+            $id != 0 ? $totalPageChart['label'] [] = $item->year : $totalPageChart['label'] [] = $item->_id;
+            $totalPageChart ['value'] [0] [] = $item->total_pages ?? 0;
+            $totalPageChart ['value'] [1] [] = $item->first_cover_total_pages ?? 0;
             if ($item->total_pages != null){
                 $pagesBottomBox += $item->total_pages;
             }
 
-            $totalCirculationChart[] = $item->year;
-            $totalCirculationChart [0] [] = $item->total_circulation ?? 0;
-            $totalCirculationChart [1] [] = $item->first_cover_total_circulation ?? 0;
+            $id != 0 ? $totalCirculationChart['label'] [] = $item->year: $totalCirculationChart['label'] [] = $item->_id;
+            $totalCirculationChart ['value'] [0] [] = $item->total_circulation ?? 0;
+            $totalCirculationChart ['value'] [1] [] = $item->first_cover_total_circulation ?? 0;
             if ($item->total_circulation != null){
                 $circulationBottomBox += $item->total_circulation;
             }
 
-            $totalCountChart[] = $item->year;
-            $totalCountChart [0] [] = $item->count ?? 0;
-            $totalCountChart [1] [] = $item->first_cover_count ?? 0;
+            $id != 0 ? $totalCountChart['label'] [] = $item->year : $totalCountChart['label'] [] = $item->_id;
+            $totalCountChart ['value'] [0] [] = $item->count ?? 0;
+            $totalCountChart ['value'] [1] [] = $item->first_cover_count ?? 0;
             if ($item->count != null){
                 $countBottomBox += $item->count;
             }
 
-            $totalPriceChart[] = $item->year;
-            $totalPriceChart [0] [] = $item->total_price ?? 0;
-            $totalPriceChart [1] [] = $item->first_cover_total_price ?? 0;
+            $id != 0 ? $totalPriceChart['label'] [] = $item->year : $totalPriceChart['label'] [] = $item->_id;
+            $totalPriceChart ['value'] [0] [] = $item->total_price ?? 0;
+            $totalPriceChart ['value'] [1] [] = $item->first_cover_total_price ?? 0;
             if ($item->total_price != null){
                 $priceBottomBox += $item->total_price;
             }
 
-            $averageChart[] = $item->year;
-            $averageChart [0] [] = $item->average ?? 0;
-            $averageChart [1] [] = $item->first_cover_average ?? 0;
+            $id != 0 ? $averageChart['label'] [] = $item->year :$averageChart['label'] [] = $item->_id ;
+            $averageChart ['value'] [0] [] = $item->average ?? 0;
+            $averageChart ['value'] [1] [] = $item->first_cover_average ?? 0;
 
-            $paragraphChart[] = $item->year;
-            $paragraphChart[0][] = round($item->paragraph) ?? 0;
-            $paragraphChart[1][] = round($item->first_cover_paragraph) ?? 0;
-            $tonChart[] = $item->year;
-            $tonChart[0][] = round($item->paragraph * 25 /1000) ?? 0;
-            $tonChart[1][] = round($item->first_cover_paragraph * 25 /1000) ?? 0;
+            $id != 0 ? $paragraphChart['label'] [] = $item->year : $paragraphChart['label'] [] = $item->_id;
+            $paragraphChart['value'][0][] = round($item->paragraph) ?? 0;
+            $paragraphChart['value'][1][] = round($item->first_cover_paragraph) ?? 0;
+            $id != 0 ? $tonChart['label'] [] = $item->year : $tonChart['label'] [] = $item->_id;
+            $tonChart['value'][0][] = round($item->paragraph * 25 /1000) ?? 0;
+            $tonChart['value'][1][] = round($item->first_cover_paragraph * 25 /1000) ?? 0;
             if ($item->paragraph != null) {
                 $paragraphBottomBox += $item->paragraph;
                 $tonBottomBox += $item->paragraph * 25 / 1000;
             }
         }
 
+        $startYear = convertToPersianNumbersPure($startYear);
+        $endYear = convertToPersianNumbersPure($endYear);
+        $topYear = convertToPersianNumbersPure($topYear);
+
         $topBox =[
             [
                 'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
                 'title_en' => "total_pages_all_time",
-                'value' => convertToPersianNumbers($topBoxData->total_pages)
+                'value' => convertToPersianNumbers($topBoxTotalPages)
             ],
             [
                 'title_fa' => "مجموع تیراژ از ابتدا تا کنون",
                 'title_en' => "total_circulation_all_time",
-                'value' => convertToPersianNumbers($topBoxData->total_circulation)
+                'value' => convertToPersianNumbers($topBoxTotalCirculation)
             ],
             [
                 'title_fa' => "جمع مالی از ابتدا تا کنون",
                 'title_en' => "total_price_all_time",
-                'value' => convertToPersianNumbers($topBoxData->total_price)
+                'value' => convertToPersianNumbers($topBoxTotalPrice)
             ],
             [
-                'title_fa' => "مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)",
-                'title_en' => "kilo_all_time",
-                'value' => convertToPersianNumbers(round($topBoxData->paragraph * 25))
+                'title_fa' => "مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب تن - کاغذ ۷۰ گرمی)",
+                'title_en' => "ton_all_time",
+                'value' => convertToPersianNumbers(round($topBoxTon))
             ],
             [
                 'title_fa' => "جمع بند کاغذ مصرفی از ابتدا تا کنون",
                 'title_en' => "total_count_all_time",
-                'value' => convertToPersianNumbers(round($topBoxData->paragraph))
+                'value' => convertToPersianNumbers(round($topBoxParagraph))
             ],
             [
                 'title_fa' => "جمع تعداد کتاب ها از ابتدا تا کنون",
                 'title_en' => "total_count_all_time",
-                'value' => convertToPersianNumbers($topBoxData->count)
+                'value' => convertToPersianNumbers($topBoxTotalCount)
             ],
         ];
 
