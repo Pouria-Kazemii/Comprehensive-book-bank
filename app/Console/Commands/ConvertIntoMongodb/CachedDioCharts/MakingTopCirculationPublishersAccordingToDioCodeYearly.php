@@ -3,6 +3,7 @@
 namespace App\Console\Commands\ConvertIntoMongodb\CachedDioCharts;
 
 use App\Jobs\DioCodeBooksCachedData\TopCirculationPublishersAccordingToDioCodeSubjectsJob;
+use App\Jobs\DioCodeBooksCachedData\TopCirculationPublishersAccordingToDioCodeSubjectsTotallyJob;
 use App\Models\MongoDBModels\DioSubject;
 use Illuminate\Console\Command;
 
@@ -44,7 +45,14 @@ class MakingTopCirculationPublishersAccordingToDioCodeYearly extends Command
         $year = (int)$this->argument('year');
         $option = $this->option('A');
         $subjects = DioSubject::pluck('title', 'id_by_law');
-        if ($option) {
+        if ($year == 0){
+            $progressBar = $this->output->createProgressBar(DioSubject::count());
+            $progressBar->start();
+            foreach ($subjects as $key => $subject) {
+                TopCirculationPublishersAccordingToDioCodeSubjectsTotallyJob::dispatch($key, $subject);
+                $progressBar->advance();
+            }
+        } else if ($option) {
             $currentYear = getYearNow();
             $progressBar = $this->output->createProgressBar($currentYear - $year);
             $progressBar->start();

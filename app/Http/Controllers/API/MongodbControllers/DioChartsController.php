@@ -5,6 +5,10 @@ namespace App\Http\Controllers\API\MongodbControllers;
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookDioCachedData;
 use App\Models\MongoDBModels\DioSubject;
+use App\Models\MongoDBModels\TCC_Yearly;
+use App\Models\MongoDBModels\TCP_Yearly;
+use App\Models\MongoDBModels\TPC_Yearly;
+use App\Models\MongoDBModels\TPP_Yearly;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -48,6 +52,12 @@ class DioChartsController extends Controller
         $paragraphBottomDonate = [];
         $tonBottomDonate = [];
 
+
+        $dataForCreatorPrice = [];
+        $dataForCreatorCirculation = [];
+        $dataForPublisherPrice = [];
+        $dataForPublisherCirculation = [];
+
         if ($id != 0) {
             $topBoxData = BookDioCachedData::where('year', 0)->where('dio_subject_id', $id)->first();
             $topBoxTotalPrice = $topBoxData->total_price;
@@ -56,6 +66,33 @@ class DioChartsController extends Controller
             $topBoxTotalCount = $topBoxData->count;
             $topBoxParagraph = $topBoxData->paragraph;
             $topBoxTon = $topBoxData->paragraph * 25 / 1000;
+
+            $bottomBoxAndChartData = BookDioCachedData::where('dio_subject_id', $id)
+                ->where('year', '<=', $endYear)
+                ->where('year', '>=', $startYear)
+                ->get();
+
+
+            $topChartData =BookDioCachedData::where('year', $topYear)->where('dio_subject_id' , $id)->first();
+            foreach ($topChartData->top_circulation_publishers as $item){
+                $dataForPublisherCirculation['label'][] = $item['publisher_name'];
+                $dataForPublisherCirculation['value'][] = $item['total_page'];
+            }
+
+            foreach ($topChartData->top_price_publishers as $item){
+                $dataForPublisherPrice ['label'] [] = $item['publisher_name'];
+                $dataForPublisherPrice['value'] [] = $item['total_price'];
+            }
+
+           foreach ($topChartData->top_circulation_creators as $item){
+                $dataForCreatorCirculation['label'][] = $item['creator_name'];
+                $dataForCreatorCirculation['value'][] = $item['total_page'];
+            }
+
+           foreach ($topChartData->top_price_creators  as $item){
+                $dataForCreatorPrice['label'] [] = $item['creator_name'];
+                $dataForCreatorPrice['value'] [] = $item['total_price'];
+           }
         } else {
             $topBoxData = BookDioCachedData::where('year', 0);
             $topBoxTotalPrice = $topBoxData->sum('total_price');
@@ -64,14 +101,7 @@ class DioChartsController extends Controller
             $topBoxTotalCount = $topBoxData->sum('count');
             $topBoxParagraph = $topBoxData->sum('paragraph');
             $topBoxTon = $topBoxParagraph * 20 / 1000;
-        }
 
-        if ($id != 0) {
-            $bottomBoxAndChartData = BookDioCachedData::where('dio_subject_id', $id)
-                ->where('year', '<=', $endYear)
-                ->where('year', '>=', $startYear)
-                ->get();
-        } else {
             $bottomBoxAndChartData = BookDioCachedData::raw(function ($collection) use ($startYear, $endYear) {
                 return $collection->aggregate([
                     [
@@ -101,6 +131,31 @@ class DioChartsController extends Controller
                     ]
                 ]);
             });
+
+
+            $dfp_circulation =TCP_Yearly::where('year', $topYear)->first();
+            foreach ($dfp_circulation->publishers as $item){
+                $dataForPublisherCirculation['label'][] = $item['publisher_name'];
+                $dataForPublisherCirculation['value'][] = $item['total_page'];
+            }
+
+            $dfp_price   = TPP_Yearly::where('year' , $topYear)->first();
+            foreach ($dfp_price->publishers as $item){
+                $dataForPublisherPrice ['label'] [] = $item['publisher_name'];
+                $dataForPublisherPrice['value'] [] = $item['total_price'];
+            }
+
+            $dfc_circulation = TCC_Yearly::where('year' , $topYear)->first();
+            foreach ($dfc_circulation->creators as $item){
+                $dataForCreatorCirculation['label'][] = $item['creator_name'];
+                $dataForCreatorCirculation['value'][] = $item['total_page'];
+            }
+
+            $dfc_price = TPC_Yearly::where('year' , $topYear)->first();
+            foreach ($dfc_price->creators  as $item){
+                $dataForCreatorPrice['label'] [] = $item['creator_name'];
+                $dataForCreatorPrice['value'] [] = $item['total_price'];
+            }
         }
 
         $donateIds = DioSubject::where('parent_id' , $id)->pluck('id_by_law');
@@ -352,6 +407,29 @@ class DioChartsController extends Controller
              ],
          ];
 
+        $top=[
+            [
+                'title_fa' => "نمودار پدیدآورندگان برتر بر حسب جمع مالی در سال $topYear",
+                'title_en' => 'data_for_creators_total_price',
+                'data' => $dataForCreatorPrice
+            ],
+            [
+                'title_fa' => "نمودار پدیدآورندگان برتر بر حسب مجموع تیراژ در سال $topYear",
+                'title_en' => 'data_for_creators_total_circulation',
+                'data' => $dataForCreatorCirculation
+            ],
+            [
+                'title_fa' => "نمودار انتشارات برتر بر حسب جمع مالی در سال $topYear",
+                'title_en' => 'data_for_publishers_total_price',
+                'data' => $dataForPublisherPrice
+            ],
+            [
+                'title_fa' => "نمودار انتشارات برتر بر حسب مجموع تیراژ در سال $topYear",
+                'title_en' => 'date_for_publishers_total_circulation',
+                'data' => $dataForPublisherCirculation
+            ],
+        ];
+
         $end = microtime(true);
         $elapsedTime = $end - $start;
          return response()->json([
@@ -362,7 +440,7 @@ class DioChartsController extends Controller
                 'bottom_box' => $bottomBox,
                 'bottom_donate' => $bottomDonate,
                 'charts' => $charts,
-//                'top' => $top
+                'top' => $top
             ] ,
              'status' => 200 ,
              'time' => $elapsedTime,
