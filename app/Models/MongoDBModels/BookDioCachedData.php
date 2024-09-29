@@ -27,6 +27,10 @@ class BookDioCachedData extends Model
         'first_cover_average',
         'first_cover_total_pages',
         'first_cover_count',
-        'first_cover_paragraph'
+        'first_cover_paragraph',
+        'top_circulation_creators',
+        'top_circulation_publishers',
+        'top_price_creators',
+        'top_price_publishers'
     ];
 }

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb\CachedDioCharts;
 
+use App\Jobs\DioCodeBooksCachedData\TopCirculationPublishersAccordingToDioCodeSubjectsJob;
+use App\Models\MongoDBModels\DioSubject;
 use Illuminate\Console\Command;
 
 class MakingTopCirculationPublishersAccordingToDioCodeYearly extends Command
@@ -11,14 +13,14 @@ class MakingTopCirculationPublishersAccordingToDioCodeYearly extends Command
      *
      * @var string
      */
-    protected $signature = 'command:name';
+    protected $signature = 'dio_chart:top_circulation_publisher_yearly {year} {--A}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'cached data for taking top circulation publishers for every year according to dio code subjects';
 
     /**
      * Create a new command instance.
@@ -33,10 +35,39 @@ class MakingTopCirculationPublishersAccordingToDioCodeYearly extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return Bool
      */
     public function handle()
     {
-        return 0;
+        $this->info("Start cache top circulation publisher yearly");
+        $startTime = microtime('true');
+        $year = (int)$this->argument('year');
+        $option = $this->option('A');
+        $subjects = DioSubject::pluck('title', 'id_by_law');
+        if ($option) {
+            $currentYear = getYearNow();
+            $progressBar = $this->output->createProgressBar($currentYear - $year);
+            $progressBar->start();
+            while ($year <= $currentYear) {
+                foreach ($subjects as $key => $subject) {
+                    TopCirculationPublishersAccordingToDioCodeSubjectsJob::dispatch($year, $key, $subject);
+                }
+                $progressBar->advance();
+                $year++;
+            }
+        } else {
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            foreach ($subjects as $key => $subject) {
+                TopCirculationPublishersAccordingToDioCodeSubjectsJob::dispatch($year, $key, $subject);
+            }
+            $progressBar->advance();
+        }
+        $progressBar->finish();
+        $this->line('');
+        $endTime = microtime(true);
+        $duration = $endTime - $startTime;
+        $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+        return true;
     }
 }
