@@ -44,32 +44,40 @@ class TakeEducationalHelpBooks extends Command
         $startTime = microtime('true');
         $id = $this->argument('id');
         if ($id == null) {
-            $books = BookIrBook2::raw(function ($collection){
+            $books = BookIrBook2::raw(function ($collection) {
                 return $collection->aggregate([
                     [
-                        '$unwind'=>'$subjects'
+                        '$unwind' => '$subjects'
                     ]
                     ,
                     [
                         '$match' => [
-                            'subjects.xsubject_id' => 260442
+                            '$or' => [
+                                ['subjects.xsubject_id' => 260442],
+                                ['subjects.xsubject_id' => 260471]
+                            ]
                         ]
                     ]
                 ]);
             });
             $progressBar = $this->output->createProgressBar(count($books));
             $progressBar->start();
-            foreach ($books as $book){
+            foreach ($books as $book) {
                 UpdateEducationalHelpBooksJob::dispatch($book);
                 $progressBar->advance();
             }
-            $this->line('');
-            $endTime = microtime(true);
-            $duration = $endTime - $startTime;
-            $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
         } else {
-            // TODO : ITS FOR SCHEDULE
+            $book = BookIrBook2::where('_id', $id)->first();
+            $progressBar = $this->output->createProgressBar(1);
+            $progressBar->start();
+            UpdateEducationalHelpBooksJob::dispatch($book);
         }
+        $progressBar->finish();
+        $this->line('');
+        $endTime = microtime(true);
+        $duration = $endTime - $startTime;
+        $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
+
         return true;
     }
 }

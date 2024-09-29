@@ -52,22 +52,22 @@ class InsertBooksDioCodeSubjects extends Command
             BookIrBook2::chunk(1000, function ($books) use ($progressBar) {
                 foreach ($books as $book) {
                     $condition = $this->getBookCategory($book);
-                        if (!$condition) {
-                            InsertDioCodeSubjectsJob::dispatch($book);
-                            $progressBar->advance();
+                    if (!$condition) {
+                        InsertDioCodeSubjectsJob::dispatch($book);
+                        $progressBar->advance();
 
-                        } else {
-                            InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
-                            $progressBar->advance();
-                        }
+                    } else {
+                        InsertDioCodeSubjectsForChildBooksJob::dispatch($book);
+                        $progressBar->advance();
                     }
+                }
             });
             $progressBar->finish();
-        } elseif ($option){
-            $progressBar = $this->output->createProgressBar(BookIrBook2::where('diocode_subject' , '=', [])->count());
+        } elseif ($option) {
+            $progressBar = $this->output->createProgressBar(BookIrBook2::where('diocode_subject', '=', [])->count());
             $progressBar->start();
-            $books = BookIrBook2::where('diocode_subject' , [])->get();
-            foreach ($books as $book){
+            $books = BookIrBook2::where('diocode_subject', [])->get();
+            foreach ($books as $book) {
                 $condition = $this->getBookCategory($book);
                 if (!$condition) {
                     InsertDioCodeSubjectsJob::dispatch($book);
@@ -99,8 +99,17 @@ class InsertBooksDioCodeSubjects extends Command
         $result = false;
         if ($book->age_group != null) {
             foreach ($book->age_group as $value) {
-                if ($value['xa'] == 1 or $value['xb'] == 1 or$value['xg'] == 1 or$value['xd'] == 1 or$value['xh'] == 1){
+                if ($value['xa'] == 1 or $value['xb'] == 1 or $value['xg'] == 1 or $value['xd'] == 1 or $value['xh'] == 1) {
                     $result = true;
+                }
+            }
+        }
+        if (!$result) {
+            if ($book->subjects != null) {
+                foreach ($book->subjects as $subject) {
+                    if ($subject['xsubject_id'] == 187748) {
+                        $result = true;
+                    }
                 }
             }
         }

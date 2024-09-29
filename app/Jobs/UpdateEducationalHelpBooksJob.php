@@ -32,7 +32,7 @@ class UpdateEducationalHelpBooksJob implements ShouldQueue
     {
         if ($this->book->subjects != null) {
             foreach ($this->book->subjects as $subject) {
-                if ($subject['xsubject_id'] == 260442) {
+                if ($subject['xsubject_id'] == 260442 or $subject['xsubject_id'] == 260471) {
                     $this->book->update([
                         'diocode_subject' => [
                             [

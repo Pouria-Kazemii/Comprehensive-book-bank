@@ -53,8 +53,7 @@ class Kernel extends ConsoleKernel
         Commands\ConvertIntoMongodb\ChainOfCachedDataCommand::class,
         Commands\ConvertIntoMongodb\GetPublishDateOfNewBooksCommand::class,
         Commands\ConvertIntoMongodb\GetPublishersIdAndCreatorsIdOfNewBook::class,
-        Commands\ConvertIntoMongodb\InsertBooksDioCodeSubjects::class
-
+        Commands\ConvertIntoMongodb\ChainOfCachedDioSubjectsDataCommand::class
     ];
 
     /**
@@ -77,8 +76,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:book_publishdate')->dailyAt('06:30');
         $schedule->command('get:book_publishers_and_creators')->dailyAt('06:45');
         $schedule->command('match:mongodb_chain')->dailyAt('07:00');
-        $schedule->command('add:dio_subject',['--F'])->dailyAt('11:00');
-        $schedule->command("chart:all_cache_data",[$date])->dailyAt('12:00');
+        $schedule->command("chart:all_cache_data",['date' => $date])->dailyAt('12:00');
+        $schedule->command('dio_chart:all_cached_data' ,['date' => $date])->dailyAt('13:00');
         /////////////////////////////////////////////////////////////////////////////////////////////////
         // fidibo
         $schedule->command('get:fidiboNewestBooks 1')->dailyAt('15:45');
