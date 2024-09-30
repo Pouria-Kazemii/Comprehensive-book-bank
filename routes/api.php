@@ -256,7 +256,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     //MongoDB DioCodesSubject Chart
     Route::post('/v2/dio_charts/all' , [DioChartsController::class , 'all']);
-    Route::post('/v2/dio_charts' , [DioChartsController::class , 'index']);
 
 
     // TODO must implement later

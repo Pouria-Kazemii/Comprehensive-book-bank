@@ -141,7 +141,8 @@ class DioChartsController extends Controller
                             'average' => ['$sum' => '$average'],
                             'first_cover_average' => ['$sum' => '$first_cover_average']
                         ]
-                    ]
+                    ],
+                    ['$sort' => ['_id' => 1]]
                 ]);
             });
 
@@ -243,9 +244,9 @@ class DioChartsController extends Controller
 
         $topBox =[
             [
-                'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
-                'title_en' => "total_pages_all_time",
-                'value' => convertToPersianNumbers($topBoxTotalPages)
+                'title_fa' => "جمع تعداد کتاب ها از ابتدا تا کنون",
+                'title_en' => "total_count_all_time",
+                'value' => convertToPersianNumbers($topBoxTotalCount)
             ],
             [
                 'title_fa' => "مجموع تیراژ از ابتدا تا کنون",
@@ -268,18 +269,19 @@ class DioChartsController extends Controller
                 'value' => convertToPersianNumbers(round($topBoxParagraph))
             ],
             [
-                'title_fa' => "جمع تعداد کتاب ها از ابتدا تا کنون",
-                'title_en' => "total_count_all_time",
-                'value' => convertToPersianNumbers($topBoxTotalCount)
+                'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
+                'title_en' => "total_pages_all_time",
+                'value' => convertToPersianNumbers($topBoxTotalPages)
             ],
         ];
 
         $bottomBox = [
             [
-                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
-                'title_en' => "sum_total_pages",
-                'value' => convertToPersianNumbers($pagesBottomBox)
+            'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
+            'title_en' => "sum_count_range",
+            'value' => convertToPersianNumbers($countBottomBox)
             ],
+
             [
                 'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
                 'title_en' => "sum_circulation_range",
@@ -301,9 +303,9 @@ class DioChartsController extends Controller
                 'value' => convertToPersianNumbers(round($paragraphBottomBox))
             ],
             [
-                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال $endYear",
-                'title_en' => "sum_count_range",
-                'value' => convertToPersianNumbers($countBottomBox)
+                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                'title_en' => "sum_total_pages",
+                'value' => convertToPersianNumbers($pagesBottomBox)
             ],
         ];
 
@@ -316,21 +318,15 @@ class DioChartsController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                "title_fa" => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
-                "title_en"=> "data_for_paragraph_of_books",
-                'data' => $paragraphChart
-            ],
-            [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                "title_fa" => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
-                "title_en"=> "data_for_ton_of_books",
-                'data' => $tonChart
-            ],
-            [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
                 "title_fa" => "نمودار مجموع تعداد کتاب  از سال $startYear تا سال $endYear",
                 "title_en"=> "data_for_count_books",
                 'data' => $totalCountChart
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                "title_fa" => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
+                "title_en"=> "data_for_circulation_books",
+                'data' => $totalCirculationChart
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
@@ -340,33 +336,34 @@ class DioChartsController extends Controller
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                "title_fa" => "نمودار مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
-                "title_en"=> "data_for_page_books",
-                'data' => $totalPageChart
+                "title_fa" => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
+                "title_en"=> "data_for_ton_of_books",
+                'data' => $tonChart
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                "title_fa" => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
-                "title_en"=> "data_for_circulation_books",
-                'data' => $totalCirculationChart
+                "title_fa" => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
+                "title_en"=> "data_for_paragraph_of_books",
+                'data' => $paragraphChart
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                "title_fa" => "نمودار مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                "title_en"=> "data_for_page_books",
+                'data' => $totalPageChart
             ],
         ];
 
         $bottomDonate = [
             [
-                "title_fa" => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
-                "title_en"=> "data_for_paragraph_of_books",
-                'data' => $paragraphBottomDonate
-            ],
-            [
-                "title_fa" => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
-                "title_en"=> "data_for_ton_of_books",
-                'data' => $tonBottomDonate
-            ],
-            [
                 "title_fa" => "نمودار مجموع تعداد کتاب  از سال $startYear تا سال $endYear",
                 "title_en"=> "data_for_count_books",
                 'data' => $totalCountBottomDonate
+            ],
+            [
+                "title_fa" => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
+                "title_en"=> "data_for_circulation_books",
+                'data' => $totalCirculationBottomDonate
             ],
             [
                 "title_fa" => "نمودار جمع مالی  از سال $startYear تا سال $endYear",
@@ -374,23 +371,29 @@ class DioChartsController extends Controller
                 'data' => $totalPriceBottomDonate
             ],
             [
+                "title_fa" => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
+                "title_en"=> "data_for_ton_of_books",
+                'data' => $tonBottomDonate
+            ],
+            [
+                "title_fa" => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
+                "title_en"=> "data_for_paragraph_of_books",
+                'data' => $paragraphBottomDonate
+            ],
+            [
                 "title_fa" => "نمودار مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 "title_en"=> "data_for_page_books",
                 'data' => $totalPageBottomDonate
             ],
-            [
-                "title_fa" => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
-                "title_en"=> "data_for_circulation_books",
-                'data' => $totalCirculationBottomDonate
-            ],
+
         ];
 
 
          $topDonate = [
              [
-                 'title_fa' => "نمودار مجموع صفحات چاپ شده از ابتدا تا کنون",
-                 'title_en' => "total_pages_all_time_donate",
-                 'value' => $totalPageTopDonate
+                 'title_fa' => "نمودار جمع تعداد کتاب ها از ابتدا تا کنون",
+                 'title_en' => "total_count_all_time_donate",
+                 'value' => $totalCountTopDonate
              ],
              [
                  'title_fa' => "نمودار مجموع تیراژ از ابتدا تا کنون",
@@ -413,10 +416,11 @@ class DioChartsController extends Controller
                  'value' => $paragraphTopDonate
              ],
              [
-                 'title_fa' => "نمودار جمع تعداد کتاب ها از ابتدا تا کنون",
-                 'title_en' => "total_count_all_time_donate",
-                 'value' => $totalCountTopDonate
+                 'title_fa' => "نمودار مجموع صفحات چاپ شده از ابتدا تا کنون",
+                 'title_en' => "total_pages_all_time_donate",
+                 'value' => $totalPageTopDonate
              ],
+
          ];
 
         $top=[
