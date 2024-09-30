@@ -1161,7 +1161,7 @@ class BookController extends Controller
             $logicalOperation = strtolower($condition['logicalOperator']);
             $value = $condition['value'];
 
-            if ($field == 'xpublishdate_shamsi' or $field == 'xcovernumber' or $field == 'xcirculation' or $field == 'xcoverprice'){
+            if ($field == 'xpublishdate_shamsi' or $field == 'xprintnumber' or $field == 'xcirculation' or $field == 'xcoverprice'){
                 $value = (int)$value;
             }
             // Prepare condition based on comparison operator and field
@@ -1169,24 +1169,24 @@ class BookController extends Controller
                 case 'like':
                     switch ($field) {
                         case 'xname':
-                            if ($firstIndex){
-                            $conditionArray = ['$text' => ['$search' => $value]];
-                            $textIndex = true;
-                            $firstIndex = false;
-                            }else{
-                            $books = BookIrBook2::raw(function ($collection) use($value){
-                                return $collection->aggregate([
-                                    ['$match' => ['$text' =>['$search' => $value]]],
-                                    ['$project' => ['_id' => 1]]
-                                ]);
-                            });
-                            $bookIds = [];
-                            if ($books != null){
-                                foreach ($books as $book){
-                                    $bookIds[] = new ObjectId($book->_id);
+                            if ($firstIndex) {
+                                $conditionArray = ['$text' => ['$search' => $value]];
+                                $textIndex = true;
+                                $firstIndex = false;
+                            } else {
+                                $books = BookIrBook2::raw(function ($collection) use ($value) {
+                                    return $collection->aggregate([
+                                        ['$match' => ['$text' => ['$search' => $value]]],
+                                        ['$project' => ['_id' => 1]]
+                                    ]);
+                                });
+                                $bookIds = [];
+                                if ($books != null) {
+                                    foreach ($books as $book) {
+                                        $bookIds[] = new ObjectId($book->_id);
+                                    }
                                 }
-                            }
-                            $conditionArray = ['_id' => ['$in' => $bookIds]];
+                                $conditionArray = ['_id' => ['$in' => $bookIds]];
                             }
                             break;
                         case 'partners.xcreatorname':
@@ -1267,10 +1267,24 @@ class BookController extends Controller
                     }
                     break;
                 case '>=';
-                    $conditionArray = [$field => ['$gte' => (int)$value]];
+                    switch ($field) {
+                        case('xdiocode');
+                            $conditionArray = [$field => ['$gt' => $value]];
+                            break;
+                        default;
+                            $conditionArray = [$field => ['$gt' => (int)$value]];
+                            break;
+                    }
                     break;
                 case '<=';
-                    $conditionArray = [$field => ['$lte' => (int)$value]];
+                    switch ($field) {
+                        case('xdiocode');
+                            $conditionArray = [$field => ['$lt' => $value]];
+                            break;
+                        default;
+                            $conditionArray = [$field => ['$lt' => (int)$value]];
+                            break;
+                    }
                     break;
             }
 

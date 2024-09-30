@@ -148,15 +148,9 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($allTimesCirculation)
             ],
             [
-                'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
-                'title_en' => 'all_times_page',
-                'value' => convertToPersianNumbers($allTimesPage)
-            ],
-
-            [
-                'title_fa' => "مجموع بند کاغذ مصرفی از ابتدا تا کنون",
-                'title_en' => 'all_times_paragraph',
-                'value' => convertToPersianNumbers(round($allTimesParagraph))
+                'title_fa' => "جمع مالی کتاب ها از ابتدا تا کنون",
+                'title_en' => 'all_times_price',
+                'value' => convertToPersianNumbers($allTimesPrice)
             ],
             [
                 'title_fa' => "مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب تن - کاغذ ۷۰ گرمی)",
@@ -164,9 +158,14 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers(round($allTimesTon))
             ],
             [
-            'title_fa' => "جمع مالی کتاب ها از ابتدا تا کنون",
-            'title_en' => 'all_times_price',
-            'value' => convertToPersianNumbers($allTimesPrice)
+                'title_fa' => "مجموع بند کاغذ مصرفی از ابتدا تا کنون",
+                'title_en' => 'all_times_paragraph',
+                'value' => convertToPersianNumbers(round($allTimesParagraph))
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از ابتدا تا کنون",
+                'title_en' => 'all_times_page',
+                'value' => convertToPersianNumbers($allTimesPage)
             ],
         ];
 
@@ -182,14 +181,9 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($sumCirculationRange)
             ],
             [
-                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
-                'title_en' => 'sum_total_pages',
-                'value' => convertToPersianNumbers($sumPageRange)
-            ],
-            [
-                'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
-                'title_en' => 'sum_paragraph-range' ,
-                'value' => convertToPersianNumbers(round($sumParagraphRange))
+                'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_price',
+                'value' => convertToPersianNumbers($sumPriceRange)
             ],
             [
                 'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب تن - کاغذ ۷۰ گرمی)",
@@ -197,9 +191,14 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers(round($sumTonRange))
             ],
             [
-                'title_fa' => "جمع مالی از سال $startYear تا سال $endYear",
-                'title_en' => 'sum_total_price',
-                'value' => convertToPersianNumbers($sumPriceRange)
+                'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_paragraph-range' ,
+                'value' => convertToPersianNumbers(round($sumParagraphRange))
+            ],
+            [
+                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+                'title_en' => 'sum_total_pages',
+                'value' => convertToPersianNumbers($sumPageRange)
             ],
         ];
         $charts = [
@@ -214,19 +213,14 @@ class ChartController extends Controller
                 'data' => $dataForRangeAverage
             ],
             [
-                'title_fa' => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
-                'title_en' => 'data_for_paragraph_of_books',
-                'data' => $dataForRangeParagraph
-            ],
-            [
-                'title_fa' => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
-                'title_en' => 'data_for_ton_of_books',
-                'data' => $dataForRangeTon
-            ],
-            [
                 'title_fa' => "نمودار مجموع تعداد کتاب  از سال $startYear تا سال $endYear",
                 'title_en' => 'data_for_count_books',
                 'data' => $dataForRangeCount
+            ],
+            [
+                'title_fa' => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
+                'title_en' => 'data_for_circulation_books',
+                'data' => $dataForRangeCirculation
             ],
             [
                 'title_fa' => "نمودار جمع مالی  از سال $startYear تا سال $endYear",
@@ -234,14 +228,19 @@ class ChartController extends Controller
                 'data' => $dataForRangePrice
             ],
             [
+                'title_fa' => "نمودار وزن کاغذ مصرفی از سال $startYear تا سال $endYear(بر حسب تن - کاغذ ۷۰ گرمی)",
+                'title_en' => 'data_for_ton_of_books',
+                'data' => $dataForRangeTon
+            ],
+            [
+                'title_fa' => " نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
+                'title_en' => 'data_for_paragraph_of_books',
+                'data' => $dataForRangeParagraph
+            ],
+            [
                 'title_fa' => "نمودار مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
                 'title_en' => 'data_for_page_books',
                 'data' => $dataForRangePage
-            ],
-            [
-                'title_fa' => "نمودار مجموع تیراژ  از سال $startYear تا سال $endYear",
-                'title_en' => 'data_for_circulation_books',
-                'data' => $dataForRangeCirculation
             ],
         ];
         $top=[
@@ -356,10 +355,12 @@ class ChartController extends Controller
 
         $firstBox = [
             [
-                'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
-                'title_en' => 'total_pages-all_times',
-                'value' => convertToPersianNumbers($allTime->total_pages)
+                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
+                'title_en' => 'total_count_books_all_times',
+                'value' => convertToPersianNumbers($allTime->count)
+
             ],
+
             [
                 'title_fa' => 'مجموع تیراژ از ابتدا تا کنون',
                 'title_en' => 'total_circulation_all_times',
@@ -370,12 +371,7 @@ class ChartController extends Controller
                 'title_en' => 'total_price_all_times',
                 'value' => convertToPersianNumbers($allTime->total_price)
             ] ,
-            [
-                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
-                'title_en' => 'total_count_books_all_times',
-                'value' => convertToPersianNumbers($allTime->count)
 
-            ],
             [
                 'title_fa' => 'مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
@@ -386,13 +382,18 @@ class ChartController extends Controller
                 'title_fa' => 'مجموع بند کاغذ مصرفی از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
                 'value' => convertToPersianNumbers(round($allTime->paragraph))
-            ]
+            ] ,
+            [
+            'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
+            'title_en' => 'total_pages-all_times',
+            'value' => convertToPersianNumbers($allTime->total_pages)
+          ],
         ];
         $secondBox = [
             [
-                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
-                'title_en' => 'sum_total_pages_range',
-                'value' => convertToPersianNumbers($sumPagesRange)
+                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
+                'title_en' => 'sum_count_range',
+                'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
                 'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
@@ -407,11 +408,6 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
-                'title_en' => 'sum_count_range',
-                'value' => convertToPersianNumbers($sumCountRange)
-            ],
-            [
                 'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
@@ -420,15 +416,26 @@ class ChartController extends Controller
                 'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
-            ]
+            ],
+            [
+            'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+            'title_en' => 'sum_total_pages_range',
+            'value' => convertToPersianNumbers($sumPagesRange)
+            ],
         ];
 
         $charts = [
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa' => "نمودار مجموع صفحات از سال $startYear تا سال $endYear",
-                'title_en' => 'data_total_pages_range',
-                'data' => $dataPages,
+                'title_fa'=> "نمودار میانگین قیمت  از سال $startYear تا سال $endYear",
+                'title_en' => 'data_average_price_range',
+                'data' => $dataAverage
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                'title_fa'=> "نمودار تعداد کتاب از سال $startYear تا سال $endYear",
+                'title_en' => 'data_total_count_books_range',
+                'data' => $dataCount,
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
@@ -443,18 +450,6 @@ class ChartController extends Controller
                 'data' => $dataPrice
             ],
             [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> "نمودار تعداد کتاب از سال $startYear تا سال $endYear",
-                'title_en' => 'data_total_count_books_range',
-                'data' => $dataCount,
-            ],
-            [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> "نمودار میانگین قیمت  از سال $startYear تا سال $endYear",
-                'title_en' => 'data_average_price_range',
-                'data' => $dataAverage
-            ],
-            [
                 'stackLabels' => ['مقادیرکلی'],
                 'title_fa' => "نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'data_paragraph_range',
@@ -465,6 +460,12 @@ class ChartController extends Controller
                 'title_fa'=> "نمودار مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                'title_fa' => "نمودار مجموع صفحات از سال $startYear تا سال $endYear",
+                'title_en' => 'data_total_pages_range',
+                'data' => $dataPages,
             ],
         ];
         $end = microtime(true);
@@ -558,9 +559,10 @@ class ChartController extends Controller
 
         $firstBox = [
             [
-                'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
-                'title_en' => 'total_pages-all_times',
-                'value' => convertToPersianNumbers($allTime->total_pages)
+                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
+                'title_en' => 'total_count_books_all_times',
+                'value' => convertToPersianNumbers($allTime->count)
+
             ],
             [
                 'title_fa' => 'مجموع تیراژ از ابتدا تا کنون',
@@ -573,12 +575,6 @@ class ChartController extends Controller
                 'value' => convertToPersianNumbers($allTime->total_price)
             ] ,
             [
-                'title_fa' => 'مجموع کتاب ها از ابتدا تا کنون',
-                'title_en' => 'total_count_books_all_times',
-                'value' => convertToPersianNumbers($allTime->count)
-
-            ],
-            [
                 'title_fa' => 'مجموع وزن کاغذ مصرفی از ابتدا تا کنون(بر حسب کیلو - کاغذ ۷۰ گرمی)',
                 'title_en' => 'kilo_all_times',
                 'value' => convertToPersianNumbers(round($allTime->paragraph *25))
@@ -588,14 +584,19 @@ class ChartController extends Controller
                 'title_fa' => 'مجموع بند کاغذ مصرفی از ابتدا تا کنون',
                 'title_en' => 'total_paragraph_all_time',
                 'value' => convertToPersianNumbers(round($allTime->paragraph))
-            ]
+            ],
+            [
+            'title_fa' => 'مجموع صفحات چاپ شده از ابتدا تا کنون',
+            'title_en' => 'total_pages-all_times',
+            'value' => convertToPersianNumbers($allTime->total_pages)
+            ],
         ];
 
         $secondBox = [
             [
-                'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
-                'title_en' => 'sum_total_pages_range',
-                'value' => convertToPersianNumbers($sumPagesRange)
+                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
+                'title_en' => 'sum_count_range',
+                'value' => convertToPersianNumbers($sumCountRange)
             ],
             [
                 'title_fa' => "مجموع تیراژ از سال $startYear تا سال $endYear",
@@ -610,11 +611,6 @@ class ChartController extends Controller
 
             ],
             [
-                'title_fa' => "مجموع تعداد کتاب از سال $startYear تا سال  $endYear",
-                'title_en' => 'sum_count_range',
-                'value' => convertToPersianNumbers($sumCountRange)
-            ],
-            [
                 'title_fa' => "مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'sum_kilo_range',
                 'value' => convertToPersianNumbers(round($sumKiloRange))
@@ -623,15 +619,26 @@ class ChartController extends Controller
                 'title_fa' => "مجموع بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'sum_paragraph' ,
                 'value' => convertToPersianNumbers(round($sumParagraphRange))
-            ]
+            ],
+            [
+            'title_fa' => "مجموع صفحات چاپ شده از سال $startYear تا سال $endYear",
+            'title_en' => 'sum_total_pages_range',
+            'value' => convertToPersianNumbers($sumPagesRange)
+             ],
         ];
 
         $charts = [
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa' => "نمودار مجموع صفحات از سال $startYear تا سال $endYear",
-                'title_en' => 'data_total_pages_range',
-                'data' => $dataPages,
+                'title_fa'=> "نمودار میانگین قیمت از سال $startYear تا سال $endYear",
+                'title_en' => 'data_average_price_range',
+                'data' => $dataAverage
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                'title_fa'=> "نمودار تعداد کتاب از سال $startYear تا سال $endYear",
+                'title_en' => 'data_total_count_books_range',
+                'data' => $dataCount,
             ],
             [
                 'stackLabels' =>['مقادیر کلی','چاپ اول'],
@@ -646,18 +653,6 @@ class ChartController extends Controller
                 'data' => $dataPrice
             ],
             [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> "نمودار تعداد کتاب از سال $startYear تا سال $endYear",
-                'title_en' => 'data_total_count_books_range',
-                'data' => $dataCount,
-            ],
-            [
-                'stackLabels' =>['مقادیر کلی','چاپ اول'],
-                'title_fa'=> "نمودار میانگین قیمت از سال $startYear تا سال $endYear",
-                'title_en' => 'data_average_price_range',
-                'data' => $dataAverage
-            ],
-            [
                 'stackLabels' => ['مقادیرکلی'],
                 'title_fa' => "نمودار بند کاغذ مصرفی از سال $startYear تا سال $endYear",
                 'title_en' => 'data_paragraph_range',
@@ -668,6 +663,12 @@ class ChartController extends Controller
                 'title_fa'=> "نمودار مجموع وزن کاغذ مصرفی از سال $startYear تا سال $endYear (بر حسب کیلوگرم - کاغذ ۷۰ گرمی)",
                 'title_en' => 'data_kilo_price_range',
                 'data' => $dataKilo
+            ],
+            [
+                'stackLabels' =>['مقادیر کلی','چاپ اول'],
+                'title_fa' => "نمودار مجموع صفحات از سال $startYear تا سال $endYear",
+                'title_en' => 'data_total_pages_range',
+                'data' => $dataPages,
             ],
         ];
         $end = microtime(true);
