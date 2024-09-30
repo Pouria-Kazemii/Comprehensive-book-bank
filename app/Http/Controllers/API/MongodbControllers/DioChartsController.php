@@ -94,7 +94,14 @@ class DioChartsController extends Controller
                 $dataForCreatorPrice['value'] [] = $item['total_price'];
            }
         } else {
-            $topBoxData = BookDioCachedData::where('year', 0);
+            $topBoxData = BookDioCachedData::where('year', 0)
+                ->where(function ($query){
+                    $query->where('dio_subject_id' , 1)
+                        ->orWhere('dio_subject_id' , 2)
+                        ->orWhere('dio_subject_id',3)
+                        ->orWhere('dio_subject_id',4);
+                })
+                ->get();
             $topBoxTotalPrice = $topBoxData->sum('total_price');
             $topBoxTotalCirculation = $topBoxData->sum('total_circulation');
             $topBoxTotalPages = $topBoxData->sum('total_pages');
@@ -109,6 +116,12 @@ class DioChartsController extends Controller
                             'year' => [
                                 '$lte' => $endYear,
                                 '$gte' => $startYear
+                            ],
+                            '$or' => [
+                                ['dio_subject_id' => 1],
+                                ['dio_subject_id' => 2],
+                                ['dio_subject_id' => 3],
+                                ['dio_subject_id' => 4]
                             ]
                         ]
                     ],
@@ -131,7 +144,6 @@ class DioChartsController extends Controller
                     ]
                 ]);
             });
-
 
             $dfp_circulation =TCP_Yearly::where('year', $topYear)->first();
             foreach ($dfp_circulation->publishers as $item){

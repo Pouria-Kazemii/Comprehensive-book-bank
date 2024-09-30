@@ -534,7 +534,7 @@ class ChartController extends Controller
             $dataKilo['value'][0][] = round($item->paragraph * 25);
             if ($item->paragraph != null){
                 $sumParagraphRange+=$item->paragraph;
-                $sumKiloRange += $item->paragraph*20;
+                $sumKiloRange += $item->paragraph*25;
             }
 
             $dataCirculation['label'] [] = $item->year;

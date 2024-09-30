@@ -265,5 +265,4 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 });
 
-Route::post('/v2/publisher/statistic-subject', [PublisherController::class ,'statisticSubject']);
 
