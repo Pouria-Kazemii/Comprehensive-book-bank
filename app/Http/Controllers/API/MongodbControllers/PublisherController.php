@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\MongodbControllers;
 use App\Http\Controllers\Controller;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrPublisher;
+use App\Models\MongoDBModels\DioSubject;
 use Illuminate\Http\Request;
 use MongoDB\BSON\ObjectId;
 
@@ -383,24 +384,31 @@ class PublisherController extends Controller
     {
         $start = microtime(true);
         $publisherId = $request["publisherId"];
-        $data = null;
+        $data = [];
         $status = 200;
-        $totalSubjects = 0;
+        $subjects = BookIrBook2::raw(function ($collection) use($publisherId){
+            return $collection->aggregate([
+                [
+                    '$match' =>  [
+                        'publisher.xpublisher_id' => $publisherId
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => [
+                            '$first' => '$diocode_subject'
+                        ],
+                        'count' => ['$sum' => 1]
+                    ]
+                ]
+            ]);
+        });
 
-        // read books
-        $books = BookIrBook2::where('publisher.xpublisher_id', $publisherId)->orderBy('xpublishdate_shamsi',1)->get();
-        if ($books != null and count($books) > 0) {
-            foreach ($books as $book) {
-                $bookSubjects = $book->subjects;
-                if ($bookSubjects != null and count($bookSubjects) > 0) {
-                    foreach ($bookSubjects as $bookSubject) {
-                        if (!isset($data[$bookSubject['xsubject_name']])) $totalSubjects += 1;
-                        $data[$bookSubject['xsubject_name']] = (isset($data[$bookSubject['xsubject_name']])) ? $data[$bookSubject['xsubject_name']] + 1 : 1;
-                    }
-                }
-            }
-            arsort($data);
-            $data = ["label" => array_keys($data), "value" => array_values($data)];
+        foreach ($subjects as $subject){
+            $storageArray = $subject->_id->getArrayCopy();
+            $value = reset($storageArray);
+            $data['label'][] = $value;
+            $data['value'][]  = $subject->count;
         }
 
         $end = microtime(true);
