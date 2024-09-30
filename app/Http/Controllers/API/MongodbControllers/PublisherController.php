@@ -390,7 +390,10 @@ class PublisherController extends Controller
             return $collection->aggregate([
                 [
                     '$match' =>  [
-                        'publisher.xpublisher_id' => $publisherId
+                        'publisher.xpublisher_id' => $publisherId,
+                        'diocode_subject' => [
+                            '$ne' => []
+                        ]
                     ]
                 ],
                 [
@@ -405,6 +408,7 @@ class PublisherController extends Controller
         });
 
         foreach ($subjects as $subject){
+            if ($subject!=null)
             $storageArray = $subject->_id->getArrayCopy();
             $value = reset($storageArray);
             $data['label'][] = $value;
