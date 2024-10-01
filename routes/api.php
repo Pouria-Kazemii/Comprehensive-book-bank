@@ -162,7 +162,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/creator/most-active-by-first-edition-books-by-year', 'API\CreatorController@mostActiveByFirstEditionBooksByYear');//not exist
 
     //MongoDB Creators
-    Route::post('/v2/creator/find', [CreatorController::class,'find']);
+
     Route::post('/v2/creator/find/subject', [CreatorController::class ,'findBySubject']);
     Route::post('/v2/creator/find/publisher', [CreatorController::class , 'findByPublisher']);
     Route::post('/v2/creator/find/creator', [CreatorController::class,'findByCreator']);
@@ -266,3 +266,4 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
 
 
+Route::post('/v2/creator/find', [CreatorController::class,'find']);

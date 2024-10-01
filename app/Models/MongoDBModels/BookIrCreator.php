@@ -16,6 +16,7 @@ class BookIrCreator extends Model
     protected $fillable = [
         'xsqlid',
         'xcreatorname' ,
+        'xcreatorname2',
         'ximageurl' ,
         'xwhite' ,
         'xblack',
