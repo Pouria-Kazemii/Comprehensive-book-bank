@@ -24,7 +24,16 @@ use App\Exports\WebsiteBookLinkDigiExport;
 use App\Models\BookirBook;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
-
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Chart\Chart;
+use PhpOffice\PhpSpreadsheet\Chart\Legend;
+use PhpOffice\PhpSpreadsheet\Chart\Title;
+use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
+use PhpOffice\PhpSpreadsheet\Chart\Layout;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
+use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
+use Illuminate\Http\Response;
 
 
 class ExcelController extends Controller
@@ -38,6 +47,80 @@ class ExcelController extends Controller
     {
     }
 
+    public function exportExcelWithCharts()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Example: Adding "top_box" data to the spreadsheet
+        $topBoxData = [
+            ['Title', 'Value'],
+            ['Total Books (All Time)', 8552],
+            ['Total Circulation (All Time)', 27836170586],
+            ['Total Price (All Time)', 2709084520000],
+            ['Total Weight (All Time)', 43540],
+            ['Total Pages (All Time)', 28224120136]
+        ];
+
+        $sheet->fromArray($topBoxData, null, 'A1'); // Add the data starting from cell A1
+
+        // Adding "charts" data
+        $chartData = [
+            'labels' => [1393, 1394, 1395, 1396, 1397, 1398, 1399, 1400, 1401, 1402, 1403],
+            'values' => [188, 164, 198, 199, 275, 361, 419, 586, 845, 1, 1]
+        ];
+
+        // Insert data for the chart (starting from cell A10)
+        $sheet->fromArray($chartData['labels'], null, 'A10');
+        $sheet->fromArray($chartData['values'], null, 'B10');
+
+        // Define the data series for the chart
+        $dataSeriesLabels = [new DataSeriesValues('String', 'Worksheet!$B$9', null, 1)];
+        $xAxisTickValues = [new DataSeriesValues('String', 'Worksheet!$A$10:$A$20', null, 11)];
+        $dataSeriesValues = [new DataSeriesValues('Number', 'Worksheet!$B$10:$B$20', null, 11)];
+
+        // Create the data series
+        $series = new DataSeries(
+            DataSeries::TYPE_LINECHART,    // Chart type
+            DataSeries::GROUPING_STANDARD, // Standard grouping
+            range(0, count($dataSeriesValues) - 1), // Indexes of the series
+            $dataSeriesLabels,             // Labels for each data series
+            $xAxisTickValues,              // X-Axis values
+            $dataSeriesValues              // Y-Axis values
+        );
+
+        // Define the layout and plot area
+        $layout = new Layout();
+        $plotArea = new PlotArea($layout, [$series]);
+
+        // Create the chart
+        $chart = new Chart(
+            'Average Book Price Chart',    // Chart title
+            new Title('Average Book Price Over Years'),
+            new Legend(),                  // Legend settings
+            $plotArea                      // Plot area for the chart
+        );
+
+        // Set the position where the chart should appear
+        $chart->setTopLeftPosition('D10');
+        $chart->setBottomRightPosition('K20');
+
+        // Add the chart to the active worksheet
+        $sheet->addChart($chart);
+
+        // Write the file
+        $writer = new Xlsx($spreadsheet);
+        $writer->setIncludeCharts(true); // This enables charts in the output file
+
+        // Return file as a response for download
+        $fileName = 'chart_data.xlsx';
+        return response()->streamDownload(function() use ($writer) {
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ]);
+    }
     public function NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd){
         return Excel::download(new NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd),'کتاب های چاپ اول سال' . $monthStart.'-'.$yearStart.'تا'.$monthEnd.'-'.$yearEnd.'------'. time() . '.xlsx');
 
@@ -156,10 +239,10 @@ class ExcelController extends Controller
         set_time_limit(0);
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsFidiboExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
-   
+
     }
 
     public function exportExcelContradictionsTaaghche($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
@@ -169,7 +252,7 @@ class ExcelController extends Controller
         $excel_name = $excel_name.time().'.xlsx';
 
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsTaaghcheExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
@@ -180,7 +263,7 @@ class ExcelController extends Controller
         set_time_limit(0);
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsDigiExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
@@ -191,10 +274,10 @@ class ExcelController extends Controller
         set_time_limit(0);
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsKetabejamExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
-   
+
     }
     public function exportExcelContradictionsGisoom($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
     {
@@ -204,10 +287,10 @@ class ExcelController extends Controller
         ini_set('memory_limit', '512M');
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsGisoomExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
-   
+
     }
 
     public function exportExcelWebsiteBookLinkDefectsCheckResultDigi($excel_id,$excel_name)
@@ -224,7 +307,7 @@ class ExcelController extends Controller
         $excel_name = $excel_name.time().'.xlsx';
 
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsIranketabExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
 
@@ -236,7 +319,7 @@ class ExcelController extends Controller
         $excel_name = $excel_name.time().'.xlsx';
 
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new Contradictions30bookExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
 
@@ -249,7 +332,7 @@ class ExcelController extends Controller
         $excel_name = $excel_name.time().'.xlsx';
 
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsShahreKetabOnlineExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }
@@ -261,7 +344,7 @@ class ExcelController extends Controller
         set_time_limit(0);
         $excel_name = $excel_name.time().'.xlsx';
         $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
-        
+
         Storage::disk('local')->put($excel_name, 'Contents');
         return Excel::download(new ContradictionsBarkhatExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
     }

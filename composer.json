@@ -28,6 +28,7 @@
         "mongodb/laravel-mongodb": "^3.8",
         "mongodb/mongodb": "^1.12",
         "morilog/jalali": "3.*",
+        "phpoffice/phpspreadsheet": "1.23",
         "symfony/browser-kit": "^5.4",
         "tymon/jwt-auth": "^1.0"
     },

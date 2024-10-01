@@ -72,7 +72,7 @@ class CreatorController extends Controller
                     $pipeline = [
                         ['$match' => (object)$matchConditions],
                         ['$addFields' => ['score' => ['$meta' => 'textScore']]],
-                        ['$sort' => ['score' => -1]],
+                        ['$sort' => ['score' => -1 , '_id' => -1]],
                         ['$skip' => $offset],
                         ['$limit' => $pageRows]
                     ];
@@ -96,6 +96,7 @@ class CreatorController extends Controller
                             "id" => $creator['_id'],
                             "bookCount" => BookIrBook2::where('partners.xcreator_id', $creatorId)->count(),
                             "name" => $creator['xcreatorname'],
+                            'score' => $creator['score']
                         ];
                     }
                 }

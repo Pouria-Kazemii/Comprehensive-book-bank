@@ -78,4 +78,4 @@ Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{
 Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
 Route::get('/test_mongo/{year}/{skip}/{limit}' , [\App\Http\Controllers\API\MongodbControllers\BookController::class , 'getTotal']);
 Route::get('/test/xdiocode' , [TestController::class , 'dio']);
-
+Route::get('/exportExcelMainPageCharts', [ExcelController::class ,  'exportExcelWithCharts'] );
