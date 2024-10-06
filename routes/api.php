@@ -8,6 +8,7 @@ use App\Http\Controllers\API\MongodbControllers\DioChartsController;
 use App\Http\Controllers\API\MongodbControllers\PublisherController;
 use App\Http\Controllers\API\MongodbControllers\ReportController;
 use App\Http\Controllers\API\MongodbControllers\SubjectController;
+use App\Http\Controllers\ExcelController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -162,7 +163,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/creator/most-active-by-first-edition-books-by-year', 'API\CreatorController@mostActiveByFirstEditionBooksByYear');//not exist
 
     //MongoDB Creators
-
+    Route::post('/v2/creator/find', [CreatorController::class,'find']);
     Route::post('/v2/creator/find/subject', [CreatorController::class ,'findBySubject']);
     Route::post('/v2/creator/find/publisher', [CreatorController::class , 'findByPublisher']);
     Route::post('/v2/creator/find/creator', [CreatorController::class,'findByCreator']);
@@ -263,7 +264,3 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/v1/import/importUnallowableBooks/', 'API\ImportController@importUnallowableBooks');
 
 });
-
-
-
-Route::post('/v2/creator/find', [CreatorController::class,'find']);

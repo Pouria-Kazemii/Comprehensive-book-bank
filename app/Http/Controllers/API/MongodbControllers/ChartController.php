@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API\MongodbControllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrDaily;
 use App\Models\MongoDBModels\BPA_Yearly;
 use App\Models\MongoDBModels\BTB_Yearly;

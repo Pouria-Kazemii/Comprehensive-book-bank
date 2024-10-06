@@ -2,13 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AdvanceSearch;
+use App\Exports\BookSearchExport;
 use App\Exports\ChartExport;
+use App\Exports\ChartsExports\PartnerExport;
 use App\Exports\CollectionExport;
+use App\Exports\CreatorBooksExport;
+use App\Exports\CreatorSubjectExport;
+use App\Exports\DioCodeExport;
 use App\Exports\Export;
+use App\Exports\ChartsExports\MainPageExport;
 use App\Exports\ParentBookExport;
+use App\Exports\PublisherBooksExport;
+use App\Exports\PublisherSubjectExport;
+use App\Exports\PublisherWithYearExport;
+use App\Exports\SubjectBookExport;
+use App\Exports\SubjectBooksExport;
 use App\Exports\TopAuthorExport;
 use App\Exports\TopPublisherExport;
 use App\Exports\UserExport;
+use App\Models\MongoDBModels\BTP_Yearly;
+use App\Models\MongoDBModels\BTPa_Yearly;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ContradictionsFidiboExport;
 use App\Exports\ContradictionsTaaghcheExport;
@@ -24,16 +39,6 @@ use App\Exports\WebsiteBookLinkDigiExport;
 use App\Models\BookirBook;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Chart\Chart;
-use PhpOffice\PhpSpreadsheet\Chart\Legend;
-use PhpOffice\PhpSpreadsheet\Chart\Title;
-use PhpOffice\PhpSpreadsheet\Chart\PlotArea;
-use PhpOffice\PhpSpreadsheet\Chart\Layout;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeries;
-use PhpOffice\PhpSpreadsheet\Chart\DataSeriesValues;
-use Illuminate\Http\Response;
 
 
 class ExcelController extends Controller
@@ -46,80 +51,70 @@ class ExcelController extends Controller
     public function __construct()
     {
     }
-
-    public function exportExcelWithCharts()
+    public function exportExcelCreatorSubject($creatorId,$subjectTitle,$startYear,$endYear)
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $export = new CreatorSubjectExport($creatorId,$subjectTitle,$startYear,$endYear);
+        return Excel::download($export , 'creator_subject_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelSubjectBooksWithYear($subjectTitle,$startYear,$endYear,$translate,$authorship)
+    {
+        $export = new SubjectBooksExport($subjectTitle,$startYear,$endYear,$translate,$authorship);
+        return Excel::download($export, 'subject_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherSubject($publisherId,$subjectTitle,$startYear,$endYear)
+    {
+        $export = new PublisherSubjectExport($publisherId,$subjectTitle,$startYear,$endYear);
+        return Excel::download($export , 'publisher_subject_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherWithYear($publisherId,$startYear,$endYear)
+    {
+        $export = new PublisherWithYearExport($publisherId , $startYear,$endYear);
+        return Excel::download($export , 'publisher_book_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelDioCode($dioCode,$startYear,$endYear,$translate,$authorship)
+    {
+        $export = new DioCodeExport($dioCode,$startYear,$endYear,$translate,$authorship);
+        return Excel::download($export , 'dio_code_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelSubjectBooks($subjectId){
+        $export = new SubjectBookExport($subjectId);
+        return  Excel::download($export , 'subject_books_'  . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelCreatorBooks($creatorId)
+    {
+        $export = New CreatorBooksExport($creatorId);
+        return Excel::download($export , 'creator_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelWithCharts($firstYear, $endYear, $topYear)
+    {
+        $export = new MainPageExport((int)$firstYear, (int)$endYear, (int)$topYear);
+        $export->initial(); // Call the initial method to ensure data is initialized
+        return Excel::download($export,'chart_export_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
 
-        // Example: Adding "top_box" data to the spreadsheet
-        $topBoxData = [
-            ['Title', 'Value'],
-            ['Total Books (All Time)', 8552],
-            ['Total Circulation (All Time)', 27836170586],
-            ['Total Price (All Time)', 2709084520000],
-            ['Total Weight (All Time)', 43540],
-            ['Total Pages (All Time)', 28224120136]
-        ];
+    public function exportExcelPublisherBooks($publisherId)
+    {
+        $export = new PublisherBooksExport($publisherId);
+        return Excel::download($export,'publisher_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
 
-        $sheet->fromArray($topBoxData, null, 'A1'); // Add the data starting from cell A1
+    public function exportExcelBookSearch(Request $request)
+    {
+        $export  = new BookSearchExport($request);
+        return Excel::download($export,'book_find_export'.date('Y-m-d-m-Y-H-i-s') . '.xlsx');
+    }
+    public function exportExcelAdvanceSearch(Request $request)
+    {
+        $export = new AdvanceSearch($request);
+        $export->advanceSearch();
+        return Excel::download($export , 'advance_search_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
 
-        // Adding "charts" data
-        $chartData = [
-            'labels' => [1393, 1394, 1395, 1396, 1397, 1398, 1399, 1400, 1401, 1402, 1403],
-            'values' => [188, 164, 198, 199, 275, 361, 419, 586, 845, 1, 1]
-        ];
-
-        // Insert data for the chart (starting from cell A10)
-        $sheet->fromArray($chartData['labels'], null, 'A10');
-        $sheet->fromArray($chartData['values'], null, 'B10');
-
-        // Define the data series for the chart
-        $dataSeriesLabels = [new DataSeriesValues('String', 'Worksheet!$B$9', null, 1)];
-        $xAxisTickValues = [new DataSeriesValues('String', 'Worksheet!$A$10:$A$20', null, 11)];
-        $dataSeriesValues = [new DataSeriesValues('Number', 'Worksheet!$B$10:$B$20', null, 11)];
-
-        // Create the data series
-        $series = new DataSeries(
-            DataSeries::TYPE_LINECHART,    // Chart type
-            DataSeries::GROUPING_STANDARD, // Standard grouping
-            range(0, count($dataSeriesValues) - 1), // Indexes of the series
-            $dataSeriesLabels,             // Labels for each data series
-            $xAxisTickValues,              // X-Axis values
-            $dataSeriesValues              // Y-Axis values
-        );
-
-        // Define the layout and plot area
-        $layout = new Layout();
-        $plotArea = new PlotArea($layout, [$series]);
-
-        // Create the chart
-        $chart = new Chart(
-            'Average Book Price Chart',    // Chart title
-            new Title('Average Book Price Over Years'),
-            new Legend(),                  // Legend settings
-            $plotArea                      // Plot area for the chart
-        );
-
-        // Set the position where the chart should appear
-        $chart->setTopLeftPosition('D10');
-        $chart->setBottomRightPosition('K20');
-
-        // Add the chart to the active worksheet
-        $sheet->addChart($chart);
-
-        // Write the file
-        $writer = new Xlsx($spreadsheet);
-        $writer->setIncludeCharts(true); // This enables charts in the output file
-
-        // Return file as a response for download
-        $fileName = 'chart_data.xlsx';
-        return response()->streamDownload(function() use ($writer) {
-            $writer->save('php://output');
-        }, $fileName, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-        ]);
+    public function exportExcelPartner($partnerId,$startYear,$endYear)
+    {
+        $export  = new PartnerExport((string)$partnerId,(int)$startYear,(int)$endYear);
+        $export->initial();
+        return Excel::download($export,'partner_export_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
     public function NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd){
         return Excel::download(new NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd),'کتاب های چاپ اول سال' . $monthStart.'-'.$yearStart.'تا'.$monthEnd.'-'.$yearEnd.'------'. time() . '.xlsx');

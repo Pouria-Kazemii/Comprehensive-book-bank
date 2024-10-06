@@ -78,4 +78,16 @@ Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{
 Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
 Route::get('/test_mongo/{year}/{skip}/{limit}' , [\App\Http\Controllers\API\MongodbControllers\BookController::class , 'getTotal']);
 Route::get('/test/xdiocode' , [TestController::class , 'dio']);
-Route::get('/exportExcelMainPageCharts', [ExcelController::class ,  'exportExcelWithCharts'] );
+//MongoDB Excel Download
+Route::get('/exportExcelMainPageCharts/{startYear}/{endYear}/{topYear}', [ExcelController::class ,  'exportExcelWithCharts'] );
+Route::get('/exportExcelPartner/{partnerId}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPartner']);
+Route::post('/exportExcelAdvanceSearch' , [ExcelController::class ,'exportExcelAdvanceSearch' ]);
+Route::get('/exportExcelBookSearch/{data?}' , [ExcelController::class , 'exportExcelBookSearch']);
+Route::get('/exportExcelPublisherBooks/{publisherId}',[ExcelController::class , 'exportExcelPublisherBooks']);
+Route::get('/exportExcelCreatorBooks/{creatorId}' , [ExcelController::class , 'exportExcelCreatorBooks']);
+Route::get('/exportExcelSubjectBooks/{subjectId}' , [ExcelController::class , 'exportExcelSubjectBooks']);
+Route::get('/exportExcelDioCodeBooks/{diocode}/{startYear}/{endYear}/{translate}/{authorship}' , [ExcelController::class , 'exportExcelDioCode']);
+Route::get('/exportExcelPublisherBooksWithYears/{publisherId}/{startYear}/{endYear}' , [ExcelController::class ,'exportExcelPublisherWithYear' ]);
+Route::get('/exportExcelPublisherSubject/{publisherId}/{subjectTitle}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPublisherSubject']);
+Route::get('/exportExcelSubjectBooks/{subjectTitle}/{startYear}/{endYear}/{translate}/{authorship}' , [ExcelController::class , 'exportExcelSubjectBooksWithYear']);
+Route::get('/exportExcelCreatorSubject/{creatorId}/{subjectTitle}/{startYear}/{endYear}',[ExcelController::class , 'exportExcelCreatorSubject']);
