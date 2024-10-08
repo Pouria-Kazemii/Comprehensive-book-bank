@@ -86,7 +86,7 @@ Route::get('/exportExcelBookSearch/{textSearch}/{isbn}' , [ExcelController::clas
 Route::get('/exportExcelPublisherBooks/{publisherId}',[ExcelController::class , 'exportExcelPublisherBooks']);
 Route::get('/exportExcelCreatorBooks/{creatorId}' , [ExcelController::class , 'exportExcelCreatorBooks']);
 Route::get('/exportExcelSubjectBooks/{subjectId}' , [ExcelController::class , 'exportExcelSubjectBooks']);
-Route::get('/exportExcelDioCodeBooks/{diocode}/{startYear}/{endYear}/{translate}/{authorship}' , [ExcelController::class , 'exportExcelDioCode']);
+//Route::get('/exportExcelDioCodeBooks/{diocode}/{startYear}/{endYear}/{translate}/{authorship}' , [ExcelController::class , 'exportExcelDioCode']);
 Route::get('/exportExcelPublisherBooksWithYears/{publisherId}/{startYear}/{endYear}' , [ExcelController::class ,'exportExcelPublisherWithYear' ]);
 Route::get('/exportExcelPublisherSubject/{publisherId}/{subjectTitle}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPublisherSubject']);
 Route::get('/exportExcelSubjectBooks/{subjectTitle}/{startYear}/{endYear}/{translate}/{authorship}' , [ExcelController::class , 'exportExcelSubjectBooksWithYear']);

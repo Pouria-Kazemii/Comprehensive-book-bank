@@ -33,30 +33,13 @@ class CreatorSubjectExport implements FromCollection ,WithHeadings
             ['partners.xcreator_id' => $this->creatorId] // Mandatory creator ID filter
         ];
         if ($this->subjectTitle) {
-            // Search for subjects using full-text search
-            $subjects = BookIrSubject::raw(function ($collection) {
-                return $collection->aggregate([
-                    ['$match' => ['$text' => ['$search' => $this->subjectTitle]]],
-                    ['$project' => ['_id' => 1, 'score' => ['$meta' => 'textScore']]],
-                    ['$sort' => ['score' => ['$meta' => 'textScore']]]
-                ]);
-            });
-            $subjectIds = [];
-            if (count($subjects) != 0) {
-                foreach ($subjects as $subject) {
-                    $subjectIds[] = $subject->_id;
-                }
-            }
-            if (!empty($subjectIds)) {
-                $matchConditions[] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
-            }else {
-                $matchConditions[] = ['subject'=> 'xzcxzc'];
-            }
+            $matchConditions [] = [
+                'subjects.xsubject_name' => ['$regex' => $this->subjectTitle, '$options' => 'i']
+            ];
         }
+        $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => $this->startYear]];
 
-            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => $this->startYear]];
-
-            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => $this->endYear]];
+        $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => $this->endYear]];
 
 
         $pipeline = [

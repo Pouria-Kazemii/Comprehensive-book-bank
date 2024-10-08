@@ -70,7 +70,7 @@ class BookSearchExport implements FromCollection , WithHeadings , WithEvents
                     "printNumber" => $book->xprintnumber,
                     "year" => $book->xpublishdate_shamsi,
                     "language" => $book->languages,
-                    'publisher' => $book->publisher[0]['xpublishername'],
+                    'publisher' => $book->publisher != null ? $book->publisher[0]['xpublishername']:'',
                     "name" => $book->xname,
                     "isbn" => $book->xisbn,
                 ];

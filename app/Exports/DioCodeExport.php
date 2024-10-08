@@ -42,7 +42,7 @@ class DioCodeExport implements FromCollection , WithHeadings
             return $collection->aggregate([
                 [
                     '$match' => [
-                        'xdiocode' => (string)$this->diocode,
+                        'xdiocode' => $this->diocode,
                         'xpublishdate_shamsi' => [
                             '$gte' => $this->startYear,
                             '$lte' => $this->endYear,
