@@ -6,6 +6,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
+use MongoDB\Model\BSONDocument;
 
 abstract class BookExport implements FromCollection , WithHeadings , WithEvents
 {
@@ -29,14 +30,13 @@ abstract class BookExport implements FromCollection , WithHeadings , WithEvents
                 "circulation" => priceFormat($book->xcirculation),
                 "printNumber" => $book->xprintnumber,
                 "year" => $book->xpublishdate_shamsi,
-                "language" => $book->languages,
-                'publisher' => $book->publisher != [] ? $book->publisher[0]['xpublishername'] : '',
-                "creators" => $book->partners,
-                'subjects' => $book->subjects,
+                "language" => (array)$book->languages,
+                'publisher' => $book->publisher != null ? $book->publisher[0]['xpublishername'] : '',
+                "creators" => (array)$book->partners,
+                'subjects' => (array)$book->subjects,
 
             ];
         }
-
         $processedData = array_map(function ($item) {
             if (isset($item['language']) && (is_array($item['language']) || $item['language'] instanceof  \MongoDB\Model\BSONArray)) {
                 $languages = [];
@@ -69,7 +69,6 @@ abstract class BookExport implements FromCollection , WithHeadings , WithEvents
             }
             return $item;
         }, $data);
-
         return collect($processedData);
     }
 

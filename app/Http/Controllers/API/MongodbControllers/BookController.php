@@ -257,12 +257,16 @@ class BookController extends Controller
                     $publishers = [];
                     $creators = [];
 
-                    foreach ($book->publisher as $bookPublisher) {
-                        $publishers[] = ["id" => $bookPublisher['xpublisher_id'], "name" => $bookPublisher['xpublishername']];
+                    if($book->publisher != null) {
+                        foreach ($book->publisher as $bookPublisher) {
+                            $publishers[] = ["id" => $bookPublisher['xpublisher_id'], "name" => $bookPublisher['xpublishername']];
+                        }
                     }
 
-                    foreach ($book->creators as $creator){
-                        $creators [] = ["id" => $creator['xcreator_id'] , 'name' => $creator['xcreatorname']];
+                    if ($book->partners != null) {
+                        foreach ($book->partners as $creator) {
+                            $creators [] = ["id" => $creator['xcreator_id'], 'name' => $creator['xcreatorname']];
+                        }
                     }
 
                     $data[] = [

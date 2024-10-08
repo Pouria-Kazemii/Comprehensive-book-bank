@@ -38,7 +38,6 @@ class CreatorSubjectExport extends BookExport
 
 
         $pipeline = [
-            ['$unwind' => '$partners'],
             ['$match' => ['$and' => $matchConditions]],
         ];
 
