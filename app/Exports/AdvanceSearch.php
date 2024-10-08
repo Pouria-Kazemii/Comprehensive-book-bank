@@ -216,16 +216,6 @@ class AdvanceSearch implements FromCollection , WithHeadings
 
         if ($books->isNotEmpty()) {
             foreach ($books as $book) {
-                $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
-
-                $publishers = [];
-                foreach ($book->publisher as $bookPublisher) {
-                    $publishers[] = [
-                        "id" => $bookPublisher['xpublisher_id'],
-                        "name" => $bookPublisher['xpublishername']
-                    ];
-                }
-
                 $data[] = [
                     "price" => priceFormat($book->xcoverprice),
                     "pageCount" => $book->xpagecount,
@@ -234,7 +224,8 @@ class AdvanceSearch implements FromCollection , WithHeadings
                     "printNumber" => $book->xprintnumber,
                     "year" => $book->xpublishdate_shamsi,
                     "language" => $book->languages,
-                    "publishers" => $publishers,
+                    'publisher' => $book->publisher != [] ? $book->publisher[0]['xpublishername']:'',
+                    'creators' => $book->partners,
                     "name" => $book->xname,
                     "isbn" => $book->xisbn,
                 ];
@@ -255,6 +246,16 @@ class AdvanceSearch implements FromCollection , WithHeadings
                 $item['language'] = implode(', ', $languages);
             }
 
+            if (isset($item['creators']) && is_array($item['creators'])) {
+                $partners = [];
+                foreach ($item['creators'] as $partner) {
+                    if (isset($partner['xcreatorname'])) {
+                        $partners[] = $partner['xcreatorname']; // Collect all creator names
+                    }
+                }
+                // Convert array of partner names into a comma-separated string
+                $item['creators'] = implode(', ', $partners);
+            }
             // Handle other BSONArray objects similarly if necessary
 
             return $item;

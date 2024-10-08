@@ -21,8 +21,6 @@ use App\Exports\SubjectBooksExport;
 use App\Exports\TopAuthorExport;
 use App\Exports\TopPublisherExport;
 use App\Exports\UserExport;
-use App\Models\MongoDBModels\BTP_Yearly;
-use App\Models\MongoDBModels\BTPa_Yearly;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ContradictionsFidiboExport;
@@ -36,7 +34,6 @@ use App\Exports\ContradictionsGisoomExport;
 use App\Exports\ContradictionsKetabejamExport;
 use App\Exports\NewBookEveryYearExport;
 use App\Exports\WebsiteBookLinkDigiExport;
-use App\Models\BookirBook;
 use App\Models\ContradictionsExcelExport;
 use Illuminate\Support\Facades\Storage;
 
@@ -85,12 +82,7 @@ class ExcelController extends Controller
         $export = New CreatorBooksExport($creatorId);
         return Excel::download($export , 'creator_books_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelWithCharts(int$firstYear, int$endYear, int$topYear)
-    {
-        $export = new MainPageExport($firstYear, $endYear, $topYear);
-        $export->initial(); // Call the initial method to ensure data is initialized
-        return Excel::download($export,'chart_export_' . date('Y-m-d_H-i-s') . '.xlsx');
-    }
+
 
     public function exportExcelPublisherBooks(string $publisherId)
     {
@@ -110,12 +102,20 @@ class ExcelController extends Controller
         return Excel::download($export , 'advance_search_export'. date('Y-m-d_H-i-s') . '.xlsx');
     }
 
+
+    public function exportExcelWithCharts(int$firstYear, int$endYear, int$topYear)
+    {
+        $export = new MainPageExport($firstYear, $endYear, $topYear);
+        $export->initial(); // Call the initial method to ensure data is initialized
+        return Excel::download($export,'chart_export_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
     public function exportExcelPartner(string$partnerId,int$startYear,int$endYear)
     {
         $export  = new PartnerExport($partnerId,$startYear,$endYear);
         $export->initial();
         return Excel::download($export,'partner_export_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
+
     public function NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd){
         return Excel::download(new NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd),'کتاب های چاپ اول سال' . $monthStart.'-'.$yearStart.'تا'.$monthEnd.'-'.$yearEnd.'------'. time() . '.xlsx');
 

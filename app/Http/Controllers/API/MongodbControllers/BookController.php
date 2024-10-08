@@ -255,9 +255,14 @@ class BookController extends Controller
                     $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
 
                     $publishers = [];
+                    $creators = [];
 
                     foreach ($book->publisher as $bookPublisher) {
                         $publishers[] = ["id" => $bookPublisher['xpublisher_id'], "name" => $bookPublisher['xpublishername']];
+                    }
+
+                    foreach ($book->creators as $creator){
+                        $creators [] = ["id" => $creator['xcreator_id'] , 'name' => $creator['xcreatorname']];
                     }
 
                     $data[] = [
@@ -265,6 +270,7 @@ class BookController extends Controller
                         "dossier_id" => $dossier_id,
                         "name" => $book->xname,
                         "publishers" => $publishers,
+                        "creators" => $creators,
                         "language" => $book->languages,
                         "year" => $book->xpublishdate_shamsi,
                         "printNumber" => $book->xprintnumber,

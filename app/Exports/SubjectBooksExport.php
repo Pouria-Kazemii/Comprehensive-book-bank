@@ -7,7 +7,7 @@ use App\Models\MongoDBModels\BookIrSubject;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class SubjectBooksExport implements FromCollection , WithHeadings
+class SubjectBooksExport extends BookExport
 {
     private string $subjectTitle;
     private int $startYear;
@@ -18,18 +18,14 @@ class SubjectBooksExport implements FromCollection , WithHeadings
     public function __construct($subjectTitle, $startYear, $endYear, $translate, $authorship)
     {
         $this->subjectTitle = $subjectTitle;
-        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = 1340;
-        $endYear != 0 ? $this->endYear = $endYear:$this->endYear = getYearNow();
+        $startYear != 0 ? $this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0 ? $this->endYear = $endYear : $this->endYear = getYearNow();
         $this->translate = $translate;
         $this->authorship = $authorship;
     }
 
-    /**
-     * @return \Illuminate\Support\Collection
-     */
-    public function collection()
+    public function getBooksQuery()
     {
-        $data = [];
         $subjects = BookIrSubject::raw(function ($collection) {
             return $collection->aggregate([
                 ['$match' => ['$text' => ['$search' => $this->subjectTitle]]],
@@ -59,33 +55,8 @@ class SubjectBooksExport implements FromCollection , WithHeadings
         $pipeline = [
             ['$match' => ['$and' => $matchConditions]],
         ];
-        $books = BookIrBook2::raw(function ($collection) use ($pipeline) {
+        return BookIrBook2::raw(function ($collection) use ($pipeline) {
             return $collection->aggregate($pipeline);
         });
-
-        if ($books != null and count($books) > 0) {
-            foreach ($books as $book) {
-                $data[] =
-                    [
-                        "name" => $book->xname,
-                        "publishers" => $book->publisher[0]['xpublishername'],
-                        "year" => $book->xpublishdate_shamsi,
-                        "circulation" => priceFormat($book->xcirculation),
-                        'price' => priceFormat($book->xcoverprice)
-                    ];
-            }
-        }
-        return collect($data);
-    }
-
-    public function headings(): array
-    {
-        return [
-            'عنوان',
-            'ناشر',
-            'سال نشر',
-            'تیراژ',
-            'مبلغ'
-        ];
     }
 }
