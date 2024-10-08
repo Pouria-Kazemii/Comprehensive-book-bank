@@ -8,15 +8,15 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class PublisherWithYearExport implements FromCollection , WithHeadings
 {
-    private $publisherId;
-    private $startYear;
-    private $endYear;
+    private string $publisherId;
+    private int $startYear;
+    private int $endYear;
 
     public function __construct($publisherId,$startYear,$endYear)
     {
         $this->publisherId = $publisherId;
-        $this->startYear = (int)$startYear;
-        $this->endYear = (int)$endYear;
+        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0 ? $this->endYear = $endYear : $this->endYear = getYearNow();
     }
 
     /**

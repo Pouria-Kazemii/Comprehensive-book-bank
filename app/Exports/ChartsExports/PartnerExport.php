@@ -6,15 +6,15 @@ use App\Models\MongoDBModels\CreatorCacheData;
 
 class PartnerExport extends Export
 {
-    public $partnerId;
-    public $startYear;
-    public $endYear;
+    public string $partnerId;
+    public int $startYear;
+    public int $endYear;
 
     public function __construct($partnerId,$startYear,$endYear)
     {
         $this->partnerId = $partnerId;
-        $this->startYear = $startYear;
-        $this->endYear = $endYear;
+        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0 ?$this->endYear = $endYear : $this->endYear = getYearNow();
     }
 
     public function initial()

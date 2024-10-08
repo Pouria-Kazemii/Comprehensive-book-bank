@@ -8,19 +8,19 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class DioCodeExport implements FromCollection , WithHeadings
 {
-    private $diocode;
-    private $startYear;
-    private $endYear;
-    private $translate;
-    private $authorship;
+    private string $diocode;
+    private int $startYear;
+    private int $endYear;
+    private int $translate;
+    private int $authorship;
 
     public function __construct($diocode, $startYear, $endYear, $translate, $authorship)
     {
-        $this->authorship = (int)$authorship;
-        $this->translate = (int)$translate;
+        $this->authorship = $authorship;
+        $this->translate = $translate;
         $this->diocode = $diocode;
-        $this->startYear = (int)$startYear;
-        $this->endYear = (int)$endYear;
+        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0 ?$this->endYear = $endYear : $this->endYear = getYearNow();
     }
 
     /**
@@ -29,12 +29,13 @@ class DioCodeExport implements FromCollection , WithHeadings
     public function collection()
     {
         $books = BookIrBook2::raw(function ($collection) {
-            $isTranslateValue = 1; // Default value or whatever makes sense
 
-            // Adjust the value of 'is_translate' based on the conditions
-            if ($this->authorship == 1) {
-                $isTranslateValue = 1;
-            } elseif ($this->translate == 1) {
+            $isTranslateValue = 0;
+           if ($this->authorship == 1) {
+               $isTranslateValue = 1;
+           }
+
+            if ($this->translate == 1) {
                 $isTranslateValue = 2;
             }
 
@@ -46,20 +47,13 @@ class DioCodeExport implements FromCollection , WithHeadings
                             '$gte' => $this->startYear,
                             '$lte' => $this->endYear,
                         ],
-                        'is_translate' => $isTranslateValue
+                        $isTranslateValue != 0 ?? 'is_translate' => $isTranslateValue
                     ]
                 ]
             ]);
         });
-//        $books = BookIrBook2::where('xdiocode', (string)$this->diocode)->where('xpublishdate_shamsi', '<=', $this->endYear)->where('xpublishdate_shamsi', '>=', $this->startYear);
-//
-//         if ((int)$this->authorship == 1) {
-//            $books->where('is_translate', 1);
-//        } else if ((int)$this->translate == 1) {
-//            $books->where('is_translate', 2);
-//        }
-//        $books->get();
-        foreach ($books as $book) {
+
+            foreach ($books as $book) {
             $data[] = [
                 "price" => priceFormat($book->xcoverprice),
                 "pageCount" => $book->xpagecount,

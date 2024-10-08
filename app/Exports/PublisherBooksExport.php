@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class PublisherBooksExport implements FromCollection , WithHeadings
 {
-    private $publisherId;
+    private string $publisherId;
     public function __construct($publisherId)
     {
         $this->publisherId = $publisherId;

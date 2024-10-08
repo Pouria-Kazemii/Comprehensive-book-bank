@@ -51,56 +51,56 @@ class ExcelController extends Controller
     public function __construct()
     {
     }
-    public function exportExcelCreatorSubject($creatorId,$subjectTitle,$startYear,$endYear)
+    public function exportExcelCreatorSubject(string$creatorId,string$subjectTitle,int$startYear,int$endYear)
     {
         $export = new CreatorSubjectExport($creatorId,$subjectTitle,$startYear,$endYear);
         return Excel::download($export , 'creator_subject_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelSubjectBooksWithYear($subjectTitle,$startYear,$endYear,$translate,$authorship)
+    public function exportExcelSubjectBooksWithYear(string$subjectTitle,int$startYear,int$endYear,int$translate,int$authorship)
     {
         $export = new SubjectBooksExport($subjectTitle,$startYear,$endYear,$translate,$authorship);
         return Excel::download($export, 'subject_books_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelPublisherSubject($publisherId,$subjectTitle,$startYear,$endYear)
+    public function exportExcelPublisherSubject(string$publisherId,string$subjectTitle,int$startYear,int$endYear)
     {
         $export = new PublisherSubjectExport($publisherId,$subjectTitle,$startYear,$endYear);
         return Excel::download($export , 'publisher_subject_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelPublisherWithYear($publisherId,$startYear,$endYear)
+    public function exportExcelPublisherWithYear(string$publisherId,int$startYear,int$endYear)
     {
         $export = new PublisherWithYearExport($publisherId , $startYear,$endYear);
         return Excel::download($export , 'publisher_book_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelDioCode($dioCode,$startYear,$endYear,$translate,$authorship)
+    public function exportExcelDioCode(string$dioCode,int$startYear,int$endYear,int$translate,int$authorship)
     {
         $export = new DioCodeExport($dioCode,$startYear,$endYear,$translate,$authorship);
         return Excel::download($export , 'dio_code_books_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelSubjectBooks($subjectId){
+    public function exportExcelSubjectBooks(int$subjectId){
         $export = new SubjectBookExport($subjectId);
         return  Excel::download($export , 'subject_books_'  . date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelCreatorBooks($creatorId)
+    public function exportExcelCreatorBooks(string $creatorId)
     {
         $export = New CreatorBooksExport($creatorId);
         return Excel::download($export , 'creator_books_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
-    public function exportExcelWithCharts($firstYear, $endYear, $topYear)
+    public function exportExcelWithCharts(int$firstYear, int$endYear, int$topYear)
     {
-        $export = new MainPageExport((int)$firstYear, (int)$endYear, (int)$topYear);
+        $export = new MainPageExport($firstYear, $endYear, $topYear);
         $export->initial(); // Call the initial method to ensure data is initialized
         return Excel::download($export,'chart_export_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
 
-    public function exportExcelPublisherBooks($publisherId)
+    public function exportExcelPublisherBooks(string $publisherId)
     {
         $export = new PublisherBooksExport($publisherId);
         return Excel::download($export,'publisher_books_'. date('Y-m-d_H-i-s') . '.xlsx');
     }
 
-    public function exportExcelBookSearch(Request $request)
+    public function exportExcelBookSearch(string $textSearch,string $isbn)
     {
-        $export  = new BookSearchExport($request);
+        $export  = new BookSearchExport($textSearch,$isbn);
         return Excel::download($export,'book_find_export'.date('Y-m-d-m-Y-H-i-s') . '.xlsx');
     }
     public function exportExcelAdvanceSearch(Request $request)
@@ -110,9 +110,9 @@ class ExcelController extends Controller
         return Excel::download($export , 'advance_search_export'. date('Y-m-d_H-i-s') . '.xlsx');
     }
 
-    public function exportExcelPartner($partnerId,$startYear,$endYear)
+    public function exportExcelPartner(string$partnerId,int$startYear,int$endYear)
     {
-        $export  = new PartnerExport((string)$partnerId,(int)$startYear,(int)$endYear);
+        $export  = new PartnerExport($partnerId,$startYear,$endYear);
         $export->initial();
         return Excel::download($export,'partner_export_' . date('Y-m-d_H-i-s') . '.xlsx');
     }

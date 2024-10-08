@@ -82,7 +82,7 @@ Route::get('/test/xdiocode' , [TestController::class , 'dio']);
 Route::get('/exportExcelMainPageCharts/{startYear}/{endYear}/{topYear}', [ExcelController::class ,  'exportExcelWithCharts'] );
 Route::get('/exportExcelPartner/{partnerId}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPartner']);
 Route::post('/exportExcelAdvanceSearch' , [ExcelController::class ,'exportExcelAdvanceSearch' ]);
-Route::get('/exportExcelBookSearch/{data?}' , [ExcelController::class , 'exportExcelBookSearch']);
+Route::get('/exportExcelBookSearch/{textSearch}/{isbn}' , [ExcelController::class , 'exportExcelBookSearch']);
 Route::get('/exportExcelPublisherBooks/{publisherId}',[ExcelController::class , 'exportExcelPublisherBooks']);
 Route::get('/exportExcelCreatorBooks/{creatorId}' , [ExcelController::class , 'exportExcelCreatorBooks']);
 Route::get('/exportExcelSubjectBooks/{subjectId}' , [ExcelController::class , 'exportExcelSubjectBooks']);

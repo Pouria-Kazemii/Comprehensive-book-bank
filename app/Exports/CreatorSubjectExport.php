@@ -9,17 +9,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class CreatorSubjectExport implements FromCollection ,WithHeadings
 {
-    private $creatorId;
-    private $subjectTitle;
-    private $startYear;
-    private $endYear;
+    private string $creatorId;
+    private string $subjectTitle;
+    private int $startYear;
+    private int $endYear;
 
     public function __construct($creatorId,$subjectTitle,$startYear,$endYear)
     {
         $this->creatorId = $creatorId;
         $this->subjectTitle = $subjectTitle;
-        $this->startYear = $startYear;
-        $this->endYear = $endYear;
+        $startYear != 0 ? $this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0?$this->endYear = $endYear : $this->endYear = getYearNow();
     }
 
     /**
@@ -54,9 +54,9 @@ class CreatorSubjectExport implements FromCollection ,WithHeadings
             }
         }
 
-            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$this->startYear]];
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => $this->startYear]];
 
-            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$this->endYear]];
+            $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => $this->endYear]];
 
 
         $pipeline = [

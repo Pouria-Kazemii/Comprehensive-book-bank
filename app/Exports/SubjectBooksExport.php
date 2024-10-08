@@ -9,17 +9,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class SubjectBooksExport implements FromCollection , WithHeadings
 {
-    private $subjectTitle;
-    private $startYear;
-    private $endYear;
-    private $translate;
-    private $authorship;
+    private string $subjectTitle;
+    private int $startYear;
+    private int $endYear;
+    private int $translate;
+    private int $authorship;
 
     public function __construct($subjectTitle, $startYear, $endYear, $translate, $authorship)
     {
         $this->subjectTitle = $subjectTitle;
-        $this->startYear = $startYear;
-        $this->endYear = $endYear;
+        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = 1340;
+        $endYear != 0 ? $this->endYear = $endYear:$this->endYear = getYearNow();
         $this->translate = $translate;
         $this->authorship = $authorship;
     }
@@ -46,13 +46,13 @@ class SubjectBooksExport implements FromCollection , WithHeadings
         }
         $matchConditions [] = ['subjects.xsubject_id' => ['$in' => $subjectIds]];
 
-        $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => (int)$this->startYear]];
+        $matchConditions[] = ['xpublishdate_shamsi' => ['$gte' => $this->startYear]];
 
-        $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => (int)$this->endYear]];
+        $matchConditions[] = ['xpublishdate_shamsi' => ['$lte' => $this->endYear]];
 
-        if ((int)$this->translate == 1) {
+        if ($this->translate == 1) {
             $matchConditions[] = ['is_translate' => 2];
-        } elseif ((int)$this->authorship == 1) {
+        } elseif ($this->authorship == 1) {
             $matchConditions[] = ['is_translate' => 1];
         }
 

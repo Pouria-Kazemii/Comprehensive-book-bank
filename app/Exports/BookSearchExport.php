@@ -11,11 +11,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class BookSearchExport implements FromCollection , WithHeadings , WithEvents
 {
-    public $request;
+    private string $isbn;
+    private string $textSearch;
 
-    public function __construct($request)
+    public function __construct($textSearch , $isbn)
     {
-        $this->request = $request;
+        $this->textSearch = $textSearch;
+        $this->isbn = $isbn;
     }
 
     /**
@@ -24,22 +26,17 @@ class BookSearchExport implements FromCollection , WithHeadings , WithEvents
     public function collection()
     {
         $data = [];
-        $isbn = (isset($this->request["isbn"]) and !empty($this->request["isbn"])) ? str_replace("-", "", $this->request["isbn"]) : "";
-        $searchText = (isset($this->request["searchText"]) && !empty($this->request["searchText"])) ? $this->request["searchText"] : "";
-        $column = (isset($this->request["column"]) && preg_match('/\p{L}/u', $this->request["column"])) ? $this->request["column"] : "xpublishdate_shamsi";
-        $sortDirection = (isset($this->request["sortDirection"]) && $this->request['sortDirection'] == (1 or -1)) ? (int)$this->request["sortDirection"] : 1;
-
         $pipeline = [];
 
         // Match conditions based on search criteria
         $matchConditions = [];
 
-        if (!empty($searchText)) {
-            $matchConditions['$text'] = ['$search' => $searchText];
+        if ($this->textSearch != '0') {
+            $matchConditions['$text'] = ['$search' => $this->textSearch];
         }
 
-        if ($isbn != "") {
-            $isbn = trim($this->request['isbn'], '"');
+        if ($this->isbn != '0') {
+            $isbn = trim($this->isbn, '"');
             $matchConditions['$or'] = [
                 ['xisbn2' => ['$regex' => '^' . preg_quote($isbn, '/')]],
                 ['xisbn3' => ['$regex' => '^' . preg_quote($isbn, '/')]],
@@ -54,8 +51,6 @@ class BookSearchExport implements FromCollection , WithHeadings , WithEvents
         if (!empty($searchText)) {
             $pipeline[] = ['$addFields' => ['score' => ['$meta' => 'textScore']]];
             $pipeline[] = ['$sort' => ['score' => ['$meta' => 'textScore']]];
-        } else {
-            $pipeline[] = ['$sort' => [$column => $sortDirection]];
         }
 
         // Execute the aggregation pipeline
@@ -67,7 +62,6 @@ class BookSearchExport implements FromCollection , WithHeadings , WithEvents
         $books = iterator_to_array($books);
         if (!empty($books)) {
             foreach ($books as $book) {
-                $dossier_id = ($book->xparent == -1 || $book->xparent == 0) ? $book->_id : $book->xparent;
                 $data[] = [
                     "price" => priceFormat($book->xcoverprice),
                     "pageCount" => $book->xpagecount,

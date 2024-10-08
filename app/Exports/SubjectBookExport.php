@@ -8,11 +8,11 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class SubjectBookExport implements FromCollection , WithHeadings
 {
-    private $subject;
+    private int $subject;
 
     public function __construct($subject)
     {
-        $this->subject = (int)$subject;
+        $this->subject = $subject;
     }
 
     /**

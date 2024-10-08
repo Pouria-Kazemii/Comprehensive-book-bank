@@ -9,17 +9,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class PublisherSubjectExport implements FromCollection , WithHeadings
 {
-    private $publisherId;
-    private $subjectTitle;
-    private $starYear;
-    private $endYear;
+    private string $publisherId;
+    private string $subjectTitle;
+    private int $starYear;
+    private int $endYear;
 
     public function __construct($publisherId,$subjectTitle,$starYear,$endYear)
     {
         $this->publisherId = $publisherId;
         $this->subjectTitle = $subjectTitle;
-        $this->starYear = $starYear;
-        $this->endYear = $endYear;
+        $starYear != 0 ?$this->starYear = $starYear : $this->starYear = 1340;
+        $endYear != 0 ?$this->endYear = $endYear : $this->endYear = getYearNow();
     }
 
     /**

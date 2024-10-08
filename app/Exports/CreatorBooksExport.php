@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class CreatorBooksExport implements FromCollection , WithHeadings
 {
-    private $creator;
+    private string $creator;
 
     public function __construct($creator)
     {
