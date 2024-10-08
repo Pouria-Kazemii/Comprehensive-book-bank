@@ -29,8 +29,8 @@ class DioCodeExport implements FromCollection , WithHeadings
     public function collection()
     {
         $books = BookIrBook2::raw(function ($collection) {
-
             $isTranslateValue = 0;
+
            if ($this->authorship == 1) {
                $isTranslateValue = 1;
            }
@@ -39,19 +39,34 @@ class DioCodeExport implements FromCollection , WithHeadings
                 $isTranslateValue = 2;
             }
 
-            return $collection->aggregate([
-                [
-                    '$match' => [
-                        'xdiocode' => $this->diocode,
-                        'xpublishdate_shamsi' => [
-                            '$gte' => $this->startYear,
-                            '$lte' => $this->endYear,
-                        ],
-                        $isTranslateValue != 0 ?? 'is_translate' => $isTranslateValue
+            if ($isTranslateValue != 0) {
+                return $collection->aggregate([
+                    [
+                        '$match' => [
+                            'xdiocode' => $this->diocode,
+                            'xpublishdate_shamsi' => [
+                                '$gte' => $this->startYear,
+                                '$lte' => $this->endYear,
+                            ],
+                            'is_translate' => $isTranslateValue
+                        ]
                     ]
-                ]
-            ]);
+                ]);
+            } else {
+                return $collection->aggregate([
+                    [
+                        '$match' => [
+                            'xdiocode' => $this->diocode,
+                            'xpublishdate_shamsi' => [
+                                '$gte' => $this->startYear,
+                                '$lte' => $this->endYear,
+                            ],
+                        ]
+                    ]
+                ]);
+            }
         });
+
 
             foreach ($books as $book) {
             $data[] = [
