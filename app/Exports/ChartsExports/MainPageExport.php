@@ -20,9 +20,10 @@ class MainPageExport  extends Export
 
     public function __construct($firstYear , $endYear ,$topYear)
     {
-        $this->startYear = $firstYear;
-        $this->endYear = $endYear;
-        $this->topYear = $topYear;
+        $currentYear = getYearNow();
+        $firstYear != 0 ? $this->startYear = $firstYear : $this->startYear = $currentYear-10 ;
+        $endYear != 0 ? $this->endYear = $endYear : $this->endYear = $currentYear;
+        $topYear != 0 ? $this->topYear = $topYear:$this->topYear = $currentYear;
     }
 
     public function initial()

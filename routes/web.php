@@ -78,9 +78,12 @@ Route::get('exportExcelContradictionsGisoom/{excel_type}/{status}/{excel_name}/{
 Route::get('NewBookEveryYearExport/{yearStart}/{monthStart}/{yearEnd}/{monthEnd}', [ExcelController::class, 'NewBookEveryYearExport']);
 Route::get('/test_mongo/{year}/{skip}/{limit}' , [\App\Http\Controllers\API\MongodbControllers\BookController::class , 'getTotal']);
 Route::get('/test/xdiocode' , [TestController::class , 'dio']);
+
 //MongoDB Excel Download
 Route::get('/exportExcelMainPageCharts/{startYear}/{endYear}/{topYear}', [ExcelController::class ,  'exportExcelWithCharts'] );
 Route::get('/exportExcelPartner/{partnerId}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPartner']);
+Route::get('/exportExcelPublisherCharts/{publisherId}/{startYear}/{endYear}' , [ExcelController::class , 'exportExcelPublisherChart']);
+Route::get('/exportExcelDioCodeCharts/{dioId}/{startYear}/{endYear}/{topYear}', [ExcelController::class , 'exportExcelDioCodeCharts']);
 Route::post('/exportExcelAdvanceSearch' , [ExcelController::class ,'exportExcelAdvanceSearch' ]);
 Route::get('/exportExcelBookSearch/{textSearch}/{isbn}' , [ExcelController::class , 'exportExcelBookSearch']);
 Route::get('/exportExcelPublisherBooks/{publisherId}',[ExcelController::class , 'exportExcelPublisherBooks']);

@@ -6,6 +6,7 @@ use App\Exports\AdvanceSearch;
 use App\Exports\BookSearchExport;
 use App\Exports\ChartExport;
 use App\Exports\ChartsExports\PartnerExport;
+use App\Exports\ChartsExports\PublisherExport;
 use App\Exports\CollectionExport;
 use App\Exports\CreatorBooksExport;
 use App\Exports\CreatorSubjectExport;
@@ -102,6 +103,18 @@ class ExcelController extends Controller
         return Excel::download($export , 'advance_search_export'. date('Y-m-d_H-i-s') . '.xlsx');
     }
 
+    public function exportExcelDioCodeCharts(int$id,int$startYear,int$endYear,int$topYear)
+    {
+        $export = new \App\Exports\ChartsExports\DioCodeExport($id,$startYear,$endYear,$topYear);
+        $export->initial();
+        return Excel::download($export , 'diocode_chart_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherChart(string $publisherId,int$startYear,int$endYear)
+    {
+        $export = new PublisherExport($publisherId,$startYear,$endYear);
+        $export->initial();
+        return Excel::download($export,'publisher_chart_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
 
     public function exportExcelWithCharts(int$firstYear, int$endYear, int$topYear)
     {

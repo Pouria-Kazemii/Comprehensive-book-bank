@@ -77,7 +77,7 @@ abstract class BookExport implements FromCollection , WithHeadings , WithEvents
         return [
             'شابک',
             'عنوان',
-            'مبلغ',
+            'قیمت(به ریال)',
             'صفحات',
             'قطع',
             'تیراژ',

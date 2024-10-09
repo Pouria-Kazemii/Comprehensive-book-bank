@@ -2,28 +2,27 @@
 
 namespace App\Exports\ChartsExports;
 
-use App\Models\MongoDBModels\CreatorCacheData;
+use App\Models\MongoDBModels\PublisherCacheData;
 
-class PartnerExport extends Export
+class PublisherExport extends Export
 {
-    public string $partnerId;
-    public int $startYear;
-    public int $endYear;
+     public string $publisherId;
+     public int $startYear;
+     public int $endYear;
 
-    public function __construct($partnerId,$startYear,$endYear)
-    {
-        $currentYear = getYearNow();
-        $this->partnerId = $partnerId;
-        $startYear != 0 ?$this->startYear = $startYear : $this->startYear = $currentYear-10;
-        $endYear != 0 ?$this->endYear = $endYear : $this->endYear = $currentYear;
-    }
+     public function __construct($publisherId,$startYear,$endYear)
+     {
+         $currentYear = getYearNow();
+         $this->publisherId = $publisherId;
+         $startYear != 0 ? $this->startYear = $startYear : $this->startYear = $currentYear-10;
+         $endYear != 0 ? $this->endYear = $endYear : $this->endYear = $currentYear;
+     }
 
     public function initial()
     {
+        $allTime = PublisherCacheData::where('publisher_id', $this->publisherId)->where('year', 0)->first();
 
-        $allTime = CreatorCacheData::where('creator_id', $this->partnerId)->where('year', 0)->first();
-
-        $totalData = CreatorCacheData::where('creator_id', $this->partnerId)->where('year', '<=', $this->endYear)->where('year', '>=', $this->startYear)->get();
+        $totalData = PublisherCacheData::where('publisher_id', $this->publisherId)->where('year', '<=', $this->endYear)->where('year', '>=', $this->startYear)->get();
 
         $price = $this->getAttribute($totalData ,'year','total_price',true,true );
         $dataPrice = $price['arrData'];
