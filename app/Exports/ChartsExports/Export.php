@@ -15,7 +15,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 abstract class Export implements WithCharts
 {
     protected $allData;
-    private $rowStart = 1 ;
+    private $rowStart = 1;
 
     abstract public function initial();
 
@@ -28,15 +28,15 @@ abstract class Export implements WithCharts
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->fromArray($this->allData['boxes'], null , 'A'.$this->rowStart);
+        $sheet->fromArray($this->allData['boxes'], null, 'A' . $this->rowStart);
         $this->rowStart = $this->rowStart + count($this->allData['boxes']) + 6;
 
-        if ($this->allData['donates']!= null ){
-            $this->addCharts('donates','donate',$sheet);
+        if ($this->allData['donates'] != null) {
+            $this->addCharts('donates', 'donate', $sheet);
         }
 
         if ($this->allData['charts'] != null) {
-            $this->addCharts('charts','bar',$sheet);
+            $this->addCharts('charts', 'bar', $sheet);
         }
 
         $writer = new Xlsx($spreadsheet);
@@ -50,14 +50,14 @@ abstract class Export implements WithCharts
         exit;
     }
 
-    public function getAttribute($data,$label,$value,$get_sum=false,$relation = false)
+    public function getAttribute($data, $label, $value, $get_sum = false, $relation = false)
     {
         $arrData = [];
         $intData = 0;
         $arrData [] = [$label, $value];
         foreach ($data as $volume) {
             if ($volume != null)
-            !$relation ? $arrData [] = [$volume[$label], $volume[$value]] : $arrData [] = [$volume->$label, $volume->$value];
+                !$relation ? $arrData [] = [$volume[$label], $volume[$value]] : $arrData [] = [$volume->$label, $volume->$value];
             if ($get_sum and $volume[$value] != null) {
                 $intData += $volume[$value];
             }

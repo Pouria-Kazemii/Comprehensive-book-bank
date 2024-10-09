@@ -54,10 +54,10 @@ class DioCodeExport extends Export
 
 
             $topChartData =BookDioCachedData::where('year', $this->topYear)->where('dio_subject_id' , $this->id)->first();
-            $dataForPublisherCirculation = $this->getAttribute($topChartData->top_circulation_publishers , 'publisher_name' , 'total_page');
-            $dataForPublisherPrice = $this->getAttribute($topChartData->top_price_publishers ,'publisher_name','total_price');
-            $dataForCreatorCirculation = $this->getAttribute($topChartData->top_circulation_creators,'creator_name','total_page');
-            $dataForCreatorPrice = $this->getAttribute($topChartData->top_price_creators,'creator_name','total_price');
+            $dataForPublisherCirculation = $this->getAttribute($topChartData->top_circulation_publishers , 'publisher_name' , 'total_page')['arrData'];
+            $dataForPublisherPrice = $this->getAttribute($topChartData->top_price_publishers ,'publisher_name','total_price')['arrData'];
+            $dataForCreatorCirculation = $this->getAttribute($topChartData->top_circulation_creators,'creator_name','total_page')['arrData'];
+            $dataForCreatorPrice = $this->getAttribute($topChartData->top_price_creators,'creator_name','total_price')['arrData'];
 
         } else {
             $topBoxData = BookDioCachedData::where('year', 0)
