@@ -125,7 +125,8 @@ class PartnerExport extends Export
 
         $this->allData = [
             'charts' => $charts,
-            'boxes' => $box
+            'boxes' => $box,
+            'donates' => null
         ];
     }
 }

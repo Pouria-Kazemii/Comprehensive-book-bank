@@ -68,7 +68,7 @@ abstract class Export implements WithCharts
         ];
     }
 
-    private  function addCharts($name ,$type , $sheet)
+    private function addCharts($name, $type, $sheet)
     {
         foreach ($this->allData[$name] as $chartConfig) {
             $data = $chartConfig['data'];
@@ -101,11 +101,13 @@ abstract class Export implements WithCharts
             $chart1->setTopLeftPosition("D$this->rowStart");
             $chart1->setBottomRightPosition("W" . ($this->rowStart + 14));
 
-            // Add the chart to the sheet (this step is crucial)
+            // Add the chart to the sheet
             $sheet->addChart($chart1);
 
-            // Adjust row start for the next chart
-            $this->rowStart = $this->rowStart + count($data) + 10;  // Extra space between charts
+            // Determine the minimum gap between charts
+            $minGap = 15;
+            $dataGap = count($data) + 10; // Add extra space based on data size
+            $this->rowStart = $this->rowStart + max($minGap, $dataGap); // Ensure at least the minimum gap
         }
     }
 }

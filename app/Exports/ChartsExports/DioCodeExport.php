@@ -116,7 +116,7 @@ class DioCodeExport extends Export
             $dataForPublisherCirculation = $this->getAttribute($dfp_circulation->publishers,'publisher_name','total_page')['arrData'];
 
             $dfp_price   = TPP_Yearly::where('year' , $this->topYear)->first();
-            $dataForPublisherPrice = $this->getAttribute($dfp_price->publishers , ' publisher_name' , 'total_price')['arrData'];
+            $dataForPublisherPrice = $this->getAttribute($dfp_price->publishers , 'publisher_name' , 'total_price')['arrData'];
 
             $dfc_circulation = TCC_Yearly::where('year' , $this->topYear)->first();
             $dataForCreatorCirculation = $this->getAttribute($dfc_circulation->creators , 'creator_name' , 'total_page')['arrData'];
