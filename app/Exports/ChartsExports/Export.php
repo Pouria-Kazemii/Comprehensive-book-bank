@@ -54,7 +54,9 @@ abstract class Export implements WithCharts
     {
         $arrData = [];
         $intData = 0;
-        $first_cover == null ?$arrData [] = [$label, $value] : $arrData [] = [$label , $value ,$first_cover];
+        $first_cover == null
+            ? $arrData [] = ['سال', $this::convertLabelsToPersian($value)]
+            : $arrData [] = ['سال' , $this::convertLabelsToPersian($value) ,$this::convertLabelsToPersian($first_cover)];
         foreach ($data as $volume) {
             if ($volume != null) {
                 if ($first_cover != null){
@@ -122,4 +124,58 @@ abstract class Export implements WithCharts
             $this->rowStart = $this->rowStart + max($minGap, $dataGap); // Ensure at least the minimum gap
         }
     }
+     private static function convertLabelsToPersian($value) : string
+     {
+         $persian = null;
+         switch ($value) {
+             case 'subject':
+                $persian = 'موضوع';
+                break;
+             case 'count':
+             case 'book_count':
+                $persian = 'تعداد کتاب';
+                break;
+             case'first_cover_count':
+                $persian = 'تعداد کتاب های چاپ اول';
+                break;
+             case'average':
+                 $persian = 'میانگین قیمت';
+                 break;
+             case'first_cover_average':
+                 $persian = 'میانگین قیمت چاپ اول';
+                 break;
+             case'total_price':
+             case 'price':
+                $persian = 'جمع مالی';
+                 break;
+             case'first_cover_total_price':
+                 $persian = 'جمع مالی کتاب های چاپ اول';
+                 break;
+             case'total_circulation':
+             case 'circulation':
+             $persian = 'مجموع تیراژ';
+                 break;
+             case'first_cover_total_circulation':
+                 $persian = 'مجموع تیراژ چاپ اول';
+                 break;
+             case'paragraph':
+                 $persian = 'بند کاغذ مصرفی';
+                 break;
+             case'first_cover_paragraph':
+                 $persian = 'بند کاغذ مصرفی کتاب های چاپ اول';
+                 break;
+             case'total_pages':
+             case 'total_page':
+             case 'pages':
+                 $persian = 'مجموع تعداد صفحه';
+                 break;
+             case'first_cover_total_pages':
+                 $persian = 'مجموع تعداد صفحه چاپ اول';
+                 break;
+         }
+         if ($persian == null){
+             dd($value);
+         }
+         return $persian;
+     }
 }

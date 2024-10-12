@@ -27,16 +27,16 @@ class DioCodeExport extends Export
 
     public function initial()
     {
-        $totalCirculationTopDonate = [['subject' , 'circulation']];
-        $totalPriceTopDonate= [['subject' , 'price']];
-        $totalCountTopDonate= [['subject' , 'book_count']];
-        $totalPageTopDonate= [['subject' , 'pages']];
-        $paragraphTopDonate= [['subject' , 'paragraph']];
-        $totalCirculationBottomDonate= [['subject' , 'circulation']];
-        $totalPriceBottomDonate= [['subject' , 'price']];
-        $totalCountBottomDonate= [['subject' , 'book_count']];
-         $totalPageBottomDonate= [['subject' , 'pages']];
-        $paragraphBottomDonate = [['subject' , 'paragraph']];
+        $totalCirculationTopDonate = [['موضوع' , 'تیراژ']];
+        $totalPriceTopDonate= [['موضوع' , 'جمع مالی']];
+        $totalCountTopDonate= [['موضوع' , 'تعداد کتاب']];
+        $totalPageTopDonate= [['موضوع' , 'مجموع صفحه']];
+        $paragraphTopDonate= [['موضوع' , 'بند کاغذ مصرفی']];
+        $totalCirculationBottomDonate= [['موضوع' , 'تیراژ']];
+        $totalPriceBottomDonate= [['موضوع' , 'جمع مالی']];
+        $totalCountBottomDonate= [['موضوع' , 'تعداد کتاب']];
+         $totalPageBottomDonate= [['موضوع' , 'مجموع صفحه']];
+        $paragraphBottomDonate = [['موضوع' , 'بند کاغذ مصرفی']];
 
         if ($this->id != 0) {
             $topBoxData = BookDioCachedData::where('year', 0)->where('dio_subject_id', $this->id)->first();

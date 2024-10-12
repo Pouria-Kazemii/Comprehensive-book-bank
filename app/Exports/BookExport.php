@@ -82,7 +82,7 @@ abstract class BookExport implements FromCollection , WithHeadings , WithEvents
             'قطع',
             'تیراژ',
             'نوبت چاپ',
-            'سال و ماه نشر',
+            'سال نشر',
             'زبان',
             'ناشر',
             'پدیدآورندگان',

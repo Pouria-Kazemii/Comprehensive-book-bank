@@ -267,7 +267,7 @@ class AdvanceSearch implements FromCollection , WithHeadings
     public function headings() : array
     {
         return [
-          'مبلغ','صفحات','قطع','تیراژ','نوبت چاپ','سال و ماه نشر','زبان','ناشر','عنوان','شابک'
+          'مبلغ','صفحات','قطع','تیراژ','نوبت چاپ','سال نشر','زبان','ناشر','عنوان','شابک'
         ];
     }
 }
