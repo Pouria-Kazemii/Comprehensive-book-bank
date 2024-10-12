@@ -31,7 +31,7 @@ abstract class BookExport implements FromCollection , WithHeadings , WithEvents
                 "printNumber" => $book->xprintnumber,
                 "year" => $book->xpublishdate_shamsi,
                 "language" => (array)$book->languages,
-                'publisher' => $book->publisher != ([] or null) ? $book->publisher[0]['xpublishername'] : '',
+                'publisher' => count($book->publisher) != 0 ? $book->publisher[0]['xpublishername'] : '',
                 "creators" => (array)$book->partners,
                 'subjects' => (array)$book->subjects,
 

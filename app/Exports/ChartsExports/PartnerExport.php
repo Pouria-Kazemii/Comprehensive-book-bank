@@ -25,26 +25,26 @@ class PartnerExport extends Export
 
         $totalData = CreatorCacheData::where('creator_id', $this->partnerId)->where('year', '<=', $this->endYear)->where('year', '>=', $this->startYear)->get();
 
-        $price = $this->getAttribute($totalData ,'year','total_price',true,true );
+        $price = $this->getAttribute($totalData ,'year','total_price',true,true,'first_cover_total_price' );
         $dataPrice = $price['arrData'];
         $sumPriceRange = $price['intData'];
 
-        $average = $this->getAttribute($totalData,'year','average');
+        $average = $this->getAttribute($totalData,'year','average' ,false,false,'first_cover_average');
         $dataAverage = $average['arrData'];
 
-        $count =$this->getAttribute($totalData ,'year','count',true,true );
+        $count =$this->getAttribute($totalData ,'year','count',true,true,'first_cover_count');
         $dataCount = $count['arrData'];
         $sumCountRange = $count['intData'];
 
-        $paragraph = $this->getAttribute($totalData ,'year','paragraph',true,true );
+        $paragraph = $this->getAttribute($totalData ,'year','paragraph',true,true,'first_cover_paragraph');
         $dataParagraph = $paragraph['arrData'];
         $sumParagraphRange = $paragraph['intData'];
 
-        $circulation = $this->getAttribute($totalData ,'year','total_circulation',true,true );
+        $circulation = $this->getAttribute($totalData ,'year','total_circulation',true,true,'first_cover_total_circulation');
         $dataCirculation = $circulation['arrData'];
         $sumCirculationRange = $circulation['intData'];
 
-        $pages = $this->getAttribute($totalData ,'year','total_pages',true,true );
+        $pages = $this->getAttribute($totalData ,'year','total_pages',true,true,'first_cover_total_pages');
         $dataPages = $pages['arrData'];
         $sumPagesRange = $pages['intData'];
 

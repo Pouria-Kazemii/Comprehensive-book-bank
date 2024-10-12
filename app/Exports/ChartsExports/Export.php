@@ -50,16 +50,21 @@ abstract class Export implements WithCharts
         exit;
     }
 
-    public function getAttribute($data, $label, $value, $get_sum = false, $relation = false)
+    public function getAttribute($data, $label, $value, $get_sum = false, $relation = false,$first_cover = null)
     {
         $arrData = [];
         $intData = 0;
-        $arrData [] = [$label, $value];
+        $first_cover == null ?$arrData [] = [$label, $value] : $arrData [] = [$label , $value ,$first_cover];
         foreach ($data as $volume) {
-            if ($volume != null)
-                !$relation ? $arrData [] = [$volume[$label], $volume[$value]] : $arrData [] = [$volume->$label, $volume->$value];
-            if ($get_sum and $volume[$value] != null) {
-                $intData += $volume[$value];
+            if ($volume != null) {
+                if ($first_cover != null){
+                    !$relation ? $arrData [] = [$volume[$label], $volume[$value], $volume[$first_cover]] : $arrData [] = [$volume->$label, $volume->$value, $volume->$first_cover];
+                } else {
+                    !$relation ? $arrData [] = [$volume[$label], $volume[$value]] : $arrData [] = [$volume->$label, $volume->$value];
+                }
+                if ($get_sum and $volume[$value] != null) {
+                    $intData += $volume[$value];
+                }
             }
         }
         return [
@@ -78,16 +83,23 @@ abstract class Export implements WithCharts
             $sheet->fromArray($data, null, "A{$this->rowStart}");
 
             // Set labels, categories, and values for the chart
-            $label = [new DataSeriesValues('String', 'Worksheet!$A$' . "{$this->rowStart}", null, 1)];
+            $labels = [
+                new DataSeriesValues('String', 'Worksheet!$B$' . "{$this->rowStart}", null, 1),
+               new DataSeriesValues('String', 'Worksheet!$C$' . "{$this->rowStart}", null, 1)
+            ];
+
             $categories = [new DataSeriesValues('String', 'Worksheet!$A$' . ($this->rowStart + 1) . ':$A$' . ($this->rowStart + count($data) - 1), null, count($data) - 1)];
-            $values = [new DataSeriesValues('Number', 'Worksheet!$B$' . ($this->rowStart + 1) . ':$B$' . ($this->rowStart + count($data) - 1), null, count($data) - 1)];
+            $values = [
+                new DataSeriesValues('Number', 'Worksheet!$B$' . ($this->rowStart + 1) . ':$B$' . ($this->rowStart + count($data) - 1), null, count($data) - 1),
+                new DataSeriesValues('Number', 'Worksheet!$C$' . ($this->rowStart + 1) . ':$C$' . ($this->rowStart + count($data) - 1), null, count($data) - 1)
+            ];
 
             // Create the chart series
             $series1 = new DataSeries(
                 $type == 'bar' ? DataSeries::TYPE_BARCHART : DataSeries::TYPE_DONUTCHART,
                 DataSeries::GROUPING_STANDARD,
                 range(0, count($values) - 1),
-                $label,
+                $labels,
                 $categories,
                 $values
             );
@@ -98,8 +110,8 @@ abstract class Export implements WithCharts
             $chart1 = new Chart($title, new Title($title), $legend1, $plot1);
 
             // Position the chart on the worksheet
-            $chart1->setTopLeftPosition("D$this->rowStart");
-            $chart1->setBottomRightPosition("W" . ($this->rowStart + 14));
+            $chart1->setTopLeftPosition("E$this->rowStart");
+            $chart1->setBottomRightPosition("X" . ($this->rowStart + 14));
 
             // Add the chart to the sheet
             $sheet->addChart($chart1);

@@ -146,26 +146,26 @@ class DioCodeExport extends Export
             $paragraphBottomDonate [] = [$topDonateValue->dio_subject_title ,$botDonateValue->sum('paragraph')];
         }
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_pages',true,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_pages',true,true ,'first_cover_total_pages');
             $totalPageChart = $totalPage['arrData'];
             $pagesBottomBox = $totalPage['intData'];
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','paragraph',true,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','paragraph',true,true,'first_cover_paragraph');
             $paragraphChart = $totalPage['arrData'];
             $paragraphBottomBox = $totalPage['intData'];
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','average',false,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','average',false,true,'first_cover_average');
             $averageChart = $totalPage['arrData'];
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_price',true,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_price',true,true,'first_cover_total_price');
             $totalPriceChart = $totalPage['arrData'];
             $priceBottomBox = $totalPage['intData'];
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','count',true,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','count',true,true,'first_cover_count');
             $totalCountChart = $totalPage['arrData'];
             $countBottomBox = $totalPage['intData'];
 
-            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_circulation',true,true);
+            $totalPage = $this->getAttribute($bottomBoxAndChartData,$this->id != 0 ?'year' : '_id','total_circulation',true,true,'first_cover_total_circulation');
             $totalCirculationChart = $totalPage['arrData'];
             $circulationBottomBox = $totalPage['intData'];
 
