@@ -7,6 +7,8 @@ use App\Jobs\ConvertNonTranslatedBookWithWriterIntoDossierJob;
 use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossierJob;
 use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossierJob;
 use App\Models\MongoDBModels\BookIrBook2;
+use App\Models\MongoDBModels\BookIrCreator;
+use App\Models\MongoDBModels\TempBookDossier;
 use Illuminate\Console\Command;
 use MongoDB\Client;
 
@@ -47,7 +49,12 @@ class ConvertBookir_bookIntoBook_dossier extends Command
         $startTime = microtime(true);
 //        ConvertTranslatedBookWhitPoetIntoDossierJob::dispatch();
 //        $this->info('translated books with poet done');
-        ConvertTranslatedBookWhitWriterIntoDossierJob::dispatch();
+        $processBar = $this->output->createProgressBar(BookIrBook2::count());
+        BookIrBook2::whereNull('xmongo_parent')->chunk(1000 , function ($book) use ($processBar) {
+            ConvertTranslatedBookWhitWriterIntoDossierJob::dispatch($book);
+            $processBar->advance();
+        });
+
         $this->info('translated books with writer done');
         //TODO : Non translate books have very complicate rules.
         //ConvertNonTranslatedBookWhitPoetIntoDossierJob::dispatch();

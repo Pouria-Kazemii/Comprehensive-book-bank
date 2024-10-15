@@ -11,19 +11,20 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use MongoDB\BSON\ObjectId;
-use MongoDB\Client;
+use function PHPUnit\Framework\isEmpty;
 
 class ConvertTranslatedBookWhitWriterIntoDossierJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    private  $books ;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($books)
     {
+        $this->books = $books;
     }
 
     /**
@@ -33,231 +34,67 @@ class ConvertTranslatedBookWhitWriterIntoDossierJob implements ShouldQueue
      */
     public function handle()
     {
-        $translateBooksWithParent = BookIrBook2::where('is_translate', 2)
-            ->where('xmongo_parent', 'exists', false);
-
-        // Process books in chunks of 1000
-        $translateBooksWithParent->chunk(1000, function ($books) {
-            foreach ($books as $book) {
-                // Get required creators for the current book
-                $requiredWriters = getCreators($book->_id);
-                $requiredWriterCount = count($requiredWriters);
-
-                // Build aggregation pipeline
-                $pipeline = [
-                    ['$match' => ['$text' => ['$search' => $book->xname]]],
-                    ['$project' => makeProjectOfWriterPipeline()],
-                    ['$match' => [
-                        '$and' => [
-                            ['writerCount' => $requiredWriterCount],
-                            ['writers.xcreatorname' => ['$all' => $requiredWriters]]
-                        ]
-                    ]],
-                    //TODO : Start here
-                    ['$addFields' => ['score' => ['$meta' => 'textScore']]],
-                    ['$sort' => ['xpublishdate_shamsi' => 1]]
-                ];
-
-                // Use cursor to iterate over aggregation results
-                $cursor = BookIrBook2::raw(function ($collection) use ($pipeline) {
-                    return $collection->aggregate($pipeline, ['cursor' => []]);
-                });
-
-                // Prepare data for BookDossier creation
-                $firstPartOfArray = [
-                    'xmain_name' => $book->xname,
-                    'xtotal_pages' => takeTotalPages($cursor),
-                    'xtotal_prices' => takeTotalPrices($cursor),
-                    'xwhite' => null,
-                    'xblack' => null,
-                    'xis_translate' => 2,
-                ];
-
-                $mongoData = array_merge($firstPartOfArray, takeOthersField($cursor));
-
-                // Create BookDossier entry
-                $newDossier = BookDossier::create($mongoData);
-
-                // Update related books with xmongo_parent
-                foreach ($cursor as $relatedBook) {
-                    $relatedBook->update(['xmongo_parent' => $newDossier->_id]);
+        foreach ($this->books as $book) {
+            $creators = [];
+            if ($book->partners != null) {
+                foreach ($book->partners as $partner) {
+                    if (in_array($partner['xrule'], ['نويسنده', 'نویسنده', 'شاعر'])) {
+                        $creators[] = [
+                            'xcreator_id' => $partner['xcreator_id'],
+                            'xcreatorname' => $partner['xcreatorname'],
+                            'xrule' => $partner['xrule'],
+                        ];
+                        break;
+                    }
                 }
             }
-        });
+            if (!empty($creators)) {
+                $dossierBooks = BookIrBook2::raw(function ($collection) use ($book, $creators) {
+                    return $collection->aggregate([
+                        [
+                            '$match' => [
+                                'xmongo_parent' => ['$exists' => false],
+                                'diocode_subject' => $book->diocode_subject,
+                                '$text' => ['$search' => $book->xname],
+                                'partners' => [
+                                    '$elemMatch' => [
+                                        'xcreator_id' => $creators[0]['xcreator_id'],
+                                        'xcreatorname' => $creators[0]['xcreatorname'],
+                                        'xrule' => $creators[0]['xrule']
+                                    ]
+                                ]
+                            ]
+                        ],
+                        [
+                            '$addFields' => [
+                                'stringLength' => ['$strLenCP' => '$xname']
+                            ]
+                        ],
+                        [
+                            '$sort' => ['stringLength' => 1]
+                        ],
+                    ]);
+                });
 
+                if (!count($dossierBooks) == 0) {
+                    $dossier = BookDossier::create();
+                    $bookIds = [];
+                    $bookNames = [];
 
-        //we are going to dossier translated books with equal writers in  3 part:
-        //first part : where books have a parent or are parent
-//        $pipeline1 = [
-//            '$project' => [
-//            '_id' =>1 ,
-//            'xpagecount' =>1 ,
-//            'xformat' =>1 ,
-//            'xcover' =>1 ,
-//            'xprintnumber' =>1 ,
-//            'xcirculation' =>1,
-//            'xcovernumber' => 1,
-//            'xcovercount' => 1 ,
-//            'xisbn' => 1 ,
-//            'xisbn2' => 1,
-//            'xisbn3' => 1,
-//            'xpublishdate_shamsi' =>1,
-//            'xcoverprice' =>1 ,
-//            'xdiocode' => 1,
-//            'xpublishplace' =>1,
-//            'xdescription' => 1 ,
-//            'xweight' => 1 ,
-//            'ximgeurl' => 1,
-//            'xpdfurl' => 1,
-//            'xtotal_price' =>1,
-//            'xtotal_page' =>1,
-//            'xis_translate' => 1,
-//            'xname' => 1 ,
-//            'partners' => 1,
-//            'subjects' => 1 ,
-//            'publisher' => 1,
-//            'languages' => 1 ,
-//            'age_group' => 1,
-//            'writers' => [
-//                '$filter' => [
-//                    'input' => '$partners',
-//                    'as' => 'partner',
-//                    'cond' => [
-//                        '$eq' => ['$$partner.xrule', 'نويسنده']
-//                    ]
-//                ]
-//            ],
-//            'writerCount' => [
-//                '$size' => [
-//                    '$filter' => [
-//                        'input' => '$partners',
-//                        'as' => 'partner',
-//                        'cond' => [
-//                            '$eq' => ['$$partner.xrule', 'نويسنده']
-//                        ]
-//                    ]
-//                ]
-//            ]
-//        ],
-//        ];
-//        $books =BookIrBook2::raw(function($collection) use ($pipeline1) {
-//            return $collection->aggregate($pipeline1);
-//        });
-//
-//        $processedBooks = [];
-//
-//        foreach ($books as $book1) {
-//
-//            if (in_array($book1->_id, $processedBooks)) {
-//                continue;
-//            }
-//            $booksOfDossier = [];
-//            $requiredWriters = getCreators($book1->_id);
-//            $requiredWriterCount = count($requiredWriters);
-//
-//
-//            $pipeline = [
-//
-//                ['$match' => [
-//                    'is_translate' => 2
-//                ]],
-//
-//
-//
-//                ['$match' => [
-//                    '$or' => [
-//                        ['xisbn3' => $book1->xisbn3],
-//                        ['xparent' => $book1->_id],
-//                        ['_id' => $book1->xparent],
-//                        [
-//                            '$and' => [
-//                                // Match on the required number of writers
-//                                ['writerCount' => $requiredWriterCount],
-//                                // Ensure all required writers are present
-//                                ['writers.xcreatorname' => [
-//                                    '$all' => $requiredWriters
-//                                ]]
-//                            ]
-//                        ]
-//                    ]
-//                ]]
-//            ];
-//            $relatedBooks = BookIrBook2::raw(function($collection) use ($pipeline) {
-//                return $collection->aggregate($pipeline);
-//            });
-//
-//            $mainId = takeMain($relatedBooks)['_id'];
-//
-//            if (count($relatedBooks) == 1) {
-//                $booksOfDossier[] = $book1;
-//            }elseif($book1->_id == $relatedBooks[$mainId]->_id and count($relatedBooks) > 1){
-//                $booksOfDossier [] = $book1;
-//
-//                $mainName = takeMain($relatedBooks)['name'];
-//                $mainWords = takeWords($mainName);
-//                $mainSubjects = takeSubjects($relatedBooks[$mainId]);
-//
-//                foreach ($relatedBooks as $relatedBook) {
-//                    if ($book1->_id == $relatedBook->_id or in_array($relatedBook->_id, $processedBooks)) {
-//                        continue;
-//                    }
-//
-//                    $relatedBookWords = takeWords($relatedBook->xname);
-//                    $relatedBookSubjects = takeSubjects($relatedBook);
-//
-//                    if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) /2) and
-//                        count(array_intersect($mainSubjects, $relatedBookSubjects)) >= 2 ) {
-//                        $booksOfDossier [] = $relatedBook;
-//                        $processedBooks [] = $relatedBook->_id;
-//                    }
-//                }
-//            } else{
-//                $mainName = takeMain($relatedBooks)['name'];
-//                $mainWords = takeWords($mainName);
-//                $mainSubjects = takeSubjects($relatedBooks[$mainId]);
-//
-//                $book1Words = takeWords($book1->xname);
-//                $book1Subjects = takeSubjects($book1);
-//
-//                if (count(array_intersect($mainWords, $book1Words)) >= intval(count($mainWords) / 2) and
-//                    count(array_intersect($mainSubjects, $book1Subjects)) >= 2) {
-//                    $booksOfDossier [] = $book1;
-//
-//                    $booksOfDossier [] = $relatedBooks[$mainId];
-//                    $processedBooks [] = $relatedBooks[$mainId]->_id;
-//
-//                    foreach ($relatedBooks as $relatedBook) {
-//                        if ($book1->_id == $relatedBook->_id or $relatedBooks[$mainId]->_id == $relatedBook->_id or in_array($relatedBook->_id, $processedBooks)) {
-//                            continue;
-//                        }
-//                        $relatedBookWords = takeWords($relatedBook->xname);
-//                        $relatedBookSubjects = takeSubjects($relatedBook);
-//                        if (count(array_intersect($mainWords, $relatedBookWords)) >= intval(count($mainWords) / 2) and
-//                            count(array_intersect($mainSubjects, $relatedBookSubjects)) >= 2) {
-//                            $booksOfDossier [] = $relatedBook;
-//                            $processedBooks [] = $relatedBook->_id;
-//                        }
-//                    }
-//                }else{
-//                    $booksOfDossier [] = $book1;
-//                }
-//            }
-//
-//            // Process the collection after the inner loop
-//            $firstPartOfArray = [
-//                'xmain_name' => takeMain($booksOfDossier)['name'],
-//                'xtotal_pages' => takeTotalPages($booksOfDossier),
-//                'xtotal_prices' => takeTotalPrices($booksOfDossier),
-//                'xwhite' => null,
-//                'xblack' => null,
-//                'xis_translate' => $booksOfDossier[0]['is_translate'],
-//            ];
-//
-//            $mongoData = array_merge($firstPartOfArray, takeOthersField($booksOfDossier));
-//
-//            BookDossier::create($mongoData);
-//
-//            $processedBooks[] = $book1->_id;
-//        }
+                    foreach ($dossierBooks as $dossierBook) {
+                        $dossierBook->update([
+                            'xmongo_parent' => $dossier->_id
+                        ]);
+                        $bookIds [] = $dossierBook->_id;
+                        $bookNames[] = $dossierBook->xname;
+                    }
+                    $dossier->update([
+                        'xmain_name' => $dossierBooks->first()->xname,
+                        'xnames' => $bookNames,
+                        'xbooks_id' => $bookIds
+                    ]);
+                }
+            }
+        }
     }
 }
