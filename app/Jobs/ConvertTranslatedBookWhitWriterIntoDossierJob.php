@@ -5,13 +5,10 @@ namespace App\Jobs;
 use App\Models\MongoDBModels\BookDossier;
 use App\Models\MongoDBModels\BookIrBook2;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use MongoDB\BSON\ObjectId;
-use function PHPUnit\Framework\isEmpty;
 
 class ConvertTranslatedBookWhitWriterIntoDossierJob implements ShouldQueue
 {

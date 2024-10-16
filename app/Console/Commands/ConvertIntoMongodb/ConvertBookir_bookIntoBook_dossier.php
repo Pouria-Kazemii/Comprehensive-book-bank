@@ -8,7 +8,6 @@ use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossierJob;
 use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossierJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
-use App\Models\MongoDBModels\TempBookDossier;
 use Illuminate\Console\Command;
 use MongoDB\Client;
 

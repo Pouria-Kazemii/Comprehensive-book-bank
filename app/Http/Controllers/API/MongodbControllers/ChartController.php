@@ -505,7 +505,7 @@ class ChartController extends Controller
 
         $allTime = CreatorCacheData::where('creator_id', $creatorId)->where('year', 0)->first();
 
-        $dataTotalPrice = CreatorCacheData::where('creator_id', $creatorId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->get();
+        $dataTotalPrice = CreatorCacheData::where('creator_id', $creatorId)->where('year', '<=', $endYear)->where('year', '>=', $startYear)->sort('year',-1)->get();
         foreach ($dataTotalPrice as $item) {
             $dataPrice ['label'] [] = $item->year;
             $dataPrice ['value'] [0][] = $item->total_price;

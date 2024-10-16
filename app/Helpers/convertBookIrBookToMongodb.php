@@ -9,6 +9,7 @@ use App\Models\BookirSubject;
 use App\Models\MongoDBModels\BookIrCreator;
 use App\Models\MongoDBModels\BookIrPublisher;
 use App\Models\MongoDBModels\CheckDailyConvert;
+use GuzzleHttp\Client;
 
 if (!function_exists('convertCreators')) {
     function convertCreators($xbookid)
@@ -174,5 +175,32 @@ if (!function_exists('takeBookParagraph')){
                 break;
         }
         return $paragraph;
+    }
+
+    function getAuthorBooks($author) {
+        $client = new Client([
+            'verify' => 'C:\PHP.7.4.3\ssl\cacert.pem'
+        ]);
+
+        // Google Books API URL with your API key
+        $url = 'https://www.googleapis.com/books/v1/volumes';
+
+        // Your Google API Key
+        $apiKey = env('GOOGLE_BOOKS_API_KEY');
+
+        // Send a GET request to the API
+        $response = $client->get($url, [
+            'query' => [
+                'q' => 'intitle:' . $author,  // Search for books by author
+                'key' => $apiKey,
+                'langRestrict' => 'fa',        // Restrict to Persian books (optional)
+            ]
+        ]);
+
+        // Parse the JSON response
+        $data = json_decode($response->getBody(), true);
+
+        // Return the list of books from the API response
+        return $data['items'] ?? [];
     }
 }
