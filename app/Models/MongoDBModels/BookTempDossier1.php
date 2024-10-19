@@ -12,8 +12,10 @@ class BookTempDossier1 extends Model
     protected $primaryKey  = '_id';
     protected $fillable = [
         'book_ids',
+        'creator',
         'book_names',
-        'isbn'
+        'isbn',
+        'other_isbns'
     ];
 
 
