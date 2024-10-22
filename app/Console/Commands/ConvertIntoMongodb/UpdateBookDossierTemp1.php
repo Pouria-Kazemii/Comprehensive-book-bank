@@ -13,7 +13,7 @@ class UpdateBookDossierTemp1 extends Command
      *
      * @var string
      */
-    protected $signature = 'uppdate:book_dossier_temp';
+    protected $signature = 'update:book_dossier_temp';
 
     /**
      * The console command description.
@@ -42,10 +42,16 @@ class UpdateBookDossierTemp1 extends Command
         $this->info('start to update book dossier temp 1');
         $processBar = $this->output->createProgressBar(BookTempDossier1::count());
         $processBar->start();
-        BookTempDossier1::chunk(1000,function ($docs) use ($processBar){
-            foreach ($docs as $doc){
-                UpdateBookDossierTemp1Job::dispatch($doc);
-                $processBar->advance();
+        BookTempDossier1::chunk(1, function ($docs) use ($processBar) {
+            foreach ($docs as $doc) {
+                if ($doc->creator !== null and $doc->creator !== 'multi' and  $doc->creator !== '') {
+                    $xbooks = $doc->book_names ?? [];
+                    if (count(array_unique($xbooks)) === 1) {
+                        UpdateBookDossierTemp1Job::dispatch($doc);
+                        $processBar->advance();
+                    }
+                }
+
             }
         });
         $processBar->finish();
