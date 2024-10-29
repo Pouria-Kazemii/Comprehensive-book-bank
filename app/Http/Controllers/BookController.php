@@ -188,6 +188,13 @@ class BookController extends Controller
                 $min_publish_date = $publish_date->min('xpublishdate');
                 $max_publish_date = $publish_date->max('xpublishdate');
 
+                //page count
+                $page_count = BookirBook::where('xpagecount', '!=', '')->where('xpagecount', '!=', 'null');
+                $page_count = $page_count->where(function ($query) use ($book) {
+                    $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
+                });
+                $pageCount = $page_count->max('xpagecount');
+
                 //publish place
                 $publishPlaceData = '';
                 DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
@@ -231,10 +238,13 @@ class BookController extends Controller
                     // "cover" => ($book->xcover != null and $book->xcover != "null") ? $book->xcover : "",
                     "cover" => $coversData,
                     "publishDate" => $min_publish_date > 0 && $max_publish_date > 0 ? ' بین ' . BookirBook::convertMiladi2Shamsi_with_slash($min_publish_date) . ' تا ' . BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date) : null,
-                    "printNumber" => $printNumber,
+                        'last_publishDate' => BookirBook::convertMiladi2Shamsi_with_slash($max_publish_date),
+                        "printNumber" => $printNumber,
                     "circulation" => priceFormat($circulation),
                     "price" => $min_coverPrice > 0 && $max_coverPrice > 0 ? ' بین ' . priceFormat($min_coverPrice) . ' تا ' . priceFormat($max_coverPrice) . ' ریال ' : null,
-                    "des" => !empty($book_description) ? $book_description->xdescription : null,
+                        'last_price' => priceFormat($max_coverPrice),
+                        "des" => !empty($book_description) ? $book_description->xdescription : null,
+                        'page_count' => $pageCount
                 ];
             }
 
