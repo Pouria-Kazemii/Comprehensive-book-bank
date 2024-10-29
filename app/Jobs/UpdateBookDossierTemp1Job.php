@@ -38,10 +38,13 @@ class UpdateBookDossierTemp1Job implements ShouldQueue
             return $collection->aggregate([
                 [
                     '$match' => [
-                    'creator' => $this->doc->creator,
-                    '_id' => [
-                        '$ne' => new ObjectId($this->doc->_id)
+                        'creator' => $this->doc->creator,
+                        '_id' => [
+                            '$ne' => new ObjectId($this->doc->_id)
                         ],
+                        'is_delete' => [
+                            '$exists' => false
+                        ]
                     ]
                 ],
             ]);
@@ -66,6 +69,10 @@ class UpdateBookDossierTemp1Job implements ShouldQueue
                     // Perform batch delete or soft delete
                     $object->delete();
                     $flag = true;
+                } else {
+                    $this->doc->update([
+                        'is_delete' => true
+                    ]);
                 }
             }
 
@@ -84,7 +91,15 @@ class UpdateBookDossierTemp1Job implements ShouldQueue
                 BookIrBook2::whereIn('_id', $bookIds)->update([
                     'xmongo_parent' => $this->doc->_id
                 ]);
+            } else {
+                $this->doc->update([
+                    'is_delete' => true
+                ]);
             }
+        } else {
+            $this->doc->update([
+                'is_delete' => true
+            ]);
         }
     }
 }
