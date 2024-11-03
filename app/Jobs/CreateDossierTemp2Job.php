@@ -10,6 +10,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use MongoDB\Driver\Exception\CommandException;
 
 class CreateDossierTemp2Job implements ShouldQueue
 {
@@ -34,10 +36,19 @@ class CreateDossierTemp2Job implements ShouldQueue
     {
         if($this->dossier->book_names[0] != (null or '')) {
             $data = [];
-            $newDossiers = BookTempDossier1::where('creator', $this->dossier->creator)
-                ->where('book_names', 'all', [new \MongoDB\BSON\Regex($this->dossier->book_names[0], 'i')])
-                ->where('_id', '!=', $this->dossier->_id)
-                ->get();
+            try {
+                $newDossiers = BookTempDossier1::where('creator', $this->dossier->creator)
+                    ->where('book_names', 'all', [new \MongoDB\BSON\Regex($this->dossier->book_names[0], 'i')])
+                    ->where('_id', '!=', $this->dossier->_id)
+                    ->get();
+            }catch (CommandException $e) {
+                Log::error('Regex error in document search.', [
+                    'dossier_id' => $this->dossier->_id,
+                    'book_names' => $this->dossier->book_names,
+                    'error_message' => $e->getMessage(),
+                ]);
+                throw $e;
+            }
             if (count($newDossiers) != 0) {
                 $data['creator'] = $this->dossier->creator;
                 $data['dossier_temp_one_id_original'] = $this->dossier->_id;
