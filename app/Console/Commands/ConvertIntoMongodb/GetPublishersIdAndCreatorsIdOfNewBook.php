@@ -41,7 +41,6 @@ class GetPublishersIdAndCreatorsIdOfNewBook extends Command
      */
     public function handle()
     {
-        //TODO : NEW
         $uniqueCreators = [];
         $uniquePublishers = [];
         $books = BookirBook::select('xid')->whereNull('mongo_id')->get();

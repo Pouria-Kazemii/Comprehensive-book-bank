@@ -40,7 +40,6 @@ class GetPublishDateOfNewBooksCommand extends Command
      */
     public function handle()
     {
-        //TODO : NEW
         $uniqueYears = [];
         $years = BookirBook::select('xpublishdate')->whereNull('mongo_id')->distinct()->get();
         foreach ($years as $year){

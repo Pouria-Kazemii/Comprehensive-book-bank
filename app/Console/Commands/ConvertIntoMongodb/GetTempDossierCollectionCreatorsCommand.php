@@ -39,6 +39,7 @@ class GetTempDossierCollectionCreatorsCommand extends Command
      */
     public function handle()
     {
+        // TODO : NEW
          $this->info('start to take creator of this book temp dossier 1');
          $processBar = $this->output->createProgressBar(BookTempDossier1::count());
          $processBar->start();

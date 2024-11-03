@@ -41,7 +41,6 @@ class InsertBooksDioCodeSubjects extends Command
      */
     public function handle()
     {
-        // TODO : NEW
         $this->info("Start feel diocode subject column");
         $startTime = microtime('true');
         $id = $this->argument('id');

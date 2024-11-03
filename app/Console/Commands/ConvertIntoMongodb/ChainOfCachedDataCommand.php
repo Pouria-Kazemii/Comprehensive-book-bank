@@ -40,7 +40,6 @@ class ChainOfCachedDataCommand extends Command
      */
     public function handle()
     {
-        //TODO : NEW
         $date = $this->argument('date');
         $new = NewBookPublishDate::where('created_at', $date)->first();
         $years = $new->years;

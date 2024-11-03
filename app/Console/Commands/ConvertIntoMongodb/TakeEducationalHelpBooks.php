@@ -39,7 +39,6 @@ class TakeEducationalHelpBooks extends Command
      */
     public function handle()
     {
-        //TODO : NEW
         $this->info('start to find educational books and update them inside bookir_book collection');
         $startTime = microtime('true');
         $id = $this->argument('id');

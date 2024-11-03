@@ -6,8 +6,11 @@ use App\Jobs\ConvertNonTranslatedBookWhitPoetIntoDossierJob;
 use App\Jobs\ConvertNonTranslatedBookWithWriterIntoDossierJob;
 use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossierJob;
 use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossierJob;
+use App\Jobs\CreateFinalBookDossierCollectionFirstJob;
 use App\Models\MongoDBModels\BookIrBook2;
 use App\Models\MongoDBModels\BookIrCreator;
+use App\Models\MongoDBModels\BookTempDossier1;
+use App\Models\MongoDBModels\BookTempDossier2;
 use Illuminate\Console\Command;
 use MongoDB\Client;
 
@@ -44,23 +47,16 @@ class ConvertBookir_bookIntoBook_dossier extends Command
      */
     public function handle()
     {
+        //TODO : NEW
         $this::info("Start converting book_dossier table");
         $startTime = microtime(true);
-//        ConvertTranslatedBookWhitPoetIntoDossierJob::dispatch();
-//        $this->info('translated books with poet done');
-        $processBar = $this->output->createProgressBar(BookIrBook2::count());
-        BookIrBook2::whereNull('xmongo_parent')->chunk(1000 , function ($book) use ($processBar) {
-            ConvertTranslatedBookWhitWriterIntoDossierJob::dispatch($book);
-            $processBar->advance();
+        $processBar = $this->output->createProgressBar(BookTempDossier1::count());
+        BookTempDossier2::chunk(1000 ,function ($dossiers) use($processBar) {
+            foreach ($dossiers as $dossier) {
+                CreateFinalBookDossierCollectionFirstJob::dispatch($dossier);
+                $processBar->advance();
+            }
         });
-
-        $this->info('translated books with writer done');
-        //TODO : Non translate books have very complicate rules.
-        //ConvertNonTranslatedBookWhitPoetIntoDossierJob::dispatch();
-//        $this->info('non translated books with poet done');
-        //ConvertNonTranslatedBookWithWriterIntoDossierJob::dispatch();
-//        $this->info('non translated books with writer done');
-
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');

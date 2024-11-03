@@ -39,6 +39,7 @@ class MakeBookDossierTemp1 extends Command
      */
     public function handle()
     {
+        // TODO : NEW
         $this->info('making book dossier temp 1 collection');
         $progressBar = $this->output->createProgressBar(BookIrBook2::count());
         $progressBar->start();

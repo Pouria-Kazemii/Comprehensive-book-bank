@@ -39,8 +39,9 @@ class UpdateBookDossierTemp1 extends Command
      */
     public function handle()
     {
+        // TODO : NEW
         $this->info('start to update book dossier temp 1');
-        $processBar = $this->output->createProgressBar(BookTempDossier1::count());
+        $processBar = $this->output->createProgressBar(BookTempDossier1::where('is_delete' , 'exists' , false)->count());
         $processBar->start();
         BookTempDossier1::where('is_delete','exists', false)->chunk(1, function ($docs) use ($processBar) {
             foreach ($docs as $doc) {
@@ -60,7 +61,7 @@ class UpdateBookDossierTemp1 extends Command
                         'is_delete' => true
                     ]);
                 }
-
+                $processBar->advance();
             }
         });
         $processBar->finish();

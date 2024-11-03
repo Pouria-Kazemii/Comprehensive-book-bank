@@ -38,7 +38,6 @@ class MakeDioSubjectsCollectionCommand extends Command
      */
     public function handle()
     {
-        // TODO : NEW
         //______________________________________lvl 0______________________________________//
         $this->addToDioSubjects(1,"عمومی",'public' ,0 ,1,0,null,false);
         $this->addToDioSubjects(2 , "دانشگاهی" , 'edu', 0 ,1,0,null,false);
