@@ -16,7 +16,8 @@ class BookTempDossier1 extends Model
         'book_names',
         'isbn',
         'other_isbns',
-        'is_delete'
+        'is_delete',
+        'is_checked'
     ];
 
 

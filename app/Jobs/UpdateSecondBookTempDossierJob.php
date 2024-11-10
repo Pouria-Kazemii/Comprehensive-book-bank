@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\MongoDBModels\BookTempDossier2;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -32,14 +31,14 @@ class UpdateSecondBookTempDossierJob implements ShouldQueue
     public function handle()
     {
         $creator = $this->dossier->creator;
-        $dossiers = BookTempDossier2::where('creator',$creator)->get();
-        if ($dossiers != null)
-        foreach ($dossiers as $dossier){
-            if (strpos($dossier->book_names_original[0] , $this->dossier->book_names_original[0]) !== false and
-                $dossier->book_counts < $this->dossier->book_counts)
-            {
-                $dossier->delete();
-            };
+        $dossiers = BookTempDossier2::where('creator',$creator)->where('_id' , '!=' , $this->dossier->_id)->get();
+        if (count($dossiers) != 0) {
+            foreach ($dossiers as $dossier) {
+                if (strpos($dossier->book_names_original[0], $this->dossier->book_names_original[0]) !== false and
+                    $dossier->book_counts < $this->dossier->book_counts) {
+                    $dossier->delete();
+                }
+            }
         }
     }
 }

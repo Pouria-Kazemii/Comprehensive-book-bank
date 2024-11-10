@@ -14,7 +14,6 @@ class BookDossier extends Model
 
     protected $fillable = [
         'xmain_name',
-        'xis_translate' ,
         'xnames',
         'xmain_creator',
         'xisbns',

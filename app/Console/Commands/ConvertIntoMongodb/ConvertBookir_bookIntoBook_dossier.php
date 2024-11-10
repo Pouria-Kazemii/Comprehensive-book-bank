@@ -2,17 +2,11 @@
 
 namespace App\Console\Commands\ConvertIntoMongodb;
 
-use App\Jobs\ConvertNonTranslatedBookWhitPoetIntoDossierJob;
-use App\Jobs\ConvertNonTranslatedBookWithWriterIntoDossierJob;
-use App\Jobs\ConvertTranslatedBookWhitPoetIntoDossierJob;
-use App\Jobs\ConvertTranslatedBookWhitWriterIntoDossierJob;
 use App\Jobs\CreateFinalBookDossierCollectionFirstJob;
-use App\Models\MongoDBModels\BookIrBook2;
-use App\Models\MongoDBModels\BookIrCreator;
+use App\Jobs\CreateFinalBookDossierCollectionSecondJob;
 use App\Models\MongoDBModels\BookTempDossier1;
 use App\Models\MongoDBModels\BookTempDossier2;
 use Illuminate\Console\Command;
-use MongoDB\Client;
 
 class ConvertBookir_bookIntoBook_dossier extends Command
 {
@@ -57,6 +51,13 @@ class ConvertBookir_bookIntoBook_dossier extends Command
                 $processBar->advance();
             }
         });
+        BookTempDossier1::where('is_checked' , '!=' , true)->chunk(1000,function ($collection) use($processBar){
+            foreach ($collection as $item){
+                CreateFinalBookDossierCollectionSecondJob::dispatch($item);
+                $processBar->advance();
+            }
+        } );
+        $processBar->finish();
         $endTime = microtime(true);
         $duration = $endTime - $startTime;
         $this->info('Process completed in ' . number_format($duration, 2) . ' seconds.');
