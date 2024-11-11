@@ -22,7 +22,7 @@ class ConvertBookir_bookIntoBook_dossier extends Command
      *
      * @var string
      */
-    protected $description = 'making bookdossier table from  bookirbook table';
+    protected $description = 'making bookdossier collection from  book_temp_dossier_ 1 and 2 collection';
 
     /**
      * Create a new command instance.
