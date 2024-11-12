@@ -57,7 +57,7 @@ class GetDigiCategoryPrintedHistoryAndGeographyBook extends Command
             while ($pageCounter <= $endC) {
 
                 try {
-                    $pageUrl = 'https://www.digikala.com/ajax/search/' . $search_books_category . '/?pageno=' . $pageCounter . '&sortby=1';
+                    $pageUrl = 'https://api.digikala.com/v1/categories/printed-history-and-geography-book/search/?sort=1&page='.$pageCounter;
                     $this->info(" \n ---------- Page URL  " . $pageUrl . "              ------------ ");
                     $json = file_get_contents($pageUrl);
                     $headers = get_headers($pageUrl);
@@ -72,14 +72,14 @@ class GetDigiCategoryPrintedHistoryAndGeographyBook extends Command
 
                     $products_all = json_decode($json);
 
-                    $bar = $this->output->createProgressBar(count($products_all->data->trackerData->products));
+                    $bar = $this->output->createProgressBar(count($products_all->data->products));
                     $bar->start();
 
-                    foreach ($products_all->data->trackerData->products as $pp) {
-                        if (check_digi_id_is_book($pp->product_id)) {
-                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->product_id)->firstOrNew();
-                            $bookDigi->recordNumber = 'dkp-' . $pp->product_id;
-                            updateDigiBook($pp->product_id, $bookDigi, 'checkBook'.$function_caller);
+                    foreach ($products_all->data->products as $pp) {
+                        if (check_digi_id_is_book($pp->id)) {
+                            $bookDigi = BookDigi::where('recordNumber', 'dkp-' . $pp->id)->firstOrNew();
+                            $bookDigi->recordNumber = 'dkp-' . $pp->id;
+                            updateDigiBook($pp->id, $bookDigi,  'checkBook'.$function_caller);
                         }
 
                         $bar->advance();

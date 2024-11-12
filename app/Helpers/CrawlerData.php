@@ -1665,7 +1665,6 @@ if (!function_exists('update30Book')) {
 
             $filtered= array();
             $cats= array();
-
             foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
                 if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
                 else $filtered['cats']= $cat->textContent;

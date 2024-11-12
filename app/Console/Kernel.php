@@ -2,10 +2,8 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use Morilog\Jalali\Jalalian;
 
 class Kernel extends ConsoleKernel
 {
@@ -16,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         // Commands\UpdateIsTranslateDataInBookirBook::class, // is_translate:update
+        Commands\CrawlerSites\GetDigiCategoryAcademicBooks::class,
         Commands\CrawlerSites\GetDigiCategoryForeignPrintedBook::class,
         Commands\CrawlerSites\GetDigiCategoryChildrenBook::class,
         Commands\CrawlerSites\GetDigiCategoryPrintedBookOfBiographyAndEncyclopedia::class,
@@ -116,6 +115,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('get:digiCategoryReligiousPrintedBook 1')->dailyAt('23:15');
         $schedule->command('get:digiCategoryPrintedBookOfSocialSciences 1')->dailyAt('23:30');
         $schedule->command('get:digiCategoryPrintedBookOfPoetryAndLiterature 1')->dailyAt('23:45');
+        $schedule->command('get:digiCategoryAcademicBook 1')->dailyAt('00:00');
         //digi new books
         $schedule->command('get:digiNewestBook 1')->dailyAt('00:00');
         $schedule->command('get:digiBook 1')->dailyAt('01:00');
