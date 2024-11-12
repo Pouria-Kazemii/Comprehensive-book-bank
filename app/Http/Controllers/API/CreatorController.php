@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookIranKetabPartner;
@@ -187,6 +187,7 @@ class CreatorController extends Controller
     public function detail(Request $request)
     {
         $creatorId = $request["creatorId"];
+        $status = 404;
         $dataMaster = null;
 
         // read
@@ -239,7 +240,7 @@ class CreatorController extends Controller
             $yearPrintCountData = ["label" => array_column($yearPrintCountData, 'year'), "value" => array_column($yearPrintCountData, 'printCount')];
         }
 
-        if ($yearPrintCountData != null) $status = 200;
+         $yearPrintCountData != null ? $status = 200:$status =404;
 
         // response
         return response()->json(

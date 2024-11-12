@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
-use App\Console\Commands\GetIranketab;
+use App\Console\Commands\CrawlerSites\GetIranketab;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\ExcelController;
 use App\Models\Author;
@@ -22,6 +22,8 @@ use App\Models\BookirPartnerrule;
 use App\Models\BookirPublisher;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
+use App\Models\BookKetabrah;
+use App\Models\BookTaaghche;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
@@ -76,6 +78,7 @@ class BookController extends Controller
 
                 $where = "xid In (Select bi_book_xid From bi_book_bi_publisher Where " . rtrim($where, " or ") . ")";
             }
+
         }
         return $where;
     }
@@ -151,7 +154,7 @@ class BookController extends Controller
 
     public function findByCreatorOfPublisher(Request $request)
     {
-       
+
         $publisherId = $request["publisherId"];
         $creatorId = $request["creatorId"];
         if ($publisherId == 0) {
@@ -168,6 +171,7 @@ class BookController extends Controller
         } else {
             $creatorName = BookirPartner::where('xid', $creatorId)->first()->xcreatorname;
         }
+
 
 
         if ($publisher_books->count() > 0) {
@@ -188,9 +192,8 @@ class BookController extends Controller
             $creator_books_string = implode(",", $creator_books_array);
             $where = ($publisherId != "" or $creatorId != "") ? "xid In ($creator_books_string)" : "";
 
-             return $this->lists($request,true, ($where == ""), $where, "", $publisherName, $creatorName);           
+            return $this->lists($request, true, ($where == ""), $where, "", $publisherName, $creatorName);
         }
-      
     }
 
     public function findBySharedCreators(Request $request)
@@ -217,6 +220,7 @@ class BookController extends Controller
         $possibilityEmptyLogicalOperator = true;
         $beforeLogicalOperator = '';
         foreach ($request['search'] as $key => $item) {
+
             if (gettype($item) != 'array') {
                 $search_item = json_decode($item, true);
             } else {
@@ -242,7 +246,7 @@ class BookController extends Controller
                     $searchValue = '';
                 }
 
-                // serach bby name  
+                // serach bby name
                 if (($searchField == 'name') and !empty($comparisonOperators) and !empty($searchValue)) {  // $books->where('xname', 'like', "%$name%");
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
@@ -255,7 +259,7 @@ class BookController extends Controller
                 }
                 // search by isbn
                 if (($searchField == 'isbn2') and !empty($comparisonOperators) and !empty($searchValue)) {
-                   // $books->where('xisbn2', '=', $isbn);
+                    // $books->where('xisbn2', '=', $isbn);
                     if (!empty($beforeLogicalOperator) or $possibilityEmptyLogicalOperator) {
                         $where .= ' ' . $beforeLogicalOperator . ' ';
                         if ($comparisonOperators == 'like') {
@@ -360,6 +364,7 @@ class BookController extends Controller
                     $possibilityEmptyLogicalOperator = false;
                 }
             }
+
         }
         return $this->lists($request, false, false, $where);
     }
@@ -382,13 +387,14 @@ class BookController extends Controller
             // read books
             DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
             $books = BookirBook::orderBy($column, $sortDirection);
+
             // $books = BookirBook::with('publishers:xid as id,xpublishername as name')->orderBy($column, $sortDirection);
             // if ($defaultWhere) $books->whereRaw("(xparent='-1' or xparent='0')"); //$books->where('xparent', '=', '-1');//->orwhere('xparent', '=', '0');
             if ($searchText != "") $books->where('xname', 'like', "%$searchText%");
             if ($isbn != "") $books->where('xisbn2', '=', $isbn)->orWhere('xisbn3', '=', $isbn);
             if ($where != "") $books->whereRaw($where);
             $books->groupBy('xparent')->orderBy('xparent');
-             // give count ///////////////////
+            // give count ///////////////////
             $countBooks = $books->get();
             $totalRows =  count($countBooks);
             /////give result //////////////////
@@ -597,7 +603,6 @@ class BookController extends Controller
                             $subjects[] = ["id" => $bookSubject->xid, "name" => $bookSubject->xsubject];
                         }
                     }
-
                     //authors
                     $authors = null;
                     $authorIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 1)->get(); // writer
@@ -618,6 +623,7 @@ class BookController extends Controller
                         }
                     }
 
+
                     //imager
                     $imagers = null;
                     $imagerIds = BookirPartnerrule::where('xbookid', $book->xid)->where('xroleid', 20)->get();
@@ -627,6 +633,8 @@ class BookController extends Controller
                             $imagers[] = ["id" => $bookImager->xid, "name" => $bookImager->xcreatorname];
                         }
                     }
+
+
 
                     //
                     $data[] =
@@ -898,6 +906,7 @@ class BookController extends Controller
             ->select('bookir_publisher.xpublishername as name', DB::raw('SUM(bookir_book.xpagecount) as printCount'))
             ->groupBy('bookir_publisher.xid')
             ->get();
+
         if ($books != null and count($books) > 0) {
             $totalPrintCount = 0;
             foreach ($books as $book) {
@@ -927,7 +936,7 @@ class BookController extends Controller
             $status
         );
     }
-    
+
     // book info with crawler info
     public function detailWithCrawlerInfo($isbn)
     {
@@ -938,16 +947,16 @@ class BookController extends Controller
         $status = 404;
 
         // read books
-        $book = BookirBook::where('xisbn', '=', $isbn)->orWhere('xisbn2','=',$isbn)->orWhere('xisbn3','=',$isbn)->first();
+        $book = BookirBook::where('xisbn', '=', $isbn)->orWhere('xisbn2', '=', $isbn)->orWhere('xisbn3', '=', $isbn)->first();
         if (!empty($book)) {
             if ($book->xparent != -1 and $book->xparent != 0) { // found leader
                 $book = BookirBook::where('xid', '=', $book->xparent)->first();
                 $bookId = $book->xid;
-            }else{
-                    $bookId = $book->xid;
+            } else {
+                $bookId = $book->xid;
             }
 
-            //SELECT clidren id 
+            //SELECT clidren id
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
@@ -999,7 +1008,7 @@ class BookController extends Controller
                 }
 
                 //
-                // price 
+                // price
                 $coverPrice = BookirBook::where('xcoverprice', '>', 0);
                 $coverPrice = $coverPrice->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -1055,7 +1064,7 @@ class BookController extends Controller
                 $min_publish_date = $publish_date->min('xpublishdate');
                 $max_publish_date = $publish_date->max('xpublishdate');
 
-                //publish place 
+                //publish place
                 $publishPlaceData = '';
                 DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
@@ -1220,7 +1229,7 @@ class BookController extends Controller
                         "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
                         "weights" => !empty($digi_weightData) ? $digi_weightData : null,
                         "features" => !empty($digi_featuresData) ? $digi_featuresData : null,
-                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null,
                         "numberPages" => (!empty($digi_min_tedadSafe) && !empty($digi_max_tedadSafe)) ? ' بین ' . $digi_min_tedadSafe . ' تا ' . $digi_max_tedadSafe : null,
                         "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null,
                     ];
@@ -1346,7 +1355,7 @@ class BookController extends Controller
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null,
                         "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null,
                         "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null,
-                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null,
                         "numberPages" => (!empty($gisoom_min_tedadSafe) && !empty($gisoom_max_tedadSafe)) ? ' بین ' . $gisoom_min_tedadSafe . ' تا ' . $gisoom_max_tedadSafe : null,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
@@ -1448,7 +1457,7 @@ class BookController extends Controller
                         "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null,
                         "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null,
                         "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null,
-                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null,
                         "numberPages" => (!empty($iranketab_min_tedadSafe) && !empty($iranketab_max_tedadSafe)) ? ' بین ' . $iranketab_min_tedadSafe . ' تا ' . $iranketab_max_tedadSafe : null,
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ? ' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date : null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ? ' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' تومان ' : null,
@@ -1501,7 +1510,7 @@ class BookController extends Controller
                 $book = BookirBook::where('xid', '=', $book->xparent)->first();
                 $bookId = $book->xid;
             }
-            //SELECT clidren id 
+            //SELECT clidren id
             $dossier_book = BookirBook::where('xid', '=', $book->xid)->orwhere('xparent', '=', $book->xid)->get();
             $dossier_book_id = $dossier_book->pluck('xid')->all();
             if ($book != null and $book->xid > 0) {
@@ -1553,7 +1562,7 @@ class BookController extends Controller
                 }
 
                 //
-                // price 
+                // price
                 $coverPrice = BookirBook::where('xcoverprice', '>', 0);
                 $coverPrice = $coverPrice->where(function ($query) use ($book) {
                     $query->where('xid', $book->xid)->orwhere('xparent', $book->xid);
@@ -1609,7 +1618,7 @@ class BookController extends Controller
                 $min_publish_date = $publish_date->min('xpublishdate');
                 $max_publish_date = $publish_date->max('xpublishdate');
 
-                //publish place 
+                //publish place
                 $publishPlaceData = '';
                 DB::statement("SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
                 $publish_place = BookirBook::where('xpublishplace', '!=', '')->where('xpublishplace', '!=', 'null');
@@ -1774,7 +1783,7 @@ class BookController extends Controller
                         "noechaps" => !empty($digi_noechapData) ? $digi_noechapData : null,
                         "weights" => !empty($digi_weightData) ? $digi_weightData : null,
                         "features" => !empty($digi_featuresData) ? $digi_featuresData : null,
-                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null, 
+                        // "numberPages" => !empty($digi_tedadSafeData) ? $digi_tedadSafeData : null,
                         "numberPages" => (!empty($digi_min_tedadSafe) && !empty($digi_max_tedadSafe)) ? ' بین ' . $digi_min_tedadSafe . ' تا ' . $digi_max_tedadSafe : null,
                         "creators" => !empty($digi_creatorsData) ? $digi_creatorsData : null,
                     ];
@@ -1900,7 +1909,7 @@ class BookController extends Controller
                         "formats" => !empty($gisoom_formatData) ? $gisoom_formatData : null,
                         "creators" => !empty($gisoom_editorData) ? $gisoom_editorData : null,
                         "des" => !empty($gisoom_descriptionData) ? $gisoom_descriptionData : null,
-                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null, 
+                        // "numberPages" => !empty($gisoom_tedadSafeData) ? $gisoom_tedadSafeData : null,
                         "numberPages" => (!empty($gisoom_min_tedadSafe) && !empty($gisoom_max_tedadSafe)) ? ' بین ' . $gisoom_min_tedadSafe . ' تا ' . $gisoom_max_tedadSafe : null,
                         "publishDate" => (!empty($gisoom_min_publish_date) && !empty($gisoom_max_publish_date)) ? ' بین ' . $gisoom_min_publish_date . ' تا ' . $gisoom_max_publish_date : null,
                         "price" => (!empty($gisoom_min_price_date) && !empty($gisoom_max_price_date)) ? ' بین ' . priceFormat($gisoom_min_price_date) . ' تا ' . priceFormat($gisoom_max_price_date) . ' ریال ' : null,
@@ -2002,7 +2011,7 @@ class BookController extends Controller
                         "features" => !empty($iranketab_featuresData) ? $iranketab_featuresData : null,
                         "partsTexts" => !empty($iranketab_partsTextData) ? $iranketab_partsTextData : null,
                         "notes" => !empty($iranketab_notesData) ? $iranketab_notesData : null,
-                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null, 
+                        // "numberPages" => !empty($iranketab_tedadSafeData) ? $iranketab_tedadSafeData : null,
                         "numberPages" => (!empty($iranketab_min_tedadSafe) && !empty($iranketab_max_tedadSafe)) ? ' بین ' . $iranketab_min_tedadSafe . ' تا ' . $iranketab_max_tedadSafe : null,
                         "publishDate" => (!empty($iranketab_min_publish_date) && !empty($iranketab_max_publish_date)) ? ' بین ' . $iranketab_min_publish_date . ' تا ' . $iranketab_max_publish_date : null,
                         "price" => (!empty($iranketab_min_price_date) && !empty($iranketab_max_price_date)) ? ' بین ' . priceFormat($iranketab_min_price_date) . ' تا ' . priceFormat($iranketab_max_price_date) . ' تومان ' : null,
@@ -2089,12 +2098,166 @@ class BookController extends Controller
             } else {
                 $fidiboData = null;
             }
+
+            //----------------------------------------------taaghche---------------------------------------//
+            $taaghche_books = BookTaaghche::where('book_master_id', $bookId)->get();
+            if ($taaghche_books->count() > 0) {
+                $taaghche_titleData = array_unique(array_filter($taaghche_books->pluck('title')->all()));
+                $taaghche_publishersData = array_unique(array_filter($taaghche_books->pluck('nasher')->all()));
+                $tags_array = array();
+                foreach (array_unique($taaghche_books->pluck('tags')->all()) as $tag_items) {
+                    if ($tag_items != null) {
+                        $tags_array = explode("#", $tag_items);
+                    }
+                }
+                $taaghche_subjectsData = array_unique(array_filter($tags_array));
+                $taaghche_min_publish_date = $taaghche_books->min('saleNashr');
+                $taaghche_max_publish_date = $taaghche_books->max('saleNashr');
+                // $taaghche_printNumberData = array_unique(array_filter($taaghche_books->pluck('nobatChap')->all()));
+                // $iranketab_tedadSafeData = array_unique(array_filter($taaghche_books->pluck('tedadSafe')->all()));
+                $taaghche_min_tedadSafe = $taaghche_books->min('tedadSafe');
+                $taaghche_max_tedadSafe = $taaghche_books->max('tedadSafe');
+                $taaghche_shabakData = array_unique(array_filter($taaghche_books->pluck('shabak')->all()));
+                $taaghche_translateData = array_unique(array_filter($taaghche_books->pluck('translate')->all()));
+                $taaghche_descriptionData = array_unique(array_filter($taaghche_books->pluck('content')->all()));
+                if (!empty($taaghche_descriptionData)) {
+                    $taaghche_descriptionData = reset($taaghche_descriptionData);
+                }
+                $images_array = array();
+                foreach ($taaghche_books->pluck('images')->all() as $image_items) {
+                    if ($image_items != null) {
+                        $index_key = array_key_last($images_array);
+                        $arr_images = explode(" =|= ", $image_items);
+                        foreach ($arr_images as $arr_images_items) {
+                            if ($arr_images_items != "" and $arr_images_items != null) {
+                                $images_array[$index_key + 1] = $arr_images_items;
+                            }
+                        }
+                    }
+                }
+                $taaghche_imagesData = array_unique($images_array);
+                // if(!empty($taaghche_imagesData)){
+                //     $taaghche_imagesData = reset($taaghche_imagesData);
+                // }
+                $taaghche_min_price_date = $taaghche_books->min('price');
+                $taaghche_max_price_date = $taaghche_books->max('price');
+                $creators_array = array();
+                $exist_creators = array();
+                foreach (array_unique($taaghche_books->pluck('partnerArray')->all()) as $creator_items) {
+                    $item_info = json_decode($creator_items);
+                    foreach ($item_info as $items) {
+                        if (!in_array($items->firstName . ' ' . $items->lastName, $exist_creators)) {
+                            $index_key = array_key_last($creators_array);
+                            $exist_creators[] = $items->firstName . ' ' . $items->lastName;
+                            $creators_array[$index_key + 1]['name'] = $items->firstName . ' ' . $items->lastName;
+                            $rule_info = BookirRules::find($items->type);
+                            $creators_array[$index_key + 1]['role'] = (isset($rule_info->xrole))? $rule_info->xrole : '';
+                        }
+                    }
+                }
+                $taaghche_creatorsData = array_filter($creators_array);
+                $taaghcheData =
+                    [
+                        "isbns" => !empty($taaghche_shabakData) ? $taaghche_shabakData : null,
+                        "names" => !empty($taaghche_titleData) ? $taaghche_titleData : null,
+                        "publishers" => !empty($taaghche_publishersData) ? $taaghche_publishersData : null,
+                        "subjects" => !empty($taaghche_subjectsData) ? $taaghche_subjectsData : null,
+                        "images" => !empty($taaghche_imagesData) ? $taaghche_imagesData : null,
+                        "creators" => !empty($taaghche_creatorsData) ? $taaghche_creatorsData : null,
+                        "des" => !empty($taaghche_descriptionData) ? htmlspecialchars_decode($taaghche_descriptionData) : null,
+                        "numberPages" => (!empty($taaghche_min_tedadSafe) && !empty($taaghche_max_tedadSafe)) ? ' بین ' . $taaghche_min_tedadSafe . ' تا ' . $taaghche_max_tedadSafe : null,
+                        "publishDate" => (!empty($taaghche_min_publish_date) && !empty($taaghche_max_publish_date)) ? ' بین ' . $taaghche_min_publish_date . ' تا ' . $taaghche_max_publish_date : null,
+                        "price" => (!empty($taaghche_min_price_date) && !empty($taaghche_max_price_date)) ? ' بین ' . priceFormat($taaghche_min_price_date) . ' تا ' . priceFormat($taaghche_max_price_date) . ' تومان ' : null,
+                        // "printNumbers" => !empty($taaghche_printNumberData) ? $taaghche_printNumberData : null,
+                        "translate" => !empty($taaghche_translateData) ? $taaghche_translateData : null,
+                    ];
+            } else {
+                $taaghcheData = null;
+            }
+
+            //----------------------------------------------ketabRah---------------------------------------//
+            $ketabRah_books =  BookKetabrah::where('book_master_id', $bookId)->get();
+            if ($ketabRah_books->count() > 0) {
+                $ketabRah_titleData = array_unique(array_filter($ketabRah_books->pluck('title')->all()));
+                $ketabRah_publishersData = array_unique(array_filter($ketabRah_books->pluck('nasher')->all()));
+                $tags_array = array();
+                foreach (array_unique($ketabRah_books->pluck('tags')->all()) as $tag_items) {
+                    if ($tag_items != null) {
+                        $tags_array = explode("#", $tag_items);
+                    }
+                }
+                $ketabRah_subjectsData = array_unique(array_filter($tags_array));
+                $ketabRah_min_publish_date = $ketabRah_books->min('saleNashr');
+                $ketabRah_max_publish_date = $ketabRah_books->max('saleNashr');
+                // $ketabRah_printNumberData = array_unique(array_filter($ketabRah_books->pluck('nobatChap')->all()));
+                // $iranketab_tedadSafeData = array_unique(array_filter($ketabRah_books->pluck('tedadSafe')->all()));
+                $ketabRah_min_tedadSafe = $ketabRah_books->min('tedadSafe');
+                $ketabRah_max_tedadSafe = $ketabRah_books->max('tedadSafe');
+                $ketabRah_shabakData = array_unique(array_filter($ketabRah_books->pluck('shabak')->all()));
+                $ketabRah_translateData = array_unique(array_filter($ketabRah_books->pluck('translate')->all()));
+                $ketabRah_descriptionData = array_unique(array_filter($ketabRah_books->pluck('desc')->all()));
+                if (!empty($ketabRah_descriptionData)) {
+                    $ketabRah_descriptionData = reset($ketabRah_descriptionData);
+                }
+                $images_array = array();
+                foreach ($ketabRah_books->pluck('images')->all() as $image_items) {
+                    if ($image_items != null) {
+                        $index_key = array_key_last($images_array);
+                        $arr_images = explode(" =|= ", $image_items);
+                        foreach ($arr_images as $arr_images_items) {
+                            if ($arr_images_items != "" and $arr_images_items != null) {
+                                $images_array[$index_key + 1] = $arr_images_items;
+                            }
+                        }
+                    }
+                }
+                $ketabRah_imagesData = array_unique($images_array);
+                // if(!empty($ketabRah_imagesData)){
+                //     $ketabRah_imagesData = reset($ketabRah_imagesData);
+                // }
+                $ketabRah_min_price_date = $ketabRah_books->min('price');
+                $ketabRah_max_price_date = $ketabRah_books->max('price');
+                $creators_array = array();
+                $exist_creators = array();
+                foreach (array_unique($ketabRah_books->pluck('partnerArray')->all()) as $creator_items) {
+                    $item_info = json_decode($creator_items);
+                    foreach ($item_info as $items) {
+                        if (!in_array($items->name, $exist_creators)) {
+                            $index_key = array_key_last($creators_array);
+                            $exist_creators[] = $items->name;
+                            $creators_array[$index_key + 1]['name'] = $items->name;
+                            $rule_info = BookirRules::find($items->roleId);
+                            $creators_array[$index_key + 1]['role'] = (isset($rule_info->xrole))? $rule_info->xrole : '';
+                        }
+                    }
+                }
+                $ketabRah_creatorsData = array_filter($creators_array);
+                $ketabRahData =
+                    [
+                        "isbns" => !empty($ketabRah_shabakData) ? $ketabRah_shabakData : null,
+                        "names" => !empty($ketabRah_titleData) ? $ketabRah_titleData : null,
+                        "publishers" => !empty($ketabRah_publishersData) ? $ketabRah_publishersData : null,
+                        "subjects" => !empty($ketabRah_subjectsData) ? $ketabRah_subjectsData : null,
+                        "images" => !empty($ketabRah_imagesData) ? $ketabRah_imagesData : null,
+                        "creators" => !empty($ketabRah_creatorsData) ? $ketabRah_creatorsData : null,
+                        "des" => !empty($ketabRah_descriptionData) ? $ketabRah_descriptionData : null,
+                        "numberPages" => (!empty($ketabRah_min_tedadSafe) && !empty($ketabRah_max_tedadSafe)) ? ' بین ' . $ketabRah_min_tedadSafe . ' تا ' . $ketabRah_max_tedadSafe : null,
+                        "publishDate" => (!empty($ketabRah_min_publish_date) && !empty($ketabRah_max_publish_date)) ? ' بین ' . $ketabRah_min_publish_date . ' تا ' . $ketabRah_max_publish_date : null,
+                        "price" => (!empty($ketabRah_min_price_date) && !empty($ketabRah_max_price_date)) ? ' بین ' . priceFormat($ketabRah_min_price_date) . ' تا ' . priceFormat($ketabRah_max_price_date) . ' تومان ' : null,
+                        // "printNumbers" => !empty($ketabRah_printNumberData) ? $ketabRah_printNumberData : null,
+                        "translate" => !empty($ketabRah_translateData) ? $ketabRah_translateData : null,
+                    ];
+            } else {
+                $ketabRahData = null;
+            }
         } else {
             $digiData = null;
             $siData = null;
             $gisoomData = null;
             $iranketabData = null;
             $fidiboData = null;
+            $taaghcheData = null;
+            $ketabRahData = null;
         }
         // response
         return response()->json(
@@ -2109,7 +2272,9 @@ class BookController extends Controller
                     "sibookData" => $siData,
                     "gisoomData" => $gisoomData,
                     "iranketabData" => $iranketabData,
-                    "fidiboData" => $fidiboData
+                    "fidiboData" => $fidiboData,
+                    "taaghcheData" => $taaghcheData,
+                    "ketabRahData" => $ketabRahData
                 ]
 
             ],
@@ -2251,7 +2416,7 @@ class BookController extends Controller
         if ($allBookirBooks->count() != 0) {
             $allBookirBooksIsbn2Collection =  $allBookirBooks->pluck('xisbn2')->all();
             $allBookirBooksIsbn3Collection =  $allBookirBooks->pluck('xisbn3')->all();
-            $allBookirBooksIsbnCollection = array_merge($allBookirBooksIsbn2Collection,$allBookirBooksIsbn3Collection);
+            $allBookirBooksIsbnCollection = array_merge($allBookirBooksIsbn2Collection, $allBookirBooksIsbn3Collection);
             $allBookirBooksIdCollection =  $allBookirBooks->pluck('xid')->all();
 
             $bookirBooksParent = $allBookirBooks->pluck('xisbn2', 'xid')->all();
@@ -2334,7 +2499,7 @@ class BookController extends Controller
         );
     }
 
-    /*public function isbn3ToIsbn($isbn) افزودن خط تیره قانون پیچیده ایی داره 
+    /*public function isbn3ToIsbn($isbn) افزودن خط تیره قانون پیچیده ایی داره
     {
         if (strlen($isbn) == 13) {
             $isbn = substr_replace($isbn, '-', 3, 0);
@@ -2451,12 +2616,11 @@ class BookController extends Controller
                     for ($i = 0; $i < count($roleInfo); $i++) {
                         if (!empty($roleInfo) && !empty($roleInfo)) {
                             if (isset($creatorInfo) && !empty($creatorInfo)) {
-                                foreach($creatorInfo as $creatorInfoItem){
-                                    if($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']){
+                                foreach ($creatorInfo as $creatorInfoItem) {
+                                    if ($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']) {
                                         $partner_array[$i]['xcreatorid'] = $creatorInfoItem['id'];
                                         $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
                                     }
-                                   
                                 }
                             }
                         }
@@ -2631,12 +2795,11 @@ class BookController extends Controller
                     for ($i = 0; $i < count($roleInfo); $i++) {
                         if (!empty($roleInfo) && !empty($roleInfo)) {
                             if (isset($creatorInfo) && !empty($creatorInfo)) {
-                                foreach($creatorInfo as $creatorInfoItem){
-                                    if($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']){
+                                foreach ($creatorInfo as $creatorInfoItem) {
+                                    if ($roleInfo[$i]['row_id'] == $creatorInfoItem['row_id']) {
                                         $partner_array[$i]['xcreatorid'] = $creatorInfoItem['id'];
                                         $partner_array[$i]['xroleid'] = $roleInfo[$i]['id'];
                                     }
-                                   
                                 }
                             }
                         }
@@ -2730,46 +2893,46 @@ class BookController extends Controller
         }
     }
 
-    public function validation10DigitShabk($isbn){
-        if(strlen($isbn) == 10){
+    public function validation10DigitShabk($isbn)
+    {
+        if (strlen($isbn) == 10) {
             $sum = 0;
             $counter = 10;
-            for ($i = 0; $i < strlen($isbn); $i++){
-                $sum += $isbn[$i]*$counter;
+            for ($i = 0; $i < strlen($isbn); $i++) {
+                $sum += $isbn[$i] * $counter;
                 $counter--;
             }
-            if(fmod($sum,11) == 0){
+            if (fmod($sum, 11) == 0) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
-        }else{
+        } else {
             return false;
         }
-        
     }
 
-    public function validation13DigitShabk($isbn){
-        if(strlen($isbn) == 13){
+    public function validation13DigitShabk($isbn)
+    {
+        if (strlen($isbn) == 13) {
             $sum = 0;
             $even = 1;
             $odd = 3;
-            for ($i = 0; $i < strlen($isbn); $i++){
-                if(fmod($i,2)==1){
-                    $sum += $isbn[$i]*$odd;
-                }elseif(fmod($i,2)==0){
-                    $sum += $isbn[$i]*$even;
+            for ($i = 0; $i < strlen($isbn); $i++) {
+                if (fmod($i, 2) == 1) {
+                    $sum += $isbn[$i] * $odd;
+                } elseif (fmod($i, 2) == 0) {
+                    $sum += $isbn[$i] * $even;
                 }
             }
-            if(fmod($sum,10) == 0){
+            if (fmod($sum, 10) == 0) {
                 return true;
-            }else{
+            } else {
                 return false;
             }
-        }else{
+        } else {
             return false;
         }
-       
     }
 
     public function createThumbnail($path, $width, $height)

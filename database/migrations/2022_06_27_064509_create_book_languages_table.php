@@ -16,7 +16,7 @@ class CreateBookLanguagesTable extends Migration
     {
         Schema::create('book_languages', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
-            $table->string('name', 30)->collation('utf8_persian_ci');
+            $table->string('name', 45)->collation('utf8_persian_ci');
             $table->timestamps();
         });
         $covers = array(
@@ -151,7 +151,7 @@ class CreateBookLanguagesTable extends Migration
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
-           
+
             array(
                 'name' => 'انگلیسی/فارسی/ترکی',
                 'created_at' => new DateTime(),
@@ -316,7 +316,7 @@ class CreateBookLanguagesTable extends Migration
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
-           
+
             array(
                 'name' => 'چینی/فارسی',
                 'created_at' => new DateTime(),
@@ -414,7 +414,7 @@ class CreateBookLanguagesTable extends Migration
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
-           
+
             array(
                 'name' => 'فارسی/انگلیسی/ایتالیایی',
                 'created_at' => new DateTime(),
@@ -430,7 +430,7 @@ class CreateBookLanguagesTable extends Migration
                 'created_at' => new DateTime(),
                 'updated_at' => new DateTime(),
             ),
-           
+
             array(
                 'name' => 'کردی/فارسی',
                 'created_at' => new DateTime(),

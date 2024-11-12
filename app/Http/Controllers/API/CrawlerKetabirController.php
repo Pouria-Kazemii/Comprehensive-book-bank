@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BiBookBiSubject;
@@ -11,10 +11,10 @@ use App\Models\BookirPublisher;
 use App\Models\BookirRules;
 use App\Models\BookirSubject;
 use App\Models\PublisherLinks;
-use Goutte\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\BrowserKit\HttpBrowser;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -24,7 +24,7 @@ class CrawlerKetabirController extends Controller
     {
         DB::statement("SET sql_mode=''");
         $bookSelectedInfo = BookirBook::findOrFail($id);
-        
+
         $bookId = str_replace('Book-', '', $request->id);
         $page_url = $request->url;
         $book_publisher = $request->book_publisher;
@@ -58,6 +58,8 @@ class CrawlerKetabirController extends Controller
                 $bookCrawlUrl = 'https://ketab.ir/book/' . $page_url;
                 $bookSelectedInfo->xpageurl2 = $bookCrawlUrl;
                 try {
+                    //TODO : line 63 added but must ask from main developer
+                    $client = new HttpBrowser(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
                     $crawler = $client->request('GET', $bookCrawlUrl);
                     $status_code = $client->getInternalResponse()->getStatusCode();
                 } catch (\Exception $e) {
@@ -266,7 +268,7 @@ class CrawlerKetabirController extends Controller
             $from = 0;
             $limit = 14;
             $url = "https://msapi.ketab.ir/search/?query=$publisherName&user-id=$userId&limit=1&from=0";
-            $client = new Client(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
+            $client = new HttpBrowser(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
 
             if ($this->get_http_response_code($url) != "200") {
                 echo "no url : " . $url . '</br>';
@@ -421,7 +423,7 @@ class CrawlerKetabirController extends Controller
                                                     }
                                                     if ($crawler->filter('div.col-md-12 div.card-body p')->count() > 0) {
                                                         $bookSelectedInfo->xdescription = $crawler->filter('div.col-md-12 div.card-body p')->text();
-                                                    } 
+                                                    }
                                                     $bookSelectedInfo->xregdate = time();
                                                 }
 
@@ -620,7 +622,7 @@ class CrawlerKetabirController extends Controller
 
     public function save_publisher_info($publisherId, $publisher_image, $publisher_manager_fullname, $publisher_title, $publisher_url)
     {
-        $client = new Client(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
+        $client = new HttpBrowser(HttpClient::create(['timeout' => 120, 'max_redirects' => 10]));
         unset($publisherData);
         $publisherData = array();
         $publisherData['ximageurl'] = $publisher_image;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Models\BookLanguage;
 use App\Http\Controllers\Controller;
@@ -11,7 +11,7 @@ class BookLanguageController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function list(Request $request)
     {

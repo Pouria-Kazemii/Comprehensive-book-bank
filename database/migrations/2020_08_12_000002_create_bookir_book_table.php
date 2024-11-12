@@ -56,6 +56,7 @@ class CreateBookirBookTable extends Migration
             $table->tinyInteger('xwhite')->unsigned()->index();
             $table->tinyInteger('xblack')->unsigned()->index();
             $table->integer('xparent')->default(0)->index();
+            $table->string('mongo_id', 255)->nullable()->index()->collation('utf8_persian_ci');
             $table->timestamps();
         });
     }

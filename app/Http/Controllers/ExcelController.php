@@ -2,14 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AdvanceSearch;
+use App\Exports\BookSearchExport;
 use App\Exports\ChartExport;
+use App\Exports\ChartsExports\PartnerExport;
+use App\Exports\ChartsExports\PublisherExport;
 use App\Exports\CollectionExport;
+use App\Exports\CreatorBooksExport;
+use App\Exports\CreatorSubjectExport;
+use App\Exports\DioCodeExport;
 use App\Exports\Export;
+use App\Exports\ChartsExports\MainPageExport;
 use App\Exports\ParentBookExport;
+use App\Exports\PublisherBooksExport;
+use App\Exports\PublisherSubjectExport;
+use App\Exports\PublisherWithYearExport;
+use App\Exports\SubjectBookExport;
+use App\Exports\SubjectBooksExport;
 use App\Exports\TopAuthorExport;
 use App\Exports\TopPublisherExport;
 use App\Exports\UserExport;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ContradictionsFidiboExport;
+use App\Exports\ContradictionsTaaghcheExport;
+use App\Exports\ContradictionsDigiExport;
+use App\Exports\ContradictionsIranketabExport;
+use App\Exports\Contradictions30bookExport;
+use App\Exports\ContradictionsShahreKetabOnlineExport;
+use App\Exports\ContradictionsBarkhatExport;
+use App\Exports\ContradictionsGisoomExport;
+use App\Exports\ContradictionsKetabejamExport;
+use App\Exports\NewBookEveryYearExport;
+use App\Exports\WebsiteBookLinkDigiExport;
+use App\Models\ContradictionsExcelExport;
+use Illuminate\Support\Facades\Storage;
+
 
 class ExcelController extends Controller
 {
@@ -20,6 +48,90 @@ class ExcelController extends Controller
      */
     public function __construct()
     {
+    }
+    public function exportExcelCreatorSubject(string$creatorId,string$subjectTitle,int$startYear,int$endYear)
+    {
+        $export = new CreatorSubjectExport($creatorId,$subjectTitle,$startYear,$endYear);
+        return Excel::download($export , 'creator_subject_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelSubjectBooksWithYear(string$subjectTitle,int$startYear,int$endYear,int$translate,int$authorship)
+    {
+        $export = new SubjectBooksExport($subjectTitle,$startYear,$endYear,$translate,$authorship);
+        return Excel::download($export, 'subject_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherSubject(string$publisherId,string$subjectTitle,int$startYear,int$endYear)
+    {
+        $export = new PublisherSubjectExport($publisherId,$subjectTitle,$startYear,$endYear);
+        return Excel::download($export , 'publisher_subject_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherWithYear(string$publisherId,int$startYear,int$endYear)
+    {
+        $export = new PublisherWithYearExport($publisherId , $startYear,$endYear);
+        return Excel::download($export , 'publisher_book_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelDioCode(string$dioCode,int$startYear,int$endYear,int$translate,int$authorship)
+    {
+        $export = new DioCodeExport($dioCode,$startYear,$endYear,$translate,$authorship);
+        return Excel::download($export , 'dio_code_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelSubjectBooks(int$subjectId){
+        $export = new SubjectBookExport($subjectId);
+        return  Excel::download($export , 'subject_books_'  . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelCreatorBooks(string $creatorId)
+    {
+        $export = New CreatorBooksExport($creatorId);
+        return Excel::download($export , 'creator_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+
+    public function exportExcelPublisherBooks(string $publisherId)
+    {
+        $export = new PublisherBooksExport($publisherId);
+        return Excel::download($export,'publisher_books_'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function exportExcelBookSearch(string $textSearch,string $isbn)
+    {
+        $export  = new BookSearchExport($textSearch,$isbn);
+        return Excel::download($export,'book_find_export'.date('Y-m-d-m-Y-H-i-s') . '.xlsx');
+    }
+    public function exportExcelAdvanceSearch(Request $request)
+    {
+        $export = new AdvanceSearch($request);
+        $export->advanceSearch();
+        return Excel::download($export , 'advance_search_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function exportExcelDioCodeCharts(int$id,int$startYear,int$endYear,int$topYear)
+    {
+        $export = new \App\Exports\ChartsExports\DioCodeExport($id,$startYear,$endYear,$topYear);
+        $export->initial();
+        return Excel::download($export , 'diocode_chart_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPublisherChart(string $publisherId,int$startYear,int$endYear)
+    {
+        $export = new PublisherExport($publisherId,$startYear,$endYear);
+        $export->initial();
+        return Excel::download($export,'publisher_chart_export'. date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function exportExcelWithCharts(int$firstYear, int$endYear, int$topYear)
+    {
+        $export = new MainPageExport($firstYear, $endYear, $topYear);
+        $export->initial(); // Call the initial method to ensure data is initialized
+        return Excel::download($export,'chart_export_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+    public function exportExcelPartner(string$partnerId,int$startYear,int$endYear)
+    {
+        $export  = new PartnerExport($partnerId,$startYear,$endYear);
+        $export->initial();
+        return Excel::download($export,'partner_export_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd){
+        return Excel::download(new NewBookEveryYearExport($yearStart,$monthStart,$yearEnd,$monthEnd),'کتاب های چاپ اول سال' . $monthStart.'-'.$yearStart.'تا'.$monthEnd.'-'.$yearEnd.'------'. time() . '.xlsx');
+
     }
 
     public function exportExcelTopPublisher($startDate, $endDate, $dio, $limit)
@@ -128,6 +240,123 @@ class ExcelController extends Controller
 
         return $response;
     }
+
+    public function exportExcelContradictionsFidibo($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsFidiboExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
+    }
+
+    public function exportExcelContradictionsTaaghche($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsTaaghcheExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
+
+    public function exportExcelContradictionsDigi($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsDigiExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
+
+    public function exportExcelContradictionsKetabejam($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsKetabejamExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
+    }
+    public function exportExcelContradictionsGisoom($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+
+        ini_set('memory_limit', '512M');
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsGisoomExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
+    }
+
+    public function exportExcelWebsiteBookLinkDefectsCheckResultDigi($excel_id,$excel_name)
+    {
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        return Excel::download(new WebsiteBookLinkDigiExport($excel_id), $excel_name);
+    }
+
+    public function exportExcelContradictionsIranketab($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsIranketabExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
+    }
+    public function exportExcelContradictions30book($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new Contradictions30bookExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+
+    }
+
+    public function exportExcelContradictionsShahreKetabOnline($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsShahreKetabOnlineExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
+
+    public function exportExcelContradictionsBarkhatBook($excel_type,$status,$excel_name,$save_in_website_booklinks_defects)
+    {
+
+        $status =  explode(',',$status);
+        set_time_limit(0);
+        $excel_name = $excel_name.time().'.xlsx';
+        $contradictionsExcelExport = ContradictionsExcelExport::create(array('title'=>$excel_name));
+
+        Storage::disk('local')->put($excel_name, 'Contents');
+        return Excel::download(new ContradictionsBarkhatExport($excel_type,$status,$contradictionsExcelExport->id,$save_in_website_booklinks_defects), $excel_name);
+    }
+
 
     public static function create_excel($row, $list, $file_name, $sheet_name, $requestFormat)
     {
