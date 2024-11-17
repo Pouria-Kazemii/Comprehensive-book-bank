@@ -1665,13 +1665,13 @@ if (!function_exists('update30Book')) {
 
             $filtered= array();
             $cats= array();
-            foreach ($crawler->filter('body div.body-content a.indigo') as $cat){
-                if(isset($filtered['cats']))$filtered['cats']= $filtered['cats']."-|-".$cat->textContent;
-                else $filtered['cats']= $cat->textContent;
-            }
-            if(isset($filtered['cats']))$cats = explode('-|-', $filtered['cats']);
-
-            $filtered['title']  = $crawler->filter('body div.body-content h1')->text('');
+            $ul = $crawler->filter('ul.uk-list uk-list-striped product-detail-list');
+            $ul->filter('li')->each(function (Crawler $li) {
+                \Illuminate\Support\Facades\Log::info($li->text());
+            });
+            dd();
+            dd($crawler->filter('div.uk-width-expand')->text());
+            $filtered['title']  = $crawler->filter('h1.product-name')->text();
             $filtered['nasher'] = $crawler->filter('body div.body-content h2 a.site-c')->text('');
             if($crawler->filter('body div.body-content span.price-slash')->count() > 0)$filtered['price']  = enNumberKeepOnly(faCharToEN($crawler->filter('body div.body-content span.price-slash')->text('')));
             if(!isset($filtered['price'])){
