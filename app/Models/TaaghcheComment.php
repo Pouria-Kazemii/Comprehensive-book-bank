@@ -13,8 +13,8 @@ class TaaghcheComment extends Model
         'name',
         'comment',
         'rate',
-        'date',
         'taaghche_book_id'
     ];
+    public $timestamps = false;
     use HasFactory;
 }
